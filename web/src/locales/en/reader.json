@@ -1,0 +1,43 @@
+{
+  "retry": "Try again",
+  "clock": "Time now",
+  "instructions": "Hold your booking QR up to the camera",
+  "device": "Reader: {{name}}",
+  "signOut": "Change key",
+  "signIn": {
+    "title": "QR reader",
+    "help": "Paste the reader key. The council administration creates it on the facility page, under “Entrance QR readers”.",
+    "key": "Reader key",
+    "submit": "Start reader",
+    "rejected": "That key is not valid or the reader was removed."
+  },
+  "camera": {
+    "starting": "Starting the camera…",
+    "denied": "The reader needs the camera. Allow access in the browser and try again.",
+    "missing": "No camera found on this device.",
+    "insecure": "The camera only works when the page is served over https.",
+    "failed": "The camera could not be started."
+  },
+  "offline": {
+    "title": "No connection",
+    "detail": "The booking could not be checked. Try again in a moment."
+  },
+  "result": {
+    "welcome": "Welcome, {{name}}!",
+    "checkedIn": "Entry registered",
+    "slot": "{{facility}} · {{start}}–{{end}}",
+    "alreadyIn": "Already checked in",
+    "alreadyInDetail": "Entry at {{time}} · {{facility}} until {{end}}",
+    "tooEarly": "It is still early",
+    "tooEarlyDetail": "Your turn is {{day}} at {{start}}. You can come in from {{from}}.",
+    "ended": "This booking is over",
+    "endedDetail": "It was {{day}}, {{start}}–{{end}}.",
+    "otherFacility": "This booking is for another facility",
+    "otherFacilityDetail": "{{facility}}, {{day}} at {{start}}.",
+    "cancelled": "This booking is cancelled",
+    "unknown": "Booking not found",
+    "unknownDetail": "Check that it is the QR of a current booking.",
+    "notABooking": "This QR is not a booking",
+    "notABookingDetail": "Show the entry QR from “Your bookings”."
+  }
+}

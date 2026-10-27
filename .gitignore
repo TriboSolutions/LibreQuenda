@@ -1,0 +1,76 @@
+# --- Secrets & local config ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pat
+docker-compose.dev.yaml
+# --- Python (db/init/generate_data) ---
+__pycache__/
+*.pyc
+.venv/
+
+# --- Claude Code: personal settings stay local ---
+.claude/settings.local.json
+
+# --- OS / editors ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+*~
+
+# --- Go (api/) ---
+api/librequenda
+api/bin/
+api/tmp/
+*.exe
+*.test
+*.out
+coverage.*
+go.work
+go.work.sum
+
+# --- Node / React (web/, app/) ---
+node_modules/
+dist/
+build/
+.vite/
+*.tsbuildinfo
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# --- Mobile (app/) ---
+.expo/
+ios/Pods/
+android/.gradle/
+android/app/build/
+*.keystore
+*.jks
+*.p12
+*.mobileprovision
+
+# --- Deploy / local data (deploy/) ---
+deploy/data/
+deploy/volumes/
+*.dump
+*.sql.gz
+
+# --- Logs ---
+*.log
+
+# Design-skill working files (screenshots, direction sheet)
+.taste-skill/
+
+# Third-party agent skills: reinstall from skills-lock.json
+.agents/skills/
+
+# Demo data stays local: LibreQuenda starts empty and the superadmin creates everything.
+# Generate it with db/init/generate_data/main.py (images go in db/init/seed_media/).
+db/init/csv_data/
+db/init/09_initial_data.sql
+db/init/seed_media/

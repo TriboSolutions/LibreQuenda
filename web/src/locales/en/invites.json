@@ -1,0 +1,97 @@
+{
+  "myBookings": {
+    "title": "My bookings",
+    "subtitle": "Your upcoming bookings, the ones you were invited to, and your history.",
+    "menuLink": "My bookings",
+    "seeAll": "See all",
+    "upcoming": "Upcoming",
+    "history": "History",
+    "emptyUpcoming": "No upcoming bookings.",
+    "emptyHistory": "No past bookings yet.",
+    "signIn": "Sign in to see your bookings.",
+    "findTurn": "Find a free turn"
+  },
+  "role": {
+    "owner": "Yours",
+    "invitedBy": "Invited by {{name}}",
+    "invited": "Invited"
+  },
+  "spots": "{{taken}} of {{capacity}} people",
+  "actions": {
+    "invite": "Invite",
+    "leave": "Leave"
+  },
+  "leaveDialog": {
+    "title": "Leave this booking?",
+    "description": "{{facility}}, {{day}} at {{time}}. Your spot will be free for someone else.",
+    "keep": "Stay",
+    "confirm": "Leave the booking",
+    "confirming": "Leaving…",
+    "error": "Could not leave the booking."
+  },
+  "notice": {
+    "left": "You left the booking at {{facility}}."
+  },
+  "dialog": {
+    "title": "Invite to {{facility}}",
+    "description": "{{day}}, {{start}}–{{end}}. Share the link: people join with their account, or without one, giving only a name and an age.",
+    "spotsLeft_one": "{{count}} spot left",
+    "spotsLeft_other": "{{count}} spots left",
+    "full": "The booking is full.",
+    "closed": "This booking no longer takes people.",
+    "create": "Create invite link",
+    "creating": "Creating…",
+    "link": "Invite link",
+    "copy": "Copy",
+    "copied": "Copied",
+    "share": "Share",
+    "shareText": "Join my booking at {{facility}}, {{day}} at {{time}}",
+    "reset": "New link",
+    "resetHint": "A new link makes the old one stop working.",
+    "people": "Who is coming",
+    "you": "You",
+    "owner": "booking owner",
+    "guest": "No account",
+    "guestAge": "No account, {{age}} years",
+    "remove": "Remove {{name}}",
+    "nobody": "Nobody has joined yet.",
+    "error": "Could not load the invite.",
+    "close": "Close"
+  },
+  "page": {
+    "title": "Join a booking",
+    "invitedBy": "{{name}} invites you",
+    "invited": "You are invited",
+    "when": "When",
+    "where": "Where",
+    "spots": "Spots",
+    "spotsLeft_one": "{{count}} spot left of {{capacity}}",
+    "spotsLeft_other": "{{count}} spots left of {{capacity}}",
+    "minAge": "Minimum age: {{count}} years",
+    "full": "This booking is full.",
+    "closed": "This booking no longer takes people: it was cancelled or has started.",
+    "notFound": "This invite link does not work. Ask whoever booked for a new one.",
+    "withAccount": "Join with my account",
+    "withAccountHint": "It will show up in your bookings, and you can leave it until it starts.",
+    "joining": "Joining…",
+    "signInToJoin": "Sign in to join",
+    "asGuest": "Join without an account",
+    "asGuestHint": "No account needed. Only the name and age are kept, to check the facility's minimum age.",
+    "name": "Name",
+    "age": "Age",
+    "joinAsGuest": "Join without an account",
+    "joined": "You're in: {{facility}}, {{day}} at {{time}}.",
+    "guestJoined": "Done: {{name}} is in the booking at {{facility}}, {{day}} at {{time}}.",
+    "seeMyBookings": "See my bookings",
+    "facilityPage": "See the facility",
+    "error": "Could not join the booking.",
+    "or": "or"
+  },
+  "people": {
+    "label": "Who's coming",
+    "you": "You",
+    "organiser": "booked it",
+    "noAccount": "no account",
+    "unnamed": "No name"
+  }
+}

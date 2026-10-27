@@ -1,0 +1,96 @@
+-- ============================================================
+--  COUNCIL ADMINISTRATION: facilities and their weekly schedule
+-- ============================================================
+
+-- name: IsTenantAdmin :one
+SELECT EXISTS (
+    SELECT 1
+    FROM tenant_membership
+    WHERE user_id = sqlc.arg('user_id')
+      AND tenant_id = sqlc.arg('tenant_id')
+      AND role = 'admin'
+);
+
+-- name: ListFacilitiesForAdmin :many
+SELECT
+    f.id,
+    f.slug,
+    f.name,
+    f.sport,
+    f.image_ref,
+    f.is_active,
+    (SELECT COUNT(*) FROM opening_hours oh WHERE oh.facility_id = f.id)::INT AS opening_window_count,
+    (SELECT COUNT(*) FROM booking b WHERE b.facility_id = f.id AND b.status = 'confirmed' AND b.ends_at > NOW())::INT AS upcoming_booking_count
+FROM
+    facility f
+WHERE
+    f.tenant_id = sqlc.arg('tenant_id')
+ORDER BY
+    f.is_active DESC,
+    f.name ASC;
+
+-- name: GetFacilityForAdmin :one
+SELECT
+    *
+FROM
+    facility
+WHERE
+    id = sqlc.arg('id')
+    AND tenant_id = sqlc.arg('tenant_id');
+
+-- name: CreateFacility :one
+INSERT INTO facility (
+    tenant_id, slug, name, description, sport, address, latitude, longitude, capacity,
+    accessibility_info, image_ref, is_active, slot_minutes, max_advance_days, min_cancel_hours,
+    max_active_bookings_per_user, min_age, usage_rules_text
+) VALUES (
+    sqlc.arg('tenant_id'), sqlc.arg('slug'), sqlc.arg('name'), sqlc.narg('description'), sqlc.narg('sport'),
+    sqlc.narg('address'), sqlc.narg('latitude'), sqlc.narg('longitude'), sqlc.narg('capacity'),
+    sqlc.narg('accessibility_info'), sqlc.narg('image_ref'), sqlc.arg('is_active'), sqlc.arg('slot_minutes'),
+    sqlc.arg('max_advance_days'), sqlc.arg('min_cancel_hours'), sqlc.arg('max_active_bookings_per_user'),
+    sqlc.narg('min_age'), sqlc.narg('usage_rules_text')
+)
+RETURNING
+    id;
+
+-- name: UpdateFacility :one
+UPDATE facility
+SET
+    slug                         = sqlc.arg('slug'),
+    name                         = sqlc.arg('name'),
+    description                  = sqlc.narg('description'),
+    sport                        = sqlc.narg('sport'),
+    address                      = sqlc.narg('address'),
+    latitude                     = sqlc.narg('latitude'),
+    longitude                    = sqlc.narg('longitude'),
+    capacity                     = sqlc.narg('capacity'),
+    accessibility_info           = sqlc.narg('accessibility_info'),
+    image_ref                    = sqlc.narg('image_ref'),
+    is_active                    = sqlc.arg('is_active'),
+    slot_minutes                 = sqlc.arg('slot_minutes'),
+    max_advance_days             = sqlc.arg('max_advance_days'),
+    min_cancel_hours             = sqlc.arg('min_cancel_hours'),
+    max_active_bookings_per_user = sqlc.arg('max_active_bookings_per_user'),
+    min_age                      = sqlc.narg('min_age'),
+    usage_rules_text             = sqlc.narg('usage_rules_text')
+WHERE
+    id = sqlc.arg('id')
+    AND tenant_id = sqlc.arg('tenant_id')
+RETURNING
+    id;
+
+-- name: DeleteFacility :execrows
+DELETE FROM facility
+WHERE
+    id = sqlc.arg('id')
+    AND tenant_id = sqlc.arg('tenant_id');
+
+-- name: CountBookingsByFacility :one
+SELECT COUNT(*) FROM booking WHERE facility_id = sqlc.arg('facility_id');
+
+-- name: DeleteOpeningHoursByFacility :exec
+DELETE FROM opening_hours WHERE facility_id = sqlc.arg('facility_id');
+
+-- name: InsertOpeningHours :exec
+INSERT INTO opening_hours (facility_id, weekday, opens_at, closes_at)
+VALUES (sqlc.arg('facility_id'), sqlc.arg('weekday'), sqlc.arg('opens_at'), sqlc.arg('closes_at'));

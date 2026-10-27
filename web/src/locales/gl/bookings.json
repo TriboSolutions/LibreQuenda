@@ -1,0 +1,60 @@
+{
+  "title": "As túas reservas",
+  "upcoming_one": "{{count}} próxima",
+  "upcoming_other": "{{count}} próximas",
+  "signedOut": "Consulta os horarios sen conta. Para reservar, cancelar e ver o teu historial, inicia sesión co teu correo ou crea unha conta nun minuto.",
+  "createAccount": "Crear conta",
+  "loading": "Cargando reservas",
+  "loadError": "Non foi posible cargar as túas reservas.",
+  "empty": "Non tes reservas próximas. Escolle un turno libre na dispoñibilidade.",
+  "cancel": "Cancelar",
+  "noCancel": "Sen cancelación",
+  "cancelDeadlinePassed": "Só se podía cancelar ata {{date}}",
+  "history": "Historial",
+  "status": {
+    "cancelled": "Cancelada",
+    "done": "Feita",
+    "checkedIn": "Dentro"
+  },
+  "notice": {
+    "booked": "Reserva confirmada: {{facility}}, {{day}} ás {{time}}.",
+    "cancelled": "Reserva cancelada: {{facility}}, {{day}}."
+  },
+  "dialog": {
+    "title": "Reservar {{facility}}",
+    "place": "Lugar",
+    "duration": "Duración",
+    "cancellation": "Cancelación",
+    "cancellationUntil": "Gratuíta ata {{date}}",
+    "rules": "Normas",
+    "confirm": "Confirmar reserva",
+    "confirming": "Reservando…",
+    "loginToBook": "Inicia sesión para reservar",
+    "needLogin": "Tes que iniciar sesión para reservar.",
+    "error": "Non foi posible facer a reserva.",
+    "acceptRules": "Lin e acepto as normas de uso.",
+    "noRules": "Esta instalación non ten normas específicas: aplícanse as normas xerais do concello.",
+    "minAge": "Idade mínima",
+    "minAgeValue": "{{count}} anos"
+  },
+  "cancelDialog": {
+    "title": "Cancelar a reserva?",
+    "description": "{{facility}}, {{day}} ás {{time}}. O turno quedará libre para outra persoa.",
+    "keep": "Manter a reserva",
+    "confirm": "Cancelar a reserva",
+    "confirming": "Cancelando…",
+    "needLogin": "Tes que iniciar sesión.",
+    "error": "Non foi posible cancelar a reserva."
+  },
+  "qr": {
+    "show": "QR de entrada",
+    "title": "QR de entrada",
+    "description": "{{facility}}, {{day}}, {{start}}–{{end}}",
+    "alt": "Código QR da reserva en {{facility}}",
+    "hint": "Amósao no lector da entrada, desde 15 minutos antes do comezo ata o final da reserva.",
+    "brightness": "Se o lector non o detecta, sube o brillo da pantalla.",
+    "email": "Tamén che chega nos correos de confirmación e de lembrete.",
+    "checkedIn": "Entrada rexistrada ás {{time}}",
+    "close": "Pechar"
+  }
+}

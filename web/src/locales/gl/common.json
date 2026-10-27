@@ -1,0 +1,87 @@
+{
+  "council": "Concello",
+  "chooseCouncil": "Escolle o teu concello",
+  "home": "LibreQuenda, inicio",
+  "signIn": "Iniciar sesión",
+  "signOut": "Pechar sesión",
+  "account": "Conta de {{name}}",
+  "appearance": "Aparencia",
+  "theme": {
+    "light": "Claro",
+    "dark": "Escuro",
+    "system": "Como o sistema"
+  },
+  "language": "Idioma",
+  "retry": "Tentar de novo",
+  "back": "Volver",
+  "day": "Día",
+  "date": {
+    "today": "Hoxe",
+    "tomorrow": "Mañá",
+    "todayShort": "hoxe",
+    "tomorrowShort": "mañá",
+    "longDate": "{{weekday}}, {{day}} de {{month}}",
+    "shortDate": "{{weekday}} {{day}}",
+    "shortDateMonth": "{{weekday}} {{day}} {{month}}",
+    "dateTime": "{{date}}, {{time}}",
+    "weekdays": {
+      "0": "domingo",
+      "1": "luns",
+      "2": "martes",
+      "3": "mércores",
+      "4": "xoves",
+      "5": "venres",
+      "6": "sábado"
+    },
+    "weekdaysShort": {
+      "0": "dom",
+      "1": "lun",
+      "2": "mar",
+      "3": "mér",
+      "4": "xov",
+      "5": "ven",
+      "6": "sáb"
+    },
+    "months": {
+      "0": "xaneiro",
+      "1": "febreiro",
+      "2": "marzo",
+      "3": "abril",
+      "4": "maio",
+      "5": "xuño",
+      "6": "xullo",
+      "7": "agosto",
+      "8": "setembro",
+      "9": "outubro",
+      "10": "novembro",
+      "11": "decembro"
+    },
+    "monthsShort": {
+      "0": "xan",
+      "1": "feb",
+      "2": "mar",
+      "3": "abr",
+      "4": "mai",
+      "5": "xuñ",
+      "6": "xul",
+      "7": "ago",
+      "8": "set",
+      "9": "out",
+      "10": "nov",
+      "11": "dec"
+    }
+  },
+  "configError": "Non foi posible cargar a configuración da aplicación ({{status}}).",
+  "signingIn": "Iniciando sesión…",
+  "imagePicker": {
+    "upload": "Subir imaxe",
+    "change": "Cambiar imaxe",
+    "remove": "Quitar",
+    "uploading": "Subindo…",
+    "hint": "JPG, PNG ou WebP, ata 5 MB. Tamén podes soltala no recadro.",
+    "tooLarge": "A imaxe supera os 5 MB.",
+    "wrongType": "Só imaxes JPG, PNG ou WebP.",
+    "empty": "Sen imaxe"
+  },
+  "createAccount": "Crear conta"
+}

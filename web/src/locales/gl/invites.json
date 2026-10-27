@@ -1,0 +1,97 @@
+{
+  "myBookings": {
+    "title": "As miñas reservas",
+    "subtitle": "As túas próximas reservas, as que te convidaron e o teu historial.",
+    "menuLink": "As miñas reservas",
+    "seeAll": "Ver todas",
+    "upcoming": "Próximas",
+    "history": "Historial",
+    "emptyUpcoming": "Non tes reservas próximas.",
+    "emptyHistory": "Aínda non tes reservas pasadas.",
+    "signIn": "Inicia sesión para ver as túas reservas.",
+    "findTurn": "Buscar un turno libre"
+  },
+  "role": {
+    "owner": "Túa",
+    "invitedBy": "Convidoute {{name}}",
+    "invited": "Convite"
+  },
+  "spots": "{{taken}} de {{capacity}} persoas",
+  "actions": {
+    "invite": "Convidar",
+    "leave": "Saír"
+  },
+  "leaveDialog": {
+    "title": "Saír desta reserva?",
+    "description": "{{facility}}, {{day}} ás {{time}}. A túa praza quedará libre para outra persoa.",
+    "keep": "Quedar",
+    "confirm": "Saír da reserva",
+    "confirming": "Saíndo…",
+    "error": "Non se puido saír da reserva."
+  },
+  "notice": {
+    "left": "Saíches da reserva en {{facility}}."
+  },
+  "dialog": {
+    "title": "Convidar a {{facility}}",
+    "description": "{{day}}, {{start}}–{{end}}. Comparte a ligazón: a xente únese coa súa conta ou sen conta, dando só nome e idade.",
+    "spotsLeft_one": "Queda {{count}} praza",
+    "spotsLeft_other": "Quedan {{count}} prazas",
+    "full": "A reserva está completa.",
+    "closed": "Esta reserva xa non admite máis xente.",
+    "create": "Crear ligazón de convite",
+    "creating": "Creando…",
+    "link": "Ligazón de convite",
+    "copy": "Copiar",
+    "copied": "Copiada",
+    "share": "Compartir",
+    "shareText": "Únete á miña reserva en {{facility}}, {{day}} ás {{time}}",
+    "reset": "Nova ligazón",
+    "resetHint": "Unha nova ligazón fai que a anterior deixe de funcionar.",
+    "people": "Quen vén",
+    "you": "Ti",
+    "owner": "quen reservou",
+    "guest": "Sen conta",
+    "guestAge": "Sen conta, {{age}} anos",
+    "remove": "Quitar a {{name}}",
+    "nobody": "Aínda non se uniu ninguén.",
+    "error": "Non se puido cargar o convite.",
+    "close": "Pechar"
+  },
+  "page": {
+    "title": "Unirse a unha reserva",
+    "invitedBy": "{{name}} convídate",
+    "invited": "Tes un convite",
+    "when": "Cando",
+    "where": "Onde",
+    "spots": "Prazas",
+    "spotsLeft_one": "Queda {{count}} praza de {{capacity}}",
+    "spotsLeft_other": "Quedan {{count}} prazas de {{capacity}}",
+    "minAge": "Idade mínima: {{count}} anos",
+    "full": "Esta reserva está completa.",
+    "closed": "Esta reserva xa non admite máis xente: cancelouse ou xa comezou.",
+    "notFound": "Esta ligazón de convite non funciona. Pídelle unha nova a quen reservou.",
+    "withAccount": "Unirme coa miña conta",
+    "withAccountHint": "Aparecerá nas túas reservas e poderás saír ata que comece.",
+    "joining": "Uníndote…",
+    "signInToJoin": "Inicia sesión para unirte",
+    "asGuest": "Unirse sen conta",
+    "asGuestHint": "Sen conta. Só se gardan o nome e a idade, para comprobar a idade mínima da instalación.",
+    "name": "Nome",
+    "age": "Idade",
+    "joinAsGuest": "Unirse sen conta",
+    "joined": "Xa estás dentro: {{facility}}, {{day}} ás {{time}}.",
+    "guestJoined": "Feito: {{name}} está na reserva en {{facility}}, {{day}} ás {{time}}.",
+    "seeMyBookings": "Ver as miñas reservas",
+    "facilityPage": "Ver a instalación",
+    "error": "Non se puido unir á reserva.",
+    "or": "ou"
+  },
+  "people": {
+    "label": "Quen vén",
+    "you": "Ti",
+    "organiser": "fixo a reserva",
+    "noAccount": "sen conta",
+    "unnamed": "Sen nome"
+  }
+}

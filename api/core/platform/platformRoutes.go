@@ -1,0 +1,51 @@
+package platform
+
+import (
+	"database/sql"
+	"librequenda/middlewares"
+	"net/http"
+	"sync"
+
+	"github.com/angelbarreiros/Penguin/router"
+)
+
+type platformRoutes struct {
+	db     *sql.DB
+	router *router.Router
+}
+
+var routesOnce *sync.Once = new(sync.Once)
+var platformRoutesInstance *platformRoutes
+
+func PlatformRoutes(db *sql.DB, router *router.Router) *platformRoutes {
+	routesOnce.Do(func() {
+		platformRoutesInstance = &platformRoutes{
+			db:     db,
+			router: router,
+		}
+	})
+	return platformRoutesInstance
+}
+
+// Superadministrator area: every handler checks the platform_admin role itself.
+func (r *platformRoutes) RegisterRoutes() {
+	var h = PlatformHandler(r.db)
+	var routes = []router.Route{
+		{Path: "/admin/tenants", Method: http.MethodGet, Handler: h.ListTenants},
+		{Path: "/admin/tenants", Method: http.MethodPost, Handler: h.CreateTenant},
+		{Path: "/admin/tenants/{slug}", Method: http.MethodGet, Handler: h.GetTenant},
+		{Path: "/admin/tenants/{slug}", Method: http.MethodPut, Handler: h.UpdateTenant},
+		{Path: "/admin/tenants/{slug}", Method: http.MethodDelete, Handler: h.DeleteTenant},
+		{Path: "/admin/tenants/{slug}/invitations", Method: http.MethodPost, Handler: h.InviteTenantAdmin},
+		{Path: "/admin/tenants/{slug}/invitations/{id}", Method: http.MethodDelete, Handler: h.DeleteInvitation},
+		{Path: "/admin/tenants/{slug}/admins/{userId}", Method: http.MethodDelete, Handler: h.RemoveTenantAdmin},
+		{Path: "/admin/superadmins", Method: http.MethodGet, Handler: h.ListSuperadmins},
+		{Path: "/admin/superadmins", Method: http.MethodPost, Handler: h.AddSuperadmin},
+		{Path: "/admin/superadmins/{userId}", Method: http.MethodDelete, Handler: h.RemoveSuperadmin},
+	}
+	for _, route := range routes {
+		route.Handler = middlewares.AuthMiddleware(route.Handler)
+		route.AdditionalMethods = []router.HTTPMethod{router.OPTIONS}
+		r.router.NewRoute(route)
+	}
+}

@@ -1,0 +1,157 @@
+package me
+
+import (
+	"context"
+	"database/sql"
+	"librequenda/auth"
+	"librequenda/model"
+	"librequenda/shared"
+	"librequenda/storage"
+	"net/http"
+	"regexp"
+	"strings"
+	"sync"
+	"time"
+)
+
+type meService struct {
+	db *sql.DB
+}
+
+var sMeInstance *meService
+var sMeOnce *sync.Once = new(sync.Once)
+
+func GetMeService(db *sql.DB) *meService {
+	sMeOnce.Do(func() {
+		sMeInstance = &meService{db: db}
+	})
+	return sMeInstance
+}
+
+func (s *meService) SyncCurrentUser(ctx context.Context, session auth.Session) (*MeResponse, *shared.ErrorResponse) {
+	var info, err = auth.FetchUserInfo(ctx, session.AccessToken)
+	if err != nil || info.Sub != session.Subject {
+		shared.Logger.Error("failed to fetch userinfo for %s: %v", session.Subject, err)
+		return nil, &shared.ErrorResponse{
+			Code:    http.StatusBadGateway,
+			Message: "errors.user_info_failed",
+		}
+	}
+
+	var queries = model.New(s.db)
+	var user model.UpsertUserBySubjectRow
+	user, err = queries.UpsertUserBySubject(ctx, model.UpsertUserBySubjectParams{
+		IdpSubject:    session.Subject,
+		Email:         info.Email,
+		FullName:      sql.NullString{String: info.Name, Valid: info.Name != ""},
+		EmailVerified: info.EmailVerified,
+	})
+	if err != nil {
+		shared.Logger.Error("failed to upsert user %s: %v", session.Subject, err)
+		return nil, &shared.ErrorResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "errors.user_sync_failed",
+		}
+	}
+
+	// Roles only follow a verified email: anyone could register with someone else's address
+	if info.EmailVerified {
+		_, err = queries.AcceptPendingInvitations(ctx, model.AcceptPendingInvitationsParams{UserID: user.ID, Email: info.Email})
+		if err == nil && shared.SUPERADMIN_EMAIL != "" && strings.EqualFold(info.Email, shared.SUPERADMIN_EMAIL) {
+			err = queries.AddPlatformAdmin(ctx, user.ID)
+		}
+		if err != nil {
+			shared.Logger.Error("failed to grant roles to %s: %v", session.Subject, err)
+			return nil, &shared.ErrorResponse{
+				Code:    http.StatusInternalServerError,
+				Message: "errors.user_sync_failed",
+			}
+		}
+	}
+
+	var roles []model.GetUserTenantRolesRow
+	roles, err = queries.GetUserTenantRoles(ctx, user.ID)
+	if err != nil {
+		return nil, &shared.ErrorResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "errors.user_sync_failed",
+		}
+	}
+	var isSuperadmin bool
+	isSuperadmin, err = queries.IsPlatformAdmin(ctx, user.ID)
+	if err != nil {
+		return nil, &shared.ErrorResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "errors.user_sync_failed",
+		}
+	}
+
+	var profile model.GetUserProfileRow
+	profile, err = queries.GetUserProfile(ctx, user.ID)
+	if err != nil {
+		return nil, &shared.ErrorResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "errors.user_sync_failed",
+		}
+	}
+
+	var pending []model.ListPendingInvitationsForEmailRow
+	pending, err = queries.ListPendingInvitationsForEmail(ctx, info.Email)
+	if err != nil {
+		return nil, &shared.ErrorResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "errors.user_sync_failed",
+		}
+	}
+
+	var response = withProfile(MapMeResponse(user, info.EmailVerified, isSuperadmin, roles), profile)
+	response.PendingInvitations = make([]PendingInvitationDto, 0, len(pending))
+	for _, p := range pending {
+		response.PendingInvitations = append(response.PendingInvitations, PendingInvitationDto{TenantName: p.TenantName, TenantSlug: p.TenantSlug})
+	}
+	return response, nil
+}
+
+var phonePattern = regexp.MustCompile(`^\+?[0-9 ()-]{6,30}$`)
+var languages = map[string]bool{"": true, "gl": true, "es": true, "en": true, "ca": true}
+
+// validateProfile returns the parsed date of birth, or the i18n key of the first invalid field.
+func validateProfile(in *ProfileInput, today time.Time) (time.Time, string) {
+	in.Phone = strings.TrimSpace(in.Phone)
+	in.AvatarRef = strings.TrimSpace(in.AvatarRef)
+	var birth, err = time.Parse("2006-01-02", strings.TrimSpace(in.BirthDate))
+	switch {
+	case err != nil || !birth.Before(today) || birth.Before(today.AddDate(-120, 0, 0)):
+		return birth, "errors.invalid_birth_date"
+	case in.Phone != "" && !phonePattern.MatchString(in.Phone):
+		return birth, "errors.invalid_phone_format"
+	case in.AvatarRef != "" && (!storage.ValidRef(in.AvatarRef) || !strings.HasPrefix(in.AvatarRef, "users/")):
+		return birth, "errors.invalid_image"
+	case !languages[in.PreferredLanguage]:
+		return birth, "errors.invalid_language"
+	}
+	return birth, ""
+}
+
+func (s *meService) UpdateProfile(ctx context.Context, session auth.Session, input ProfileInput) (*MeResponse, *shared.ErrorResponse) {
+	var birth, key = validateProfile(&input, time.Now())
+	if key != "" {
+		return nil, &shared.ErrorResponse{Code: http.StatusUnprocessableEntity, Message: key}
+	}
+	var userId, userErr = CurrentUserId(ctx, s.db, session)
+	if userErr != nil {
+		return nil, userErr
+	}
+	var err = model.New(s.db).UpdateUserProfile(ctx, model.UpdateUserProfileParams{
+		ID:                userId,
+		BirthDate:         sql.NullTime{Time: birth, Valid: true},
+		Phone:             sql.NullString{String: input.Phone, Valid: input.Phone != ""},
+		AvatarRef:         sql.NullString{String: input.AvatarRef, Valid: input.AvatarRef != ""},
+		PreferredLanguage: sql.NullString{String: input.PreferredLanguage, Valid: input.PreferredLanguage != ""},
+		EmailReminders:    input.EmailReminders,
+	})
+	if err != nil {
+		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.profile_save_failed"}
+	}
+	return s.SyncCurrentUser(ctx, session)
+}

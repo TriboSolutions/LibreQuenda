@@ -1,0 +1,43 @@
+{
+  "retry": "Reintentar",
+  "clock": "Hora actual",
+  "instructions": "Acerca el QR de tu reserva a la cámara",
+  "device": "Lector: {{name}}",
+  "signOut": "Cambiar clave",
+  "signIn": {
+    "title": "Lector QR",
+    "help": "Pega la clave del lector. La crea la administración del ayuntamiento en la página de la instalación, en «Lectores QR de la entrada».",
+    "key": "Clave del lector",
+    "submit": "Iniciar lector",
+    "rejected": "Esa clave no es válida o el lector se ha retirado."
+  },
+  "camera": {
+    "starting": "Iniciando la cámara…",
+    "denied": "El lector necesita la cámara. Permite el acceso en el navegador y vuelve a intentarlo.",
+    "missing": "No se ha encontrado ninguna cámara en este dispositivo.",
+    "insecure": "La cámara solo funciona si la página se sirve por https.",
+    "failed": "No se ha podido iniciar la cámara."
+  },
+  "offline": {
+    "title": "Sin conexión",
+    "detail": "No se ha podido comprobar la reserva. Inténtalo de nuevo en un momento."
+  },
+  "result": {
+    "welcome": "¡Bienvenida/o, {{name}}!",
+    "checkedIn": "Entrada registrada",
+    "slot": "{{facility}} · {{start}}–{{end}}",
+    "alreadyIn": "Ya habías entrado",
+    "alreadyInDetail": "Entrada a las {{time}} · {{facility}} hasta las {{end}}",
+    "tooEarly": "Todavía es pronto",
+    "tooEarlyDetail": "Tu turno es {{day}} a las {{start}}. Puedes entrar desde las {{from}}.",
+    "ended": "Esta reserva ya terminó",
+    "endedDetail": "Era {{day}}, {{start}}–{{end}}.",
+    "otherFacility": "Esta reserva es de otra instalación",
+    "otherFacilityDetail": "{{facility}}, {{day}} a las {{start}}.",
+    "cancelled": "Esta reserva está cancelada",
+    "unknown": "No encontramos esta reserva",
+    "unknownDetail": "Comprueba que es el QR de una reserva vigente.",
+    "notABooking": "Este QR no es de una reserva",
+    "notABookingDetail": "Muestra el QR de entrada de «Tus reservas»."
+  }
+}

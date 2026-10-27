@@ -1,0 +1,47 @@
+{
+  "title": "Sports facilities",
+  "finding": {
+    "today": "Today, {{date}}",
+    "closed": "{{when}}. All facilities are closed.",
+    "full": "{{when}}. No free turns left.",
+    "free_one": "{{when}}. {{count}} free turn in {{facilities}}; the first, {{facility}} at {{time}}.",
+    "free_other": "{{when}}. {{count}} free turns in {{facilities}}; the first, {{facility}} at {{time}}.",
+    "facilities_one": "{{count}} facility",
+    "facilities_other": "{{count}} facilities"
+  },
+  "availability": {
+    "title": "Availability",
+    "loading": "Loading facilities",
+    "loadError": "Could not load the facilities.",
+    "empty": "This council has not published any facility yet.",
+    "allClosed": "All facilities are closed on this day.",
+    "closedDay": "Closed on this day",
+    "closedShort": "closed",
+    "full": "Fully booked",
+    "free_one": "{{count}} free",
+    "free_other": "{{count}} free",
+    "minutes": "{{count}} min",
+    "bookAt": "Book {{time}}",
+    "more": "+{{count}} more",
+    "quickBook": "Quick book {{time}}",
+    "book": "Book",
+    "details": "See {{facility}}",
+    "afterHours": "Outside opening hours"
+  },
+  "slot": {
+    "free": "Free",
+    "booked": "Booked",
+    "closed": "Closed",
+    "past": "Past",
+    "tooFar": "Not bookable yet",
+    "bookAria": "Book {{facility}}, {{time}}",
+    "closure": "Closure"
+  },
+  "rules": {
+    "title": "Booking rules",
+    "days": "d",
+    "hours": "h",
+    "figures": "Days · h · max.",
+    "figuresHelp": "Days in advance to book, hours before the turn to cancel, active bookings per person"
+  }
+}

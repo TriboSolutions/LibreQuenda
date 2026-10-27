@@ -1,0 +1,58 @@
+# ============================================================
+#  LibreQuenda: single entry point
+#  Site addresses are set by entrypoint.sh from CADDY_AUTO_HTTPS:
+#    http://<domain>   -> plain HTTP (development, or TLS terminated in front)
+#    https://<domain>  -> automatic HTTPS (certificates obtained and renewed by Caddy)
+# ============================================================
+
+{
+	servers {
+		# Keep X-Forwarded-* from a TLS-terminating proxy on the private network
+		trusted_proxies static private_ranges
+	}
+}
+
+# --- Web app + core API ---
+{$WEB_ADDRESS} {
+	encode zstd gzip
+
+	# /api/health/db -> api:8000/health/db
+	handle_path /api/* {
+		reverse_proxy api:8000
+	}
+
+	# Runtime config written by zitadel-setup (OIDC client id, authority)
+	handle /config.json {
+		root * /srv/runtime
+		header Cache-Control "no-store"
+		file_server
+	}
+
+	# React SPA: unknown paths fall back to index.html
+	handle {
+		root * /srv/web
+		@assets path /assets/*
+		header @assets Cache-Control "public, max-age=31536000, immutable"
+		try_files {path} /index.html
+		file_server
+	}
+}
+
+# --- Identity (Zitadel) ---
+{$ZITADEL_ADDRESS} {
+	# Login v2 UI (Next.js)
+	handle /ui/v2/login* {
+		reverse_proxy zitadel-login:3000
+	}
+
+	# Bare domain opens the login
+	handle / {
+		rewrite * /ui/v2/login/
+		reverse_proxy zitadel-login:3000
+	}
+
+	# Everything else: OIDC, console, APIs (gRPC / Connect over h2c)
+	handle {
+		reverse_proxy h2c://zitadel-api:8080
+	}
+}

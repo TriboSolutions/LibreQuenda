@@ -1,0 +1,135 @@
+package platform
+
+import (
+	"librequenda/storage"
+	"librequenda/validate"
+	"strings"
+	"time"
+)
+
+// Paths the web app already uses at the root: a council slug may not take them.
+var reservedSlugs = map[string]bool{
+	"admin": true, "api": true, "callback": true, "me": true, "config": true,
+	"assets": true, "static": true, "login": true, "logout": true, "new": true, "perfil": true, "lector": true,
+	"reservas": true, "invitacion": true,
+}
+
+type TenantInput struct {
+	Slug         string `json:"slug"`
+	Name         string `json:"name"`
+	Timezone     string `json:"timezone"`
+	ContactEmail string `json:"contact_email"`
+	ContactPhone string `json:"contact_phone"`
+	LogoRef      string `json:"logo_ref"`    // a storage reference from POST /media, never a URL
+	IsActive     *bool  `json:"is_active"`   // update only
+	AdminEmail   string `json:"admin_email"` // create only: the first council administrator
+}
+
+func (in *TenantInput) normalise() {
+	in.Slug = strings.ToLower(strings.TrimSpace(in.Slug))
+	in.Name = strings.TrimSpace(in.Name)
+	in.Timezone = strings.TrimSpace(in.Timezone)
+	in.ContactEmail = strings.ToLower(strings.TrimSpace(in.ContactEmail))
+	in.ContactPhone = strings.TrimSpace(in.ContactPhone)
+	in.LogoRef = strings.TrimSpace(in.LogoRef)
+	in.AdminEmail = strings.ToLower(strings.TrimSpace(in.AdminEmail))
+}
+
+// validate returns the i18n key of the first invalid field, or "".
+func (in *TenantInput) validate(creating bool) string {
+	switch {
+	case in.Name == "" || len(in.Name) > 255:
+		return "errors.invalid_name"
+	case !validate.Slug(in.Slug):
+		return "errors.invalid_slug"
+	case reservedSlugs[in.Slug]:
+		return "errors.slug_reserved"
+	case !validTimezone(in.Timezone):
+		return "errors.invalid_timezone"
+	case in.ContactEmail != "" && !validEmail(in.ContactEmail):
+		return "errors.invalid_email"
+	case len(in.ContactPhone) > 50:
+		return "errors.invalid_phone"
+	case in.LogoRef != "" && (!storage.ValidRef(in.LogoRef) || !strings.HasPrefix(in.LogoRef, "councils/")):
+		return "errors.invalid_image"
+	case creating && !validEmail(in.AdminEmail):
+		return "errors.invalid_admin_email"
+	}
+	return ""
+}
+
+func validTimezone(name string) bool {
+	if name == "" {
+		return false
+	}
+	_, err := time.LoadLocation(name)
+	return err == nil
+}
+
+func validEmail(email string) bool {
+	return validate.Email(email)
+}
+
+type EmailInput struct {
+	Email string `json:"email"`
+}
+
+type TenantSummaryDto struct {
+	Slug                   string    `json:"slug"`
+	Name                   string    `json:"name"`
+	Timezone               string    `json:"timezone"`
+	ContactEmail           string    `json:"contact_email"`
+	ContactPhone           string    `json:"contact_phone"`
+	LogoUrl                string    `json:"logo_url"`
+	IsActive               bool      `json:"is_active"`
+	CreatedAt              time.Time `json:"created_at"`
+	FacilityCount          int32     `json:"facility_count"`
+	AdminCount             int32     `json:"admin_count"`
+	PendingInvitationCount int32     `json:"pending_invitation_count"`
+	BookingCount           int32     `json:"booking_count"`
+}
+
+type TenantsResponse struct {
+	Tenants []TenantSummaryDto `json:"tenants"`
+}
+
+type MemberDto struct {
+	UserId   string    `json:"user_id"`
+	Email    string    `json:"email"`
+	FullName string    `json:"full_name"`
+	Role     string    `json:"role"`
+	Since    time.Time `json:"since"`
+}
+
+type InvitationDto struct {
+	Id        string    `json:"id"`
+	Email     string    `json:"email"`
+	Role      string    `json:"role"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+type TenantDetailDto struct {
+	Slug         string          `json:"slug"`
+	Name         string          `json:"name"`
+	Timezone     string          `json:"timezone"`
+	ContactEmail string          `json:"contact_email"`
+	ContactPhone string          `json:"contact_phone"`
+	LogoRef      string          `json:"logo_ref"` // sent back unchanged when the form is saved
+	LogoUrl      string          `json:"logo_url"`
+	IsActive     bool            `json:"is_active"`
+	BookingCount int64           `json:"booking_count"`
+	Admins       []MemberDto     `json:"admins"`
+	Invitations  []InvitationDto `json:"invitations"`
+}
+
+type SuperadminDto struct {
+	UserId    string    `json:"user_id"`
+	Email     string    `json:"email"`
+	FullName  string    `json:"full_name"`
+	FromEnv   bool      `json:"from_env"` // SUPERADMIN_EMAIL: cannot be removed here
+	CreatedAt time.Time `json:"created_at"`
+}
+
+type SuperadminsResponse struct {
+	Superadmins []SuperadminDto `json:"superadmins"`
+}

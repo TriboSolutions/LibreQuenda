@@ -1,0 +1,97 @@
+{
+  "myBookings": {
+    "title": "Les meves reserves",
+    "subtitle": "Les teves properes reserves, aquelles a les quals t'han convidat i el teu historial.",
+    "menuLink": "Les meves reserves",
+    "seeAll": "Veure-les totes",
+    "upcoming": "Properes",
+    "history": "Historial",
+    "emptyUpcoming": "No tens reserves properes.",
+    "emptyHistory": "Encara no tens reserves passades.",
+    "signIn": "Inicia la sessió per veure les teves reserves.",
+    "findTurn": "Cercar un torn lliure"
+  },
+  "role": {
+    "owner": "Teva",
+    "invitedBy": "T'ha convidat {{name}}",
+    "invited": "Invitació"
+  },
+  "spots": "{{taken}} de {{capacity}} persones",
+  "actions": {
+    "invite": "Convidar",
+    "leave": "Sortir"
+  },
+  "leaveDialog": {
+    "title": "Vols sortir d'aquesta reserva?",
+    "description": "{{facility}}, {{day}} a les {{time}}. La teva plaça quedarà lliure per a una altra persona.",
+    "keep": "Quedar-me",
+    "confirm": "Sortir de la reserva",
+    "confirming": "Sortint…",
+    "error": "No s'ha pogut sortir de la reserva."
+  },
+  "notice": {
+    "left": "Has sortit de la reserva a {{facility}}."
+  },
+  "dialog": {
+    "title": "Convidar a {{facility}}",
+    "description": "{{day}}, {{start}}–{{end}}. Comparteix l'enllaç: la gent s'uneix amb el seu compte o sense compte, donant només nom i edat.",
+    "spotsLeft_one": "Queda {{count}} plaça",
+    "spotsLeft_other": "Queden {{count}} places",
+    "full": "La reserva és completa.",
+    "closed": "Aquesta reserva ja no admet més gent.",
+    "create": "Crear enllaç d'invitació",
+    "creating": "Creant…",
+    "link": "Enllaç d'invitació",
+    "copy": "Copiar",
+    "copied": "Copiat",
+    "share": "Compartir",
+    "shareText": "Uneix-te a la meva reserva a {{facility}}, {{day}} a les {{time}}",
+    "reset": "Enllaç nou",
+    "resetHint": "Un enllaç nou fa que l'anterior deixi de funcionar.",
+    "people": "Qui ve",
+    "you": "Tu",
+    "owner": "qui ha reservat",
+    "guest": "Sense compte",
+    "guestAge": "Sense compte, {{age}} anys",
+    "remove": "Treure {{name}}",
+    "nobody": "Encara no s'hi ha unit ningú.",
+    "error": "No s'ha pogut carregar la invitació.",
+    "close": "Tancar"
+  },
+  "page": {
+    "title": "Unir-se a una reserva",
+    "invitedBy": "{{name}} et convida",
+    "invited": "Tens una invitació",
+    "when": "Quan",
+    "where": "On",
+    "spots": "Places",
+    "spotsLeft_one": "Queda {{count}} plaça de {{capacity}}",
+    "spotsLeft_other": "Queden {{count}} places de {{capacity}}",
+    "minAge": "Edat mínima: {{count}} anys",
+    "full": "Aquesta reserva és completa.",
+    "closed": "Aquesta reserva ja no admet més gent: s'ha cancel·lat o ja ha començat.",
+    "notFound": "Aquest enllaç d'invitació no funciona. Demana'n un de nou a qui ha reservat.",
+    "withAccount": "Unir-me amb el meu compte",
+    "withAccountHint": "Apareixerà a les teves reserves i en podràs sortir fins que comenci.",
+    "joining": "Unint-te…",
+    "signInToJoin": "Inicia la sessió per unir-te",
+    "asGuest": "Unir-se sense compte",
+    "asGuestHint": "Sense compte. Només es desen el nom i l'edat, per comprovar l'edat mínima de la instal·lació.",
+    "name": "Nom",
+    "age": "Edat",
+    "joinAsGuest": "Unir-se sense compte",
+    "joined": "Ja hi ets: {{facility}}, {{day}} a les {{time}}.",
+    "guestJoined": "Fet: {{name}} és a la reserva a {{facility}}, {{day}} a les {{time}}.",
+    "seeMyBookings": "Veure les meves reserves",
+    "facilityPage": "Veure la instal·lació",
+    "error": "No s'ha pogut unir a la reserva.",
+    "or": "o"
+  },
+  "people": {
+    "label": "Qui ve",
+    "you": "Tu",
+    "organiser": "ha fet la reserva",
+    "noAccount": "sense compte",
+    "unnamed": "Sense nom"
+  }
+}

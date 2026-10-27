@@ -1,0 +1,18 @@
+{
+  "title": "Avisos",
+  "open_one": "Avisos, {{count}} sin leer",
+  "open_other": "Avisos, {{count}} sin leer",
+  "empty": "Aún no tienes avisos. Aparecen aquí al reservar, 15 minutos antes de cada reserva, si se cancela una reserva y cuando te hacen administrador o administradora de un ayuntamiento.",
+  "loadError": "No se pudieron cargar tus avisos.",
+  "seeBookings": "Ver mis reservas",
+  "type": {
+    "booking_confirmed": "Reserva confirmada: {{facility}}, {{day}} a las {{time}}. El QR también está en tu correo.",
+    "booking_reminder": "Empieza en 15 minutos: {{facility}} a las {{time}}. Ten el QR a mano.",
+    "booking_changed": "Reserva modificada: {{facility}}, ahora {{day}} a las {{time}}.",
+    "booking_cancelled": "Reserva cancelada: {{facility}}, {{day}} a las {{time}}.",
+    "booking_cancelled_by_council": "Lo sentimos: se ha cerrado {{facility}}, así que tu reserva del {{day}} a las {{time}} ha sido cancelada.",
+    "booking_cancelled_by_closure": "Lo sentimos: {{facility}} está cerrada del {{from}} al {{until}}, así que tu reserva del {{day}} a las {{time}} ha sido cancelada.",
+    "council_admin_granted": "Ya eres administrador o administradora de {{council}}. Abre su administración desde aquí o desde el menú de tu cuenta."
+  },
+  "reason": "Motivo: {{reason}}"
+}

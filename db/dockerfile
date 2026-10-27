@@ -1,0 +1,12 @@
+FROM postgres:18-alpine
+
+
+EXPOSE 5432
+
+COPY /init /docker-initdb-staging/
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["postgres"]
