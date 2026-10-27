@@ -31,7 +31,7 @@ deploy/    Self-hosting kit (production)
 proxy/     Caddy: serves the web app, proxies the API and Zitadel
 storage/   Garage: S3-compatible storage for uploaded images
 zitadel/   One-off setup: creates the LibreQuenda project + OIDC app, writes config.json
-docs/      Contest bases, architecture specs, brand assets, generated OpenAPI spec
+docs/      Architecture specs, brand assets, generated OpenAPI spec
 api/       Go core API
 db/        PostgreSQL image: init schema, seed, sqlc queries
 web/       React web app
@@ -79,7 +79,7 @@ The first Zitadel admin (`ZITADEL_ADMIN_*`), Zitadel's email settings and the `Z
 ## Documentation
 
 - [Architecture plan](docs/specs/architecture.md)
-- [Contest bases (v3, Galician)](docs/certame/Bases_I_Certame_GOBTEC_2026_GL_v3.pdf)
+- [Contest bases (v3, Galician)](https://www.agasol.gal/wp-content/uploads/2026/10/Bases_I_Certame_GOBTEC_2026_GL_v3.pdf), published by AGASOL
 - API spec: generated into [`docs/openapi/`](docs/openapi/)
 
 ## License

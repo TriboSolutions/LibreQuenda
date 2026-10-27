@@ -74,3 +74,6 @@ deploy/volumes/
 db/init/csv_data/
 db/init/09_initial_data.sql
 db/init/seed_media/
+
+# AGASOL's contest bases: linked from the README, not redistributed
+docs/certame/
