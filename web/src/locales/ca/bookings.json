@@ -1,0 +1,60 @@
+{
+  "title": "Les teves reserves",
+  "upcoming_one": "{{count}} propera",
+  "upcoming_other": "{{count}} properes",
+  "signedOut": "Consulta els horaris sense compte. Per reservar, cancel·lar i veure el teu historial, inicia la sessió amb el teu correu o crea un compte en un minut.",
+  "createAccount": "Crea un compte",
+  "loading": "Carregant reserves",
+  "loadError": "No s'han pogut carregar les teves reserves.",
+  "empty": "No tens reserves properes. Tria un torn lliure a la disponibilitat.",
+  "cancel": "Cancel·la",
+  "noCancel": "Sense cancel·lació",
+  "cancelDeadlinePassed": "Només es podia cancel·lar fins a {{date}}",
+  "history": "Historial",
+  "status": {
+    "cancelled": "Cancel·lada",
+    "done": "Feta",
+    "checkedIn": "A dins"
+  },
+  "notice": {
+    "booked": "Reserva confirmada: {{facility}}, {{day}} a les {{time}}.",
+    "cancelled": "Reserva cancel·lada: {{facility}}, {{day}}."
+  },
+  "dialog": {
+    "title": "Reserva {{facility}}",
+    "place": "Lloc",
+    "duration": "Durada",
+    "cancellation": "Cancel·lació",
+    "cancellationUntil": "Gratuïta fins a {{date}}",
+    "rules": "Normes",
+    "confirm": "Confirma la reserva",
+    "confirming": "Reservant…",
+    "loginToBook": "Inicia la sessió per reservar",
+    "needLogin": "Has d'iniciar la sessió per reservar.",
+    "error": "No s'ha pogut fer la reserva.",
+    "acceptRules": "He llegit i accepto les normes d'ús.",
+    "noRules": "Aquesta instal·lació no té normes específiques: s'apliquen les normes generals de l'ajuntament.",
+    "minAge": "Edat mínima",
+    "minAgeValue": "{{count}} anys"
+  },
+  "cancelDialog": {
+    "title": "Vols cancel·lar la reserva?",
+    "description": "{{facility}}, {{day}} a les {{time}}. El torn quedarà lliure per a una altra persona.",
+    "keep": "Mantén la reserva",
+    "confirm": "Cancel·la la reserva",
+    "confirming": "Cancel·lant…",
+    "needLogin": "Has d'iniciar la sessió.",
+    "error": "No s'ha pogut cancel·lar la reserva."
+  },
+  "qr": {
+    "show": "QR d'entrada",
+    "title": "QR d'entrada",
+    "description": "{{facility}}, {{day}}, {{start}}–{{end}}",
+    "alt": "Codi QR de la reserva a {{facility}}",
+    "hint": "Mostra'l al lector de l'entrada, des de 15 minuts abans de l'inici fins al final de la reserva.",
+    "brightness": "Si el lector no el detecta, apuja la brillantor de la pantalla.",
+    "email": "També t'arriba als correus de confirmació i de recordatori.",
+    "checkedIn": "Entrada registrada a les {{time}}",
+    "close": "Tancar"
+  }
+}

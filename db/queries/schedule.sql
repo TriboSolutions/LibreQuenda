@@ -1,0 +1,87 @@
+-- name: ListActiveFacilitiesByTenant :many
+SELECT
+    id,
+    slug,
+    name,
+    description,
+    image_ref,
+    latitude,
+    longitude,
+    sport,
+    address,
+    slot_minutes,
+    max_advance_days,
+    min_cancel_hours,
+    max_active_bookings_per_user,
+    min_age,
+    usage_rules_text
+FROM
+    facility
+WHERE
+    tenant_id = sqlc.arg('tenant_id')
+    AND is_active = TRUE
+ORDER BY
+    name ASC;
+
+-- name: ListOpeningHoursByTenantWeekday :many
+SELECT
+    oh.facility_id,
+    oh.opens_at,
+    oh.closes_at
+FROM
+    opening_hours oh
+    JOIN facility f ON f.id = oh.facility_id
+WHERE
+    f.tenant_id = sqlc.arg('tenant_id')
+    AND oh.weekday = sqlc.arg('weekday')
+ORDER BY
+    oh.facility_id,
+    oh.opens_at ASC;
+
+-- name: ListClosuresByTenantRange :many
+SELECT
+    c.facility_id,
+    c.starts_at,
+    c.ends_at,
+    c.reason
+FROM
+    closure c
+    JOIN facility f ON f.id = c.facility_id
+WHERE
+    f.tenant_id = sqlc.arg('tenant_id')
+    AND c.starts_at < sqlc.arg('range_end')
+    AND c.ends_at > sqlc.arg('range_start');
+
+-- name: ListConfirmedBookingsByTenantRange :many
+-- Busy intervals only: who booked is never exposed publicly.
+SELECT
+    b.facility_id,
+    b.starts_at,
+    b.ends_at
+FROM
+    booking b
+    JOIN facility f ON f.id = b.facility_id
+WHERE
+    f.tenant_id = sqlc.arg('tenant_id')
+    AND b.status = 'confirmed'
+    AND b.starts_at < sqlc.arg('range_end')
+    AND b.ends_at > sqlc.arg('range_start');
+
+-- name: GetFacilityForBooking :one
+SELECT
+    f.id,
+    f.tenant_id,
+    f.name,
+    f.slot_minutes,
+    f.max_advance_days,
+    f.min_cancel_hours,
+    f.max_active_bookings_per_user,
+    f.min_age,
+    t.timezone
+FROM
+    facility f
+    JOIN tenant t ON t.id = f.tenant_id
+WHERE
+    f.id = sqlc.arg('id')
+    AND f.is_active = TRUE
+    AND t.is_active = TRUE;

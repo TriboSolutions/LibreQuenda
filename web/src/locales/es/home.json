@@ -1,0 +1,47 @@
+{
+  "title": "Instalaciones deportivas",
+  "finding": {
+    "today": "Hoy, {{date}}",
+    "closed": "{{when}}. Las instalaciones están cerradas.",
+    "full": "{{when}}. No quedan turnos libres.",
+    "free_one": "{{when}}. {{count}} turno libre en {{facilities}}; el primero, {{facility}} a las {{time}}.",
+    "free_other": "{{when}}. {{count}} turnos libres en {{facilities}}; el primero, {{facility}} a las {{time}}.",
+    "facilities_one": "{{count}} instalación",
+    "facilities_other": "{{count}} instalaciones"
+  },
+  "availability": {
+    "title": "Disponibilidad",
+    "loading": "Cargando instalaciones",
+    "loadError": "No se pudieron cargar las instalaciones.",
+    "empty": "Este ayuntamiento todavía no ha publicado ninguna instalación.",
+    "allClosed": "Todas las instalaciones están cerradas este día.",
+    "closedDay": "Cerrado este día",
+    "closedShort": "cerrado",
+    "full": "Completo",
+    "free_one": "{{count}} libre",
+    "free_other": "{{count}} libres",
+    "minutes": "{{count}} min",
+    "bookAt": "Reservar {{time}}",
+    "more": "+{{count}} más",
+    "quickBook": "Reserva rápida {{time}}",
+    "book": "Reservar",
+    "details": "Ver {{facility}}",
+    "afterHours": "Fuera de horario"
+  },
+  "slot": {
+    "free": "Libre",
+    "booked": "Reservado",
+    "closed": "Cerrado",
+    "past": "Pasado",
+    "tooFar": "Aún no se puede reservar",
+    "bookAria": "Reservar {{facility}}, {{time}}",
+    "closure": "Cierre puntual"
+  },
+  "rules": {
+    "title": "Normas de reserva",
+    "days": "d",
+    "hours": "h",
+    "figures": "Días · h · máx.",
+    "figuresHelp": "Días de antelación para reservar, horas antes del turno para cancelar, reservas activas por persona"
+  }
+}

@@ -1,0 +1,329 @@
+package counciladmin
+
+import (
+	"database/sql"
+	"encoding/json"
+	"errors"
+	"librequenda/auth"
+	"librequenda/core/me"
+	"librequenda/model"
+	"librequenda/shared"
+	"net/http"
+	"sync"
+
+	"github.com/angelbarreiros/Penguin/router/helpers"
+	"github.com/google/uuid"
+)
+
+type counciladminHandler struct {
+	db *sql.DB
+}
+
+var hOnce *sync.Once = new(sync.Once)
+var hInstance *counciladminHandler
+
+func CounciladminHandler(db *sql.DB) *counciladminHandler {
+	hOnce.Do(func() {
+		hInstance = &counciladminHandler{db: db}
+	})
+	return hInstance
+}
+
+// councilAdmin resolves the council in the path and checks the current user may manage it
+// (its administrator, or a superadministrator). Otherwise it answers and returns false.
+func (h *counciladminHandler) councilAdmin(w http.ResponseWriter, r *http.Request) (uuid.UUID, bool) {
+	var slug, err = helpers.GetStringPathValue("slug", r)
+	if err != nil {
+		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_query_params")
+		return uuid.Nil, false
+	}
+	var session, _ = auth.SessionFromContext(r.Context())
+	var userId, userErr = me.CurrentUserId(r.Context(), h.db, session)
+	if userErr != nil {
+		helpers.SendI18NErrorResponse(w, r, userErr.Code, userErr.Message)
+		return uuid.Nil, false
+	}
+	var queries = model.New(h.db)
+	var tenant model.GetTenantForPlatformRow
+	tenant, err = queries.GetTenantForPlatform(r.Context(), slug)
+	if errors.Is(err, sql.ErrNoRows) {
+		helpers.SendI18NErrorResponse(w, r, http.StatusNotFound, "errors.tenant_not_found")
+		return uuid.Nil, false
+	}
+	if err != nil {
+		helpers.SendI18NErrorResponse(w, r, http.StatusInternalServerError, "errors.forbidden")
+		return uuid.Nil, false
+	}
+	var allowed bool
+	allowed, err = queries.IsTenantAdmin(r.Context(), model.IsTenantAdminParams{UserID: userId, TenantID: tenant.ID})
+	if err == nil && !allowed {
+		allowed, err = queries.IsPlatformAdmin(r.Context(), userId)
+	}
+	if err != nil || !allowed {
+		helpers.SendI18NErrorResponse(w, r, http.StatusForbidden, "errors.forbidden")
+		return uuid.Nil, false
+	}
+	return tenant.ID, true
+}
+
+// anyAdmin: geocoding is a tool for whoever edits facilities.
+func (h *counciladminHandler) anyAdmin(w http.ResponseWriter, r *http.Request) bool {
+	var session, _ = auth.SessionFromContext(r.Context())
+	var userId, userErr = me.CurrentUserId(r.Context(), h.db, session)
+	if userErr != nil {
+		helpers.SendI18NErrorResponse(w, r, userErr.Code, userErr.Message)
+		return false
+	}
+	var queries = model.New(h.db)
+	var allowed, err = queries.IsPlatformAdmin(r.Context(), userId)
+	if err == nil && !allowed {
+		var roles []model.GetUserTenantRolesRow
+		roles, err = queries.GetUserTenantRoles(r.Context(), userId)
+		allowed = len(roles) > 0
+	}
+	if err != nil || !allowed {
+		helpers.SendI18NErrorResponse(w, r, http.StatusForbidden, "errors.forbidden")
+		return false
+	}
+	return true
+}
+
+func facilityId(w http.ResponseWriter, r *http.Request) (uuid.UUID, bool) {
+	var id, err = helpers.GetUUidPathValue("id", r)
+	if err != nil {
+		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_query_params")
+		return uuid.Nil, false
+	}
+	return id, true
+}
+
+func decode(w http.ResponseWriter, r *http.Request, into any) bool {
+	if err := json.NewDecoder(r.Body).Decode(into); err != nil {
+		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_request_body")
+		return false
+	}
+	return true
+}
+
+func send(w http.ResponseWriter, r *http.Request, data any, err *shared.ErrorResponse) {
+	if err != nil {
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
+		return
+	}
+	if data == nil {
+		helpers.SendNoContentResponse(w)
+		return
+	}
+	helpers.SendSuccessResponse(w, data)
+}
+
+func (h *counciladminHandler) ListFacilities(w http.ResponseWriter, r *http.Request) {
+	var tenantId, ok = h.councilAdmin(w, r)
+	if !ok {
+		return
+	}
+	var response, err = GetCounciladminService(h.db).ListFacilities(r.Context(), tenantId)
+	send(w, r, response, err)
+}
+
+func (h *counciladminHandler) CreateFacility(w http.ResponseWriter, r *http.Request) {
+	var tenantId, ok = h.councilAdmin(w, r)
+	if !ok {
+		return
+	}
+	var input FacilityInput
+	if !decode(w, r, &input) {
+		return
+	}
+	var response, err = GetCounciladminService(h.db).CreateFacility(r.Context(), tenantId, input)
+	send(w, r, response, err)
+}
+
+func (h *counciladminHandler) GetFacility(w http.ResponseWriter, r *http.Request) {
+	var tenantId, ok = h.councilAdmin(w, r)
+	if !ok {
+		return
+	}
+	var id uuid.UUID
+	if id, ok = facilityId(w, r); !ok {
+		return
+	}
+	var response, err = GetCounciladminService(h.db).GetFacility(r.Context(), tenantId, id)
+	send(w, r, response, err)
+}
+
+func (h *counciladminHandler) UpdateFacility(w http.ResponseWriter, r *http.Request) {
+	var tenantId, ok = h.councilAdmin(w, r)
+	if !ok {
+		return
+	}
+	var id uuid.UUID
+	if id, ok = facilityId(w, r); !ok {
+		return
+	}
+	var input FacilityInput
+	if !decode(w, r, &input) {
+		return
+	}
+	var response, err = GetCounciladminService(h.db).UpdateFacility(r.Context(), tenantId, id, input)
+	send(w, r, response, err)
+}
+
+func (h *counciladminHandler) DeleteFacility(w http.ResponseWriter, r *http.Request) {
+	var tenantId, ok = h.councilAdmin(w, r)
+	if !ok {
+		return
+	}
+	var id uuid.UUID
+	if id, ok = facilityId(w, r); !ok {
+		return
+	}
+	send(w, r, nil, GetCounciladminService(h.db).DeleteFacility(r.Context(), tenantId, id))
+}
+
+func (h *counciladminHandler) ReplaceSchedule(w http.ResponseWriter, r *http.Request) {
+	var tenantId, ok = h.councilAdmin(w, r)
+	if !ok {
+		return
+	}
+	var id uuid.UUID
+	if id, ok = facilityId(w, r); !ok {
+		return
+	}
+	var input ScheduleInput
+	if !decode(w, r, &input) {
+		return
+	}
+	var response, err = GetCounciladminService(h.db).ReplaceSchedule(r.Context(), tenantId, id, input)
+	send(w, r, response, err)
+}
+
+func (h *counciladminHandler) Geocode(w http.ResponseWriter, r *http.Request) {
+	if !h.anyAdmin(w, r) {
+		return
+	}
+	var results, err = geocode(r.Context(), r.URL.Query().Get("q"), r.Header.Get("Accept-Language"))
+	if err != nil {
+		shared.Logger.Error("geocoding failed: %v", err)
+		helpers.SendI18NErrorResponse(w, r, http.StatusBadGateway, "errors.geocode_failed")
+		return
+	}
+	helpers.SendSuccessResponse(w, map[string]any{"results": results})
+}
+
+func (h *counciladminHandler) ListDevices(w http.ResponseWriter, r *http.Request) {
+	var tenantId, ok = h.councilAdmin(w, r)
+	if !ok {
+		return
+	}
+	var id uuid.UUID
+	if id, ok = facilityId(w, r); !ok {
+		return
+	}
+	var response, err = GetCounciladminService(h.db).ListDevices(r.Context(), tenantId, id)
+	send(w, r, response, err)
+}
+
+func (h *counciladminHandler) CreateDevice(w http.ResponseWriter, r *http.Request) {
+	var tenantId, ok = h.councilAdmin(w, r)
+	if !ok {
+		return
+	}
+	var id uuid.UUID
+	if id, ok = facilityId(w, r); !ok {
+		return
+	}
+	var input DeviceInput
+	if !decode(w, r, &input) {
+		return
+	}
+	var response, err = GetCounciladminService(h.db).CreateDevice(r.Context(), tenantId, id, input)
+	send(w, r, response, err)
+}
+
+func (h *counciladminHandler) DeleteDevice(w http.ResponseWriter, r *http.Request) {
+	var tenantId, ok = h.councilAdmin(w, r)
+	if !ok {
+		return
+	}
+	var id uuid.UUID
+	if id, ok = facilityId(w, r); !ok {
+		return
+	}
+	var deviceId, err = helpers.GetUUidPathValue("deviceId", r)
+	if err != nil {
+		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_query_params")
+		return
+	}
+	send(w, r, nil, GetCounciladminService(h.db).DeleteDevice(r.Context(), tenantId, id, deviceId))
+}
+
+// --- active and closures ---------------------------------------------------
+
+func (h *counciladminHandler) SetActive(w http.ResponseWriter, r *http.Request) {
+	var tenantId, ok = h.councilAdmin(w, r)
+	if !ok {
+		return
+	}
+	var id uuid.UUID
+	if id, ok = facilityId(w, r); !ok {
+		return
+	}
+	var input ActiveInput
+	if !decode(w, r, &input) {
+		return
+	}
+	var response, err = GetCounciladminService(h.db).SetActive(r.Context(), tenantId, id, input)
+	send(w, r, response, err)
+}
+
+func (h *counciladminHandler) PreviewClosure(w http.ResponseWriter, r *http.Request) {
+	var tenantId, ok = h.councilAdmin(w, r)
+	if !ok {
+		return
+	}
+	var id uuid.UUID
+	if id, ok = facilityId(w, r); !ok {
+		return
+	}
+	var input ClosureInput
+	if !decode(w, r, &input) {
+		return
+	}
+	var response, err = GetCounciladminService(h.db).PreviewClosure(r.Context(), tenantId, id, input)
+	send(w, r, response, err)
+}
+
+func (h *counciladminHandler) CreateClosure(w http.ResponseWriter, r *http.Request) {
+	var tenantId, ok = h.councilAdmin(w, r)
+	if !ok {
+		return
+	}
+	var id uuid.UUID
+	if id, ok = facilityId(w, r); !ok {
+		return
+	}
+	var input ClosureInput
+	if !decode(w, r, &input) {
+		return
+	}
+	var response, err = GetCounciladminService(h.db).CreateClosure(r.Context(), tenantId, id, input)
+	send(w, r, response, err)
+}
+
+func (h *counciladminHandler) DeleteClosure(w http.ResponseWriter, r *http.Request) {
+	var tenantId, ok = h.councilAdmin(w, r)
+	if !ok {
+		return
+	}
+	var id uuid.UUID
+	if id, ok = facilityId(w, r); !ok {
+		return
+	}
+	var closureId, err = helpers.GetUUidPathValue("closureId", r)
+	if err != nil {
+		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_query_params")
+		return
+	}
+	send(w, r, nil, GetCounciladminService(h.db).DeleteClosure(r.Context(), tenantId, id, closureId))
+}

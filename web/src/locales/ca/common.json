@@ -1,0 +1,87 @@
+{
+  "council": "Ajuntament",
+  "chooseCouncil": "Tria el teu ajuntament",
+  "home": "LibreQuenda, inici",
+  "signIn": "Inicia la sessió",
+  "signOut": "Tanca la sessió",
+  "account": "Compte de {{name}}",
+  "appearance": "Aparença",
+  "theme": {
+    "light": "Clar",
+    "dark": "Fosc",
+    "system": "Com el sistema"
+  },
+  "language": "Idioma",
+  "retry": "Torna-ho a provar",
+  "back": "Torna",
+  "day": "Dia",
+  "date": {
+    "today": "Avui",
+    "tomorrow": "Demà",
+    "todayShort": "avui",
+    "tomorrowShort": "demà",
+    "longDate": "{{weekday}}, {{day}} de {{month}}",
+    "shortDate": "{{weekday}} {{day}}",
+    "shortDateMonth": "{{weekday}} {{day}} {{month}}",
+    "dateTime": "{{date}}, {{time}}",
+    "weekdays": {
+      "0": "diumenge",
+      "1": "dilluns",
+      "2": "dimarts",
+      "3": "dimecres",
+      "4": "dijous",
+      "5": "divendres",
+      "6": "dissabte"
+    },
+    "weekdaysShort": {
+      "0": "dg",
+      "1": "dl",
+      "2": "dt",
+      "3": "dc",
+      "4": "dj",
+      "5": "dv",
+      "6": "ds"
+    },
+    "months": {
+      "0": "gener",
+      "1": "febrer",
+      "2": "març",
+      "3": "abril",
+      "4": "maig",
+      "5": "juny",
+      "6": "juliol",
+      "7": "agost",
+      "8": "setembre",
+      "9": "octubre",
+      "10": "novembre",
+      "11": "desembre"
+    },
+    "monthsShort": {
+      "0": "gen",
+      "1": "febr",
+      "2": "març",
+      "3": "abr",
+      "4": "maig",
+      "5": "juny",
+      "6": "jul",
+      "7": "ag",
+      "8": "set",
+      "9": "oct",
+      "10": "nov",
+      "11": "des"
+    }
+  },
+  "configError": "No s'ha pogut carregar la configuració de l'aplicació ({{status}}).",
+  "signingIn": "Iniciant la sessió…",
+  "imagePicker": {
+    "upload": "Puja una imatge",
+    "change": "Canvia la imatge",
+    "remove": "Treu",
+    "uploading": "Pujant…",
+    "hint": "JPG, PNG o WebP, fins a 5 MB. També la pots deixar anar al requadre.",
+    "tooLarge": "La imatge supera els 5 MB.",
+    "wrongType": "Només imatges JPG, PNG o WebP.",
+    "empty": "Sense imatge"
+  },
+  "createAccount": "Crea un compte"
+}

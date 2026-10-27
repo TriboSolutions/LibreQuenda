@@ -1,0 +1,97 @@
+{
+  "myBookings": {
+    "title": "Mis reservas",
+    "subtitle": "Tus próximas reservas, aquellas a las que te invitaron y tu historial.",
+    "menuLink": "Mis reservas",
+    "seeAll": "Ver todas",
+    "upcoming": "Próximas",
+    "history": "Historial",
+    "emptyUpcoming": "No tienes reservas próximas.",
+    "emptyHistory": "Aún no tienes reservas pasadas.",
+    "signIn": "Inicia sesión para ver tus reservas.",
+    "findTurn": "Buscar un turno libre"
+  },
+  "role": {
+    "owner": "Tuya",
+    "invitedBy": "Te invitó {{name}}",
+    "invited": "Invitación"
+  },
+  "spots": "{{taken}} de {{capacity}} personas",
+  "actions": {
+    "invite": "Invitar",
+    "leave": "Salir"
+  },
+  "leaveDialog": {
+    "title": "¿Salir de esta reserva?",
+    "description": "{{facility}}, {{day}} a las {{time}}. Tu plaza quedará libre para otra persona.",
+    "keep": "Quedarme",
+    "confirm": "Salir de la reserva",
+    "confirming": "Saliendo…",
+    "error": "No se pudo salir de la reserva."
+  },
+  "notice": {
+    "left": "Has salido de la reserva en {{facility}}."
+  },
+  "dialog": {
+    "title": "Invitar a {{facility}}",
+    "description": "{{day}}, {{start}}–{{end}}. Comparte el enlace: la gente se une con su cuenta o sin cuenta, dando solo nombre y edad.",
+    "spotsLeft_one": "Queda {{count}} plaza",
+    "spotsLeft_other": "Quedan {{count}} plazas",
+    "full": "La reserva está completa.",
+    "closed": "Esta reserva ya no admite más gente.",
+    "create": "Crear enlace de invitación",
+    "creating": "Creando…",
+    "link": "Enlace de invitación",
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "share": "Compartir",
+    "shareText": "Únete a mi reserva en {{facility}}, {{day}} a las {{time}}",
+    "reset": "Nuevo enlace",
+    "resetHint": "Un enlace nuevo hace que el anterior deje de funcionar.",
+    "people": "Quién viene",
+    "you": "Tú",
+    "owner": "quien reservó",
+    "guest": "Sin cuenta",
+    "guestAge": "Sin cuenta, {{age}} años",
+    "remove": "Quitar a {{name}}",
+    "nobody": "Aún no se ha unido nadie.",
+    "error": "No se pudo cargar la invitación.",
+    "close": "Cerrar"
+  },
+  "page": {
+    "title": "Unirse a una reserva",
+    "invitedBy": "{{name}} te invita",
+    "invited": "Tienes una invitación",
+    "when": "Cuándo",
+    "where": "Dónde",
+    "spots": "Plazas",
+    "spotsLeft_one": "Queda {{count}} plaza de {{capacity}}",
+    "spotsLeft_other": "Quedan {{count}} plazas de {{capacity}}",
+    "minAge": "Edad mínima: {{count}} años",
+    "full": "Esta reserva está completa.",
+    "closed": "Esta reserva ya no admite más gente: se canceló o ya empezó.",
+    "notFound": "Este enlace de invitación no funciona. Pide uno nuevo a quien reservó.",
+    "withAccount": "Unirme con mi cuenta",
+    "withAccountHint": "Aparecerá en tus reservas y podrás salir hasta que empiece.",
+    "joining": "Uniéndote…",
+    "signInToJoin": "Inicia sesión para unirte",
+    "asGuest": "Unirse sin cuenta",
+    "asGuestHint": "Sin cuenta. Solo se guardan el nombre y la edad, para comprobar la edad mínima de la instalación.",
+    "name": "Nombre",
+    "age": "Edad",
+    "joinAsGuest": "Unirse sin cuenta",
+    "joined": "Ya estás dentro: {{facility}}, {{day}} a las {{time}}.",
+    "guestJoined": "Hecho: {{name}} está en la reserva en {{facility}}, {{day}} a las {{time}}.",
+    "seeMyBookings": "Ver mis reservas",
+    "facilityPage": "Ver la instalación",
+    "error": "No se pudo unir a la reserva.",
+    "or": "o"
+  },
+  "people": {
+    "label": "Quién viene",
+    "you": "Tú",
+    "organiser": "hizo la reserva",
+    "noAccount": "sin cuenta",
+    "unnamed": "Sin nombre"
+  }
+}

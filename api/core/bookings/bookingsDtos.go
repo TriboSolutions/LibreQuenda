@@ -1,0 +1,179 @@
+package bookings
+
+import (
+	"database/sql"
+	"librequenda/checkin"
+	"librequenda/model"
+	"sort"
+	"time"
+
+	"github.com/google/uuid"
+)
+
+type CreateBookingDto struct {
+	FacilityId  uuid.UUID `json:"facility_id"`
+	StartsAt    time.Time `json:"starts_at"`
+	AcceptRules bool      `json:"accept_rules"` // the resident ticked "I have read the rules"; stored as rules_accepted_at
+}
+
+func (d *CreateBookingDto) Validate() []string {
+	var errs []string
+	if d.FacilityId == uuid.Nil {
+		errs = append(errs, "facility_id is required")
+	}
+	if d.StartsAt.IsZero() {
+		errs = append(errs, "starts_at is required")
+	}
+	return errs
+}
+
+type BookingDto struct {
+	Id           string     `json:"id"`
+	StartsAt     time.Time  `json:"starts_at"`
+	EndsAt       time.Time  `json:"ends_at"`
+	Status       string     `json:"status"`
+	FacilityId   string     `json:"facility_id"`
+	FacilityName string     `json:"facility_name"`
+	TenantSlug   string     `json:"tenant_slug"`
+	TenantName   string     `json:"tenant_name"`
+	CanCancel    bool       `json:"can_cancel"`
+	CancelUntil  time.Time  `json:"cancel_until"`
+	CheckinCode  string     `json:"checkin_code"` // QR content, upcoming confirmed bookings only
+	CheckedInAt  *time.Time `json:"checked_in_at"`
+	// invites: the owner shares a link and others fill the facility's capacity
+	Role             string      `json:"role"`              // "owner" or "participant" (joined through an invite)
+	OwnerName        string      `json:"owner_name"`        // participant only
+	Capacity         int         `json:"capacity"`          // people including the owner; 0 when the facility takes no invites
+	ParticipantCount int         `json:"participant_count"` // people who joined, not counting the owner
+	CanLeave         bool        `json:"can_leave"`         // participant only, until the start
+	People           []PersonDto `json:"people"`            // who is coming: the owner first, then by joining order
+}
+
+// PersonDto is what players see of each other: a name, never an email or an age.
+type PersonDto struct {
+	Name    string `json:"name"`
+	IsOwner bool   `json:"is_owner"`
+	IsGuest bool   `json:"is_guest"`
+	IsMe    bool   `json:"is_me"`
+}
+
+// people lists the owner and who joined; a booking nobody joined lists no one.
+func people(owner PersonDto, joined []model.ListPeopleByBookingsRow, me uuid.UUID) []PersonDto {
+	if len(joined) == 0 {
+		return []PersonDto{}
+	}
+	var list = make([]PersonDto, 0, len(joined)+1)
+	list = append(list, owner)
+	for _, row := range joined {
+		list = append(list, PersonDto{Name: row.PublicName, IsGuest: !row.UserID.Valid, IsMe: row.UserID.Valid && row.UserID.UUID == me})
+	}
+	return list
+}
+
+type MyBookingsResponse struct {
+	Upcoming []BookingDto `json:"upcoming"` // soonest first
+	History  []BookingDto `json:"history"`  // most recent first
+}
+
+const historyLimit = 100
+
+const (
+	RoleOwner       = "owner"
+	RoleParticipant = "participant"
+)
+
+// Spots is the facility capacity and how many joined, per booking the user owns.
+type Spots struct {
+	Capacity     sql.NullInt32
+	Participants int64
+}
+
+func invitableCapacity(capacity sql.NullInt32) int {
+	if !capacity.Valid || capacity.Int32 <= 1 {
+		return 0
+	}
+	return int(capacity.Int32)
+}
+
+// MapMyBookings merges the bookings the user made with the ones they joined.
+func MapMyBookings(rows []model.ListBookingsByUserRow, joined []model.ListParticipationsByUserRow, spots map[uuid.UUID]Spots, joinedBy map[uuid.UUID][]model.ListPeopleByBookingsRow, me uuid.UUID, now time.Time) *MyBookingsResponse {
+	var response = &MyBookingsResponse{Upcoming: []BookingDto{}, History: []BookingDto{}}
+	var all = make([]BookingDto, 0, len(rows)+len(joined))
+	for _, row := range rows {
+		var booking = mapBooking(row, now)
+		booking.Capacity = invitableCapacity(spots[row.ID].Capacity)
+		booking.ParticipantCount = int(spots[row.ID].Participants)
+		booking.People = people(PersonDto{IsOwner: true, IsMe: true}, joinedBy[row.ID], me)
+		all = append(all, booking)
+	}
+	for _, row := range joined {
+		var booking = mapParticipation(row, now)
+		booking.People = people(PersonDto{Name: row.OwnerName, IsOwner: true}, joinedBy[row.ID], me)
+		all = append(all, booking)
+	}
+	// most recent first; upcoming is then read backwards, soonest first
+	sort.SliceStable(all, func(i, j int) bool { return all[i].StartsAt.After(all[j].StartsAt) })
+
+	for i := len(all) - 1; i >= 0; i-- {
+		if all[i].Status == string(model.BookingStatusConfirmed) && all[i].EndsAt.After(now) {
+			response.Upcoming = append(response.Upcoming, all[i])
+		}
+	}
+	for _, booking := range all {
+		if (booking.Status != string(model.BookingStatusConfirmed) || !booking.EndsAt.After(now)) && len(response.History) < historyLimit {
+			response.History = append(response.History, booking)
+		}
+	}
+	return response
+}
+
+// mapParticipation: someone else's booking; the QR and cancelling stay with its owner.
+func mapParticipation(row model.ListParticipationsByUserRow, now time.Time) BookingDto {
+	var checkedInAt *time.Time
+	if row.CheckedInAt.Valid {
+		checkedInAt = &row.CheckedInAt.Time
+	}
+	return BookingDto{
+		Id:               row.ID.String(),
+		StartsAt:         row.StartsAt,
+		EndsAt:           row.EndsAt,
+		Status:           string(row.Status),
+		FacilityId:       row.FacilityID.String(),
+		FacilityName:     row.FacilityName,
+		TenantSlug:       row.TenantSlug,
+		TenantName:       row.TenantName,
+		CheckedInAt:      checkedInAt,
+		Role:             RoleParticipant,
+		OwnerName:        row.OwnerName,
+		Capacity:         invitableCapacity(row.Capacity),
+		ParticipantCount: int(row.ParticipantCount),
+		CanLeave:         row.Status == model.BookingStatusConfirmed && now.Before(row.StartsAt),
+	}
+}
+
+func mapBooking(row model.ListBookingsByUserRow, now time.Time) BookingDto {
+	var cancelUntil = row.StartsAt.Add(-time.Duration(row.MinCancelHours) * time.Hour)
+	var checkinCode string
+	if row.Status == model.BookingStatusConfirmed && row.EndsAt.After(now) {
+		checkinCode = checkin.Payload(row.CheckinToken)
+	}
+	var checkedInAt *time.Time
+	if row.CheckedInAt.Valid {
+		checkedInAt = &row.CheckedInAt.Time
+	}
+	return BookingDto{
+		Id:           row.ID.String(),
+		StartsAt:     row.StartsAt,
+		EndsAt:       row.EndsAt,
+		Status:       string(row.Status),
+		FacilityId:   row.FacilityID.String(),
+		FacilityName: row.FacilityName,
+		TenantSlug:   row.TenantSlug,
+		TenantName:   row.TenantName,
+		CanCancel:    row.Status == model.BookingStatusConfirmed && now.Before(cancelUntil),
+		CancelUntil:  cancelUntil,
+		CheckinCode:  checkinCode,
+		CheckedInAt:  checkedInAt,
+		Role:         RoleOwner,
+	}
+}

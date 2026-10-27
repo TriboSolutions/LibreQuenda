@@ -1,0 +1,43 @@
+{
+  "retry": "Torna-ho a provar",
+  "clock": "Hora actual",
+  "instructions": "Apropa el QR de la teva reserva a la càmera",
+  "device": "Lector: {{name}}",
+  "signOut": "Canviar la clau",
+  "signIn": {
+    "title": "Lector QR",
+    "help": "Enganxa la clau del lector. La crea l'administració de l'ajuntament a la pàgina de la instal·lació, a «Lectors QR de l'entrada».",
+    "key": "Clau del lector",
+    "submit": "Iniciar el lector",
+    "rejected": "Aquesta clau no és vàlida o el lector s'ha retirat."
+  },
+  "camera": {
+    "starting": "Iniciant la càmera…",
+    "denied": "El lector necessita la càmera. Permet l'accés al navegador i torna-ho a provar.",
+    "missing": "No s'ha trobat cap càmera en aquest dispositiu.",
+    "insecure": "La càmera només funciona si la pàgina se serveix per https.",
+    "failed": "No s'ha pogut iniciar la càmera."
+  },
+  "offline": {
+    "title": "Sense connexió",
+    "detail": "No s'ha pogut comprovar la reserva. Torna-ho a provar d'aquí a un moment."
+  },
+  "result": {
+    "welcome": "Benvinguda/ut, {{name}}!",
+    "checkedIn": "Entrada registrada",
+    "slot": "{{facility}} · {{start}}–{{end}}",
+    "alreadyIn": "Ja havies entrat",
+    "alreadyInDetail": "Entrada a les {{time}} · {{facility}} fins a les {{end}}",
+    "tooEarly": "Encara és d'hora",
+    "tooEarlyDetail": "El teu torn és {{day}} a les {{start}}. Pots entrar des de les {{from}}.",
+    "ended": "Aquesta reserva ja ha acabat",
+    "endedDetail": "Era {{day}}, {{start}}–{{end}}.",
+    "otherFacility": "Aquesta reserva és d'una altra instal·lació",
+    "otherFacilityDetail": "{{facility}}, {{day}} a les {{start}}.",
+    "cancelled": "Aquesta reserva està cancel·lada",
+    "unknown": "No hem trobat aquesta reserva",
+    "unknownDetail": "Comprova que és el QR d'una reserva vigent.",
+    "notABooking": "Aquest QR no és d'una reserva",
+    "notABookingDetail": "Mostra el QR d'entrada de «Les teves reserves»."
+  }
+}

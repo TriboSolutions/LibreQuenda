@@ -1,0 +1,112 @@
+import { AlarmClock, Bell, CalendarCheck, CalendarClock, CalendarX, ShieldCheck } from 'lucide-react'
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { useNotifications } from '@/hooks/useNotifications'
+import type { AppNotification, NotificationType } from '@/lib/api'
+import { formatBookingDay, formatDateTime, formatTime, localDate } from '@/lib/time'
+
+// Notifications are about Galician councils
+const TIME_ZONE = 'Europe/Madrid'
+
+const icons: Record<NotificationType, typeof Bell> = {
+  booking_confirmed: CalendarCheck,
+  booking_reminder: AlarmClock,
+  booking_changed: CalendarClock,
+  booking_cancelled: CalendarX,
+  booking_cancelled_by_council: CalendarX,
+  council_admin_granted: ShieldCheck,
+}
+
+/** The bell in the top bar: polled notices, marked read when opened. */
+export function NotificationBell() {
+  const { t } = useTranslation('notifications')
+  const navigate = useNavigate()
+  const { data, error, markAllRead } = useNotifications()
+  // what was unread when the menu opened keeps its highlight while it stays open
+  const [highlighted, setHighlighted] = useState<Set<string>>(new Set())
+  const [today] = useState(() => localDate(new Date().toISOString(), TIME_ZONE))
+  const unread = data?.unread_count ?? 0
+
+  const onOpenChange = (open: boolean) => {
+    if (!open || !data) return
+    setHighlighted(new Set(data.notifications.filter((n) => !n.read).map((n) => n.id)))
+    if (unread > 0) void markAllRead()
+  }
+
+  return (
+    <DropdownMenu onOpenChange={onOpenChange}>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className="relative" aria-label={unread > 0 ? t('open', { count: unread }) : t('title')}>
+          <Bell aria-hidden />
+          {unread > 0 && (
+            <span className="num absolute top-1 right-1 flex min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] leading-4 font-semibold text-white">
+              {unread > 9 ? '9+' : unread}
+            </span>
+          )}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-[min(360px,calc(100vw-32px))]">
+        <DropdownMenuLabel>{t('title')}</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        {error && !data ? (
+          <p className="px-2 py-3 text-sm text-muted-foreground">{t('loadError')}</p>
+        ) : !data || data.notifications.length === 0 ? (
+          <p className="px-2 py-3 text-sm text-muted-foreground">{t('empty')}</p>
+        ) : (
+          <div className="max-h-[60vh] overflow-y-auto">
+            {data.notifications.map((n) => (
+              <NotificationItem
+                key={n.id}
+                notification={n}
+                today={today}
+                highlighted={highlighted.has(n.id)}
+                onSelect={() => navigate(n.type === 'council_admin_granted' ? `/${n.tenant_slug}/admin` : '/reservas')}
+              />
+            ))}
+          </div>
+        )}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onSelect={() => navigate('/reservas')} className="justify-center font-medium">
+          {t('seeBookings')}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
+type ItemProps = { notification: AppNotification; today: string; highlighted: boolean; onSelect: () => void }
+
+function NotificationItem({ notification: n, today, highlighted, onSelect }: ItemProps) {
+  const { t } = useTranslation('notifications')
+  const Icon = icons[n.type] ?? Bell
+  const sorry = n.type === 'booking_cancelled_by_council'
+  return (
+    <DropdownMenuItem onSelect={onSelect} className={`items-start gap-3 py-2.5 ${highlighted ? 'bg-accent/60' : ''}`}>
+      <Icon aria-hidden className={`mt-0.5 shrink-0 ${sorry ? 'text-destructive' : 'text-muted-foreground'}`} />
+      <span className="min-w-0 whitespace-normal">
+        <span className={`block text-sm ${highlighted ? 'font-medium' : ''}`}>
+          {t(n.closed_from && n.closed_until ? 'type.booking_cancelled_by_closure' : `type.${n.type}`, {
+            facility: n.facility_name,
+            day: n.starts_at ? formatBookingDay(n.starts_at, TIME_ZONE, today) : '',
+            time: n.starts_at ? formatTime(n.starts_at, TIME_ZONE) : '',
+            from: n.closed_from ? formatDateTime(n.closed_from, TIME_ZONE) : '',
+            until: n.closed_until ? formatDateTime(n.closed_until, TIME_ZONE) : '',
+            council: n.tenant_name,
+          })}
+        </span>
+        {n.reason && <span className="mt-0.5 block text-sm text-muted-foreground">{t('reason', { reason: n.reason })}</span>}
+        <span className="num mt-0.5 block text-xs text-muted-foreground">{formatDateTime(n.created_at, TIME_ZONE)}</span>
+      </span>
+    </DropdownMenuItem>
+  )
+}

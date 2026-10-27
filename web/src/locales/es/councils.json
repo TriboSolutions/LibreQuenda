@@ -1,0 +1,16 @@
+{
+  "title": "Elige tu ayuntamiento",
+  "subtitle_one": "{{count}} ayuntamiento reserva sus instalaciones deportivas con LibreQuenda.",
+  "subtitle_other": "{{count}} ayuntamientos reservan sus instalaciones deportivas con LibreQuenda.",
+  "listTitle": "Ayuntamientos",
+  "search": "Buscar ayuntamiento",
+  "noResults": "Ningún ayuntamiento coincide con «{{query}}».",
+  "empty": "Todavía no se ha dado de alta ningún ayuntamiento.",
+  "loading": "Cargando ayuntamientos",
+  "loadError": "No se pudieron cargar los ayuntamientos.",
+  "notFound": {
+    "title": "Ayuntamiento no encontrado",
+    "body": "No hay ningún ayuntamiento en «/{{slug}}». Revisa la dirección o elige uno de la lista."
+  },
+  "allCouncils": "Todos los ayuntamientos"
+}

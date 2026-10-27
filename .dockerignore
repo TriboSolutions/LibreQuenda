@@ -1,0 +1,9 @@
+# Only used by builds whose context is the repository root (proxy/dockerfile)
+.git
+**/node_modules
+**/dist
+**/.env
+api
+db
+docs
+app

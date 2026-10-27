@@ -1,0 +1,47 @@
+{
+  "title": "Instalacións deportivas",
+  "finding": {
+    "today": "Hoxe, {{date}}",
+    "closed": "{{when}}. As instalacións están pechadas.",
+    "full": "{{when}}. Non quedan turnos libres.",
+    "free_one": "{{when}}. {{count}} turno libre en {{facilities}}; o primeiro, {{facility}} ás {{time}}.",
+    "free_other": "{{when}}. {{count}} turnos libres en {{facilities}}; o primeiro, {{facility}} ás {{time}}.",
+    "facilities_one": "{{count}} instalación",
+    "facilities_other": "{{count}} instalacións"
+  },
+  "availability": {
+    "title": "Dispoñibilidade",
+    "loading": "Cargando instalacións",
+    "loadError": "Non foi posible cargar as instalacións.",
+    "empty": "Este concello aínda non publicou ningunha instalación.",
+    "allClosed": "Todas as instalacións están pechadas este día.",
+    "closedDay": "Pechado este día",
+    "closedShort": "pechado",
+    "full": "Completo",
+    "free_one": "{{count}} libre",
+    "free_other": "{{count}} libres",
+    "minutes": "{{count}} min",
+    "bookAt": "Reservar {{time}}",
+    "more": "+{{count}} máis",
+    "quickBook": "Reserva rápida {{time}}",
+    "book": "Reservar",
+    "details": "Ver {{facility}}",
+    "afterHours": "Fóra de horario"
+  },
+  "slot": {
+    "free": "Libre",
+    "booked": "Reservado",
+    "closed": "Pechado",
+    "past": "Pasado",
+    "tooFar": "Aínda non se pode reservar",
+    "bookAria": "Reservar {{facility}}, {{time}}",
+    "closure": "Peche puntual"
+  },
+  "rules": {
+    "title": "Normas de reserva",
+    "days": "d",
+    "hours": "h",
+    "figures": "Días · h · máx.",
+    "figuresHelp": "Días de antelación para reservar, horas antes do turno para cancelar, reservas activas por persoa"
+  }
+}

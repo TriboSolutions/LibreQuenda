@@ -1,0 +1,16 @@
+{
+  "title": "Tria el teu ajuntament",
+  "subtitle_one": "{{count}} ajuntament reserva les seves instal·lacions esportives amb LibreQuenda.",
+  "subtitle_other": "{{count}} ajuntaments reserven les seves instal·lacions esportives amb LibreQuenda.",
+  "listTitle": "Ajuntaments",
+  "search": "Cerca un ajuntament",
+  "noResults": "Cap ajuntament coincideix amb «{{query}}».",
+  "empty": "Encara no s'ha donat d'alta cap ajuntament.",
+  "loading": "Carregant ajuntaments",
+  "loadError": "No s'han pogut carregar els ajuntaments.",
+  "notFound": {
+    "title": "Ajuntament no trobat",
+    "body": "No hi ha cap ajuntament a «/{{slug}}». Revisa l'adreça o tria'n un de la llista."
+  },
+  "allCouncils": "Tots els ajuntaments"
+}

@@ -1,0 +1,227 @@
+-- ============================================================
+--  ENUMS
+-- ============================================================
+
+CREATE TYPE tenant_role AS ENUM (
+    'admin'         -- manages the council's facilities, hours, rules and indicators
+);
+
+CREATE TYPE booking_status AS ENUM (
+    'confirmed',
+    'cancelled'
+);
+
+CREATE TYPE notification_type AS ENUM (
+    'booking_confirmed',
+    'booking_changed',
+    'booking_cancelled',            -- cancelled by the user
+    'booking_cancelled_by_council', -- closure, maintenance…
+    'booking_reminder',
+    'council_admin_granted'         -- made administrator of a council (no booking)
+);
+
+
+-- ============================================================
+--  TENANTS (concellos)
+-- ============================================================
+
+CREATE TABLE tenant (
+    id            UUID         PRIMARY KEY DEFAULT uuidv7(),
+    slug          VARCHAR(64)  NOT NULL UNIQUE,   -- e.g. 'lalin', used in URLs
+    name          VARCHAR(255) NOT NULL,
+    timezone      VARCHAR(64)  NOT NULL DEFAULT 'Europe/Madrid',
+    contact_email VARCHAR(255) NULL,
+    contact_phone VARCHAR(50)  NULL,
+    logo_ref      TEXT         NULL,              -- storage reference, never a URL
+    is_active     BOOLEAN      NOT NULL DEFAULT TRUE,
+    created_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    updated_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+);
+
+
+-- ============================================================
+--  USERS
+--  Mirror of the identity provider (Zitadel). No credentials here.
+-- ============================================================
+
+CREATE TABLE app_user (
+    id          UUID         PRIMARY KEY DEFAULT uuidv7(),
+    idp_subject VARCHAR(255) NOT NULL UNIQUE,     -- Zitadel "sub" claim
+    email       VARCHAR(255) NOT NULL,
+    full_name   VARCHAR(255) NULL,
+    email_verified BOOLEAN   NOT NULL DEFAULT FALSE, -- from Zitadel; roles are only granted to verified emails
+    -- profile kept by LibreQuenda (name and email belong to Zitadel)
+    birth_date         DATE         NULL CHECK (birth_date > DATE '1900-01-01'), -- required before booking
+    phone              VARCHAR(30)  NULL,
+    avatar_ref         TEXT         NULL,              -- storage reference, never a URL
+    preferred_language VARCHAR(5)   NULL,              -- gl, es, en, ca
+    email_reminders    BOOLEAN      NOT NULL DEFAULT TRUE,
+    created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    updated_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+);
+
+-- Superadministrators: create and manage councils. The first one comes from
+-- SUPERADMIN_EMAIL (granted on that person's first login with a verified email).
+CREATE TABLE platform_admin (
+    user_id    UUID        PRIMARY KEY REFERENCES app_user(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Roles per council. Residents have no row: any logged-in user can book.
+CREATE TABLE tenant_membership (
+    user_id    UUID        NOT NULL REFERENCES app_user(id) ON DELETE CASCADE,
+    tenant_id  UUID        NOT NULL REFERENCES tenant(id)   ON DELETE CASCADE,
+    role       tenant_role NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (user_id, tenant_id, role)
+);
+
+-- A role waiting for its person: accepted the first time someone logs in with
+-- this email verified (they may not have an account yet when invited).
+CREATE TABLE tenant_invitation (
+    id          UUID         PRIMARY KEY DEFAULT uuidv7(),
+    tenant_id   UUID         NOT NULL REFERENCES tenant(id) ON DELETE CASCADE,
+    email       VARCHAR(255) NOT NULL,
+    role        tenant_role  NOT NULL,
+    invited_by  UUID         NULL REFERENCES app_user(id) ON DELETE SET NULL,
+    created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    accepted_at TIMESTAMPTZ  NULL,
+    emailed_at  TIMESTAMPTZ  NULL               -- NULL = the invitation email is still to send
+);
+
+
+-- ============================================================
+--  FACILITIES (instalacións)
+--  The bookable unit: a court, a pool lane, a room…
+--  Usage rules ("normas de uso") live on the facility.
+-- ============================================================
+
+CREATE TABLE facility (
+    id                           UUID         PRIMARY KEY DEFAULT uuidv7(),
+    tenant_id                    UUID         NOT NULL REFERENCES tenant(id) ON DELETE CASCADE,
+    slug                         VARCHAR(64)  NOT NULL,   -- its page: /<council>/<slug>
+    name                         VARCHAR(255) NOT NULL,
+    description                  TEXT         NULL,
+    sport                        VARCHAR(100) NULL,       -- e.g. 'padel', 'football', 'swimming'
+    address                      TEXT         NULL,
+    latitude                     DOUBLE PRECISION NULL CHECK (latitude BETWEEN -90 AND 90),     -- map pin
+    longitude                    DOUBLE PRECISION NULL CHECK (longitude BETWEEN -180 AND 180),
+    capacity                     INT          NULL CHECK (capacity > 0),
+    accessibility_info           TEXT         NULL,
+    image_ref                    TEXT         NULL,       -- storage reference, never a URL
+    is_active                    BOOLEAN      NOT NULL DEFAULT TRUE,
+
+    -- usage rules
+    slot_minutes                 INT          NOT NULL DEFAULT 60 CHECK (slot_minutes > 0),
+    max_advance_days             INT          NOT NULL DEFAULT 14 CHECK (max_advance_days > 0),
+    min_cancel_hours             INT          NOT NULL DEFAULT 2  CHECK (min_cancel_hours >= 0),
+    max_active_bookings_per_user INT          NOT NULL DEFAULT 2  CHECK (max_active_bookings_per_user > 0),
+    min_age                      INT          NULL CHECK (min_age BETWEEN 1 AND 80),  -- age control: NULL = none
+    usage_rules_text             TEXT         NULL,       -- free-text rules shown to residents
+
+    created_at                   TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    updated_at                   TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    UNIQUE (tenant_id, slug),
+    CHECK ((latitude IS NULL) = (longitude IS NULL))
+);
+
+-- Weekly schedule ("horarios"). Several rows per weekday allowed (e.g. morning + afternoon).
+CREATE TABLE opening_hours (
+    id          UUID     PRIMARY KEY DEFAULT uuidv7(),
+    facility_id UUID     NOT NULL REFERENCES facility(id) ON DELETE CASCADE,
+    weekday     SMALLINT NOT NULL CHECK (weekday BETWEEN 1 AND 7), -- ISO: 1 = Monday
+    opens_at    TIME     NOT NULL,
+    closes_at   TIME     NOT NULL,
+    CHECK (closes_at > opens_at)
+);
+
+-- Exceptions to the schedule: holidays, maintenance…
+CREATE TABLE closure (
+    id          UUID         PRIMARY KEY DEFAULT uuidv7(),
+    facility_id UUID         NOT NULL REFERENCES facility(id) ON DELETE CASCADE,
+    starts_at   TIMESTAMPTZ  NOT NULL,
+    ends_at     TIMESTAMPTZ  NOT NULL,
+    reason      VARCHAR(255) NULL,
+    created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    CHECK (ends_at > starts_at)
+);
+
+
+-- ============================================================
+--  CHECK-IN READERS (lectores QR)
+--  An unattended device at a facility entrance (an IoT reader or a tablet)
+--  that scans booking QR codes. It signs in with a key shown once.
+-- ============================================================
+
+CREATE TABLE checkin_device (
+    id           UUID         PRIMARY KEY DEFAULT uuidv7(),
+    facility_id  UUID         NOT NULL REFERENCES facility(id) ON DELETE CASCADE,
+    name         VARCHAR(80)  NOT NULL,              -- e.g. "Main door"
+    key_hash     BYTEA        NOT NULL UNIQUE,       -- SHA-256 of the device key; the key itself is never stored
+    key_hint     VARCHAR(8)   NOT NULL,              -- last characters of the key, to tell devices apart
+    last_seen_at TIMESTAMPTZ  NULL,
+    created_at   TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+);
+
+
+-- ============================================================
+--  BOOKINGS (reservas)
+-- ============================================================
+
+CREATE TABLE booking (
+    id           UUID           PRIMARY KEY DEFAULT uuidv7(),
+    facility_id  UUID           NOT NULL REFERENCES facility(id) ON DELETE CASCADE,
+    user_id      UUID           NULL REFERENCES app_user(id) ON DELETE SET NULL, -- NULL after account erasure (kept for indicators)
+    starts_at    TIMESTAMPTZ    NOT NULL,
+    ends_at      TIMESTAMPTZ    NOT NULL,
+    status       booking_status NOT NULL DEFAULT 'confirmed',
+    rules_accepted_at TIMESTAMPTZ NULL,                 -- when the resident ticked "I have read the rules"
+    cancelled_at TIMESTAMPTZ    NULL,
+    created_at   TIMESTAMPTZ    NOT NULL DEFAULT NOW(),
+    updated_at   TIMESTAMPTZ    NOT NULL DEFAULT NOW(),
+    -- check-in: the booking QR carries only this random token, no personal data
+    checkin_token        UUID        NOT NULL DEFAULT gen_random_uuid(),
+    checked_in_at        TIMESTAMPTZ NULL,
+    checked_in_device_id UUID        NULL REFERENCES checkin_device(id) ON DELETE SET NULL,
+    -- invite link: others fill the facility's capacity; a new token revokes the old link
+    invite_token         UUID        NULL,
+    CHECK (ends_at > starts_at),
+
+    -- no two confirmed bookings may overlap on the same facility
+    EXCLUDE USING gist (
+        facility_id WITH =,
+        tstzrange(starts_at, ends_at) WITH &&
+    ) WHERE (status = 'confirmed')
+);
+
+
+-- Who joins a booking through its invite link: a user with an account, or a
+-- guest who gives only a name and an age. The owner is not a row here.
+CREATE TABLE booking_participant (
+    id         UUID         PRIMARY KEY DEFAULT uuidv7(),
+    booking_id UUID         NOT NULL REFERENCES booking(id)  ON DELETE CASCADE,
+    user_id    UUID         NULL REFERENCES app_user(id)     ON DELETE CASCADE,
+    guest_name VARCHAR(80)  NULL,
+    guest_age  SMALLINT     NULL CHECK (guest_age BETWEEN 1 AND 120),
+    joined_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    CHECK (
+        (user_id IS NOT NULL AND guest_name IS NULL AND guest_age IS NULL)
+        OR (user_id IS NULL AND guest_name IS NOT NULL AND guest_age IS NOT NULL)
+    )
+);
+
+
+-- ============================================================
+--  NOTIFICATIONS (avisos)
+-- ============================================================
+
+CREATE TABLE notification (
+    id         UUID              PRIMARY KEY DEFAULT uuidv7(),
+    user_id    UUID              NOT NULL REFERENCES app_user(id) ON DELETE CASCADE,
+    booking_id UUID              NULL REFERENCES booking(id) ON DELETE SET NULL,
+    type       notification_type NOT NULL,
+    payload    JSONB             NOT NULL DEFAULT '{}',
+    created_at TIMESTAMPTZ       NOT NULL DEFAULT NOW(),
+    read_at    TIMESTAMPTZ       NULL,
+    emailed_at TIMESTAMPTZ       NULL               -- NULL = pending in the email queue
+);

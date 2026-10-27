@@ -1,0 +1,47 @@
+{
+  "title": "Instal·lacions esportives",
+  "finding": {
+    "today": "Avui, {{date}}",
+    "closed": "{{when}}. Les instal·lacions estan tancades.",
+    "full": "{{when}}. No queden torns lliures.",
+    "free_one": "{{when}}. {{count}} torn lliure a {{facilities}}; el primer, {{facility}} a les {{time}}.",
+    "free_other": "{{when}}. {{count}} torns lliures a {{facilities}}; el primer, {{facility}} a les {{time}}.",
+    "facilities_one": "{{count}} instal·lació",
+    "facilities_other": "{{count}} instal·lacions"
+  },
+  "availability": {
+    "title": "Disponibilitat",
+    "loading": "Carregant instal·lacions",
+    "loadError": "No s'han pogut carregar les instal·lacions.",
+    "empty": "Aquest ajuntament encara no ha publicat cap instal·lació.",
+    "allClosed": "Totes les instal·lacions estan tancades aquest dia.",
+    "closedDay": "Tancat aquest dia",
+    "closedShort": "tancat",
+    "full": "Complet",
+    "free_one": "{{count}} lliure",
+    "free_other": "{{count}} lliures",
+    "minutes": "{{count}} min",
+    "bookAt": "Reserva {{time}}",
+    "more": "+{{count}} més",
+    "quickBook": "Reserva ràpida {{time}}",
+    "book": "Reserva",
+    "details": "Veure {{facility}}",
+    "afterHours": "Fora d'horari"
+  },
+  "slot": {
+    "free": "Lliure",
+    "booked": "Reservat",
+    "closed": "Tancat",
+    "past": "Passat",
+    "tooFar": "Encara no es pot reservar",
+    "bookAria": "Reserva {{facility}}, {{time}}",
+    "closure": "Tancament puntual"
+  },
+  "rules": {
+    "title": "Normes de reserva",
+    "days": "d",
+    "hours": "h",
+    "figures": "Dies · h · màx.",
+    "figuresHelp": "Dies d'antelació per reservar, hores abans del torn per cancel·lar, reserves actives per persona"
+  }
+}

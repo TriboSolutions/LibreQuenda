@@ -1,0 +1,60 @@
+{
+  "title": "Tus reservas",
+  "upcoming_one": "{{count}} próxima",
+  "upcoming_other": "{{count}} próximas",
+  "signedOut": "Consulta los horarios sin cuenta. Para reservar, cancelar y ver tu historial, inicia sesión con tu correo o crea una cuenta en un minuto.",
+  "createAccount": "Crear cuenta",
+  "loading": "Cargando reservas",
+  "loadError": "No se pudieron cargar tus reservas.",
+  "empty": "No tienes reservas próximas. Elige un turno libre en la disponibilidad.",
+  "cancel": "Cancelar",
+  "noCancel": "Sin cancelación",
+  "cancelDeadlinePassed": "Solo se podía cancelar hasta {{date}}",
+  "history": "Historial",
+  "status": {
+    "cancelled": "Cancelada",
+    "done": "Hecha",
+    "checkedIn": "Dentro"
+  },
+  "notice": {
+    "booked": "Reserva confirmada: {{facility}}, {{day}} a las {{time}}.",
+    "cancelled": "Reserva cancelada: {{facility}}, {{day}}."
+  },
+  "dialog": {
+    "title": "Reservar {{facility}}",
+    "place": "Lugar",
+    "duration": "Duración",
+    "cancellation": "Cancelación",
+    "cancellationUntil": "Gratuita hasta {{date}}",
+    "rules": "Normas",
+    "confirm": "Confirmar reserva",
+    "confirming": "Reservando…",
+    "loginToBook": "Inicia sesión para reservar",
+    "needLogin": "Tienes que iniciar sesión para reservar.",
+    "error": "No se pudo hacer la reserva.",
+    "acceptRules": "He leído y acepto las normas de uso.",
+    "noRules": "Esta instalación no tiene normas específicas: se aplican las normas generales del ayuntamiento.",
+    "minAge": "Edad mínima",
+    "minAgeValue": "{{count}} años"
+  },
+  "cancelDialog": {
+    "title": "¿Cancelar la reserva?",
+    "description": "{{facility}}, {{day}} a las {{time}}. El turno quedará libre para otra persona.",
+    "keep": "Mantener la reserva",
+    "confirm": "Cancelar la reserva",
+    "confirming": "Cancelando…",
+    "needLogin": "Tienes que iniciar sesión.",
+    "error": "No se pudo cancelar la reserva."
+  },
+  "qr": {
+    "show": "QR de entrada",
+    "title": "QR de entrada",
+    "description": "{{facility}}, {{day}}, {{start}}–{{end}}",
+    "alt": "Código QR de la reserva en {{facility}}",
+    "hint": "Muéstralo en el lector de la entrada, desde 15 minutos antes del comienzo hasta el final de la reserva.",
+    "brightness": "Si el lector no lo detecta, sube el brillo de la pantalla.",
+    "email": "También te llega en los correos de confirmación y de recordatorio.",
+    "checkedIn": "Entrada registrada a las {{time}}",
+    "close": "Cerrar"
+  }
+}

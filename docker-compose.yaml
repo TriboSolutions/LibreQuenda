@@ -1,0 +1,252 @@
+# ============================================================
+#  LibreQuenda: the whole stack behind one Caddy proxy.
+#  Configure .env from .env.example, then: docker compose up -d --build --wait
+# ============================================================
+name: librequenda
+
+services:
+  db:
+    build: ./db
+    # not published: only the API and Zitadel reach it, on the compose network
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB}
+      DB_SEED: "false" # never demo data in production
+      ZITADEL_DB_PASSWORD: ${ZITADEL_DB_PASSWORD:?set ZITADEL_DB_PASSWORD in .env}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?set APP_DB_PASSWORD in .env}
+
+      TZ: Europe/Madrid
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      interval: 4s
+      timeout: 2s
+      retries: 5
+    restart: unless-stopped
+    volumes:
+      - postgres_data:/var/lib/postgresql
+
+  api:
+    build: ./api
+    environment:
+      TZ: Europe/Madrid
+      # not the owner: row-level security applies to this role (db/init/04_app_role.sh)
+      DB_USER: librequenda_app
+      DB_PASSWORD: ${APP_DB_PASSWORD:?set APP_DB_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB}
+      VERSION: ${APP_VERSION}
+
+      # Token verification: public keys fetched from Zitadel on startup
+      OIDC_ISSUER: ${PUBLIC_SCHEME}://${ZITADEL_DOMAIN}
+      ZITADEL_DOMAIN: ${ZITADEL_DOMAIN}
+      ZITADEL_INTERNAL_URL: http://zitadel-api:8080
+      RUNTIME_CONFIG_PATH: /runtime/config.json
+      # user-manager token: residents change their name, email and password from /perfil
+      ZITADEL_USERS_PAT_FILE: /secrets/zitadel-users.pat
+
+      # First superadministrator (creates councils); defaults to the Zitadel admin
+      SUPERADMIN_EMAIL: ${SUPERADMIN_EMAIL:-${ZITADEL_ADMIN_EMAIL}}
+
+      # Image storage (Garage, S3 protocol)
+      STORAGE_ENDPOINT: storage:3900
+      STORAGE_REGION: garage
+      STORAGE_BUCKET: ${STORAGE_BUCKET:-media}
+      STORAGE_ACCESS_KEY: ${STORAGE_ACCESS_KEY:?set STORAGE_ACCESS_KEY in .env}
+      STORAGE_SECRET_KEY: ${STORAGE_SECRET_KEY:?set STORAGE_SECRET_KEY in .env}
+
+      # Notification emails (confirmations, reminders with the QR, cancellations): your SMTP relay
+      SMTP_HOST: ${SMTP_HOST:?set SMTP_HOST in .env}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM: ${SMTP_FROM:?set SMTP_FROM in .env}
+      PUBLIC_URL: ${PUBLIC_SCHEME}://${WEB_DOMAIN}
+    volumes:
+      - runtime-config:/runtime:ro
+      - api-secrets:/secrets:ro
+
+    depends_on:
+      db:
+        condition: service_healthy
+      zitadel-setup:
+        condition: service_completed_successfully
+      storage:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "sh", "-c", "curl -f http://localhost:8000/health/api && curl -f http://localhost:8000/health/db" ]
+      interval: 2s
+      timeout: 2s
+      retries: 5
+    restart: unless-stopped
+
+  # ============================================================
+  #  PROXY: Caddy, the only public entry point
+  #  ${WEB_DOMAIN}      -> web SPA + /api/*
+  #  ${ZITADEL_DOMAIN}  -> Zitadel (OIDC, login, console)
+  # ============================================================
+  proxy:
+    build:
+      context: .
+      dockerfile: proxy/dockerfile
+      args:
+        VITE_APP_VERSION: ${APP_VERSION}
+    ports:
+      - "${PROXY_HTTP_PORT:-80}:80"
+      - "${PROXY_HTTPS_PORT:-443}:443"
+    environment:
+      CADDY_AUTO_HTTPS: ${CADDY_AUTO_HTTPS:-false}
+      WEB_DOMAIN: ${WEB_DOMAIN}
+      ZITADEL_DOMAIN: ${ZITADEL_DOMAIN}
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+      - runtime-config:/srv/runtime:ro
+    depends_on:
+      zitadel-setup:
+        condition: service_completed_successfully
+      api:
+        condition: service_healthy
+      zitadel-api:
+        condition: service_healthy
+      zitadel-login:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ============================================================
+  #  IDENTITY: Zitadel (API + Login v2)
+  #  Based on https://github.com/zitadel/zitadel/tree/main/deploy/compose
+  #  Console: ${PUBLIC_SCHEME}://${ZITADEL_DOMAIN}/ui/console
+  # ============================================================
+  zitadel-api:
+    image: ghcr.io/zitadel/zitadel:${ZITADEL_VERSION}
+    restart: unless-stopped
+    user: "0"
+    command: start-from-init --masterkey "${ZITADEL_MASTERKEY:?set ZITADEL_MASTERKEY in .env}"
+    environment:
+      ZITADEL_PORT: 8080
+      ZITADEL_EXTERNALDOMAIN: ${ZITADEL_DOMAIN}
+      ZITADEL_EXTERNALPORT: ${PUBLIC_PORT}
+      ZITADEL_EXTERNALSECURE: ${ZITADEL_EXTERNALSECURE}
+      ZITADEL_TLS_ENABLED: false
+
+      ZITADEL_DATABASE_POSTGRES_DSN: postgresql://zitadel:${ZITADEL_DB_PASSWORD}@db:5432/zitadel?sslmode=disable
+
+      # First instance admin (only applied on the very first start)
+      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_USERNAME: ${ZITADEL_ADMIN_USERNAME}
+      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_FIRSTNAME: ${ZITADEL_ADMIN_FIRSTNAME}
+      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_LASTNAME: ${ZITADEL_ADMIN_LASTNAME}
+      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_EMAIL_ADDRESS: ${ZITADEL_ADMIN_EMAIL}
+      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_EMAIL_VERIFIED: true
+      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_PASSWORD: ${ZITADEL_ADMIN_PASSWORD:?set ZITADEL_ADMIN_PASSWORD in .env}
+      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_PASSWORDCHANGEREQUIRED: false
+      ZITADEL_FIRSTINSTANCE_LOGINCLIENTPATPATH: /zitadel/bootstrap/login-client.pat
+      ZITADEL_FIRSTINSTANCE_ORG_LOGINCLIENT_MACHINE_USERNAME: login-client
+      ZITADEL_FIRSTINSTANCE_ORG_LOGINCLIENT_MACHINE_NAME: Automatically Initialized IAM_LOGIN_CLIENT
+      ZITADEL_FIRSTINSTANCE_ORG_LOGINCLIENT_PAT_EXPIRATIONDATE: "2099-01-01T00:00:00Z"
+
+      # Admin service account used by zitadel-setup (project + OIDC app)
+      ZITADEL_FIRSTINSTANCE_PATPATH: /zitadel/bootstrap/admin.pat
+      ZITADEL_FIRSTINSTANCE_ORG_MACHINE_MACHINE_USERNAME: librequenda-setup
+      ZITADEL_FIRSTINSTANCE_ORG_MACHINE_MACHINE_NAME: LibreQuenda setup
+      ZITADEL_FIRSTINSTANCE_ORG_MACHINE_PAT_EXPIRATIONDATE: "2099-01-01T00:00:00Z"
+
+      ZITADEL_DEFAULTINSTANCE_FEATURES_LOGINV2_REQUIRED: true
+      ZITADEL_DEFAULTINSTANCE_FEATURES_LOGINV2_BASEURI: ${PUBLIC_SCHEME}://${ZITADEL_DOMAIN}:${PUBLIC_PORT}/ui/v2/login/
+      ZITADEL_OIDC_DEFAULTLOGINURLV2: ${PUBLIC_SCHEME}://${ZITADEL_DOMAIN}:${PUBLIC_PORT}/ui/v2/login/login?authRequest=
+      ZITADEL_OIDC_DEFAULTLOGOUTURLV2: ${PUBLIC_SCHEME}://${ZITADEL_DOMAIN}:${PUBLIC_PORT}/ui/v2/login/logout?post_logout_redirect=
+      ZITADEL_SAML_DEFAULTLOGINURLV2: ${PUBLIC_SCHEME}://${ZITADEL_DOMAIN}:${PUBLIC_PORT}/ui/v2/login/login?samlRequest=
+
+      # Its own emails (verification codes, password reset) through the same SMTP relay.
+      # Only applied when the instance is first created; change it later in Zitadel's settings.
+      ZITADEL_DEFAULTINSTANCE_SMTPCONFIGURATION_SMTP_HOST: ${SMTP_HOST}:${SMTP_PORT:-587}
+      ZITADEL_DEFAULTINSTANCE_SMTPCONFIGURATION_SMTP_USER: ${SMTP_USERNAME:-}
+      ZITADEL_DEFAULTINSTANCE_SMTPCONFIGURATION_SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      ZITADEL_DEFAULTINSTANCE_SMTPCONFIGURATION_TLS: ${ZITADEL_SMTP_TLS:-false} # true only for implicit TLS (465); 587 upgrades with STARTTLS
+      ZITADEL_DEFAULTINSTANCE_SMTPCONFIGURATION_FROM: ${SMTP_FROM_ADDRESS:?set SMTP_FROM_ADDRESS in .env}
+      ZITADEL_DEFAULTINSTANCE_SMTPCONFIGURATION_FROMNAME: LibreQuenda
+    healthcheck:
+      test: [ "CMD", "/app/zitadel", "ready" ]
+      interval: 10s
+      timeout: 30s
+      retries: 12
+      start_period: 20s
+    volumes:
+      - zitadel-bootstrap:/zitadel/bootstrap:rw
+    depends_on:
+      db:
+        condition: service_healthy
+
+  zitadel-login:
+    image: ghcr.io/zitadel/zitadel-login:${ZITADEL_VERSION}
+    restart: unless-stopped
+    user: "0"
+    environment:
+      ZITADEL_API_URL: http://zitadel-api:8080
+      NEXT_PUBLIC_BASE_PATH: /ui/v2/login
+      ZITADEL_SERVICE_USER_TOKEN_FILE: /zitadel/bootstrap/login-client.pat
+      ZITADEL_SESSION_COOKIE_SECRET: ${LOGIN_SESSION_COOKIE_SECRET:?set LOGIN_SESSION_COOKIE_SECRET in .env}
+      CUSTOM_REQUEST_HEADERS: Host:${ZITADEL_DOMAIN},X-Forwarded-Proto:${PUBLIC_SCHEME}
+      # Sign-in and sign-up stop at "enter the code we emailed you" until the email
+      # is verified. Council roles only follow a verified email (api/core/me).
+      EMAIL_VERIFICATION: "true"
+    healthcheck:
+      test: [ "CMD", "/bin/sh", "-c", "node /app/healthcheck.mjs http://localhost:3000/ui/v2/login/healthy" ]
+      interval: 10s
+      timeout: 30s
+      retries: 12
+      start_period: 20s
+    volumes:
+      - zitadel-bootstrap:/zitadel/bootstrap:ro
+    depends_on:
+      zitadel-api:
+        condition: service_healthy
+
+  # One-off: creates the LibreQuenda project + OIDC app, writes config.json for the SPA
+  zitadel-setup:
+    build: ./zitadel
+    environment:
+      PUBLIC_SCHEME: ${PUBLIC_SCHEME}
+      WEB_DOMAIN: ${WEB_DOMAIN}
+      ZITADEL_DOMAIN: ${ZITADEL_DOMAIN}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+    volumes:
+      - zitadel-bootstrap:/zitadel/bootstrap:ro
+      - runtime-config:/runtime
+      - api-secrets:/api-secrets
+    depends_on:
+      zitadel-api:
+        condition: service_healthy
+    restart: "no"
+
+  # ============================================================
+  #  STORAGE: Garage (self-hosted, S3-compatible) for uploaded images
+  #  Internal only; the API uploads to it and serves the images at /api/media/…
+  # ============================================================
+  storage:
+    build: ./storage
+    environment:
+      GARAGE_RPC_SECRET: ${GARAGE_RPC_SECRET:?set GARAGE_RPC_SECRET in .env}
+      GARAGE_ADMIN_TOKEN: ${GARAGE_ADMIN_TOKEN:?set GARAGE_ADMIN_TOKEN in .env}
+      GARAGE_DEFAULT_ACCESS_KEY: ${STORAGE_ACCESS_KEY:?set STORAGE_ACCESS_KEY in .env}
+      GARAGE_DEFAULT_SECRET_KEY: ${STORAGE_SECRET_KEY:?set STORAGE_SECRET_KEY in .env}
+      GARAGE_DEFAULT_BUCKET: ${STORAGE_BUCKET:-media}
+    volumes:
+      - garage_meta:/var/lib/garage/meta
+      - garage_data:/var/lib/garage/data
+    healthcheck:
+      test: [ "CMD", "/garage", "status" ]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  zitadel-bootstrap:
+  caddy_data:
+  caddy_config:
+  runtime-config:
+  api-secrets: # tokens for the API only: never mounted by the proxy
+  garage_meta:
+  garage_data:

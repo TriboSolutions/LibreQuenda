@@ -1,0 +1,16 @@
+{
+  "title": "Escolle o teu concello",
+  "subtitle_one": "{{count}} concello reserva as súas instalacións deportivas con LibreQuenda.",
+  "subtitle_other": "{{count}} concellos reservan as súas instalacións deportivas con LibreQuenda.",
+  "listTitle": "Concellos",
+  "search": "Buscar concello",
+  "noResults": "Ningún concello coincide con «{{query}}».",
+  "empty": "Aínda non se deu de alta ningún concello.",
+  "loading": "Cargando concellos",
+  "loadError": "Non foi posible cargar os concellos.",
+  "notFound": {
+    "title": "Concello non atopado",
+    "body": "Non hai ningún concello en «/{{slug}}». Revisa o enderezo ou escolle un da lista."
+  },
+  "allCouncils": "Todos os concellos"
+}

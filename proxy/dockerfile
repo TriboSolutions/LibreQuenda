@@ -1,0 +1,30 @@
+# Build context: repository root (see docker-compose.yaml)
+
+# --- Build the React SPA ---
+FROM node:24-alpine AS web-builder
+
+RUN corepack enable
+
+WORKDIR /app
+
+COPY web/package.json web/pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
+
+COPY web/ .
+
+ARG VITE_APP_VERSION
+ENV VITE_APP_VERSION=$VITE_APP_VERSION
+
+RUN pnpm build
+
+
+# --- Caddy: serves the SPA and proxies the API and Zitadel ---
+FROM caddy:2.11.7-alpine
+
+COPY proxy/Caddyfile /etc/caddy/Caddyfile
+COPY proxy/entrypoint.sh /entrypoint.sh
+COPY --from=web-builder /app/dist /srv/web
+
+EXPOSE 80 443
+
+ENTRYPOINT ["/entrypoint.sh"]

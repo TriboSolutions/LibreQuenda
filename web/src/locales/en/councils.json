@@ -1,0 +1,16 @@
+{
+  "title": "Choose your council",
+  "subtitle_one": "{{count}} council books its sports facilities with LibreQuenda.",
+  "subtitle_other": "{{count}} councils book their sports facilities with LibreQuenda.",
+  "listTitle": "Councils",
+  "search": "Search for a council",
+  "noResults": "No council matches “{{query}}”.",
+  "empty": "No council has joined yet.",
+  "loading": "Loading councils",
+  "loadError": "Could not load the councils.",
+  "notFound": {
+    "title": "Council not found",
+    "body": "There is no council at “/{{slug}}”. Check the address or choose one from the list."
+  },
+  "allCouncils": "All councils"
+}
