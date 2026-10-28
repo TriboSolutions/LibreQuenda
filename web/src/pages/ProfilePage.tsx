@@ -21,6 +21,7 @@ import { useMe } from '@/hooks/useMe'
 import { languages } from '@/i18n'
 import { api, type Me, type StoredImage } from '@/lib/api'
 import { usePageTitle } from '@/hooks/usePageTitle'
+import { SiteFooter } from '@/components/SiteFooter'
 
 const SAME_AS_WEBSITE = 'auto' // Select items cannot have an empty value
 
@@ -72,6 +73,7 @@ export function ProfilePage() {
         <h1 className="mb-6 text-[28px] leading-9 font-bold tracking-[-0.02em] sm:text-[32px] sm:leading-10">{t('profile:title')}</h1>
         {body}
       </main>
+      <SiteFooter />
     </div>
   )
 }

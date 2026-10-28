@@ -9,6 +9,9 @@ type TenantDto struct {
 	Slug    string `json:"slug"`
 	Name    string `json:"name"`
 	LogoUrl string `json:"logo_url"`
+	// public: where residents send accessibility feedback and complaints (RD 1112/2018)
+	ContactEmail string `json:"contact_email"`
+	ContactPhone string `json:"contact_phone"`
 }
 
 type TenantsResponse struct {

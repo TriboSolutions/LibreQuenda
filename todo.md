@@ -36,7 +36,7 @@ Scope: bases §1.1 (minimum) + §1.2 (technical). See [architecture plan](docs/s
 
 - [x] Keyboard navigation and focus review (slot picker, dialogs)
 - [x] axe checks in CI (`pnpm test:a11y`, web/e2e)
-- [ ] Accessibility statement page
+- [x] Accessibility statement page (`/accesibilidade`, RD 1112/2018 model)
 
 ## Interoperability and docs
 

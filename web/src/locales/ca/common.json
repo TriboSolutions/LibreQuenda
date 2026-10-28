@@ -21,6 +21,7 @@
     "todayShort": "avui",
     "tomorrowShort": "demà",
     "longDate": "{{weekday}}, {{day}} de {{month}}",
+    "dateWithYear": "{{day}} {{ofMonth}} de {{year}}",
     "shortDate": "{{weekday}} {{day}}",
     "shortDateMonth": "{{weekday}} {{day}} {{month}}",
     "dateTime": "{{date}}, {{time}}",

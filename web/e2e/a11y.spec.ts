@@ -49,6 +49,7 @@ const pages: { name: string; path: string; signedIn?: boolean }[] = [
   { name: 'facility editor', path: '/lugo/admin/facilities/f1' },
   { name: 'platform admin', path: '/admin' },
   { name: 'entrance reader', path: '/lector' },
+  { name: 'accessibility statement', path: '/accesibilidade', signedIn: false },
 ]
 
 for (const theme of ['light', 'dark'] as const) {
@@ -168,6 +169,17 @@ test.describe('keyboard', () => {
 })
 
 test.describe('structure', () => {
+  test('the accessibility statement is linked from every page and lists the contact of each council', async ({ page }) => {
+    await open(page, '/lugo/padel-1', { signedIn: false })
+    await page.getByRole('contentinfo').getByRole('link', { name: 'Declaración de accesibilidade' }).click()
+    await expect(page.getByRole('heading', { level: 1, name: 'Declaración de accesibilidade' })).toBeVisible()
+    await expect(page).toHaveTitle('Declaración de accesibilidade · LibreQuenda')
+    await expect(page.getByRole('link', { name: /deportes@lugo\.gal/ })).toHaveAttribute('href', 'mailto:deportes@lugo.gal')
+    await expect(page.getByRole('link', { name: /982 297 100/ })).toHaveAttribute('href', 'tel:982297100')
+    await expect(page.getByText(/aínda non indicou un contacto/)).toBeVisible() // Ourense gave none
+    await expect(page.getByText(/^Esta declaración preparouse o \d{1,2} de [a-z]+ de \d{4}\.$/)).toBeVisible()
+  })
+
   test('2.4.2 every page has a title that names it', async ({ page }) => {
     await open(page, '/lugo/padel-1')
     await expect(page).toHaveTitle(/Pista de pádel 1.*LibreQuenda/)

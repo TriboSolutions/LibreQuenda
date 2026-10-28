@@ -1,6 +1,7 @@
 import i18n from 'i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
 import { initReactI18next } from 'react-i18next'
+import caAccessibility from './locales/ca/accessibility.json'
 import caAdmin from './locales/ca/admin.json'
 import caBookings from './locales/ca/bookings.json'
 import caCommon from './locales/ca/common.json'
@@ -11,6 +12,7 @@ import caInvites from './locales/ca/invites.json'
 import caNotifications from './locales/ca/notifications.json'
 import caProfile from './locales/ca/profile.json'
 import caReader from './locales/ca/reader.json'
+import enAccessibility from './locales/en/accessibility.json'
 import enAdmin from './locales/en/admin.json'
 import enBookings from './locales/en/bookings.json'
 import enCommon from './locales/en/common.json'
@@ -21,6 +23,7 @@ import enInvites from './locales/en/invites.json'
 import enNotifications from './locales/en/notifications.json'
 import enProfile from './locales/en/profile.json'
 import enReader from './locales/en/reader.json'
+import esAccessibility from './locales/es/accessibility.json'
 import esAdmin from './locales/es/admin.json'
 import esBookings from './locales/es/bookings.json'
 import esCommon from './locales/es/common.json'
@@ -31,6 +34,7 @@ import esInvites from './locales/es/invites.json'
 import esNotifications from './locales/es/notifications.json'
 import esProfile from './locales/es/profile.json'
 import esReader from './locales/es/reader.json'
+import glAccessibility from './locales/gl/accessibility.json'
 import glAdmin from './locales/gl/admin.json'
 import glBookings from './locales/gl/bookings.json'
 import glCommon from './locales/gl/common.json'
@@ -54,15 +58,15 @@ void i18n
   .use(initReactI18next)
   .init({
     resources: {
-      gl: { common: glCommon, councils: glCouncils, home: glHome, bookings: glBookings, admin: glAdmin, facility: glFacility, profile: glProfile, reader: glReader, invites: glInvites, notifications: glNotifications },
-      es: { common: esCommon, councils: esCouncils, home: esHome, bookings: esBookings, admin: esAdmin, facility: esFacility, profile: esProfile, reader: esReader, invites: esInvites, notifications: esNotifications },
-      en: { common: enCommon, councils: enCouncils, home: enHome, bookings: enBookings, admin: enAdmin, facility: enFacility, profile: enProfile, reader: enReader, invites: enInvites, notifications: enNotifications },
-      ca: { common: caCommon, councils: caCouncils, home: caHome, bookings: caBookings, admin: caAdmin, facility: caFacility, profile: caProfile, reader: caReader, invites: caInvites, notifications: caNotifications },
+      gl: { common: glCommon, accessibility: glAccessibility, councils: glCouncils, home: glHome, bookings: glBookings, admin: glAdmin, facility: glFacility, profile: glProfile, reader: glReader, invites: glInvites, notifications: glNotifications },
+      es: { common: esCommon, accessibility: esAccessibility, councils: esCouncils, home: esHome, bookings: esBookings, admin: esAdmin, facility: esFacility, profile: esProfile, reader: esReader, invites: esInvites, notifications: esNotifications },
+      en: { common: enCommon, accessibility: enAccessibility, councils: enCouncils, home: enHome, bookings: enBookings, admin: enAdmin, facility: enFacility, profile: enProfile, reader: enReader, invites: enInvites, notifications: enNotifications },
+      ca: { common: caCommon, accessibility: caAccessibility, councils: caCouncils, home: caHome, bookings: caBookings, admin: caAdmin, facility: caFacility, profile: caProfile, reader: caReader, invites: caInvites, notifications: caNotifications },
     },
     supportedLngs: languages.map((l) => l.code),
     load: 'languageOnly', // es-ES -> es
     fallbackLng: 'gl', // a Galician public service
-    ns: ['common', 'councils', 'home', 'bookings', 'admin', 'facility', 'profile', 'reader', 'invites', 'notifications'],
+    ns: ['common', 'accessibility', 'councils', 'home', 'bookings', 'admin', 'facility', 'profile', 'reader', 'invites', 'notifications'],
     defaultNS: 'common',
     interpolation: { escapeValue: false }, // React escapes
     detection: {

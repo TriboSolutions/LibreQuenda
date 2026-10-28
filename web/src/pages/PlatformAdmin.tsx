@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useLogin } from '@/hooks/useLogin'
 import { useMe } from '@/hooks/useMe'
 import { usePageTitle } from '@/hooks/usePageTitle'
+import { SiteFooter } from '@/components/SiteFooter'
 
 /** /admin: the superadministrator's area (councils and superadministrators). */
 export function PlatformAdmin() {
@@ -68,6 +69,7 @@ export function PlatformAdmin() {
         <p className="mt-1 text-base text-muted-foreground">{t('admin:subtitle')}</p>
         {body}
       </main>
+      <SiteFooter />
     </div>
   )
 }
