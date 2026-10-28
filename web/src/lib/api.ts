@@ -31,7 +31,7 @@ export type Facility = {
 }
 
 // contact: where residents send accessibility feedback and complaints (RD 1112/2018); "" when not given
-export type Tenant = { slug: string; name: string; logo_url: string; contact_email: string; contact_phone: string }
+export type Tenant = { slug: string; name: string; logo_url: string; contact_email: string; contact_phone: string; contact_address: string; contact_person: string }
 
 /** An uploaded image: forms save the ref (storage reference); screens only show the url. */
 export type StoredImage = { ref: string; url: string }
@@ -317,6 +317,8 @@ export type CouncilSummary = {
   timezone: string
   contact_email: string
   contact_phone: string
+  contact_address: string
+  contact_person: string
   logo_url: string
   is_active: boolean
   created_at: string
@@ -332,6 +334,8 @@ export type CouncilDetail = {
   timezone: string
   contact_email: string
   contact_phone: string
+  contact_address: string
+  contact_person: string
   logo_ref: string
   logo_url: string
   is_active: boolean
@@ -399,6 +403,8 @@ export type CouncilInput = {
   timezone: string
   contact_email: string
   contact_phone: string
+  contact_address: string
+  contact_person: string
   logo_ref: string // a storage reference, never a URL
   is_active?: boolean // update only
   admin_email?: string // create only

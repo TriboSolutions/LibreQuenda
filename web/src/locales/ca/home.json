@@ -1,14 +1,5 @@
 {
   "title": "Instal·lacions esportives",
-  "finding": {
-    "today": "Avui, {{date}}",
-    "closed": "{{when}}. Les instal·lacions estan tancades.",
-    "full": "{{when}}. No queden torns lliures.",
-    "free_one": "{{when}}. {{count}} torn lliure a {{facilities}}; el primer, {{facility}} a les {{time}}.",
-    "free_other": "{{when}}. {{count}} torns lliures a {{facilities}}; el primer, {{facility}} a les {{time}}.",
-    "facilities_one": "{{count}} instal·lació",
-    "facilities_other": "{{count}} instal·lacions"
-  },
   "availability": {
     "title": "Disponibilitat",
     "loading": "Carregant instal·lacions",
@@ -36,11 +27,11 @@
     "bookAria": "Reserva {{facility}}, {{time}}",
     "closure": "Tancament puntual"
   },
-  "rules": {
-    "title": "Normes de reserva",
-    "days": "d",
-    "hours": "h",
-    "figures": "Dies · h · màx.",
-    "figuresHelp": "Dies d'antelació per reservar, hores abans del torn per cancel·lar, reserves actives per persona"
+  "contact": {
+    "title": "Contacte",
+    "person": "Responsable",
+    "address": "Adreça",
+    "email": "Correu",
+    "phone": "Telèfon"
   }
 }

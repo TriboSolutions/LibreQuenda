@@ -34,6 +34,8 @@
     "invalid_timezone": "A zona horaria non é válida.",
     "invalid_email": "O correo electrónico non é válido.",
     "invalid_phone": "O teléfono é demasiado longo.",
+    "invalid_address": "O enderezo é demasiado longo.",
+    "invalid_contact_person": "O nome da persoa responsable é demasiado longo.",
     "invalid_admin_email": "Indica un correo válido para a persoa administradora do concello.",
     "tenant_save_failed": "Non foi posible gardar o concello. Téntao de novo.",
     "tenant_delete_failed": "Non foi posible eliminar o concello.",

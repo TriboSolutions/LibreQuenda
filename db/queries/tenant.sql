@@ -6,6 +6,8 @@ SELECT
     timezone,
     contact_email,
     contact_phone,
+    contact_address,
+    contact_person,
     logo_ref
 FROM
     tenant
@@ -20,7 +22,9 @@ SELECT
     name,
     logo_ref,
     contact_email,
-    contact_phone
+    contact_phone,
+    contact_address,
+    contact_person
 FROM
     tenant
 WHERE

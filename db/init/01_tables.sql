@@ -31,16 +31,19 @@ CREATE TYPE notification_type AS ENUM (
 -- ============================================================
 
 CREATE TABLE tenant (
-    id            UUID         PRIMARY KEY DEFAULT uuidv7(),
-    slug          VARCHAR(64)  NOT NULL UNIQUE,   -- e.g. 'lalin', used in URLs
-    name          VARCHAR(255) NOT NULL,
-    timezone      VARCHAR(64)  NOT NULL DEFAULT 'Europe/Madrid',
-    contact_email VARCHAR(255) NULL,
-    contact_phone VARCHAR(50)  NULL,
-    logo_ref      TEXT         NULL,              -- storage reference, never a URL
-    is_active     BOOLEAN      NOT NULL DEFAULT TRUE,
-    created_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
-    updated_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+    id              UUID         PRIMARY KEY DEFAULT uuidv7(),
+    slug            VARCHAR(64)  NOT NULL UNIQUE,   -- e.g. 'lalin', used in URLs
+    name            VARCHAR(255) NOT NULL,
+    timezone        VARCHAR(64)  NOT NULL DEFAULT 'Europe/Madrid',
+    -- public contact points, shown on the council page
+    contact_email   VARCHAR(255) NULL,
+    contact_phone   VARCHAR(50)  NULL,
+    contact_address VARCHAR(255) NULL,              -- e.g. the sports department's office
+    contact_person  VARCHAR(255) NULL,              -- who is responsible for the facilities
+    logo_ref        TEXT         NULL,              -- storage reference, never a URL
+    is_active       BOOLEAN      NOT NULL DEFAULT TRUE,
+    created_at      TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    updated_at      TIMESTAMPTZ  NOT NULL DEFAULT NOW()
 );
 
 

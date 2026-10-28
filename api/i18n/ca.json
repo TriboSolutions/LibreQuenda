@@ -34,6 +34,8 @@
     "invalid_timezone": "La zona horària no és vàlida.",
     "invalid_email": "El correu electrònic no és vàlid.",
     "invalid_phone": "El telèfon és massa llarg.",
+    "invalid_address": "L'adreça és massa llarga.",
+    "invalid_contact_person": "El nom de la persona responsable és massa llarg.",
     "invalid_admin_email": "Indica un correu vàlid per a la persona administradora de l'ajuntament.",
     "tenant_save_failed": "No s'ha pogut desar l'ajuntament. Torna-ho a provar.",
     "tenant_delete_failed": "No s'ha pogut eliminar l'ajuntament.",

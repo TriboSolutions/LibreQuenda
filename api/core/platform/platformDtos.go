@@ -15,14 +15,16 @@ var reservedSlugs = map[string]bool{
 }
 
 type TenantInput struct {
-	Slug         string `json:"slug"`
-	Name         string `json:"name"`
-	Timezone     string `json:"timezone"`
-	ContactEmail string `json:"contact_email"`
-	ContactPhone string `json:"contact_phone"`
-	LogoRef      string `json:"logo_ref"`    // a storage reference from POST /media, never a URL
-	IsActive     *bool  `json:"is_active"`   // update only
-	AdminEmail   string `json:"admin_email"` // create only: the first council administrator
+	Slug           string `json:"slug"`
+	Name           string `json:"name"`
+	Timezone       string `json:"timezone"`
+	ContactEmail   string `json:"contact_email"`
+	ContactPhone   string `json:"contact_phone"`
+	ContactAddress string `json:"contact_address"`
+	ContactPerson  string `json:"contact_person"`
+	LogoRef        string `json:"logo_ref"`    // a storage reference from POST /media, never a URL
+	IsActive       *bool  `json:"is_active"`   // update only
+	AdminEmail     string `json:"admin_email"` // create only: the first council administrator
 }
 
 func (in *TenantInput) normalise() {
@@ -31,6 +33,8 @@ func (in *TenantInput) normalise() {
 	in.Timezone = strings.TrimSpace(in.Timezone)
 	in.ContactEmail = strings.ToLower(strings.TrimSpace(in.ContactEmail))
 	in.ContactPhone = strings.TrimSpace(in.ContactPhone)
+	in.ContactAddress = strings.TrimSpace(in.ContactAddress)
+	in.ContactPerson = strings.TrimSpace(in.ContactPerson)
 	in.LogoRef = strings.TrimSpace(in.LogoRef)
 	in.AdminEmail = strings.ToLower(strings.TrimSpace(in.AdminEmail))
 }
@@ -50,6 +54,10 @@ func (in *TenantInput) validate(creating bool) string {
 		return "errors.invalid_email"
 	case len(in.ContactPhone) > 50:
 		return "errors.invalid_phone"
+	case len(in.ContactAddress) > 255:
+		return "errors.invalid_address"
+	case len(in.ContactPerson) > 255:
+		return "errors.invalid_contact_person"
 	case in.LogoRef != "" && (!storage.ValidRef(in.LogoRef) || !strings.HasPrefix(in.LogoRef, "councils/")):
 		return "errors.invalid_image"
 	case creating && !validEmail(in.AdminEmail):
@@ -80,6 +88,8 @@ type TenantSummaryDto struct {
 	Timezone               string    `json:"timezone"`
 	ContactEmail           string    `json:"contact_email"`
 	ContactPhone           string    `json:"contact_phone"`
+	ContactAddress         string    `json:"contact_address"`
+	ContactPerson          string    `json:"contact_person"`
 	LogoUrl                string    `json:"logo_url"`
 	IsActive               bool      `json:"is_active"`
 	CreatedAt              time.Time `json:"created_at"`
@@ -109,17 +119,19 @@ type InvitationDto struct {
 }
 
 type TenantDetailDto struct {
-	Slug         string          `json:"slug"`
-	Name         string          `json:"name"`
-	Timezone     string          `json:"timezone"`
-	ContactEmail string          `json:"contact_email"`
-	ContactPhone string          `json:"contact_phone"`
-	LogoRef      string          `json:"logo_ref"` // sent back unchanged when the form is saved
-	LogoUrl      string          `json:"logo_url"`
-	IsActive     bool            `json:"is_active"`
-	BookingCount int64           `json:"booking_count"`
-	Admins       []MemberDto     `json:"admins"`
-	Invitations  []InvitationDto `json:"invitations"`
+	Slug           string          `json:"slug"`
+	Name           string          `json:"name"`
+	Timezone       string          `json:"timezone"`
+	ContactEmail   string          `json:"contact_email"`
+	ContactPhone   string          `json:"contact_phone"`
+	ContactAddress string          `json:"contact_address"`
+	ContactPerson  string          `json:"contact_person"`
+	LogoRef        string          `json:"logo_ref"` // sent back unchanged when the form is saved
+	LogoUrl        string          `json:"logo_url"`
+	IsActive       bool            `json:"is_active"`
+	BookingCount   int64           `json:"booking_count"`
+	Admins         []MemberDto     `json:"admins"`
+	Invitations    []InvitationDto `json:"invitations"`
 }
 
 type SuperadminDto struct {

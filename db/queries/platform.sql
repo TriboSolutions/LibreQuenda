@@ -56,6 +56,8 @@ SELECT
     t.timezone,
     t.contact_email,
     t.contact_phone,
+    t.contact_address,
+    t.contact_person,
     t.logo_ref,
     t.is_active,
     t.created_at,
@@ -76,6 +78,8 @@ SELECT
     timezone,
     contact_email,
     contact_phone,
+    contact_address,
+    contact_person,
     logo_ref,
     is_active
 FROM
@@ -90,6 +94,8 @@ INSERT INTO tenant (
     timezone,
     contact_email,
     contact_phone,
+    contact_address,
+    contact_person,
     logo_ref
 ) VALUES (
     sqlc.arg('slug'),
@@ -97,6 +103,8 @@ INSERT INTO tenant (
     sqlc.arg('timezone'),
     sqlc.narg('contact_email'),
     sqlc.narg('contact_phone'),
+    sqlc.narg('contact_address'),
+    sqlc.narg('contact_person'),
     sqlc.narg('logo_ref')
 )
 RETURNING
@@ -106,13 +114,15 @@ RETURNING
 -- name: UpdateTenant :one
 UPDATE tenant
 SET
-    slug          = sqlc.arg('slug'),
-    name          = sqlc.arg('name'),
-    timezone      = sqlc.arg('timezone'),
-    contact_email = sqlc.narg('contact_email'),
-    contact_phone = sqlc.narg('contact_phone'),
-    logo_ref      = sqlc.narg('logo_ref'),
-    is_active     = sqlc.arg('is_active')
+    slug            = sqlc.arg('slug'),
+    name            = sqlc.arg('name'),
+    timezone        = sqlc.arg('timezone'),
+    contact_email   = sqlc.narg('contact_email'),
+    contact_phone   = sqlc.narg('contact_phone'),
+    contact_address = sqlc.narg('contact_address'),
+    contact_person  = sqlc.narg('contact_person'),
+    logo_ref        = sqlc.narg('logo_ref'),
+    is_active       = sqlc.arg('is_active')
 WHERE
     id = sqlc.arg('id')
 RETURNING

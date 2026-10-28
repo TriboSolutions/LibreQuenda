@@ -158,7 +158,7 @@ app_user ─┬─< notification
 
 | Entity | Key fields | Notes |
 |---|---|---|
-| `tenant` | id, slug, name, timezone, contact_email, contact_phone, logo_ref, is_active | A council |
+| `tenant` | id, slug, name, timezone, contact_email, contact_phone, contact_address, contact_person, logo_ref, is_active | A council |
 | `facility` | id, tenant_id, slug, name, description, sport, address, latitude/longitude, capacity, accessibility_info, image_ref, is_active | The bookable unit (a court, pool lane, room…). Page at `/<council>/<facility>` |
 | `facility` usage rules | slot_minutes, max_advance_days, min_cancel_hours, max_active_bookings_per_user, usage_rules_text | "Normas de uso". Columns on `facility`. |
 | `opening_hours` | facility_id, weekday, opens_at, closes_at | Weekly schedule ("horarios") |

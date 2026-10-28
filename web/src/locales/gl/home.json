@@ -1,14 +1,5 @@
 {
   "title": "Instalacións deportivas",
-  "finding": {
-    "today": "Hoxe, {{date}}",
-    "closed": "{{when}}. As instalacións están pechadas.",
-    "full": "{{when}}. Non quedan turnos libres.",
-    "free_one": "{{when}}. {{count}} turno libre en {{facilities}}; o primeiro, {{facility}} ás {{time}}.",
-    "free_other": "{{when}}. {{count}} turnos libres en {{facilities}}; o primeiro, {{facility}} ás {{time}}.",
-    "facilities_one": "{{count}} instalación",
-    "facilities_other": "{{count}} instalacións"
-  },
   "availability": {
     "title": "Dispoñibilidade",
     "loading": "Cargando instalacións",
@@ -36,11 +27,11 @@
     "bookAria": "Reservar {{facility}}, {{time}}",
     "closure": "Peche puntual"
   },
-  "rules": {
-    "title": "Normas de reserva",
-    "days": "d",
-    "hours": "h",
-    "figures": "Días · h · máx.",
-    "figuresHelp": "Días de antelación para reservar, horas antes do turno para cancelar, reservas activas por persoa"
+  "contact": {
+    "title": "Contacto",
+    "person": "Responsable",
+    "address": "Enderezo",
+    "email": "Correo",
+    "phone": "Teléfono"
   }
 }

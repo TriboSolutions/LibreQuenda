@@ -37,11 +37,13 @@ func (s *tenantsService) GetTenants(ctx context.Context) (*TenantsResponse, *sha
 	var response = &TenantsResponse{Tenants: make([]TenantDto, 0, len(rows))}
 	for _, row := range rows {
 		response.Tenants = append(response.Tenants, TenantDto{
-			Slug:         row.Slug,
-			Name:         row.Name,
-			LogoUrl:      storage.URL(row.LogoRef.String),
-			ContactEmail: row.ContactEmail.String,
-			ContactPhone: row.ContactPhone.String,
+			Slug:           row.Slug,
+			Name:           row.Name,
+			LogoUrl:        storage.URL(row.LogoRef.String),
+			ContactEmail:   row.ContactEmail.String,
+			ContactPhone:   row.ContactPhone.String,
+			ContactAddress: row.ContactAddress.String,
+			ContactPerson:  row.ContactPerson.String,
 		})
 	}
 	return response, nil

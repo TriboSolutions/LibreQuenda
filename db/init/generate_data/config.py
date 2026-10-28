@@ -11,6 +11,8 @@ TENANT = {
     "name": "Concello de Demostración",
     "contact_email": "deportes@demo.example",
     "contact_phone": "986 000 000",
+    "contact_address": "Servizo Municipal de Deportes, Praza do Concello 1",
+    "contact_person": "Concellería de Deportes",
     # files in db/init/seed_media, uploaded by the storage-seed service; the database keeps the reference
     "logo_ref": "councils/demo.png",
 }

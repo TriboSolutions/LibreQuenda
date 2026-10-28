@@ -124,6 +124,10 @@ export function CouncilSheet({ slug, superadmin = true, onClose, onChanged, onDe
                   <dd className="truncate">{data.contact_email || '—'}</dd>
                   <dt className="text-muted-foreground">{t('admin:form.contactPhone')}</dt>
                   <dd>{data.contact_phone || '—'}</dd>
+                  <dt className="text-muted-foreground">{t('admin:form.contactAddress')}</dt>
+                  <dd>{data.contact_address || '—'}</dd>
+                  <dt className="text-muted-foreground">{t('admin:form.contactPerson')}</dt>
+                  <dd>{data.contact_person || '—'}</dd>
                   <dt className="text-muted-foreground">{t('admin:councils.colBookings')}</dt>
                   <dd className="num">{data.booking_count}</dd>
                 </dl>

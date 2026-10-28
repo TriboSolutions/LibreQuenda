@@ -14,6 +14,8 @@ def generate(context: dict) -> list:
             "timezone": TIMEZONE,
             "contact_email": TENANT["contact_email"],
             "contact_phone": TENANT["contact_phone"],
+            "contact_address": TENANT["contact_address"],
+            "contact_person": TENANT["contact_person"],
             "logo_ref": TENANT["logo_ref"],
         }
     ]

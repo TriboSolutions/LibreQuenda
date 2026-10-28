@@ -1,14 +1,5 @@
 {
   "title": "Sports facilities",
-  "finding": {
-    "today": "Today, {{date}}",
-    "closed": "{{when}}. All facilities are closed.",
-    "full": "{{when}}. No free turns left.",
-    "free_one": "{{when}}. {{count}} free turn in {{facilities}}; the first, {{facility}} at {{time}}.",
-    "free_other": "{{when}}. {{count}} free turns in {{facilities}}; the first, {{facility}} at {{time}}.",
-    "facilities_one": "{{count}} facility",
-    "facilities_other": "{{count}} facilities"
-  },
   "availability": {
     "title": "Availability",
     "loading": "Loading facilities",
@@ -36,11 +27,11 @@
     "bookAria": "Book {{facility}}, {{time}}",
     "closure": "Closure"
   },
-  "rules": {
-    "title": "Booking rules",
-    "days": "d",
-    "hours": "h",
-    "figures": "Days · h · max.",
-    "figuresHelp": "Days in advance to book, hours before the turn to cancel, active bookings per person"
+  "contact": {
+    "title": "Contact",
+    "person": "Person in charge",
+    "address": "Address",
+    "email": "Email",
+    "phone": "Phone"
   }
 }

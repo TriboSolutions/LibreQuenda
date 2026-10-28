@@ -268,6 +268,8 @@ func (data *councilExport) tables(media map[string]string) []exportTable {
 			{"timezone", "string", "IANA time zone of opening hours and local dates"},
 			{"contact_email", "string", "Public contact email"},
 			{"contact_phone", "string", "Public contact phone"},
+			{"contact_address", "string", "Public contact address"},
+			{"contact_person", "string", "Person in charge of the facilities"},
 			{"logo_file", "string", "The logo inside this ZIP"},
 			{"is_active", "boolean", "Open to residents"},
 			{"created_at", "datetime", "Created"},
@@ -275,6 +277,7 @@ func (data *councilExport) tables(media map[string]string) []exportTable {
 		},
 		rows: [][]string{{
 			t.ID.String(), t.Slug, t.Name, t.Timezone, exportNullString(t.ContactEmail), exportNullString(t.ContactPhone),
+			exportNullString(t.ContactAddress), exportNullString(t.ContactPerson),
 			exportMedia(t.LogoRef, media), strconv.FormatBool(t.IsActive), exportTime(t.CreatedAt), exportTime(t.UpdatedAt),
 		}},
 	}

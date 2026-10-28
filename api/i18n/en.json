@@ -34,6 +34,8 @@
     "invalid_timezone": "The time zone is not valid.",
     "invalid_email": "The email address is not valid.",
     "invalid_phone": "The phone number is too long.",
+    "invalid_address": "The address is too long.",
+    "invalid_contact_person": "The name of the person responsible is too long.",
     "invalid_admin_email": "Enter a valid email for the council's administrator.",
     "tenant_save_failed": "Could not save the council. Try again.",
     "tenant_delete_failed": "Could not delete the council.",

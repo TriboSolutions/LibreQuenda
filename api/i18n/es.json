@@ -34,6 +34,8 @@
     "invalid_timezone": "La zona horaria no es válida.",
     "invalid_email": "El correo electrónico no es válido.",
     "invalid_phone": "El teléfono es demasiado largo.",
+    "invalid_address": "La dirección es demasiado larga.",
+    "invalid_contact_person": "El nombre de la persona responsable es demasiado largo.",
     "invalid_admin_email": "Indica un correo válido para la persona administradora del ayuntamiento.",
     "tenant_save_failed": "No se pudo guardar el ayuntamiento. Inténtalo de nuevo.",
     "tenant_delete_failed": "No se pudo eliminar el ayuntamiento.",

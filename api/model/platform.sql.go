@@ -151,6 +151,8 @@ INSERT INTO tenant (
     timezone,
     contact_email,
     contact_phone,
+    contact_address,
+    contact_person,
     logo_ref
 ) VALUES (
     $1,
@@ -158,7 +160,9 @@ INSERT INTO tenant (
     $3,
     $4,
     $5,
-    $6
+    $6,
+    $7,
+    $8
 )
 RETURNING
     id,
@@ -166,12 +170,14 @@ RETURNING
 `
 
 type CreateTenantParams struct {
-	Slug         string         `json:"slug"`
-	Name         string         `json:"name"`
-	Timezone     string         `json:"timezone"`
-	ContactEmail sql.NullString `json:"contact_email"`
-	ContactPhone sql.NullString `json:"contact_phone"`
-	LogoRef      sql.NullString `json:"logo_ref"`
+	Slug           string         `json:"slug"`
+	Name           string         `json:"name"`
+	Timezone       string         `json:"timezone"`
+	ContactEmail   sql.NullString `json:"contact_email"`
+	ContactPhone   sql.NullString `json:"contact_phone"`
+	ContactAddress sql.NullString `json:"contact_address"`
+	ContactPerson  sql.NullString `json:"contact_person"`
+	LogoRef        sql.NullString `json:"logo_ref"`
 }
 
 type CreateTenantRow struct {
@@ -186,6 +192,8 @@ func (q *Queries) CreateTenant(ctx context.Context, arg CreateTenantParams) (Cre
 		arg.Timezone,
 		arg.ContactEmail,
 		arg.ContactPhone,
+		arg.ContactAddress,
+		arg.ContactPerson,
 		arg.LogoRef,
 	)
 	var i CreateTenantRow
@@ -235,6 +243,8 @@ SELECT
     timezone,
     contact_email,
     contact_phone,
+    contact_address,
+    contact_person,
     logo_ref,
     is_active
 FROM
@@ -244,14 +254,16 @@ WHERE
 `
 
 type GetTenantForPlatformRow struct {
-	ID           uuid.UUID      `json:"id"`
-	Slug         string         `json:"slug"`
-	Name         string         `json:"name"`
-	Timezone     string         `json:"timezone"`
-	ContactEmail sql.NullString `json:"contact_email"`
-	ContactPhone sql.NullString `json:"contact_phone"`
-	LogoRef      sql.NullString `json:"logo_ref"`
-	IsActive     bool           `json:"is_active"`
+	ID             uuid.UUID      `json:"id"`
+	Slug           string         `json:"slug"`
+	Name           string         `json:"name"`
+	Timezone       string         `json:"timezone"`
+	ContactEmail   sql.NullString `json:"contact_email"`
+	ContactPhone   sql.NullString `json:"contact_phone"`
+	ContactAddress sql.NullString `json:"contact_address"`
+	ContactPerson  sql.NullString `json:"contact_person"`
+	LogoRef        sql.NullString `json:"logo_ref"`
+	IsActive       bool           `json:"is_active"`
 }
 
 func (q *Queries) GetTenantForPlatform(ctx context.Context, slug string) (GetTenantForPlatformRow, error) {
@@ -264,6 +276,8 @@ func (q *Queries) GetTenantForPlatform(ctx context.Context, slug string) (GetTen
 		&i.Timezone,
 		&i.ContactEmail,
 		&i.ContactPhone,
+		&i.ContactAddress,
+		&i.ContactPerson,
 		&i.LogoRef,
 		&i.IsActive,
 	)
@@ -598,6 +612,8 @@ SELECT
     t.timezone,
     t.contact_email,
     t.contact_phone,
+    t.contact_address,
+    t.contact_person,
     t.logo_ref,
     t.is_active,
     t.created_at,
@@ -618,6 +634,8 @@ type ListTenantsForPlatformRow struct {
 	Timezone               string         `json:"timezone"`
 	ContactEmail           sql.NullString `json:"contact_email"`
 	ContactPhone           sql.NullString `json:"contact_phone"`
+	ContactAddress         sql.NullString `json:"contact_address"`
+	ContactPerson          sql.NullString `json:"contact_person"`
 	LogoRef                sql.NullString `json:"logo_ref"`
 	IsActive               bool           `json:"is_active"`
 	CreatedAt              time.Time      `json:"created_at"`
@@ -648,6 +666,8 @@ func (q *Queries) ListTenantsForPlatform(ctx context.Context) ([]ListTenantsForP
 			&i.Timezone,
 			&i.ContactEmail,
 			&i.ContactPhone,
+			&i.ContactAddress,
+			&i.ContactPerson,
 			&i.LogoRef,
 			&i.IsActive,
 			&i.CreatedAt,
@@ -720,29 +740,33 @@ func (q *Queries) RemoveTenantMember(ctx context.Context, arg RemoveTenantMember
 const updateTenant = `-- name: UpdateTenant :one
 UPDATE tenant
 SET
-    slug          = $1,
-    name          = $2,
-    timezone      = $3,
-    contact_email = $4,
-    contact_phone = $5,
-    logo_ref      = $6,
-    is_active     = $7
+    slug            = $1,
+    name            = $2,
+    timezone        = $3,
+    contact_email   = $4,
+    contact_phone   = $5,
+    contact_address = $6,
+    contact_person  = $7,
+    logo_ref        = $8,
+    is_active       = $9
 WHERE
-    id = $8
+    id = $10
 RETURNING
     id,
     slug
 `
 
 type UpdateTenantParams struct {
-	Slug         string         `json:"slug"`
-	Name         string         `json:"name"`
-	Timezone     string         `json:"timezone"`
-	ContactEmail sql.NullString `json:"contact_email"`
-	ContactPhone sql.NullString `json:"contact_phone"`
-	LogoRef      sql.NullString `json:"logo_ref"`
-	IsActive     bool           `json:"is_active"`
-	ID           uuid.UUID      `json:"id"`
+	Slug           string         `json:"slug"`
+	Name           string         `json:"name"`
+	Timezone       string         `json:"timezone"`
+	ContactEmail   sql.NullString `json:"contact_email"`
+	ContactPhone   sql.NullString `json:"contact_phone"`
+	ContactAddress sql.NullString `json:"contact_address"`
+	ContactPerson  sql.NullString `json:"contact_person"`
+	LogoRef        sql.NullString `json:"logo_ref"`
+	IsActive       bool           `json:"is_active"`
+	ID             uuid.UUID      `json:"id"`
 }
 
 type UpdateTenantRow struct {
@@ -757,6 +781,8 @@ func (q *Queries) UpdateTenant(ctx context.Context, arg UpdateTenantParams) (Upd
 		arg.Timezone,
 		arg.ContactEmail,
 		arg.ContactPhone,
+		arg.ContactAddress,
+		arg.ContactPerson,
 		arg.LogoRef,
 		arg.IsActive,
 		arg.ID,

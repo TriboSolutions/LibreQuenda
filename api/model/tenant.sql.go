@@ -20,6 +20,8 @@ SELECT
     timezone,
     contact_email,
     contact_phone,
+    contact_address,
+    contact_person,
     logo_ref
 FROM
     tenant
@@ -29,13 +31,15 @@ WHERE
 `
 
 type GetTenantBySlugRow struct {
-	ID           uuid.UUID      `json:"id"`
-	Slug         string         `json:"slug"`
-	Name         string         `json:"name"`
-	Timezone     string         `json:"timezone"`
-	ContactEmail sql.NullString `json:"contact_email"`
-	ContactPhone sql.NullString `json:"contact_phone"`
-	LogoRef      sql.NullString `json:"logo_ref"`
+	ID             uuid.UUID      `json:"id"`
+	Slug           string         `json:"slug"`
+	Name           string         `json:"name"`
+	Timezone       string         `json:"timezone"`
+	ContactEmail   sql.NullString `json:"contact_email"`
+	ContactPhone   sql.NullString `json:"contact_phone"`
+	ContactAddress sql.NullString `json:"contact_address"`
+	ContactPerson  sql.NullString `json:"contact_person"`
+	LogoRef        sql.NullString `json:"logo_ref"`
 }
 
 func (q *Queries) GetTenantBySlug(ctx context.Context, slug string) (GetTenantBySlugRow, error) {
@@ -48,6 +52,8 @@ func (q *Queries) GetTenantBySlug(ctx context.Context, slug string) (GetTenantBy
 		&i.Timezone,
 		&i.ContactEmail,
 		&i.ContactPhone,
+		&i.ContactAddress,
+		&i.ContactPerson,
 		&i.LogoRef,
 	)
 	return i, err
@@ -60,7 +66,9 @@ SELECT
     name,
     logo_ref,
     contact_email,
-    contact_phone
+    contact_phone,
+    contact_address,
+    contact_person
 FROM
     tenant
 WHERE
@@ -70,12 +78,14 @@ ORDER BY
 `
 
 type ListTenantsRow struct {
-	ID           uuid.UUID      `json:"id"`
-	Slug         string         `json:"slug"`
-	Name         string         `json:"name"`
-	LogoRef      sql.NullString `json:"logo_ref"`
-	ContactEmail sql.NullString `json:"contact_email"`
-	ContactPhone sql.NullString `json:"contact_phone"`
+	ID             uuid.UUID      `json:"id"`
+	Slug           string         `json:"slug"`
+	Name           string         `json:"name"`
+	LogoRef        sql.NullString `json:"logo_ref"`
+	ContactEmail   sql.NullString `json:"contact_email"`
+	ContactPhone   sql.NullString `json:"contact_phone"`
+	ContactAddress sql.NullString `json:"contact_address"`
+	ContactPerson  sql.NullString `json:"contact_person"`
 }
 
 func (q *Queries) ListTenants(ctx context.Context) ([]ListTenantsRow, error) {
@@ -94,6 +104,8 @@ func (q *Queries) ListTenants(ctx context.Context) ([]ListTenantsRow, error) {
 			&i.LogoRef,
 			&i.ContactEmail,
 			&i.ContactPhone,
+			&i.ContactAddress,
+			&i.ContactPerson,
 		); err != nil {
 			return nil, err
 		}

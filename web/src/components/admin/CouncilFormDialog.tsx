@@ -35,6 +35,8 @@ export function CouncilFormDialog({ council, canDeactivate = true, onClose, onSa
     timezone: council?.timezone ?? 'Europe/Madrid',
     contact_email: council?.contact_email ?? '',
     contact_phone: council?.contact_phone ?? '',
+    contact_address: council?.contact_address ?? '',
+    contact_person: council?.contact_person ?? '',
     logo_ref: council?.logo_ref ?? '',
     is_active: council?.is_active ?? true,
     admin_email: '',
@@ -140,6 +142,35 @@ export function CouncilFormDialog({ council, canDeactivate = true, onClose, onSa
               </Label>
               <Input id="council-phone" type="tel" maxLength={50} value={form.contact_phone} onChange={(e) => set('contact_phone', e.target.value)} />
             </div>
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="council-address">
+              {t('form.contactAddress')} <span className="font-normal text-muted-foreground">({t('form.optional')})</span>
+            </Label>
+            <Input
+              id="council-address"
+              maxLength={255}
+              autoComplete="street-address"
+              value={form.contact_address}
+              onChange={(e) => set('contact_address', e.target.value)}
+            />
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="council-person">
+              {t('form.contactPerson')} <span className="font-normal text-muted-foreground">({t('form.optional')})</span>
+            </Label>
+            <Input
+              id="council-person"
+              maxLength={255}
+              value={form.contact_person}
+              aria-describedby="council-person-help"
+              onChange={(e) => set('contact_person', e.target.value)}
+            />
+            <p id="council-person-help" className="text-xs text-muted-foreground">
+              {t('form.contactHelp')}
+            </p>
           </div>
 
           {creating ? (

@@ -358,7 +358,7 @@ func (q *Queries) ExportOpeningHours(ctx context.Context, tenantID uuid.UUID) ([
 const exportTenant = `-- name: ExportTenant :one
 
 SELECT
-    id, slug, name, timezone, contact_email, contact_phone, logo_ref, is_active, created_at, updated_at
+    id, slug, name, timezone, contact_email, contact_phone, contact_address, contact_person, logo_ref, is_active, created_at, updated_at
 FROM
     tenant
 WHERE
@@ -384,6 +384,8 @@ func (q *Queries) ExportTenant(ctx context.Context, tenantID uuid.UUID) (Tenant,
 		&i.Timezone,
 		&i.ContactEmail,
 		&i.ContactPhone,
+		&i.ContactAddress,
+		&i.ContactPerson,
 		&i.LogoRef,
 		&i.IsActive,
 		&i.CreatedAt,
