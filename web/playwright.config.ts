@@ -21,8 +21,9 @@ export default defineConfig({
     // 1.4.10 Reflow: 320 CSS px wide
     { name: 'reflow-320', use: { ...devices['Desktop Chrome'], viewport: { width: 320, height: 640 } }, grep: /@reflow/ },
   ],
+  // the production build: the dev server re-optimises lazy dependencies (recharts) and reloads mid-test
   webServer: {
-    command: `pnpm exec vite --port ${PORT} --strictPort`,
+    command: `pnpm exec vite build --logLevel warn && pnpm exec vite preview --port ${PORT} --strictPort`,
     port: PORT,
     reuseExistingServer: !process.env.CI,
   },
