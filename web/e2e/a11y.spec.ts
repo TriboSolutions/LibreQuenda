@@ -78,6 +78,16 @@ for (const theme of ['light', 'dark'] as const) {
       await expectAccessible(page, { overlay: true })
     })
 
+    test('quick entry dialog', async ({ page }) => {
+      await open(page, '/lugo', { theme })
+      await page.getByRole('button', { name: /Ana Pérez/ }).click()
+      await page.getByRole('menuitem', { name: /Entrada rápida/ }).click()
+      await expect(page.getByRole('dialog')).toBeVisible()
+      await expect(page.getByRole('img', { name: /QR/ })).toBeVisible()
+      await page.waitForTimeout(300)
+      await expectAccessible(page, { overlay: true })
+    })
+
     // the dialogs on /reservas, each opened from the first upcoming booking
     for (const button of [/^Cancelar$/, /QR/, /^Convidar$/, /^Cambiar$/]) {
       test(`my bookings dialog ${button.source}`, async ({ page }) => {

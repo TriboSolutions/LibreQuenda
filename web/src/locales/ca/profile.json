@@ -93,7 +93,10 @@
     "refreshIn": "Nou codi en {{seconds}} s",
     "failed": "No s'ha pogut carregar el teu QR. Comprova la connexió.",
     "retry": "Torna-ho a provar",
-    "incomplete": "Afegeix la teva data de naixement més avall per reservar amb el teu QR."
+    "incomplete": "Afegeix la teva data de naixement al teu perfil per reservar amb el teu QR.",
+    "menuLink": "Entrada ràpida",
+    "show": "Mostra el meu QR",
+    "close": "Tanca"
   },
   "calendar": {
     "title": "Calendari",

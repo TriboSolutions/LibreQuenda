@@ -93,7 +93,10 @@
     "refreshIn": "Nuevo código en {{seconds}} s",
     "failed": "No se ha podido cargar tu QR. Comprueba la conexión.",
     "retry": "Intentar de nuevo",
-    "incomplete": "Añade tu fecha de nacimiento más abajo para reservar con tu QR."
+    "incomplete": "Añade tu fecha de nacimiento en tu perfil para reservar con tu QR.",
+    "menuLink": "Entrada rápida",
+    "show": "Mostrar mi QR",
+    "close": "Cerrar"
   },
   "calendar": {
     "title": "Calendario",

@@ -93,7 +93,10 @@
     "refreshIn": "New code in {{seconds}} s",
     "failed": "Your QR could not be loaded. Check your connection.",
     "retry": "Try again",
-    "incomplete": "Add your date of birth below to book with your QR."
+    "incomplete": "Add your date of birth in your profile to book with your QR.",
+    "menuLink": "Quick entry",
+    "show": "Show my QR",
+    "close": "Close"
   },
   "calendar": {
     "title": "Calendar",
