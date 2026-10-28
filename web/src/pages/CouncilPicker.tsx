@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useAsync } from '@/hooks/useAsync'
 import { api } from '@/lib/api'
 import { usePageTitle } from '@/hooks/usePageTitle'
+import { SiteFooter } from '@/components/SiteFooter'
 
 // A search box only pays off once the list is longer than a screen's glance
 const SEARCH_FROM = 8
@@ -104,6 +105,7 @@ export function CouncilPicker() {
           )}
         </section>
       </main>
+      <SiteFooter />
     </div>
   )
 }

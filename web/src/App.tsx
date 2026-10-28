@@ -1,4 +1,5 @@
 import { Route, Routes } from 'react-router'
+import { AccessibilityPage } from '@/pages/AccessibilityPage'
 import { CouncilAdminPage } from '@/pages/CouncilAdminPage'
 import { CouncilPage } from '@/pages/CouncilPage'
 import { CouncilPicker } from '@/pages/CouncilPicker'
@@ -20,6 +21,7 @@ function App() {
       <Route path="/perfil" element={<ProfilePage />} />
       <Route path="/lector" element={<ReaderPage />} />
       <Route path="/reservas" element={<MyBookingsPage />} />
+      <Route path="/accesibilidade" element={<AccessibilityPage />} />
       <Route path="/invitacion/:token" element={<InvitePage />} />
       <Route path="/:slug" element={<CouncilPage />} />
       <Route path="/:slug/admin" element={<CouncilAdminPage />} />

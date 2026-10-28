@@ -22,6 +22,7 @@ import { api, type Booking } from '@/lib/api'
 import { directionsUrl } from '@/lib/maps'
 import { formatBookingDay, formatDateTime, formatTime, localDate } from '@/lib/time'
 import { usePageTitle } from '@/hooks/usePageTitle'
+import { SiteFooter } from '@/components/SiteFooter'
 
 // Bookings can span councils; all of them are in Galicia today
 const TIME_ZONE = 'Europe/Madrid'
@@ -209,6 +210,7 @@ export function MyBookingsPage() {
         <p className="mt-1 text-base text-muted-foreground">{t('invites:myBookings.subtitle')}</p>
         {body}
       </main>
+      <SiteFooter />
 
       <CancelDialog key={toCancel?.id ?? 'none'} booking={toCancel} timeZone={TIME_ZONE} today={today} onClose={() => setToCancel(null)} onConfirm={confirmCancel} />
       <ChangeBookingDialog

@@ -20,9 +20,10 @@ import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { useAsync } from '@/hooks/useAsync'
 import { useCouncilAdmin } from '@/hooks/useCouncilAdmin'
-import { api, type AdminFacility, type FacilityInput, type GeocodeResult, type StoredImage, type WeeklyWindow } from '@/lib/api'
+import { api, type AdminFacility, type FacilityInput, type GeocodeResult, type StoredImage, type WeeklyWindow, type Tenant } from '@/lib/api'
 import { slugify } from '@/lib/slug'
 import { usePageTitle } from '@/hooks/usePageTitle'
+import { SiteFooter } from '@/components/SiteFooter'
 
 const EMPTY: FacilityInput = {
   slug: '',
@@ -73,13 +74,14 @@ export function FacilityEditorPage() {
             </Button>
           )}
         </main>
+        <SiteFooter />
       </div>
     )
   }
   return <Editor key={id} slug={slug} facility={creating ? null : existing.data} tenants={tenants.data?.tenants ?? []} token={token} />
 }
 
-function Editor({ slug, facility, tenants, token }: { slug: string; facility: AdminFacility | null; tenants: { slug: string; name: string; logo_url: string }[]; token: string }) {
+function Editor({ slug, facility, tenants, token }: { slug: string; facility: AdminFacility | null; tenants: Tenant[]; token: string }) {
   const { t } = useTranslation(['admin', 'common'])
   const navigate = useNavigate()
   const creating = facility === null
@@ -573,6 +575,7 @@ function Editor({ slug, facility, tenants, token }: { slug: string; facility: Ad
           </Dialog>
         )}
       </main>
+      <SiteFooter />
     </div>
   )
 }

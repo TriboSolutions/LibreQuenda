@@ -20,6 +20,7 @@ import { useMe } from '@/hooks/useMe'
 import { api, ApiError, type Booking, type Day, type Facility, type Slot } from '@/lib/api'
 import { formatBookingDay, formatLongDate, formatTime, localDate } from '@/lib/time'
 import { usePageTitle } from '@/hooks/usePageTitle'
+import { SiteFooter } from '@/components/SiteFooter'
 
 const FALLBACK_TIME_ZONE = 'Europe/Madrid'
 
@@ -126,6 +127,7 @@ export function CouncilPage() {
             <Link to="/">{t('councils:allCouncils')}</Link>
           </Button>
         </main>
+        <SiteFooter />
       </div>
     )
   }
@@ -186,6 +188,7 @@ export function CouncilPage() {
           </div>
         </div>
       </main>
+      <SiteFooter />
 
       <BookingDialog
         key={pick ? `${pick.facility.id}:${pick.slot.starts_at}` : 'none'}

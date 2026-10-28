@@ -30,7 +30,8 @@ export type Facility = {
   slots: Slot[]
 }
 
-export type Tenant = { slug: string; name: string; logo_url: string }
+// contact: where residents send accessibility feedback and complaints (RD 1112/2018); "" when not given
+export type Tenant = { slug: string; name: string; logo_url: string; contact_email: string; contact_phone: string }
 
 /** An uploaded image: forms save the ref (storage reference); screens only show the url. */
 export type StoredImage = { ref: string; url: string }
