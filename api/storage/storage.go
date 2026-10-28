@@ -107,6 +107,18 @@ func Get(ctx context.Context, ref string) (*Object, error) {
 	return &Object{Reader: object, Size: info.Size, ContentType: info.ContentType, LastModified: info.LastModified, ETag: info.ETag}, nil
 }
 
+// Delete removes a stored file; one already gone is not an error.
+func Delete(ctx context.Context, ref string) error {
+	var s, err = client()
+	if err != nil {
+		return err
+	}
+	if err = s.client.RemoveObject(ctx, s.bucket, ref, minio.RemoveObjectOptions{}); err != nil {
+		return fmt.Errorf("failed to delete %q: %w", ref, err)
+	}
+	return nil
+}
+
 // Ready checks that the bucket can be reached.
 func Ready(ctx context.Context) error {
 	var s, err = client()
