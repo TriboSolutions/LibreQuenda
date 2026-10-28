@@ -549,9 +549,9 @@ async function exportIndicators(token: string, slug: string, query: IndicatorsQu
   URL.revokeObjectURL(url)
 }
 
-/** GET …/admin/export: the council's full data as a ZIP, fetched with the token and saved. */
-async function exportCouncilData(token: string, slug: string) {
-  const res = await fetch(`/api/tenants/${encodeURIComponent(slug)}/admin/export`, {
+/** GET …/admin/export: the council's full data as a ZIP, fetched with the token and saved; `personal` adds the residents' personal data. */
+async function exportCouncilData(token: string, slug: string, personal: boolean) {
+  const res = await fetch(`/api/tenants/${encodeURIComponent(slug)}/admin/export${personal ? '?personal=1' : ''}`, {
     headers: { Authorization: `Bearer ${token}`, 'Accept-Language': i18n.resolvedLanguage ?? 'gl' },
   })
   if (!res.ok) {
