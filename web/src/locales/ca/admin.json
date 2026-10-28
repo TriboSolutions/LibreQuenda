@@ -255,7 +255,8 @@
       "7": "Últims 7 dies",
       "30": "Últims 30 dies",
       "90": "Últims 90 dies",
-      "365": "Últim any"
+      "365": "Últim any",
+      "custom": "Personalitzat"
     },
     "facility": "Instal·lació",
     "allFacilities": "Totes les instal·lacions",
@@ -331,7 +332,44 @@
         "label": "Freqüència d'ús",
         "hint": "Quantes persones van reservar 1, 2–4, 5–9 o 10+ vegades"
       }
-    }
+    },
+    "from": "Des de",
+    "to": "Fins a",
+    "compare": "Compara amb",
+    "compareOptions": {
+      "previous": "Període anterior",
+      "year": "Mateix període fa un any",
+      "none": "Sense comparar"
+    },
+    "comparedWith": "Comparat amb el {{from}} – {{to}}",
+    "points": "{{value}} p.p.",
+    "change": {
+      "noBase": "Sense dades per comparar",
+      "positive": "millor que en el període comparat",
+      "negative": "pitjor que en el període comparat",
+      "neutral": "respecte al període comparat"
+    },
+    "habits": {
+      "party": "Persones per reserva",
+      "partyHint": "Qui reserva més les persones que s'hi uneixen",
+      "lead": "Antelació habitual",
+      "leadHint": "La meitat de les reserves es fa amb més antelació que aquesta",
+      "leadHours": "{{value}} h",
+      "leadDays": "{{value}} dies"
+    },
+    "previousConfirmed": "Confirmades, període comparat",
+    "thisPeriod": "Aquest període",
+    "comparedPeriod": "Període comparat",
+    "weekdaysTitle": "Ocupació per dia de la setmana",
+    "weekdaysHint": "Hores reservades sobre les hores obertes de cada dia de la setmana.",
+    "colWeekday": "Dia",
+    "colGrowth": "Respecte al comparat",
+    "byFacilityHint": "Prem una instal·lació per veure'n el detall.",
+    "openFacility": "Mostra els indicadors de {{name}}",
+    "facilityTitle": "Indicadors de {{name}}",
+    "facilityDetail": "Detall de la instal·lació",
+    "editFacility": "Edita la instal·lació",
+    "customInvalid": "Tria una data d'inici anterior a la de final, amb un any com a màxim entre elles."
   },
   "smtp": {
     "title": "Servidor de correu (SMTP)",

@@ -205,3 +205,55 @@ func TestBusyHoursCSV(t *testing.T) {
 		t.Errorf("unexpected busy-hours CSV:\n%s", out.String())
 	}
 }
+
+func TestComparisonPeriod(t *testing.T) {
+	var madrid, _ = time.LoadLocation("Europe/Madrid")
+	var cases = []struct {
+		in       IndicatorsQuery
+		from, to string
+		ok       bool
+	}{
+		{IndicatorsQuery{From: "2026-10-01", To: "2026-10-28"}, "2026-09-03", "2026-09-30", true}, // the 28 days just before
+		{IndicatorsQuery{From: "2026-10-01", To: "2026-10-28", Compare: "year"}, "2025-10-01", "2025-10-28", true},
+		{IndicatorsQuery{From: "2026-03-01", To: "2026-03-31"}, "2026-01-29", "2026-02-28", true}, // 31 days back, across February
+		{IndicatorsQuery{From: "2026-10-01", To: "2026-10-28", Compare: "none"}, "", "", false},
+	}
+	for _, c := range cases {
+		var r, key = c.in.parse(madrid, time.Now())
+		if key != "" {
+			t.Fatalf("%+v: %s", c.in, key)
+		}
+		var p, ok = r.comparison()
+		if ok != c.ok {
+			t.Fatalf("%+v: comparison ok = %v, want %v", c.in, ok, c.ok)
+		}
+		if !ok {
+			continue
+		}
+		if p.from.Format(localDate) != c.from || p.to.Format(localDate) != c.to || !p.end.Equal(p.to.AddDate(0, 0, 1)) || p.bucket != r.bucket {
+			t.Errorf("%+v: got %s - %s (%s), want %s - %s", c.in, p.from.Format(localDate), p.to.Format(localDate), p.bucket, c.from, c.to)
+		}
+	}
+	if _, key := (IndicatorsQuery{Compare: "last-month"}).parse(madrid, time.Now()); key != "errors.invalid_query_params" {
+		t.Errorf("unknown comparison: got %q", key)
+	}
+}
+
+func TestWeekdayOccupancy(t *testing.T) {
+	var pavilion, pool = uuid.New(), uuid.New()
+	// Monday 26 and Tuesday 27 October 2026
+	var open = map[uuid.UUID]map[string]int{
+		pavilion: {"2026-10-26": 600, "2026-10-27": 600},
+		pool:     {"2026-10-26": 300, "2026-10-27": 0},
+	}
+	var days = weekdayOccupancy(open, []model.IndicatorsByWeekdayRow{{Weekday: 1, BookedMinutes: 450}, {Weekday: 2, BookedMinutes: 900}})
+	if len(days) != 7 || days[0].OpenHours != 15 || *days[0].Occupancy != 0.5 {
+		t.Errorf("Monday: got %+v", days[0])
+	}
+	if *days[1].Occupancy != 1 {
+		t.Errorf("Tuesday: occupancy must not pass 100%%, got %v", *days[1].Occupancy)
+	}
+	if days[6].Occupancy != nil {
+		t.Errorf("Sunday is never open: occupancy must be null, got %v", *days[6].Occupancy)
+	}
+}
