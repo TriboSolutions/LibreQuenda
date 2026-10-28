@@ -26,5 +26,22 @@
   "notFoundTitle": "Instalación non atopada",
   "notFoundBody": "Non hai ningunha instalación en «{{path}}».",
   "mapLabel": "Mapa coa localización da instalación",
-  "minAge": "Idade mínima: {{count}} anos."
+  "minAge": "Idade mínima: {{count}} anos.",
+  "suggest": {
+    "title": "Suxestións",
+    "quietTitle": "Horas máis tranquilas",
+    "quietHint": "Os turnos libres que adoitan ter menos xente, segundo as reservas das últimas 8 semanas.",
+    "level": {
+      "quiet": "Adoita estar tranquilo",
+      "moderate": "Ocupación media",
+      "busy": "Adoita estar cheo"
+    },
+    "nearbyTitle": "Preto de aquí",
+    "nearbyFull": "Esta instalación está completa este día. Outros lugares de {{sport}} con turnos libres:",
+    "nearbyHint": "Outros lugares de {{sport}} con turnos libres este día.",
+    "distance": "{{km}} km",
+    "nextDoor": "Ao lado",
+    "freeCount_one": "{{count}} turno libre",
+    "freeCount_other": "{{count}} turnos libres"
+  }
 }

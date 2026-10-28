@@ -48,25 +48,31 @@ func (s *tenantsService) GetTenants(ctx context.Context) (*TenantsResponse, *sha
 }
 
 func (s *tenantsService) GetDay(ctx context.Context, slug string, dateParam string) (*DayResponse, *shared.ErrorResponse) {
+	var day, _, _, err = s.loadDay(ctx, slug, dateParam)
+	return day, err
+}
+
+// loadDay is GetDay plus the council's id and time zone, for the facility page.
+func (s *tenantsService) loadDay(ctx context.Context, slug string, dateParam string) (*DayResponse, uuid.UUID, *time.Location, *shared.ErrorResponse) {
 	var queries = model.New(s.db)
 	var tenant, err = queries.GetTenantBySlug(ctx, slug)
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, &shared.ErrorResponse{Code: http.StatusNotFound, Message: "errors.tenant_not_found"}
+		return nil, uuid.Nil, nil, &shared.ErrorResponse{Code: http.StatusNotFound, Message: "errors.tenant_not_found"}
 	}
 	if err != nil {
-		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.day_load_failed"}
+		return nil, uuid.Nil, nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.day_load_failed"}
 	}
 
 	var loc, locErr = time.LoadLocation(tenant.Timezone)
 	if locErr != nil {
-		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.day_load_failed"}
+		return nil, uuid.Nil, nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.day_load_failed"}
 	}
 	var now = time.Now().In(loc)
 	var day = time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, loc)
 	if dateParam != "" {
 		day, err = time.ParseInLocation(time.DateOnly, dateParam, loc)
 		if err != nil {
-			return nil, &shared.ErrorResponse{Code: http.StatusBadRequest, Message: "errors.invalid_query_params"}
+			return nil, uuid.Nil, nil, &shared.ErrorResponse{Code: http.StatusBadRequest, Message: "errors.invalid_query_params"}
 		}
 	}
 	var dayEnd = day.AddDate(0, 0, 1)
@@ -74,22 +80,22 @@ func (s *tenantsService) GetDay(ctx context.Context, slug string, dateParam stri
 	var facilities []model.ListActiveFacilitiesByTenantRow
 	facilities, err = queries.ListActiveFacilitiesByTenant(ctx, tenant.ID)
 	if err != nil {
-		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.day_load_failed"}
+		return nil, uuid.Nil, nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.day_load_failed"}
 	}
 	var hours []model.ListOpeningHoursByTenantWeekdayRow
 	hours, err = queries.ListOpeningHoursByTenantWeekday(ctx, model.ListOpeningHoursByTenantWeekdayParams{TenantID: tenant.ID, Weekday: schedule.ISOWeekday(day)})
 	if err != nil {
-		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.day_load_failed"}
+		return nil, uuid.Nil, nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.day_load_failed"}
 	}
 	var closures []model.ListClosuresByTenantRangeRow
 	closures, err = queries.ListClosuresByTenantRange(ctx, model.ListClosuresByTenantRangeParams{TenantID: tenant.ID, RangeStart: day, RangeEnd: dayEnd})
 	if err != nil {
-		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.day_load_failed"}
+		return nil, uuid.Nil, nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.day_load_failed"}
 	}
 	var bookings []model.ListConfirmedBookingsByTenantRangeRow
 	bookings, err = queries.ListConfirmedBookingsByTenantRange(ctx, model.ListConfirmedBookingsByTenantRangeParams{TenantID: tenant.ID, RangeStart: day, RangeEnd: dayEnd})
 	if err != nil {
-		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.day_load_failed"}
+		return nil, uuid.Nil, nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.day_load_failed"}
 	}
 
 	var windowsByFacility = map[uuid.UUID][]schedule.Window{}
@@ -153,12 +159,12 @@ func (s *tenantsService) GetDay(ctx context.Context, slug string, dateParam stri
 			Slots:          slots,
 		})
 	}
-	return response, nil
+	return response, tenant.ID, loc, nil
 }
 
 // GetFacilityPage is one active facility of the council with its slots for the day and its weekly schedule.
 func (s *tenantsService) GetFacilityPage(ctx context.Context, slug string, facilitySlug string, dateParam string) (*FacilityPageResponse, *shared.ErrorResponse) {
-	var day, err = s.GetDay(ctx, slug, dateParam)
+	var day, tenantId, loc, err = s.loadDay(ctx, slug, dateParam)
 	if err != nil {
 		return nil, err
 	}
@@ -175,7 +181,25 @@ func (s *tenantsService) GetFacilityPage(ctx context.Context, slug string, facil
 		for _, h := range hours {
 			schedule = append(schedule, WeeklyWindowDto{Weekday: h.Weekday, OpensAt: h.OpensAt.Format("15:04"), ClosesAt: h.ClosesAt.Format("15:04")})
 		}
-		return &FacilityPageResponse{Tenant: day.Tenant, Timezone: day.Timezone, Date: day.Date, Now: day.Now, Facility: f, Schedule: schedule}, nil
+		var now = time.Now()
+		var busy, busyErr = model.New(s.db).ListBusyHoursByTenant(ctx, model.ListBusyHoursByTenantParams{
+			Timezone:   day.Timezone,
+			TenantID:   tenantId,
+			RangeStart: now.AddDate(0, 0, -7*historyWeeks),
+			RangeEnd:   now,
+		})
+		if busyErr != nil {
+			return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.day_load_failed"}
+		}
+		return &FacilityPageResponse{
+			Tenant:      day.Tenant,
+			Timezone:    day.Timezone,
+			Date:        day.Date,
+			Now:         day.Now,
+			Facility:    f,
+			Schedule:    schedule,
+			Suggestions: suggest(f, day.Facilities, busyHistoryByFacility(busy), loc),
+		}, nil
 	}
 	return nil, &shared.ErrorResponse{Code: http.StatusNotFound, Message: "errors.facility_not_found"}
 }
