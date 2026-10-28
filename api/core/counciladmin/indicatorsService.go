@@ -43,67 +43,124 @@ func (s *counciladminService) indicatorsPeriod(ctx context.Context, tenantId uui
 	return loc, r, nil
 }
 
-// Indicators: the council dashboard, computed live from the bookings.
+// Indicators: the council dashboard, computed live from the bookings, and the
+// same figures for the period it is compared with.
 func (s *counciladminService) Indicators(ctx context.Context, tenantId uuid.UUID, query IndicatorsQuery) (*IndicatorsDto, *shared.ErrorResponse) {
 	var loc, r, problem = s.indicatorsPeriod(ctx, tenantId, query)
 	if problem != nil {
 		return nil, problem
 	}
-	var facilities []model.IndicatorsByFacilityRow
-	var series []model.IndicatorsSeriesRow
-	var busy []model.IndicatorsBusyHoursRow
-	var hours []model.ListOpeningHoursByTenantRow
-	var closures []model.ListClosuresByTenantRangeRow
-	var activeUsers int64
+	var response = IndicatorsDto{Bucket: r.bucket, Timezone: loc.String(), GeneratedAt: time.Now(), Compare: r.compare}
+	var found = true
 	var err = s.snapshot(ctx, func(q *model.Queries) error {
-		var err error
-		if facilities, err = q.IndicatorsByFacility(ctx, model.IndicatorsByFacilityParams{TenantID: tenantId, FacilityID: r.facility, RangeStart: r.start, RangeEnd: r.end}); err != nil {
+		var hours, err = q.ListOpeningHoursByTenant(ctx, tenantId)
+		if err != nil {
 			return err
 		}
-		if series, err = q.IndicatorsSeries(ctx, model.IndicatorsSeriesParams{Bucket: r.bucket, Timezone: loc.String(), TenantID: tenantId, FacilityID: r.facility, RangeStart: r.start, RangeEnd: r.end}); err != nil {
+		if response.PeriodFiguresDto, err = periodFigures(ctx, q, tenantId, loc, r, hours); err != nil {
 			return err
 		}
-		if busy, err = q.IndicatorsBusyHours(ctx, model.IndicatorsBusyHoursParams{Timezone: loc.String(), TenantID: tenantId, FacilityID: r.facility, RangeStart: r.start, RangeEnd: r.end}); err != nil {
-			return err
+		if found = !r.facility.Valid || len(response.Facilities) > 0; !found {
+			return nil
 		}
-		if activeUsers, err = q.IndicatorsActiveUsers(ctx, model.IndicatorsActiveUsersParams{TenantID: tenantId, FacilityID: r.facility, RangeStart: r.start, RangeEnd: r.end}); err != nil {
-			return err
+		if previous, ok := r.comparison(); ok {
+			var figures PeriodFiguresDto
+			if figures, err = periodFigures(ctx, q, tenantId, loc, previous, hours); err != nil {
+				return err
+			}
+			response.Previous = &figures
 		}
-		if hours, err = q.ListOpeningHoursByTenant(ctx, tenantId); err != nil {
-			return err
+		var busy []model.IndicatorsBusyHoursRow
+		busy, err = q.IndicatorsBusyHours(ctx, model.IndicatorsBusyHoursParams{Timezone: loc.String(), TenantID: tenantId, FacilityID: r.facility, RangeStart: r.start, RangeEnd: r.end})
+		response.BusyHours = make([]BusyHourDto, 0, len(busy))
+		for _, b := range busy {
+			response.BusyHours = append(response.BusyHours, BusyHourDto{Weekday: b.Weekday, Hour: b.Hour, Bookings: b.Bookings})
 		}
-		closures, err = q.ListClosuresByTenantRange(ctx, model.ListClosuresByTenantRangeParams{TenantID: tenantId, RangeStart: r.start, RangeEnd: r.end})
 		return err
 	})
 	if err != nil {
 		return nil, failed("errors.indicators_failed")
 	}
-	if r.facility.Valid && len(facilities) == 0 {
+	if !found {
 		return nil, &shared.ErrorResponse{Code: http.StatusNotFound, Message: "errors.facility_not_found"}
 	}
-
-	var response = IndicatorsDto{
-		From:        r.from.Format(localDate),
-		To:          r.to.Format(localDate),
-		Bucket:      r.bucket,
-		Timezone:    loc.String(),
-		GeneratedAt: time.Now(),
-		Facilities:  make([]FacilityIndicatorsDto, 0, len(facilities)),
-		Series:      fillSeries(r, series),
-		BusyHours:   make([]BusyHourDto, 0, len(busy)),
-	}
-	var open = openMinutes(r, loc, facilities, hours, closures)
-	for _, f := range facilities {
-		var item = mapFacilityIndicators(f, open[f.ID])
-		response.Totals.add(item.IndicatorCountsDto)
-		response.Facilities = append(response.Facilities, item)
-	}
-	response.Totals.rates()
-	response.Totals.ActiveUsers = activeUsers
-	for _, b := range busy {
-		response.BusyHours = append(response.BusyHours, BusyHourDto{Weekday: b.Weekday, Hour: b.Hour, Bookings: b.Bookings})
-	}
 	return &response, nil
+}
+
+// periodFigures: every figure of one period, inside the caller's snapshot.
+func periodFigures(ctx context.Context, q *model.Queries, tenantId uuid.UUID, loc *time.Location, r indicatorsRange, hours []model.ListOpeningHoursByTenantRow) (PeriodFiguresDto, error) {
+	var figures = PeriodFiguresDto{From: r.from.Format(localDate), To: r.to.Format(localDate)}
+	var facilities, err = q.IndicatorsByFacility(ctx, model.IndicatorsByFacilityParams{TenantID: tenantId, FacilityID: r.facility, RangeStart: r.start, RangeEnd: r.end})
+	if err != nil {
+		return figures, err
+	}
+	var series []model.IndicatorsSeriesRow
+	if series, err = q.IndicatorsSeries(ctx, model.IndicatorsSeriesParams{Bucket: r.bucket, Timezone: loc.String(), TenantID: tenantId, FacilityID: r.facility, RangeStart: r.start, RangeEnd: r.end}); err != nil {
+		return figures, err
+	}
+	var weekdays []model.IndicatorsByWeekdayRow
+	if weekdays, err = q.IndicatorsByWeekday(ctx, model.IndicatorsByWeekdayParams{Timezone: loc.String(), TenantID: tenantId, FacilityID: r.facility, RangeStart: r.start, RangeEnd: r.end}); err != nil {
+		return figures, err
+	}
+	var habits model.IndicatorsHabitsRow
+	if habits, err = q.IndicatorsHabits(ctx, model.IndicatorsHabitsParams{TenantID: tenantId, FacilityID: r.facility, RangeStart: r.start, RangeEnd: r.end}); err != nil {
+		return figures, err
+	}
+	if figures.Totals.ActiveUsers, err = q.IndicatorsActiveUsers(ctx, model.IndicatorsActiveUsersParams{TenantID: tenantId, FacilityID: r.facility, RangeStart: r.start, RangeEnd: r.end}); err != nil {
+		return figures, err
+	}
+	var closures []model.ListClosuresByTenantRangeRow
+	if closures, err = q.ListClosuresByTenantRange(ctx, model.ListClosuresByTenantRangeParams{TenantID: tenantId, RangeStart: r.start, RangeEnd: r.end}); err != nil {
+		return figures, err
+	}
+
+	var open = openMinutesByDay(r, loc, facilities, hours, closures)
+	figures.Facilities = make([]FacilityIndicatorsDto, 0, len(facilities))
+	for _, f := range facilities {
+		var minutes int
+		for _, m := range open[f.ID] {
+			minutes += m
+		}
+		var item = mapFacilityIndicators(f, minutes)
+		figures.Totals.add(item.IndicatorCountsDto)
+		figures.Facilities = append(figures.Facilities, item)
+	}
+	figures.Totals.rates()
+	if habits.Bookings > 0 {
+		figures.Totals.AvgPartySize = &habits.AvgPartySize
+		figures.Totals.MedianLeadHours = &habits.MedianLeadHours
+	}
+	figures.Series = fillSeries(r, series)
+	figures.Weekdays = weekdayOccupancy(open, weekdays)
+	return figures, nil
+}
+
+// weekdayOccupancy adds up the open time of every facility per weekday and sets
+// the booked time against it.
+func weekdayOccupancy(open map[uuid.UUID]map[string]int, booked []model.IndicatorsByWeekdayRow) []WeekdayOccupancyDto {
+	var days = make([]WeekdayOccupancyDto, 7)
+	for i := range days {
+		days[i].Weekday = int32(i + 1)
+	}
+	for _, byDay := range open {
+		for date, minutes := range byDay {
+			var day, _ = time.Parse(localDate, date)
+			days[schedule.ISOWeekday(day)-1].OpenHours += float64(minutes) / 60
+		}
+	}
+	for _, b := range booked {
+		if b.Weekday >= 1 && b.Weekday <= 7 {
+			days[b.Weekday-1].BookedHours = float64(b.BookedMinutes) / 60
+		}
+	}
+	for i := range days {
+		days[i].Occupancy = ratio(days[i].BookedHours, days[i].OpenHours)
+		if days[i].Occupancy != nil && *days[i].Occupancy > 1 {
+			var full = 1.0
+			days[i].Occupancy = &full
+		}
+	}
+	return days
 }
 
 func mapFacilityIndicators(f model.IndicatorsByFacilityRow, openMinutes int) FacilityIndicatorsDto {
@@ -153,17 +210,6 @@ func openMinutesByDay(r indicatorsRange, loc *time.Location, facilities []model.
 		var weekday = schedule.ISOWeekday(day)
 		for _, f := range facilities {
 			open[f.ID][day.Format(localDate)] = schedule.OpenMinutes(day, loc, int(f.SlotMinutes), windows[weekdayKey{f.ID, weekday}], closed[f.ID])
-		}
-	}
-	return open
-}
-
-// openMinutes: per facility, the bookable time of the whole period.
-func openMinutes(r indicatorsRange, loc *time.Location, facilities []model.IndicatorsByFacilityRow, hours []model.ListOpeningHoursByTenantRow, closures []model.ListClosuresByTenantRangeRow) map[uuid.UUID]int {
-	var open = make(map[uuid.UUID]int, len(facilities))
-	for id, days := range openMinutesByDay(r, loc, facilities, hours, closures) {
-		for _, minutes := range days {
-			open[id] += minutes
 		}
 	}
 	return open
@@ -377,6 +423,7 @@ func writeUsageCSV(w io.Writer, format csvFormat, r indicatorsRange, bands []usa
 // handler can still answer JSON.
 func (s *counciladminService) ExportIndicators(ctx context.Context, tenantId uuid.UUID, query IndicatorsQuery, kind string, format csvFormat) (func(io.Writer) error, *shared.ErrorResponse) {
 	if kind == "summary" {
+		query.Compare = "none" // the file holds the period asked for only
 		var data, problem = s.Indicators(ctx, tenantId, query)
 		if problem != nil {
 			return nil, problem

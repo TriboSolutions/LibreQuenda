@@ -12,6 +12,7 @@ type IndicatorsQuery struct {
 	To       string // empty = today
 	Days     int    // used without From; 0 = 30
 	Facility string // empty = every facility of the council
+	Compare  string // "previous" (default): the same number of days just before; "year": the same dates a year earlier; "none"
 }
 
 const localDate = "2006-01-02"
@@ -23,6 +24,26 @@ type indicatorsRange struct {
 	start, end time.Time // [start, end): what the queries filter on
 	bucket     string    // 'day', 'week' or 'month'
 	facility   uuid.NullUUID
+	compare    string // "previous", "year" or "none"
+}
+
+// comparison: the period the figures are set against, with the same bucket so
+// the charts line up; false when no comparison was asked for.
+func (r indicatorsRange) comparison() (indicatorsRange, bool) {
+	var c = r
+	switch r.compare {
+	case "previous":
+		c.to = r.from.AddDate(0, 0, -1)
+		c.from = c.to.AddDate(0, 0, 1-dayCount(r.from, r.to))
+	case "year":
+		c.from = r.from.AddDate(-1, 0, 0)
+		c.to = r.to.AddDate(-1, 0, 0)
+	default:
+		return c, false
+	}
+	c.start = c.from
+	c.end = c.to.AddDate(0, 0, 1)
+	return c, true
 }
 
 // parse answers the period, or the i18n key of the problem.
@@ -51,6 +72,14 @@ func (q IndicatorsQuery) parse(loc *time.Location, now time.Time) (indicatorsRan
 	var days = dayCount(r.from, r.to)
 	if days < 1 || days > maxIndicatorDays {
 		return r, "errors.invalid_indicators_range"
+	}
+	switch q.Compare {
+	case "":
+		r.compare = "previous"
+	case "previous", "year", "none":
+		r.compare = q.Compare
+	default:
+		return r, "errors.invalid_query_params"
 	}
 	if q.Facility != "" {
 		var id, idErr = uuid.Parse(q.Facility)
@@ -118,7 +147,27 @@ type FacilityIndicatorsDto struct {
 
 type IndicatorTotalsDto struct {
 	IndicatorCountsDto
-	ActiveUsers int64 `json:"active_users"` // people with a confirmed booking, as owner or invited
+	ActiveUsers     int64    `json:"active_users"`      // people with a confirmed booking, as owner or invited
+	AvgPartySize    *float64 `json:"avg_party_size"`    // people per confirmed booking (owner + invited); null without bookings
+	MedianLeadHours *float64 `json:"median_lead_hours"` // how long before playing people book; null without bookings
+}
+
+// Occupancy by local weekday, to see which days a facility fills.
+type WeekdayOccupancyDto struct {
+	Weekday     int32    `json:"weekday"` // ISO: 1 = Monday
+	BookedHours float64  `json:"booked_hours"`
+	OpenHours   float64  `json:"open_hours"`
+	Occupancy   *float64 `json:"occupancy"` // null when closed that weekday
+}
+
+// The figures of one period: the one asked for, or the one it is compared with.
+type PeriodFiguresDto struct {
+	From       string                  `json:"from"`
+	To         string                  `json:"to"`
+	Totals     IndicatorTotalsDto      `json:"totals"`
+	Facilities []FacilityIndicatorsDto `json:"facilities"`
+	Series     []PeriodBookingsDto     `json:"series"`
+	Weekdays   []WeekdayOccupancyDto   `json:"weekdays"`
 }
 
 type PeriodBookingsDto struct {
@@ -134,15 +183,13 @@ type BusyHourDto struct {
 }
 
 type IndicatorsDto struct {
-	From        string                  `json:"from"`
-	To          string                  `json:"to"`
-	Bucket      string                  `json:"bucket"`
-	Timezone    string                  `json:"timezone"`
-	GeneratedAt time.Time               `json:"generated_at"`
-	Totals      IndicatorTotalsDto      `json:"totals"`
-	Facilities  []FacilityIndicatorsDto `json:"facilities"`
-	Series      []PeriodBookingsDto     `json:"series"`
-	BusyHours   []BusyHourDto           `json:"busy_hours"`
+	PeriodFiguresDto
+	Bucket      string            `json:"bucket"`
+	Timezone    string            `json:"timezone"`
+	GeneratedAt time.Time         `json:"generated_at"`
+	BusyHours   []BusyHourDto     `json:"busy_hours"`
+	Compare     string            `json:"compare"`  // "previous", "year" or "none"
+	Previous    *PeriodFiguresDto `json:"previous"` // the comparison period; null with compare "none"
 }
 
 // add sums another facility into the council totals; rates are worked out afterwards.

@@ -68,6 +68,41 @@ WHERE
 GROUP BY
     1, 2;
 
+-- name: IndicatorsByWeekday :many
+-- Confirmed booked time per local weekday (ISO: 1 = Monday), for occupancy by weekday.
+SELECT
+    EXTRACT(ISODOW FROM b.starts_at AT TIME ZONE sqlc.arg('timezone')::TEXT)::INT AS weekday,
+    COALESCE(SUM(EXTRACT(EPOCH FROM b.ends_at - b.starts_at) / 60), 0)::BIGINT AS booked_minutes
+FROM
+    booking b
+    JOIN facility f ON f.id = b.facility_id
+WHERE
+    f.tenant_id = sqlc.arg('tenant_id')
+    AND (sqlc.narg('facility_id')::UUID IS NULL OR f.id = sqlc.narg('facility_id'))
+    AND b.status = 'confirmed'
+    AND b.starts_at >= sqlc.arg('range_start')
+    AND b.starts_at < sqlc.arg('range_end')
+GROUP BY
+    1;
+
+-- name: IndicatorsHabits :one
+-- How people book: the average group (owner + invited, guests too) and the
+-- median time between booking and playing, over the confirmed bookings.
+SELECT
+    COUNT(*) AS bookings,
+    COALESCE(AVG(1 + invited.people), 0)::FLOAT8 AS avg_party_size,
+    COALESCE(percentile_cont(0.5) WITHIN GROUP (ORDER BY EXTRACT(EPOCH FROM b.starts_at - b.created_at) / 3600), 0)::FLOAT8 AS median_lead_hours
+FROM
+    booking b
+    JOIN facility f ON f.id = b.facility_id
+    CROSS JOIN LATERAL (SELECT COUNT(*) AS people FROM booking_participant bp WHERE bp.booking_id = b.id) invited
+WHERE
+    f.tenant_id = sqlc.arg('tenant_id')
+    AND (sqlc.narg('facility_id')::UUID IS NULL OR f.id = sqlc.narg('facility_id'))
+    AND b.status = 'confirmed'
+    AND b.starts_at >= sqlc.arg('range_start')
+    AND b.starts_at < sqlc.arg('range_end');
+
 -- name: IndicatorsActiveUsers :one
 -- Distinct people with a confirmed booking in the period: owners and those who
 -- joined through an invite. Guests have no account and are not counted.

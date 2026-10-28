@@ -107,7 +107,7 @@ READERS = [
 ]
 
 # Days of booking history before the day the database is created (see history.sql)
-HISTORY_DAYS = 90
+HISTORY_DAYS = 400
 
 # Relative to the day the database is created: (facility, resident, day offset, start)
 # The length is the facility's slot; every start must be one of its turns.
