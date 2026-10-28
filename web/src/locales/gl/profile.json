@@ -59,5 +59,27 @@
       "symbol": "Un símbolo (como ! ? # ou ñ)"
     }
   },
-  "signInToVerify": "Inicia sesión para rematar de verificar o teu correo. Volverás aquí e quedará verificado."
+  "signInToVerify": "Inicia sesión para rematar de verificar o teu correo. Volverás aquí e quedará verificado.",
+  "privacy": {
+    "title": "Os teus datos",
+    "help": "Segundo o RXPD podes levar unha copia de todo o que LibreQuenda garda sobre ti, ou eliminar a túa conta.",
+    "exportTitle": "Descargar os teus datos",
+    "exportHelp": "O teu perfil, roles, reservas, as reservas ás que te uniches e os teus avisos. JSON serve para outras aplicacións; CSV ábrese nunha folla de cálculo.",
+    "exportJson": "Descargar JSON",
+    "exportCsv": "Descargar CSV",
+    "preparing": "Preparando…",
+    "deleteTitle": "Eliminar conta",
+    "deleteHelp": "Borra para sempre a túa conta de acceso e os teus datos persoais. Non se pode desfacer.",
+    "delete": "Eliminar a miña conta",
+    "deleteDialogTitle": "Eliminar a túa conta?",
+    "deleteDialogBody": "Non se pode desfacer. Descarga antes os teus datos se queres conservar unha copia.",
+    "deleteUpcoming": "As túas próximas reservas cancélanse e as súas ligazóns de invitación deixan de funcionar.",
+    "deletePast": "As reservas pasadas quedan nas estatísticas do concello, sen nada que te identifique.",
+    "deleteSignIn": "Bórranse a túa conta de acceso, perfil, foto, roles e avisos.",
+    "deleteConfirmLabel": "Para confirmar, escribe o teu correo: {{email}}",
+    "deleteConfirm": "Eliminar para sempre",
+    "deleting": "Eliminando…",
+    "deletedTitle": "A túa conta foi eliminada.",
+    "deletedBody": "Os teus datos persoais xa non están en LibreQuenda. Podes crear unha conta nova cando queiras."
+  }
 }

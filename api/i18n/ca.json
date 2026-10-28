@@ -121,7 +121,9 @@
     "smtp_not_configured": "No hi ha cap servidor SMTP per enviar: configura el de l'ajuntament o demana a l'administració de la plataforma que en configuri un de comú.",
     "smtp_test_failed": "El servidor SMTP no ha acceptat el correu de prova: {{0}}",
     "secrets_key_missing": "El servidor no té clau de xifratge (SECRETS_KEY), així que la contrasenya no es pot desar de manera segura. Avisa l'administració de la plataforma.",
-    "smtp_password_unreadable": "No es pot llegir la configuració SMTP desada (ha canviat la clau de xifratge). Torna-la a escriure i desa."
+    "smtp_password_unreadable": "No es pot llegir la configuració SMTP desada (ha canviat la clau de xifratge). Torna-la a escriure i desa.",
+    "export_failed": "No s'han pogut preparar les teves dades. Torna-ho a provar.",
+    "account_delete_failed": "No s'ha pogut eliminar el teu compte. No s'ha esborrat res; torna-ho a provar d'aquí a un moment."
   },
   "email": {
     "greeting": "Hola {{0}},",

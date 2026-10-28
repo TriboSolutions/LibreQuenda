@@ -41,6 +41,19 @@ func (r *meRoutes) RegisterRoutes() {
 		AdditionalMethods: []router.HTTPMethod{router.OPTIONS},
 		Handler:           middlewares.AuthMiddleware(h.UpdateProfile),
 	})
+	// RXPD / GDPR: the user's data as a file, and erasure of the whole account
+	r.router.NewRoute(router.Route{
+		Path:              "/me/export",
+		Method:            http.MethodGet,
+		AdditionalMethods: []router.HTTPMethod{router.OPTIONS},
+		Handler:           middlewares.AuthMiddleware(middlewares.WithStrictRateLimit(h.Export)),
+	})
+	r.router.NewRoute(router.Route{
+		Path:              "/me",
+		Method:            http.MethodDelete,
+		AdditionalMethods: []router.HTTPMethod{router.OPTIONS},
+		Handler:           middlewares.AuthMiddleware(h.DeleteAccount),
+	})
 
 	// the account in Zitadel, edited from /perfil (never Zitadel's console)
 	var account = []router.Route{

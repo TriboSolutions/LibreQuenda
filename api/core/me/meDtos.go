@@ -66,15 +66,20 @@ func MapMeResponse(user model.UpsertUserBySubjectRow, emailVerified bool, isSupe
 		EmailVerified: emailVerified,
 		IsSuperadmin:  isSuperadmin,
 		FullName:      user.FullName.String,
-		Roles:         make([]TenantRoleDto, 0, len(roles)),
+		Roles:         mapRoles(roles),
 	}
+	return response
+}
+
+func mapRoles(roles []model.GetUserTenantRolesRow) []TenantRoleDto {
+	var dtos = make([]TenantRoleDto, 0, len(roles))
 	for _, role := range roles {
-		response.Roles = append(response.Roles, TenantRoleDto{
+		dtos = append(dtos, TenantRoleDto{
 			TenantId:   role.TenantID.String(),
 			TenantSlug: role.TenantSlug,
 			TenantName: role.TenantName,
 			Role:       string(role.Role),
 		})
 	}
-	return response
+	return dtos
 }
