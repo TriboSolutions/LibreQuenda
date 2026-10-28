@@ -91,7 +91,6 @@
   "councilMenuLink": "Administra {{council}}",
   "facilities": {
     "title": "Instal·lacions",
-    "subtitle": "{{council}}: instal·lacions, horaris i normes.",
     "guardBody": "Aquesta zona és per als administradors de l'ajuntament.",
     "new": "Nova instal·lació",
     "empty": "Encara no hi ha instal·lacions. Crea'n la primera.",
@@ -243,5 +242,126 @@
     "verify": "Verificar el meu correu",
     "pageTitle": "T'han convidat a administrar {{council}}",
     "pageBody": "El rol t'espera: només es dona a una adreça verificada, perquè ningú pugui reclamar la d'una altra persona. Inicia la sessió de nou i escriu el codi que enviem a {{email}}; tornaràs aquí ja com a administrador o administradora."
+  },
+  "councilAdmin": {
+    "title": "Gestió de l'ajuntament",
+    "subtitle": "{{council}}: instal·lacions, horaris, normes i indicadors.",
+    "settings": "Configuració de l'ajuntament"
+  },
+  "indicators": {
+    "title": "Indicadors",
+    "period": "Període",
+    "periods": {
+      "7": "Últims 7 dies",
+      "30": "Últims 30 dies",
+      "90": "Últims 90 dies",
+      "365": "Últim any"
+    },
+    "facility": "Instal·lació",
+    "allFacilities": "Totes les instal·lacions",
+    "autoRefresh": "Actualització automàtica",
+    "refreshOptions": {
+      "0": "Només manual",
+      "30": "Cada 30 segons",
+      "60": "Cada minut",
+      "300": "Cada 5 minuts",
+      "900": "Cada 15 minuts"
+    },
+    "refresh": "Actualitza ara",
+    "updatedAt": "Actualitzat a les {{time}}",
+    "export": "Exporta CSV",
+    "exportExcel": "Format per a Excel (;)",
+    "kpi": {
+      "bookings": "Reserves",
+      "bookingsHint_one": "{{count}} confirmada",
+      "bookingsHint_other": "{{count}} confirmades",
+      "occupancy": "Ocupació",
+      "occupancyHint": "{{booked}} h reservades de {{open}} h disponibles",
+      "cancellations": "Cancel·lacions",
+      "cancellationsHint": "{{user}} per la persona, {{council}} per l'ajuntament",
+      "activeUsers": "Persones actives",
+      "activeUsersHint": "Amb almenys una reserva, pròpia o per invitació",
+      "noShows": "No presentades",
+      "noShowsHint": "{{missed}} de {{finished}} reserves passades amb lector QR",
+      "noShowsNone": "Sense reserves passades amb lector QR"
+    },
+    "chartTitle": {
+      "day": "Reserves per dia",
+      "week": "Reserves per setmana",
+      "month": "Reserves per mes"
+    },
+    "confirmed": "Confirmades",
+    "cancelled": "Cancel·lades",
+    "showTable": "Mostra les dades en una taula",
+    "colPeriod": "Període",
+    "weekOf": "Setmana del {{date}}",
+    "busyTitle": "Dies i hores amb més reserves",
+    "busyHint": "Reserves confirmades segons el dia i l'hora d'inici. Com més intens el color, més reserves.",
+    "busyCell_one": "{{weekday}} a les {{hour}}: {{count}} reserva",
+    "busyCell_other": "{{weekday}} a les {{hour}}: {{count}} reserves",
+    "empty": "Encara no hi ha reserves en aquest període.",
+    "byFacilityTitle": "Per instal·lació",
+    "colFacility": "Instal·lació",
+    "colBookings": "Reserves",
+    "colOccupancy": "Ocupació",
+    "colCancellation": "Cancel·lacions",
+    "colNoShow": "No presentades",
+    "noReader": "sense lector QR",
+    "percent": "{{value}} %",
+    "definitions": "L'ocupació divideix les hores reservades entre les hores en què es podia reservar, descomptant els tancaments. Les no presentades només es compten a les instal·lacions amb lector QR. Les xifres es calculen al moment a partir de les reserves.",
+    "kpiTitle": "Resum del període",
+    "fullscreen": "Pantalla completa: {{board}}",
+    "exitFullscreen": "Surt de la pantalla completa",
+    "exportAnonymous": "Dades anònimes",
+    "exportNote": "Només totals, mai reserves ni persones. Les xifres d'1 o 2 apareixen com a «<3».",
+    "exports": {
+      "summary": {
+        "label": "Resum per instal·lació",
+        "hint": "Els totals i percentatges del període"
+      },
+      "daily": {
+        "label": "Per instal·lació i dia",
+        "hint": "Reserves, hores i ocupació de cada dia"
+      },
+      "hours": {
+        "label": "Dies i hores",
+        "hint": "Reserves per dia de la setmana i hora d'inici"
+      },
+      "usage": {
+        "label": "Freqüència d'ús",
+        "hint": "Quantes persones van reservar 1, 2–4, 5–9 o 10+ vegades"
+      }
+    }
+  },
+  "smtp": {
+    "title": "Servidor de correu (SMTP)",
+    "help": "LibreQuenda envia les confirmacions de reserva, els recordatoris, les cancel·lacions i les invitacions d'administració d'aquest ajuntament. Configura el servidor propi de l'ajuntament per enviar-los des de la seva adreça; si no, surten pel servidor de la plataforma.",
+    "statusCouncil": "Servidor de l'ajuntament",
+    "statusPlatform": "Servidor de la plataforma",
+    "statusNone": "Sense servidor",
+    "noneWarning": "No hi ha cap servidor per enviar: els correus d'aquest ajuntament estan en espera i sortiran quan en configuris un.",
+    "host": "Servidor",
+    "port": "Port",
+    "from": "Remitent",
+    "fromPlaceholder": "Concello de Lalín <reservas@lalin.gal>",
+    "fromHelp": "L'adreça que veu el veïnat. El servidor ha de permetre enviar des d'ella.",
+    "username": "Usuari",
+    "password": "Contrasenya",
+    "passwordKept": "Desada: deixa-la buida per mantenir-la",
+    "tlsHelp": "La connexió es xifra amb STARTTLS (normalment el port 587). No s'admet TLS implícit al port 465.",
+    "save": "Desa",
+    "saving": "Desant…",
+    "saved": "Desat. Els correus de l'ajuntament surten ara per aquest servidor.",
+    "test": "Envia un correu de prova",
+    "testing": "Enviant…",
+    "testSentCouncil": "Correu de prova enviat a {{email}} pel servidor de l'ajuntament.",
+    "testSentPlatform": "Correu de prova enviat a {{email}} pel servidor de la plataforma.",
+    "remove": "Fes servir el servidor de la plataforma",
+    "removeTitle": "Deixar de fer servir el servidor de l'ajuntament?",
+    "removeBodyPlatform": "S'esborra la configuració desada i els correus de l'ajuntament surten pel servidor de la plataforma.",
+    "removeBodyNone": "S'esborra la configuració desada. La plataforma no té servidor, així que els correus de l'ajuntament esperaran fins que se'n configuri un.",
+    "removeConfirm": "Esborra la configuració",
+    "removed": "Configuració esborrada.",
+    "unreadable": "No es pot llegir la configuració desada perquè ha canviat la clau de xifratge del servidor. Torna-la a escriure, contrasenya inclosa, i desa."
   }
 }

@@ -91,7 +91,6 @@
   "councilMenuLink": "Manage {{council}}",
   "facilities": {
     "title": "Facilities",
-    "subtitle": "{{council}}: facilities, opening hours and rules.",
     "guardBody": "This area is for the council's administrators.",
     "new": "New facility",
     "empty": "No facilities yet. Create the first one.",
@@ -243,5 +242,126 @@
     "verify": "Verify my email",
     "pageTitle": "You're invited to administer {{council}}",
     "pageBody": "The role is waiting for you: it is only given to a verified email address, so nobody can claim someone else's. Sign in again and enter the code we email to {{email}}; you will come back here as an administrator."
+  },
+  "councilAdmin": {
+    "title": "Council management",
+    "subtitle": "{{council}}: facilities, opening hours, rules and indicators.",
+    "settings": "Council settings"
+  },
+  "indicators": {
+    "title": "Indicators",
+    "period": "Period",
+    "periods": {
+      "7": "Last 7 days",
+      "30": "Last 30 days",
+      "90": "Last 90 days",
+      "365": "Last year"
+    },
+    "facility": "Facility",
+    "allFacilities": "All facilities",
+    "autoRefresh": "Auto refresh",
+    "refreshOptions": {
+      "0": "Manual only",
+      "30": "Every 30 seconds",
+      "60": "Every minute",
+      "300": "Every 5 minutes",
+      "900": "Every 15 minutes"
+    },
+    "refresh": "Refresh now",
+    "updatedAt": "Updated at {{time}}",
+    "export": "Export CSV",
+    "exportExcel": "Excel format (;)",
+    "kpi": {
+      "bookings": "Bookings",
+      "bookingsHint_one": "{{count}} confirmed",
+      "bookingsHint_other": "{{count}} confirmed",
+      "occupancy": "Occupancy",
+      "occupancyHint": "{{booked}} h booked of {{open}} h available",
+      "cancellations": "Cancellations",
+      "cancellationsHint": "{{user}} by residents, {{council}} by the council",
+      "activeUsers": "Active people",
+      "activeUsersHint": "With at least one booking, their own or through an invite",
+      "noShows": "No-shows",
+      "noShowsHint": "{{missed}} of {{finished}} past bookings with a QR reader",
+      "noShowsNone": "No past bookings with a QR reader"
+    },
+    "chartTitle": {
+      "day": "Bookings per day",
+      "week": "Bookings per week",
+      "month": "Bookings per month"
+    },
+    "confirmed": "Confirmed",
+    "cancelled": "Cancelled",
+    "showTable": "Show the data as a table",
+    "colPeriod": "Period",
+    "weekOf": "Week of {{date}}",
+    "busyTitle": "Busiest days and hours",
+    "busyHint": "Confirmed bookings by day and starting hour. The stronger the colour, the more bookings.",
+    "busyCell_one": "{{weekday}} at {{hour}}: {{count}} booking",
+    "busyCell_other": "{{weekday}} at {{hour}}: {{count}} bookings",
+    "empty": "No bookings in this period yet.",
+    "byFacilityTitle": "By facility",
+    "colFacility": "Facility",
+    "colBookings": "Bookings",
+    "colOccupancy": "Occupancy",
+    "colCancellation": "Cancellations",
+    "colNoShow": "No-shows",
+    "noReader": "no QR reader",
+    "percent": "{{value}}%",
+    "definitions": "Occupancy divides the hours booked by the hours that could be booked, leaving out closures. No-shows only count at facilities with a QR reader. The figures are worked out live from the bookings.",
+    "kpiTitle": "Period summary",
+    "fullscreen": "Full screen: {{board}}",
+    "exitFullscreen": "Exit full screen",
+    "exportAnonymous": "Anonymous data",
+    "exportNote": "Totals only, never bookings or people. Counts of 1 or 2 show as “<3”.",
+    "exports": {
+      "summary": {
+        "label": "Summary by facility",
+        "hint": "The period's totals and percentages"
+      },
+      "daily": {
+        "label": "By facility and day",
+        "hint": "Bookings, hours and occupancy of each day"
+      },
+      "hours": {
+        "label": "Days and hours",
+        "hint": "Bookings by weekday and starting hour"
+      },
+      "usage": {
+        "label": "How often people book",
+        "hint": "How many people booked 1, 2–4, 5–9 or 10+ times"
+      }
+    }
+  },
+  "smtp": {
+    "title": "Email server (SMTP)",
+    "help": "LibreQuenda sends booking confirmations, reminders, cancellations and administrator invitations for this council. Set up the council's own server to send them from its address; otherwise they go through the platform's server.",
+    "statusCouncil": "Council's server",
+    "statusPlatform": "Platform's server",
+    "statusNone": "No server",
+    "noneWarning": "There is no server to send through: emails for this council are waiting and will go out once you set one up.",
+    "host": "Server",
+    "port": "Port",
+    "from": "Sender",
+    "fromPlaceholder": "Concello de Lalín <reservas@lalin.gal>",
+    "fromHelp": "The address residents see. The server must allow sending from it.",
+    "username": "Username",
+    "password": "Password",
+    "passwordKept": "Saved: leave empty to keep it",
+    "tlsHelp": "The connection is encrypted with STARTTLS (usually port 587). Implicit TLS on port 465 is not supported.",
+    "save": "Save",
+    "saving": "Saving…",
+    "saved": "Saved. The council's emails now go through this server.",
+    "test": "Send a test email",
+    "testing": "Sending…",
+    "testSentCouncil": "Test email sent to {{email}} through the council's server.",
+    "testSentPlatform": "Test email sent to {{email}} through the platform's server.",
+    "remove": "Use the platform's server",
+    "removeTitle": "Stop using the council's server?",
+    "removeBodyPlatform": "The saved settings are deleted and the council's emails go through the platform's server.",
+    "removeBodyNone": "The saved settings are deleted. The platform has no server, so the council's emails will wait until one is set up.",
+    "removeConfirm": "Delete settings",
+    "removed": "Settings deleted.",
+    "unreadable": "The saved settings can't be read because the server's encryption key changed. Type them again, password included, and save."
   }
 }

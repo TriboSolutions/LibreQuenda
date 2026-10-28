@@ -184,19 +184,29 @@ SELECT
     f.address  AS facility_address,
     t.name     AS tenant_name,
     t.slug     AS tenant_slug,
-    t.timezone AS timezone
+    t.timezone AS timezone,
+    t.id       AS tenant_id,
+    s.config AS smtp_config
 FROM
     notification n
     JOIN app_user u ON u.id = n.user_id
     JOIN booking  b ON b.id = n.booking_id
     JOIN facility f ON f.id = b.facility_id
     JOIN tenant   t ON t.id = f.tenant_id
+    LEFT JOIN tenant_smtp s ON s.tenant_id = t.id
 WHERE
     n.emailed_at IS NULL
+    -- with no relay in the environment, a council without its own waits
+    AND ($1::BOOLEAN OR s.tenant_id IS NOT NULL)
 ORDER BY
     n.created_at ASC
-LIMIT $1
+LIMIT $2
 `
+
+type ListPendingEmailsParams struct {
+	EnvRelay bool  `json:"env_relay"`
+	MaxRows  int32 `json:"max_rows"`
+}
 
 type ListPendingEmailsRow struct {
 	ID                uuid.UUID        `json:"id"`
@@ -216,11 +226,14 @@ type ListPendingEmailsRow struct {
 	TenantName        string           `json:"tenant_name"`
 	TenantSlug        string           `json:"tenant_slug"`
 	Timezone          string           `json:"timezone"`
+	TenantID          uuid.UUID        `json:"tenant_id"`
+	SmtpConfig        []byte           `json:"smtp_config"`
 }
 
-// The email queue: every notification is also an email.
-func (q *Queries) ListPendingEmails(ctx context.Context, maxRows int32) ([]ListPendingEmailsRow, error) {
-	rows, err := q.db.QueryContext(ctx, listPendingEmails, maxRows)
+// The email queue: every notification is also an email, sent through the
+// council's relay or else the environment's.
+func (q *Queries) ListPendingEmails(ctx context.Context, arg ListPendingEmailsParams) ([]ListPendingEmailsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listPendingEmails, arg.EnvRelay, arg.MaxRows)
 	if err != nil {
 		return nil, err
 	}
@@ -246,6 +259,8 @@ func (q *Queries) ListPendingEmails(ctx context.Context, maxRows int32) ([]ListP
 			&i.TenantName,
 			&i.TenantSlug,
 			&i.Timezone,
+			&i.TenantID,
+			&i.SmtpConfig,
 		); err != nil {
 			return nil, err
 		}

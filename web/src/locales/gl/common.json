@@ -83,5 +83,6 @@
     "wrongType": "Só imaxes JPG, PNG ou WebP.",
     "empty": "Sen imaxe"
   },
-  "createAccount": "Crear conta"
+  "createAccount": "Crear conta",
+  "rateLimited": "Demasiados intentos en pouco tempo. Agarda un momento e téntao de novo."
 }

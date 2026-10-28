@@ -16,18 +16,35 @@ var corsConfig = cors.NewCORSConfig(
 	cors.WithMaxAge(3600),
 )
 
+// VersionMiddleware is the base of every API route (AuthMiddleware wraps it):
+// CORS, the default rate limit and the app version check.
 func VersionMiddleware(handler http.HandlerFunc) http.HandlerFunc {
-	return middlewares.WithCors(corsConfig, withVersion(handler))
+	return middlewares.WithCors(corsConfig, WithRateLimit(withVersion(handler)))
 }
 
-// WithRetries rate-limits per client IP, read from X-Forwarded-For only when the
-// request comes from a trusted proxy (Caddy), so users are not throttled together.
-func WithRetries(handler http.HandlerFunc) http.HandlerFunc {
+// Rate limits are per client IP and per route. The IP comes from X-Forwarded-For
+// only when the request comes from a trusted proxy (Caddy), so users behind it
+// are not throttled together.
+func rateLimit(handler http.HandlerFunc, burst int32, perSecond float64) http.HandlerFunc {
 	return middlewares.WithRateLimiting(handler,
-		middlewares.RateLimitOptLimitPerSecond(1),
+		middlewares.RateLimitOptStartingLimit(burst),
+		middlewares.RateLimitOptLimitPerSecond(perSecond),
 		middlewares.RateLimitOptTrustedProxies(shared.TRUSTED_PROXIES),
 		middlewares.RateLimitOptTrustedProxyHeader("X-Forwarded-For"),
 	)
+}
+
+// WithRateLimit: the default for every route, roomy enough for a council's
+// office sharing one IP.
+func WithRateLimit(handler http.HandlerFunc) http.HandlerFunc {
+	return rateLimit(handler, 60, 10)
+}
+
+// WithStrictRateLimit: 5 at once, then one every 12 seconds. For what sends
+// email, checks codes or passwords, reaches other servers, or lets anonymous
+// people write.
+func WithStrictRateLimit(handler http.HandlerFunc) http.HandlerFunc {
+	return rateLimit(handler, 5, 1.0/12)
 }
 
 func withVersion(handler http.HandlerFunc) http.HandlerFunc {

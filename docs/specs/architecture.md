@@ -133,7 +133,7 @@ Stored in the Core API:
 | Role | Stored in | Scope | Can |
 |---|---|---|---|
 | *(none: any logged-in user)* | | all councils | browse, book, cancel own bookings, see own history |
-| `admin` | `tenant_membership` | one council | manage that council's facilities, opening hours, usage rules and images (indicators: planned) |
+| `admin` | `tenant_membership` | one council | manage that council's facilities, opening hours, usage rules and images, and follow its indicators |
 | superadministrator | `platform_admin` | deployment | create, edit and delete councils; invite and remove council admins; add and remove other superadministrators; everything a council admin can do, in any council |
 
 How roles are granted (web UI at `/admin`, API under `/api/admin/…`):
@@ -163,7 +163,7 @@ app_user ─┬─< notification
 | `facility` usage rules | slot_minutes, max_advance_days, min_cancel_hours, max_active_bookings_per_user, usage_rules_text | "Normas de uso". Columns on `facility`. |
 | `opening_hours` | facility_id, weekday, opens_at, closes_at | Weekly schedule ("horarios") |
 | `closure` | facility_id, starts_at, ends_at, reason | Holidays, maintenance |
-| `booking` | id, facility_id, user_id, starts_at, ends_at, status (`confirmed`, `cancelled`), rules_accepted_at, created_at, cancelled_at | No overlaps: PostgreSQL exclusion constraint on (facility_id, tstzrange) for confirmed bookings. `user_id` becomes NULL on account erasure, so indicators keep the booking |
+| `booking` | id, facility_id, user_id, starts_at, ends_at, status (`confirmed`, `cancelled`), cancelled_by (`user`, `council`), rules_accepted_at, created_at, cancelled_at | No overlaps: PostgreSQL exclusion constraint on (facility_id, tstzrange) for confirmed bookings. `user_id` becomes NULL on account erasure, so indicators keep the booking |
 | `app_user` | id, idp_subject (Zitadel `sub`), email, full_name, email_verified | Mirror of identity, nothing more |
 | `platform_admin` | user_id | Superadministrators |
 | `tenant_membership` | user_id, tenant_id, role | Authorisation |
@@ -191,15 +191,29 @@ Current state:
 
 ## 8. Indicators (indicadores básicos)
 
-Computed with SQL over bookings. No separate analytics store.
+Computed live with SQL over bookings, in one read-only snapshot per request. No separate analytics store. The council dashboard (`/<council>/admin?vista=indicadores`) shows them for the last 7, 30, 90 or 365 days, for all facilities or one, and refreshes on its own every 30 s to 15 min (or only by hand).
 
-- Bookings per facility and period
-- Occupancy rate (booked hours ÷ open hours)
-- Cancellation rate
-- Busiest days and hours
-- Active users
+- **Bookings** per facility and per day, week or month (chosen from the length of the period), confirmed and cancelled
+- **Occupancy:** booked hours ÷ bookable hours. Bookable hours are the facility's slots in the period with closures taken out, cut by the same `schedule` package that builds availability
+- **Cancellation rate**, split into cancelled by the resident and by the council (`booking.cancelled_by`)
+- **Busiest days and hours:** confirmed bookings by weekday and starting hour, as a heatmap
+- **Active people:** distinct accounts with a confirmed booking, as owner or invited (guests without an account are not counted)
+- **No-shows:** past confirmed bookings never checked in, only at facilities with a QR reader
 
-Shown on the council dashboard, exportable as CSV.
+A booking belongs to the period its start falls in, in the council's time zone. Every chart has a table alternative for screen readers.
+
+CSV export (`…/indicators/export?kind=summary|daily|hours|usage`). **Every export is anonymous**: no row is a booking or a person, so nothing in it can be matched back to someone, not even by the council against its own database.
+
+| `kind` | One row per | Contents |
+|---|---|---|
+| `summary` | facility | the dashboard figures for the period |
+| `daily` | facility × day (empty days too) | bookings, confirmed, cancelled by resident / council, booked and open hours, occupancy, check-ins, invited people |
+| `hours` | facility × weekday × starting hour | confirmed bookings added up over the whole period (never a single date and hour, which would be one booking) |
+| `usage` | band of bookings per person (1, 2–4, 5–9, 10+) | how many people booked that often, as owner or invited |
+
+Counts of 1 or 2 come out as `<3`, and the figures worked out from them (hours, rates, occupancy) are left empty, so a quiet slot does not point at whoever uses it. This is primary suppression only: combining several totals can still narrow a hidden count down, which is accepted for figures this coarse. The dashboard is internal and shows exact numbers.
+
+Column names are fixed English identifiers. `excel=1` gives `;` separators and decimal commas for Spanish-locale Excel; both carry a UTF-8 byte order mark.
 
 ## 9. Security, privacy and accessibility
 
@@ -246,9 +260,9 @@ Development defaults that must change before a real deployment:
 |---|---|---|
 | Public | `GET /tenants` (council list), `GET /tenants/{slug}/day?date=` (every active facility with its slots for one day), `GET /tenants/{slug}/facilities/{facility}?date=` (details, slots, weekly schedule), `GET /media/{ref}` (images) | none |
 | Resident | `GET /me`, `GET\|POST /me/bookings`, `DELETE /me/bookings/{id}` (cancel) | logged in |
-| Council admin | `GET\|POST /tenants/{slug}/admin/facilities`, `GET\|PUT\|DELETE …/facilities/{id}`, `PUT …/facilities/{id}/schedule`, `GET /geocode`, `POST /media` (upload) | council admin or superadmin |
+| Council admin | `GET\|POST /tenants/{slug}/admin/facilities`, `GET\|PUT\|DELETE …/facilities/{id}`, `PUT …/facilities/{id}/schedule`, `GET /tenants/{slug}/admin/indicators?days=&facility=`, `GET …/indicators/export?kind=&excel=` (CSV), `GET /geocode`, `POST /media` (upload) | council admin or superadmin |
 | Superadmin | `GET\|POST /admin/tenants`, `GET\|PUT\|DELETE /admin/tenants/{slug}`, `POST /admin/tenants/{slug}/invitations`, `DELETE …/invitations/{id}`, `DELETE …/admins/{userId}`, `GET\|POST /admin/superadmins`, `DELETE /admin/superadmins/{userId}` | superadmin |
-| Planned | `PATCH /me/bookings/{id}`, `GET /me/notifications`, `GET /me/export`, `…/closures`, `…/indicators` | |
+| Planned | `PATCH /me/bookings/{id}`, `GET /me/notifications`, `GET /me/export`, `…/closures` | |
 
 ### 10.2 Self-hosting kit
 

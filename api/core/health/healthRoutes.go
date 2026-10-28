@@ -30,14 +30,14 @@ func (hr *healthRoutes) CreateHealthRoutes() {
 	hr.router.NewRoute(router.Route{
 		Path:              "/health/api",
 		Method:            "GET",
-		Handler:           middlewares.VersionMiddleware(middlewares.WithRetries(apiHealthHandler)),
+		Handler:           middlewares.VersionMiddleware(apiHealthHandler),
 		AdditionalMethods: []router.HTTPMethod{router.HEAD, router.OPTIONS},
 	})
 
 	hr.router.NewRoute(router.Route{
 		Path:              "/health/db",
 		Method:            "GET",
-		Handler:           middlewares.WithRetries(databaseHealthHandler(hr.db)),
+		Handler:           middlewares.WithRateLimit(databaseHealthHandler(hr.db)),
 		AdditionalMethods: []router.HTTPMethod{router.HEAD, router.OPTIONS},
 	})
 }

@@ -65,10 +65,6 @@
     "when": "When",
     "where": "Where",
     "spots": "Spots",
-    "spotsLeft_one": "{{count}} spot left of {{capacity}}",
-    "spotsLeft_other": "{{count}} spots left of {{capacity}}",
-    "minAge": "Minimum age: {{count}} years",
-    "full": "This booking is full.",
     "closed": "This booking no longer takes people: it was cancelled or has started.",
     "notFound": "This invite link does not work. Ask whoever booked for a new one.",
     "withAccount": "Join with my account",
@@ -93,5 +89,16 @@
     "organiser": "booked it",
     "noAccount": "no account",
     "unnamed": "No name"
+  },
+  "meter": {
+    "left_one": "{{count}} spot left",
+    "left_other": "{{count}} spots left",
+    "full": "Full: no spots left",
+    "label": "{{taken}} of {{capacity}} people"
+  },
+  "details": {
+    "cancelUntil": "You can change or cancel it until {{date}}.",
+    "accessibility": "Accessibility",
+    "rules": "Rules and conditions"
   }
 }

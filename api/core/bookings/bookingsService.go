@@ -90,25 +90,7 @@ func (s *bookingsService) CreateBooking(ctx context.Context, userId uuid.UUID, b
 		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.booking_failed"}
 	}
 
-	var loc, locErr = time.LoadLocation(facility.Timezone)
-	if locErr != nil {
-		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.booking_failed"}
-	}
-	var start = body.StartsAt.In(loc)
-	var day = time.Date(start.Year(), start.Month(), start.Day(), 0, 0, 0, 0, loc)
-
-	if facility.MinAge.Valid {
-		var birth, birthErr = queries.GetUserBirthDate(ctx, userId)
-		if birthErr != nil || !birth.Valid {
-			return nil, &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.profile_incomplete"}
-		}
-		if AgeOn(birth.Time, day) < int(facility.MinAge.Int32) {
-			return nil, &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.age_restricted"}
-		}
-	}
-	var dayEnd = day.AddDate(0, 0, 1)
-
-	var slot, slotErr = s.findSlot(ctx, queries, facility, loc, day, dayEnd, start)
+	var slot, slotErr = s.bookableSlot(ctx, queries, userId, facility, body.StartsAt)
 	if slotErr != nil {
 		return nil, slotErr
 	}
@@ -150,6 +132,7 @@ func (s *bookingsService) CreateBooking(ctx context.Context, userId uuid.UUID, b
 		FacilityId:   facility.ID.String(),
 		FacilityName: facility.Name,
 		CanCancel:    time.Now().Before(cancelUntil),
+		CanChange:    time.Now().Before(cancelUntil),
 		CancelUntil:  cancelUntil,
 		CheckinCode:  checkin.Payload(booking.CheckinToken),
 		Role:         RoleOwner,
@@ -185,6 +168,28 @@ func (s *bookingsService) insertBooking(ctx context.Context, userId uuid.UUID, f
 		return model.Booking{}, nil, err
 	}
 	return booking, nil, tx.Commit()
+}
+
+// bookableSlot: the turn starting at startsAt, if it is free right now and the
+// person is old enough on that day (in the council's time zone).
+func (s *bookingsService) bookableSlot(ctx context.Context, queries *model.Queries, userId uuid.UUID, facility model.GetFacilityForBookingRow, startsAt time.Time) (*schedule.Slot, *shared.ErrorResponse) {
+	var loc, locErr = time.LoadLocation(facility.Timezone)
+	if locErr != nil {
+		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.booking_failed"}
+	}
+	var start = startsAt.In(loc)
+	var day = time.Date(start.Year(), start.Month(), start.Day(), 0, 0, 0, 0, loc)
+
+	if facility.MinAge.Valid {
+		var birth, birthErr = queries.GetUserBirthDate(ctx, userId)
+		if birthErr != nil || !birth.Valid {
+			return nil, &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.profile_incomplete"}
+		}
+		if AgeOn(birth.Time, day) < int(facility.MinAge.Int32) {
+			return nil, &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.age_restricted"}
+		}
+	}
+	return s.findSlot(ctx, queries, facility, loc, day, day.AddDate(0, 0, 1), start)
 }
 
 func (s *bookingsService) findSlot(ctx context.Context, queries *model.Queries, facility model.GetFacilityForBookingRow, loc *time.Location, day, dayEnd, start time.Time) (*schedule.Slot, *shared.ErrorResponse) {
@@ -234,6 +239,145 @@ func (s *bookingsService) findSlot(ctx context.Context, queries *model.Queries, 
 		return &slot, nil
 	}
 	return nil, &shared.ErrorResponse{Code: http.StatusUnprocessableEntity, Message: "errors.slot_not_found"}
+}
+
+// ChangeBooking moves the owner's booking to another free turn of the same facility,
+// on any day it can be booked. It is allowed while the booking could still be
+// cancelled; the people who joined, the QR and the invite link stay with it.
+func (s *bookingsService) ChangeBooking(ctx context.Context, userId uuid.UUID, bookingId uuid.UUID, body ChangeBookingDto) (*BookingDto, *shared.ErrorResponse) {
+	var changeFailed = &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.change_failed"}
+	var queries = model.New(s.db)
+	var owner = uuid.NullUUID{UUID: userId, Valid: true}
+	var current, err = queries.GetBookingForUser(ctx, model.GetBookingForUserParams{ID: bookingId, UserID: owner})
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, &shared.ErrorResponse{Code: http.StatusNotFound, Message: "errors.booking_not_found"}
+	}
+	if err != nil {
+		return nil, changeFailed
+	}
+	if changeErr := changeable(current.Status, current.StartsAt, current.MinCancelHours, time.Now()); changeErr != nil {
+		return nil, changeErr
+	}
+	if body.StartsAt.Equal(current.StartsAt) {
+		return nil, &shared.ErrorResponse{Code: http.StatusUnprocessableEntity, Message: "errors.booking_same_time"}
+	}
+
+	var facility model.GetFacilityForBookingRow
+	facility, err = queries.GetFacilityForBooking(ctx, current.FacilityID)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, &shared.ErrorResponse{Code: http.StatusNotFound, Message: "errors.facility_not_found"}
+	}
+	if err != nil {
+		return nil, changeFailed
+	}
+	var slot, slotErr = s.bookableSlot(ctx, queries, userId, facility, body.StartsAt)
+	if slotErr != nil {
+		return nil, slotErr
+	}
+
+	var booking model.Booking
+	var conflict *shared.ErrorResponse
+	booking, conflict, err = s.moveBooking(ctx, userId, bookingId, slot)
+	if conflict != nil {
+		return nil, conflict
+	}
+	var pqErr *pq.Error
+	if errors.As(err, &pqErr) && pqErr.Code == "23P01" { // exclusion_violation: booked in the meantime
+		return nil, &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.slot_booked"}
+	}
+	if err != nil {
+		return nil, changeFailed
+	}
+
+	s.notify(ctx, queries, userId, booking.ID, model.NotificationTypeBookingChanged, facility.Name, booking.StartsAt, booking.EndsAt)
+
+	var cancelUntil = booking.StartsAt.Add(-time.Duration(facility.MinCancelHours) * time.Hour)
+	var canCancel = time.Now().Before(cancelUntil)
+	return &BookingDto{
+		Id:           booking.ID.String(),
+		StartsAt:     booking.StartsAt,
+		EndsAt:       booking.EndsAt,
+		Status:       string(booking.Status),
+		FacilityId:   facility.ID.String(),
+		FacilityName: facility.Name,
+		CanCancel:    canCancel,
+		CanChange:    canCancel,
+		CancelUntil:  cancelUntil,
+		CheckinCode:  checkin.Payload(booking.CheckinToken),
+		Role:         RoleOwner,
+	}, nil
+}
+
+// changeable: a booking can be moved on the same terms it can be cancelled.
+func changeable(status model.BookingStatus, startsAt time.Time, minCancelHours int32, now time.Time) *shared.ErrorResponse {
+	if status != model.BookingStatusConfirmed {
+		return &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.booking_already_cancelled"}
+	}
+	if now.After(startsAt.Add(-time.Duration(minCancelHours) * time.Hour)) {
+		return &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.change_too_late"}
+	}
+	return nil
+}
+
+// moveBooking changes the time unless the owner, or someone who joined with an
+// account, is already somewhere else then. Locks: the booking row first (as a
+// join does), then the people, so a join and a change cannot cross.
+func (s *bookingsService) moveBooking(ctx context.Context, userId uuid.UUID, bookingId uuid.UUID, slot *schedule.Slot) (model.Booking, *shared.ErrorResponse, error) {
+	var tx, err = s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return model.Booking{}, nil, err
+	}
+	defer tx.Rollback()
+	var queries = model.New(tx)
+	var owner = uuid.NullUUID{UUID: userId, Valid: true}
+
+	var locked model.LockOwnedBookingRow
+	locked, err = queries.LockOwnedBooking(ctx, model.LockOwnedBookingParams{ID: bookingId, UserID: owner})
+	if errors.Is(err, sql.ErrNoRows) {
+		return model.Booking{}, &shared.ErrorResponse{Code: http.StatusNotFound, Message: "errors.booking_not_found"}, nil
+	}
+	if err != nil {
+		return model.Booking{}, nil, err
+	}
+	// cancelled or moved in the meantime
+	if changeErr := changeable(locked.Status, locked.StartsAt, locked.MinCancelHours, time.Now()); changeErr != nil {
+		return model.Booking{}, changeErr, nil
+	}
+
+	if err = queries.LockUserBookings(ctx, userId); err != nil {
+		return model.Booking{}, nil, err
+	}
+	var overlaps bool
+	overlaps, err = queries.UserHasOverlappingBooking(ctx, model.UserHasOverlappingBookingParams{
+		UserID:          owner,
+		StartsAt:        slot.Start,
+		EndsAt:          slot.End,
+		ExceptBookingID: uuid.NullUUID{UUID: bookingId, Valid: true},
+	})
+	if err != nil {
+		return model.Booking{}, nil, err
+	}
+	if overlaps {
+		return model.Booking{}, &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.booking_overlaps"}, nil
+	}
+
+	if err = queries.LockParticipantBookings(ctx, bookingId); err != nil {
+		return model.Booking{}, nil, err
+	}
+	overlaps, err = queries.ParticipantsHaveOverlappingBooking(ctx, model.ParticipantsHaveOverlappingBookingParams{BookingID: bookingId, StartsAt: slot.Start, EndsAt: slot.End})
+	if err != nil {
+		return model.Booking{}, nil, err
+	}
+	if overlaps {
+		return model.Booking{}, &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.participant_overlaps"}, nil
+	}
+
+	var booking model.Booking
+	booking, err = queries.ChangeBookingTime(ctx, model.ChangeBookingTimeParams{ID: bookingId, UserID: owner, StartsAt: slot.Start, EndsAt: slot.End})
+	if err != nil {
+		return model.Booking{}, nil, err
+	}
+	return booking, nil, tx.Commit()
 }
 
 func (s *bookingsService) CancelBooking(ctx context.Context, userId uuid.UUID, bookingId uuid.UUID) *shared.ErrorResponse {

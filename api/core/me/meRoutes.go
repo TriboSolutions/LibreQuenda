@@ -47,10 +47,10 @@ func (r *meRoutes) RegisterRoutes() {
 		{Path: "/me/account", Method: http.MethodGet, Handler: h.GetAccount},
 		{Path: "/me/account/name", Method: http.MethodPut, Handler: h.SetName},
 		// password guesses and code guesses are rate-limited per client IP
-		{Path: "/me/account/password", Method: http.MethodPut, Handler: middlewares.WithRetries(h.SetPassword)},
+		{Path: "/me/account/password", Method: http.MethodPut, Handler: middlewares.WithStrictRateLimit(h.SetPassword)},
 		{Path: "/me/account/email", Method: http.MethodPut, Handler: h.SetEmail},
-		{Path: "/me/account/email/resend", Method: http.MethodPost, Handler: middlewares.WithRetries(h.ResendEmailCode)},
-		{Path: "/me/account/email/verify", Method: http.MethodPost, Handler: middlewares.WithRetries(h.VerifyEmail)},
+		{Path: "/me/account/email/resend", Method: http.MethodPost, Handler: middlewares.WithStrictRateLimit(h.ResendEmailCode)},
+		{Path: "/me/account/email/verify", Method: http.MethodPost, Handler: middlewares.WithStrictRateLimit(h.VerifyEmail)},
 	}
 	for _, route := range account {
 		route.Handler = middlewares.AuthMiddleware(route.Handler)

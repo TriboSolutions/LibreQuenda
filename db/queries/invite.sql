@@ -41,12 +41,12 @@ SELECT
     f.name     AS facility_name,
     f.slug     AS facility_slug,
     f.capacity,
-    f.min_age,
     t.slug     AS tenant_slug,
     t.name     AS tenant_name,
     t.timezone,
     u.full_name AS owner_name,
-    (SELECT COUNT(*) FROM booking_participant p WHERE p.booking_id = b.id) AS participant_count
+    (SELECT COUNT(*) FROM booking_participant p WHERE p.booking_id = b.id) AS participant_count,
+    sqlc.embed(f) -- what the invite page shows: image, address, rules
 FROM
     booking b
     JOIN facility f ON f.id = b.facility_id
@@ -161,11 +161,13 @@ SELECT
     b.checked_in_at,
     f.id   AS facility_id,
     f.name AS facility_name,
+    f.slug AS facility_slug,
     f.capacity,
     t.slug AS tenant_slug,
     t.name AS tenant_name,
     COALESCE(u.full_name, '')::TEXT AS owner_name,
-    (SELECT COUNT(*) FROM booking_participant c WHERE c.booking_id = b.id) AS participant_count
+    (SELECT COUNT(*) FROM booking_participant c WHERE c.booking_id = b.id) AS participant_count,
+    sqlc.embed(f)
 FROM
     booking_participant p
     JOIN booking  b ON b.id = p.booking_id

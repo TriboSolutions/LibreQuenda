@@ -18,7 +18,8 @@ WITH cancelled AS (
     UPDATE booking b
     SET
         status       = 'cancelled',
-        cancelled_at = NOW()
+        cancelled_at = NOW(),
+        cancelled_by = 'council'
     WHERE
         b.facility_id = $4
         AND b.status = 'confirmed'

@@ -83,5 +83,6 @@
     "wrongType": "Només imatges JPG, PNG o WebP.",
     "empty": "Sense imatge"
   },
-  "createAccount": "Crea un compte"
+  "createAccount": "Crea un compte",
+  "rateLimited": "Massa intents en poc temps. Espera un moment i torna-ho a provar."
 }

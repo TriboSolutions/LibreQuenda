@@ -138,12 +138,12 @@ SELECT
     f.name     AS facility_name,
     f.slug     AS facility_slug,
     f.capacity,
-    f.min_age,
     t.slug     AS tenant_slug,
     t.name     AS tenant_name,
     t.timezone,
     u.full_name AS owner_name,
-    (SELECT COUNT(*) FROM booking_participant p WHERE p.booking_id = b.id) AS participant_count
+    (SELECT COUNT(*) FROM booking_participant p WHERE p.booking_id = b.id) AS participant_count,
+    f.id, f.tenant_id, f.slug, f.name, f.description, f.sport, f.address, f.latitude, f.longitude, f.capacity, f.accessibility_info, f.image_ref, f.is_active, f.slot_minutes, f.max_advance_days, f.min_cancel_hours, f.max_active_bookings_per_user, f.min_age, f.usage_rules_text, f.created_at, f.updated_at -- what the invite page shows: image, address, rules
 FROM
     booking b
     JOIN facility f ON f.id = b.facility_id
@@ -162,12 +162,12 @@ type GetInviteByTokenRow struct {
 	FacilityName     string         `json:"facility_name"`
 	FacilitySlug     string         `json:"facility_slug"`
 	Capacity         sql.NullInt32  `json:"capacity"`
-	MinAge           sql.NullInt32  `json:"min_age"`
 	TenantSlug       string         `json:"tenant_slug"`
 	TenantName       string         `json:"tenant_name"`
 	Timezone         string         `json:"timezone"`
 	OwnerName        sql.NullString `json:"owner_name"`
 	ParticipantCount int64          `json:"participant_count"`
+	Facility         Facility       `json:"facility"`
 }
 
 // What the invite page shows: no personal data beyond the owner's name.
@@ -183,12 +183,32 @@ func (q *Queries) GetInviteByToken(ctx context.Context, inviteToken uuid.NullUUI
 		&i.FacilityName,
 		&i.FacilitySlug,
 		&i.Capacity,
-		&i.MinAge,
 		&i.TenantSlug,
 		&i.TenantName,
 		&i.Timezone,
 		&i.OwnerName,
 		&i.ParticipantCount,
+		&i.Facility.ID,
+		&i.Facility.TenantID,
+		&i.Facility.Slug,
+		&i.Facility.Name,
+		&i.Facility.Description,
+		&i.Facility.Sport,
+		&i.Facility.Address,
+		&i.Facility.Latitude,
+		&i.Facility.Longitude,
+		&i.Facility.Capacity,
+		&i.Facility.AccessibilityInfo,
+		&i.Facility.ImageRef,
+		&i.Facility.IsActive,
+		&i.Facility.SlotMinutes,
+		&i.Facility.MaxAdvanceDays,
+		&i.Facility.MinCancelHours,
+		&i.Facility.MaxActiveBookingsPerUser,
+		&i.Facility.MinAge,
+		&i.Facility.UsageRulesText,
+		&i.Facility.CreatedAt,
+		&i.Facility.UpdatedAt,
 	)
 	return i, err
 }
@@ -357,11 +377,13 @@ SELECT
     b.checked_in_at,
     f.id   AS facility_id,
     f.name AS facility_name,
+    f.slug AS facility_slug,
     f.capacity,
     t.slug AS tenant_slug,
     t.name AS tenant_name,
     COALESCE(u.full_name, '')::TEXT AS owner_name,
-    (SELECT COUNT(*) FROM booking_participant c WHERE c.booking_id = b.id) AS participant_count
+    (SELECT COUNT(*) FROM booking_participant c WHERE c.booking_id = b.id) AS participant_count,
+    f.id, f.tenant_id, f.slug, f.name, f.description, f.sport, f.address, f.latitude, f.longitude, f.capacity, f.accessibility_info, f.image_ref, f.is_active, f.slot_minutes, f.max_advance_days, f.min_cancel_hours, f.max_active_bookings_per_user, f.min_age, f.usage_rules_text, f.created_at, f.updated_at
 FROM
     booking_participant p
     JOIN booking  b ON b.id = p.booking_id
@@ -382,11 +404,13 @@ type ListParticipationsByUserRow struct {
 	CheckedInAt      sql.NullTime  `json:"checked_in_at"`
 	FacilityID       uuid.UUID     `json:"facility_id"`
 	FacilityName     string        `json:"facility_name"`
+	FacilitySlug     string        `json:"facility_slug"`
 	Capacity         sql.NullInt32 `json:"capacity"`
 	TenantSlug       string        `json:"tenant_slug"`
 	TenantName       string        `json:"tenant_name"`
 	OwnerName        string        `json:"owner_name"`
 	ParticipantCount int64         `json:"participant_count"`
+	Facility         Facility      `json:"facility"`
 }
 
 // Bookings someone else made that this user joined.
@@ -407,11 +431,33 @@ func (q *Queries) ListParticipationsByUser(ctx context.Context, userID uuid.Null
 			&i.CheckedInAt,
 			&i.FacilityID,
 			&i.FacilityName,
+			&i.FacilitySlug,
 			&i.Capacity,
 			&i.TenantSlug,
 			&i.TenantName,
 			&i.OwnerName,
 			&i.ParticipantCount,
+			&i.Facility.ID,
+			&i.Facility.TenantID,
+			&i.Facility.Slug,
+			&i.Facility.Name,
+			&i.Facility.Description,
+			&i.Facility.Sport,
+			&i.Facility.Address,
+			&i.Facility.Latitude,
+			&i.Facility.Longitude,
+			&i.Facility.Capacity,
+			&i.Facility.AccessibilityInfo,
+			&i.Facility.ImageRef,
+			&i.Facility.IsActive,
+			&i.Facility.SlotMinutes,
+			&i.Facility.MaxAdvanceDays,
+			&i.Facility.MinCancelHours,
+			&i.Facility.MaxActiveBookingsPerUser,
+			&i.Facility.MinAge,
+			&i.Facility.UsageRulesText,
+			&i.Facility.CreatedAt,
+			&i.Facility.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}

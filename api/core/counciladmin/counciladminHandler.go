@@ -4,11 +4,13 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"librequenda/auth"
 	"librequenda/core/me"
 	"librequenda/model"
 	"librequenda/shared"
 	"net/http"
+	"strconv"
 	"sync"
 
 	"github.com/angelbarreiros/Penguin/router/helpers"
@@ -107,7 +109,7 @@ func decode(w http.ResponseWriter, r *http.Request, into any) bool {
 
 func send(w http.ResponseWriter, r *http.Request, data any, err *shared.ErrorResponse) {
 	if err != nil {
-		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
 		return
 	}
 	if data == nil {
@@ -326,4 +328,98 @@ func (h *counciladminHandler) DeleteClosure(w http.ResponseWriter, r *http.Reque
 		return
 	}
 	send(w, r, nil, GetCounciladminService(h.db).DeleteClosure(r.Context(), tenantId, id, closureId))
+}
+
+func indicatorsQuery(r *http.Request) IndicatorsQuery {
+	var params = r.URL.Query()
+	var query = IndicatorsQuery{From: params.Get("from"), To: params.Get("to"), Facility: params.Get("facility")}
+	if days := params.Get("days"); days != "" {
+		var n, err = strconv.Atoi(days)
+		if err != nil {
+			n = -1 // refused by parse
+		}
+		query.Days = n
+	}
+	return query
+}
+
+func (h *counciladminHandler) GetIndicators(w http.ResponseWriter, r *http.Request) {
+	var tenantId, ok = h.councilAdmin(w, r)
+	if !ok {
+		return
+	}
+	var response, err = GetCounciladminService(h.db).Indicators(r.Context(), tenantId, indicatorsQuery(r))
+	send(w, r, response, err)
+}
+
+// ExportIndicators: ?kind=summary|bookings, and excel=1 for Spanish-locale Excel.
+func (h *counciladminHandler) ExportIndicators(w http.ResponseWriter, r *http.Request) {
+	var tenantId, ok = h.councilAdmin(w, r)
+	if !ok {
+		return
+	}
+	var query = indicatorsQuery(r)
+	var kind = r.URL.Query().Get("kind")
+	var write, err = GetCounciladminService(h.db).ExportIndicators(r.Context(), tenantId, query, kind, csvFormat{excel: r.URL.Query().Get("excel") == "1"})
+	if err != nil {
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
+		return
+	}
+	var slug, _ = helpers.GetStringPathValue("slug", r)
+	w.Header().Set("Content-Type", "text/csv; charset=utf-8")
+	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s-%s.csv"`, slug, kind))
+	w.Header().Set("Cache-Control", "no-store")
+	write(w)
+}
+
+// --- SMTP relay ------------------------------------------------------------
+
+func (h *counciladminHandler) GetSmtp(w http.ResponseWriter, r *http.Request) {
+	var tenantId, ok = h.councilAdmin(w, r)
+	if !ok {
+		return
+	}
+	var response, err = GetCounciladminService(h.db).GetSmtp(r.Context(), tenantId)
+	send(w, r, response, err)
+}
+
+func (h *counciladminHandler) SaveSmtp(w http.ResponseWriter, r *http.Request) {
+	var tenantId, ok = h.councilAdmin(w, r)
+	if !ok {
+		return
+	}
+	var input SmtpInput
+	if !decode(w, r, &input) {
+		return
+	}
+	var response, err = GetCounciladminService(h.db).SaveSmtp(r.Context(), tenantId, input)
+	send(w, r, response, err)
+}
+
+func (h *counciladminHandler) DeleteSmtp(w http.ResponseWriter, r *http.Request) {
+	var tenantId, ok = h.councilAdmin(w, r)
+	if !ok {
+		return
+	}
+	send(w, r, nil, GetCounciladminService(h.db).DeleteSmtp(r.Context(), tenantId))
+}
+
+// TestSmtp emails the administrator through the relay in use, in their language.
+func (h *counciladminHandler) TestSmtp(w http.ResponseWriter, r *http.Request) {
+	var tenantId, ok = h.councilAdmin(w, r)
+	if !ok {
+		return
+	}
+	var session, _ = auth.SessionFromContext(r.Context())
+	var userId, userErr = me.CurrentUserId(r.Context(), h.db, session)
+	if userErr != nil {
+		helpers.SendI18NErrorResponse(w, r, userErr.Code, userErr.Message)
+		return
+	}
+	var language = r.Header.Get("Accept-Language")
+	if len(language) > 2 {
+		language = language[:2]
+	}
+	var response, err = GetCounciladminService(h.db).TestSmtp(r.Context(), tenantId, userId, language)
+	send(w, r, response, err)
 }

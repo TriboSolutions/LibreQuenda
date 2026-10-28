@@ -91,7 +91,6 @@
   "councilMenuLink": "Administrar {{council}}",
   "facilities": {
     "title": "Instalacións",
-    "subtitle": "{{council}}: instalacións, horarios e normas.",
     "guardBody": "Esta zona é para as persoas administradoras do concello.",
     "new": "Nova instalación",
     "empty": "Aínda non hai instalacións. Crea a primeira.",
@@ -243,5 +242,126 @@
     "verify": "Verificar o meu correo",
     "pageTitle": "Convidáronte a administrar {{council}}",
     "pageBody": "O rol agárdate: só se dá a un enderezo verificado, para que ninguén poida reclamar o doutra persoa. Inicia sesión de novo e escribe o código que enviamos a {{email}}; volverás aquí xa como administrador ou administradora."
+  },
+  "councilAdmin": {
+    "title": "Xestión do concello",
+    "subtitle": "{{council}}: instalacións, horarios, normas e indicadores.",
+    "settings": "Axustes do concello"
+  },
+  "indicators": {
+    "title": "Indicadores",
+    "period": "Período",
+    "periods": {
+      "7": "Últimos 7 días",
+      "30": "Últimos 30 días",
+      "90": "Últimos 90 días",
+      "365": "Último ano"
+    },
+    "facility": "Instalación",
+    "allFacilities": "Todas as instalacións",
+    "autoRefresh": "Actualización automática",
+    "refreshOptions": {
+      "0": "Só manual",
+      "30": "Cada 30 segundos",
+      "60": "Cada minuto",
+      "300": "Cada 5 minutos",
+      "900": "Cada 15 minutos"
+    },
+    "refresh": "Actualizar agora",
+    "updatedAt": "Actualizado ás {{time}}",
+    "export": "Exportar CSV",
+    "exportExcel": "Formato para Excel (;)",
+    "kpi": {
+      "bookings": "Reservas",
+      "bookingsHint_one": "{{count}} confirmada",
+      "bookingsHint_other": "{{count}} confirmadas",
+      "occupancy": "Ocupación",
+      "occupancyHint": "{{booked}} h reservadas de {{open}} h dispoñibles",
+      "cancellations": "Cancelacións",
+      "cancellationsHint": "{{user}} pola persoa, {{council}} polo concello",
+      "activeUsers": "Persoas activas",
+      "activeUsersHint": "Con polo menos unha reserva, propia ou por invitación",
+      "noShows": "Non presentadas",
+      "noShowsHint": "{{missed}} de {{finished}} reservas pasadas con lector QR",
+      "noShowsNone": "Sen reservas pasadas con lector QR"
+    },
+    "chartTitle": {
+      "day": "Reservas por día",
+      "week": "Reservas por semana",
+      "month": "Reservas por mes"
+    },
+    "confirmed": "Confirmadas",
+    "cancelled": "Canceladas",
+    "showTable": "Ver os datos en táboa",
+    "colPeriod": "Período",
+    "weekOf": "Semana do {{date}}",
+    "busyTitle": "Días e horas con máis reservas",
+    "busyHint": "Reservas confirmadas segundo o día e a hora de comezo. Canto máis intensa a cor, máis reservas.",
+    "busyCell_one": "{{weekday}} ás {{hour}}: {{count}} reserva",
+    "busyCell_other": "{{weekday}} ás {{hour}}: {{count}} reservas",
+    "empty": "Aínda non hai reservas neste período.",
+    "byFacilityTitle": "Por instalación",
+    "colFacility": "Instalación",
+    "colBookings": "Reservas",
+    "colOccupancy": "Ocupación",
+    "colCancellation": "Cancelacións",
+    "colNoShow": "Non presentadas",
+    "noReader": "sen lector QR",
+    "percent": "{{value}} %",
+    "definitions": "A ocupación divide as horas reservadas entre as horas nas que se podía reservar, descontando os peches. As non presentadas só se contan nas instalacións con lector QR. As cifras calcúlanse ao momento a partir das reservas.",
+    "kpiTitle": "Resumo do período",
+    "fullscreen": "Pantalla completa: {{board}}",
+    "exitFullscreen": "Saír da pantalla completa",
+    "exportAnonymous": "Datos anónimos",
+    "exportNote": "Só totais, nunca reservas nin persoas. As cifras de 1 ou 2 aparecen como «<3».",
+    "exports": {
+      "summary": {
+        "label": "Resumo por instalación",
+        "hint": "Os totais e porcentaxes do período"
+      },
+      "daily": {
+        "label": "Por instalación e día",
+        "hint": "Reservas, horas e ocupación de cada día"
+      },
+      "hours": {
+        "label": "Días e horas",
+        "hint": "Reservas por día da semana e hora de comezo"
+      },
+      "usage": {
+        "label": "Frecuencia de uso",
+        "hint": "Cantas persoas reservaron 1, 2–4, 5–9 ou 10+ veces"
+      }
+    }
+  },
+  "smtp": {
+    "title": "Servidor de correo (SMTP)",
+    "help": "LibreQuenda envía as confirmacións de reserva, os recordatorios, as cancelacións e os convites de administración deste concello. Configura o servidor propio do concello para envialos desde o seu enderezo; se non, saen polo servidor da plataforma.",
+    "statusCouncil": "Servidor do concello",
+    "statusPlatform": "Servidor da plataforma",
+    "statusNone": "Sen servidor",
+    "noneWarning": "Non hai ningún servidor para enviar: os correos deste concello están á espera e sairán cando configures un.",
+    "host": "Servidor",
+    "port": "Porto",
+    "from": "Remitente",
+    "fromPlaceholder": "Concello de Lalín <reservas@lalin.gal>",
+    "fromHelp": "O enderezo que ve a veciñanza. O servidor debe permitir enviar desde el.",
+    "username": "Usuario",
+    "password": "Contrasinal",
+    "passwordKept": "Gardado: déixao baleiro para mantelo",
+    "tlsHelp": "A conexión cífrase con STARTTLS (normalmente o porto 587). Non se admite TLS implícito no porto 465.",
+    "save": "Gardar",
+    "saving": "Gardando…",
+    "saved": "Gardado. Os correos do concello saen agora por este servidor.",
+    "test": "Enviar un correo de proba",
+    "testing": "Enviando…",
+    "testSentCouncil": "Correo de proba enviado a {{email}} polo servidor do concello.",
+    "testSentPlatform": "Correo de proba enviado a {{email}} polo servidor da plataforma.",
+    "remove": "Usar o servidor da plataforma",
+    "removeTitle": "Deixar de usar o servidor do concello?",
+    "removeBodyPlatform": "Bórrase a configuración gardada e os correos do concello saen polo servidor da plataforma.",
+    "removeBodyNone": "Bórrase a configuración gardada. A plataforma non ten servidor, así que os correos do concello agardarán ata que se configure un.",
+    "removeConfirm": "Borrar configuración",
+    "removed": "Configuración borrada.",
+    "unreadable": "Non se pode ler a configuración gardada porque cambiou a chave de cifrado do servidor. Escríbea de novo, contrasinal incluído, e garda."
   }
 }

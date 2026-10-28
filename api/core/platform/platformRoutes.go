@@ -28,6 +28,8 @@ func PlatformRoutes(db *sql.DB, router *router.Router) *platformRoutes {
 }
 
 // Superadministrator area: every handler checks the platform_admin role itself.
+// One council's details and administrators are also open to that council's
+// administrators (councilAdmin).
 func (r *platformRoutes) RegisterRoutes() {
 	var h = PlatformHandler(r.db)
 	var routes = []router.Route{
@@ -36,7 +38,7 @@ func (r *platformRoutes) RegisterRoutes() {
 		{Path: "/admin/tenants/{slug}", Method: http.MethodGet, Handler: h.GetTenant},
 		{Path: "/admin/tenants/{slug}", Method: http.MethodPut, Handler: h.UpdateTenant},
 		{Path: "/admin/tenants/{slug}", Method: http.MethodDelete, Handler: h.DeleteTenant},
-		{Path: "/admin/tenants/{slug}/invitations", Method: http.MethodPost, Handler: h.InviteTenantAdmin},
+		{Path: "/admin/tenants/{slug}/invitations", Method: http.MethodPost, Handler: middlewares.WithStrictRateLimit(h.InviteTenantAdmin)},
 		{Path: "/admin/tenants/{slug}/invitations/{id}", Method: http.MethodDelete, Handler: h.DeleteInvitation},
 		{Path: "/admin/tenants/{slug}/admins/{userId}", Method: http.MethodDelete, Handler: h.RemoveTenantAdmin},
 		{Path: "/admin/superadmins", Method: http.MethodGet, Handler: h.ListSuperadmins},

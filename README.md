@@ -6,7 +6,7 @@ Residents look up facilities, book, change or cancel their bookings, see their h
 
 LibreQuenda is Tribo Solutions' proposal for the [I Certame GOBTEC de Software Libre](https://www.agasol.gal/i-certame-gobtec/) (AGASOL, 2026).
 
-> **Status:** in development. Residents browse councils and facilities, book, cancel, invite others to fill a booking, and get notifications and emails. Council admins manage facilities, opening hours, closures, usage rules, images and entrance QR readers. Superadministrators manage councils and their admins. Still to come: changing bookings, indicators, data export. See the [architecture plan](docs/specs/architecture.md) and [todo.md](todo.md).
+> **Status:** in development. Residents browse councils and facilities, book, cancel, invite others to fill a booking, and get notifications and emails. Council admins manage facilities, opening hours, closures, usage rules, images and entrance QR readers, and follow live indicators they can export as CSV. Superadministrators manage councils and their admins. Still to come: changing bookings, data export. See the [architecture plan](docs/specs/architecture.md) and [todo.md](todo.md).
 
 ## Stack
 

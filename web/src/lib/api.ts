@@ -151,9 +151,11 @@ export type Booking = {
   status: 'confirmed' | 'cancelled'
   facility_id: string
   facility_name: string
+  facility_slug: string
   tenant_slug: string
   tenant_name: string
   can_cancel: boolean
+  can_change: boolean // owner only: another time of the same facility, on the same terms as cancelling
   cancel_until: string
   checkin_code: string // QR content; "" unless the booking is upcoming and confirmed
   checked_in_at: string | null
@@ -164,6 +166,21 @@ export type Booking = {
   participant_count: number // people who joined, not counting the owner
   can_leave: boolean
   people: Person[] // who is coming: the owner first; empty while nobody has joined
+  facility: FacilityDetails // empty in the book and change responses
+}
+
+/** Where to go and what to know before going: in each booking and on the invite page. */
+export type FacilityDetails = {
+  image_url: string
+  sport: string
+  address: string
+  latitude: number | null
+  longitude: number | null
+  accessibility_info: string
+  slot_minutes: number
+  min_cancel_hours: number
+  min_age: number | null // age control: null = none
+  usage_rules: string
 }
 
 // --- notifications (polled) ---------------------------------------------------
@@ -217,8 +234,8 @@ export type PublicInvite = {
   ends_at: string
   capacity: number
   spots_left: number
-  min_age: number | null
   state: InviteState
+  facility: FacilityDetails // image, address, rules and minimum age, before joining
 }
 
 export type MyBookings = { upcoming: Booking[]; history: Booking[] }
@@ -290,6 +307,41 @@ export type CouncilDetail = {
   invitations: { id: string; email: string; role: string; created_at: string }[]
 }
 
+// --- council indicators -------------------------------------------------------
+
+export type IndicatorCounts = {
+  bookings: number // confirmed + cancelled
+  confirmed: number
+  cancelled_by_user: number
+  cancelled_by_council: number
+  cancellation_rate: number | null // 0-1; null without bookings
+  booked_hours: number
+  open_hours: number // bookable time, closures taken out
+  occupancy: number | null // 0-1; null when never open
+  finished: number // past confirmed bookings at facilities with a QR reader
+  attended: number
+  no_show_rate: number | null
+}
+
+export type FacilityIndicators = IndicatorCounts & { id: string; name: string; is_active: boolean; has_reader: boolean }
+
+export type Indicators = {
+  from: string // YYYY-MM-DD, both days included
+  to: string
+  bucket: 'day' | 'week' | 'month'
+  timezone: string
+  generated_at: string
+  totals: IndicatorCounts & { active_users: number }
+  facilities: FacilityIndicators[]
+  series: { period: string; confirmed: number; cancelled: number }[]
+  busy_hours: { weekday: number; hour: number; bookings: number }[] // ISO weekday: 1 = Monday
+}
+
+// days: the last n days up to today in the council's time zone (the API works out the dates)
+export type IndicatorsQuery = { days: number; facility?: string }
+// every export is anonymous: totals only, counts of 1 or 2 shown as "<3"
+export type IndicatorsExport = { kind: 'summary' | 'daily' | 'hours' | 'usage'; excel: boolean }
+
 export type CouncilInput = {
   slug: string
   name: string
@@ -300,6 +352,21 @@ export type CouncilInput = {
   is_active?: boolean // update only
   admin_email?: string // create only
 }
+
+/** The council's own SMTP relay; without one its emails use the platform's (env_relay). */
+export type CouncilSmtp = {
+  configured: boolean
+  unreadable: boolean // sealed with another key: to be typed again
+  host: string
+  port: number
+  username: string
+  has_password: boolean // the password itself never comes back
+  from: string
+  updated_at: string | null
+  env_relay: boolean
+}
+/** An empty password keeps the saved one. */
+export type CouncilSmtpInput = { host: string; port: number; username: string; password: string; from: string }
 
 export type Superadmin = { user_id: string; email: string; full_name: string; from_env: boolean; created_at: string }
 
@@ -327,6 +394,8 @@ async function request<T>(path: string, { token, method = 'GET', body }: Request
   if (res.status === 204) return undefined as T
   if (!res.ok) {
     let message = `HTTP ${res.status}`
+    // the rate limiter answers in English only
+    if (res.status === 429) throw new ApiError(429, i18n.t('common:rateLimited'))
     try {
       const data = await res.json()
       message = data.error ?? message
@@ -336,6 +405,32 @@ async function request<T>(path: string, { token, method = 'GET', body }: Request
     throw new ApiError(res.status, message)
   }
   return res.json() as Promise<T>
+}
+
+function indicatorsParams({ days, facility }: IndicatorsQuery) {
+  const params = new URLSearchParams({ days: String(days) })
+  if (facility) params.set('facility', facility)
+  return params
+}
+
+/** GET …/indicators/export: the CSV comes with the token, so it is fetched and saved as a file. */
+async function exportIndicators(token: string, slug: string, query: IndicatorsQuery, { kind, excel }: IndicatorsExport) {
+  const params = indicatorsParams(query)
+  params.set('kind', kind)
+  if (excel) params.set('excel', '1')
+  const res = await fetch(`/api/tenants/${encodeURIComponent(slug)}/admin/indicators/export?${params}`, {
+    headers: { Authorization: `Bearer ${token}`, 'Accept-Language': i18n.resolvedLanguage ?? 'gl' },
+  })
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}))
+    throw new ApiError(res.status, data.error ?? `HTTP ${res.status}`)
+  }
+  const url = URL.createObjectURL(await res.blob())
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `${slug}-${kind}-${query.days}d-${new Date().toISOString().slice(0, 10)}.csv`
+  link.click()
+  URL.revokeObjectURL(url)
 }
 
 /** POST /media: multipart upload, answered with { ref, url }. */
@@ -383,6 +478,9 @@ export const api = {
       method: 'POST',
       body: { facility_id: facilityId, starts_at: startsAt, accept_rules: acceptRules },
     }),
+  // another free turn of the same facility, any day it can be booked
+  changeBooking: (token: string, bookingId: string, startsAt: string) =>
+    request<Booking>(`/me/bookings/${bookingId}`, { token, method: 'PATCH', body: { starts_at: startsAt } }),
   cancel: (token: string, bookingId: string) =>
     request<void>(`/me/bookings/${bookingId}`, { token, method: 'DELETE' }),
 
@@ -453,6 +551,16 @@ export const api = {
       }),
     deleteDevice: (token: string, slug: string, facilityId: string, deviceId: string) =>
       request<void>(`/tenants/${encodeURIComponent(slug)}/admin/facilities/${facilityId}/devices/${deviceId}`, { token, method: 'DELETE' }),
+    indicators: (token: string, slug: string, query: IndicatorsQuery) =>
+      request<Indicators>(`/tenants/${encodeURIComponent(slug)}/admin/indicators?${indicatorsParams(query)}`, { token }),
+    exportIndicators,
+    smtp: (token: string, slug: string) => request<CouncilSmtp>(`/tenants/${encodeURIComponent(slug)}/admin/smtp`, { token }),
+    saveSmtp: (token: string, slug: string, input: CouncilSmtpInput) =>
+      request<CouncilSmtp>(`/tenants/${encodeURIComponent(slug)}/admin/smtp`, { token, method: 'PUT', body: input }),
+    deleteSmtp: (token: string, slug: string) => request<void>(`/tenants/${encodeURIComponent(slug)}/admin/smtp`, { token, method: 'DELETE' }),
+    // emails the administrator through the relay the council's emails use now
+    testSmtp: (token: string, slug: string) =>
+      request<{ to: string; via: 'council' | 'environment' }>(`/tenants/${encodeURIComponent(slug)}/admin/smtp/test`, { token, method: 'POST' }),
     geocode: (token: string, query: string) =>
       request<{ results: GeocodeResult[] }>(`/geocode?q=${encodeURIComponent(query)}`, { token }),
   },

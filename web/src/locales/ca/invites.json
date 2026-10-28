@@ -65,10 +65,6 @@
     "when": "Quan",
     "where": "On",
     "spots": "Places",
-    "spotsLeft_one": "Queda {{count}} plaça de {{capacity}}",
-    "spotsLeft_other": "Queden {{count}} places de {{capacity}}",
-    "minAge": "Edat mínima: {{count}} anys",
-    "full": "Aquesta reserva és completa.",
     "closed": "Aquesta reserva ja no admet més gent: s'ha cancel·lat o ja ha començat.",
     "notFound": "Aquest enllaç d'invitació no funciona. Demana'n un de nou a qui ha reservat.",
     "withAccount": "Unir-me amb el meu compte",
@@ -93,5 +89,16 @@
     "organiser": "ha fet la reserva",
     "noAccount": "sense compte",
     "unnamed": "Sense nom"
+  },
+  "meter": {
+    "left_one": "Queda {{count}} plaça",
+    "left_other": "Queden {{count}} places",
+    "full": "Completa: no queden places",
+    "label": "{{taken}} de {{capacity}} persones"
+  },
+  "details": {
+    "cancelUntil": "La pots canviar o cancel·lar fins al {{date}}.",
+    "accessibility": "Accessibilitat",
+    "rules": "Normes i condicions"
   }
 }

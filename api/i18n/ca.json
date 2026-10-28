@@ -20,6 +20,10 @@
     "booking_already_cancelled": "Aquesta reserva ja està cancel·lada.",
     "cancel_too_late": "Ja no es pot cancel·lar: ha passat el termini de cancel·lació.",
     "cancel_failed": "No s'ha pogut cancel·lar la reserva. Torna-ho a provar.",
+    "change_too_late": "Ja no es pot canviar: ha passat el termini de cancel·lació.",
+    "change_failed": "No s'ha pogut canviar la reserva. Torna-ho a provar.",
+    "booking_same_time": "La reserva ja és a aquesta hora.",
+    "participant_overlaps": "Algú que s'ha unit a la teva reserva ja té una altra reserva a aquesta hora. Treu-lo o tria una altra hora.",
     "invalid_request_body": "Revisa les dades enviades: falta informació o té un format incorrecte.",
     "invalid_query_params": "Revisa els filtres: hi ha un valor no vàlid.",
     "forbidden": "No tens permís per fer això.",
@@ -105,7 +109,19 @@
     "current_password_wrong": "La contrasenya actual no és correcta.",
     "password_too_weak": "La nova contrasenya no compleix les normes indicades sota el camp.",
     "invalid_verification_code": "Aquest codi no és correcte o ha caducat. Demana'n un de nou.",
-    "account_unavailable": "Ara mateix no s'han pogut consultar les dades del teu compte. Torna-ho a provar d'aquí a un moment."
+    "account_unavailable": "Ara mateix no s'han pogut consultar les dades del teu compte. Torna-ho a provar d'aquí a un moment.",
+    "invalid_indicators_range": "El període no és vàlid: l'inici ha de ser anterior al final i pot abastar com a màxim un any.",
+    "indicators_failed": "No hem pogut calcular els indicadors. Torna-ho a provar.",
+    "invalid_smtp_host": "Escriu el nom del servidor SMTP, p. ex. smtp.concello.gal, sense el port ni el protocol.",
+    "invalid_smtp_port": "El port ha de ser un número de l'1 al 65535 (normalment 587).",
+    "invalid_smtp_username": "L'usuari pot tenir 255 caràcters com a màxim.",
+    "invalid_smtp_from": "El remitent no és una adreça vàlida. Escriu-lo com reservas@concello.gal o Concello <reservas@concello.gal>.",
+    "smtp_load_failed": "No s'ha pogut carregar la configuració del correu. Torna-ho a provar.",
+    "smtp_save_failed": "No s'ha pogut desar la configuració del correu. Torna-ho a provar.",
+    "smtp_not_configured": "No hi ha cap servidor SMTP per enviar: configura el de l'ajuntament o demana a l'administració de la plataforma que en configuri un de comú.",
+    "smtp_test_failed": "El servidor SMTP no ha acceptat el correu de prova: {{0}}",
+    "secrets_key_missing": "El servidor no té clau de xifratge (SECRETS_KEY), així que la contrasenya no es pot desar de manera segura. Avisa l'administració de la plataforma.",
+    "smtp_password_unreadable": "No es pot llegir la configuració SMTP desada (ha canviat la clau de xifratge). Torna-la a escriure i desa."
   },
   "email": {
     "greeting": "Hola {{0}},",
@@ -142,6 +158,10 @@
       "intro": "T'han fet administrador o administradora de {{0}} a LibreQuenda. Inicia la sessió amb aquesta adreça ({{1}}) per gestionar-ne les instal·lacions, els horaris i els tancaments. Si encara no tens compte, crea'l amb aquesta mateixa adreça.",
       "manage": "Obrir l'administració",
       "footer": "Reps aquest correu perquè una persona administradora de la plataforma ha afegit aquesta adreça. Si creus que és un error, pots ignorar-lo."
+    },
+    "smtp_test": {
+      "subject": "Correu de prova de LibreQuenda ({{0}})",
+      "body": "Aquest és un correu de prova de {{0}}, enviat a través de {{1}}. Si el llegeixes, LibreQuenda pot enviar els correus de reserves de l'ajuntament."
     }
   }
 }

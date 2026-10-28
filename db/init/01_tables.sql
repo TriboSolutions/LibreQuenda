@@ -11,6 +11,11 @@ CREATE TYPE booking_status AS ENUM (
     'cancelled'
 );
 
+CREATE TYPE booking_canceller AS ENUM (
+    'user',     -- the resident who booked
+    'council'   -- a closure, or the facility deactivated
+);
+
 CREATE TYPE notification_type AS ENUM (
     'booking_confirmed',
     'booking_changed',
@@ -36,6 +41,16 @@ CREATE TABLE tenant (
     is_active     BOOLEAN      NOT NULL DEFAULT TRUE,
     created_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
     updated_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+);
+
+
+-- A council's own SMTP relay for the emails LibreQuenda sends about it. Without
+-- one, they go through the relay in the environment (SMTP_*); with neither, they
+-- wait in the queue.
+CREATE TABLE tenant_smtp (
+    tenant_id  UUID        PRIMARY KEY REFERENCES tenant(id) ON DELETE CASCADE,
+    config     BYTEA       NOT NULL,   -- host, port, username, password and sender, sealed with SECRETS_KEY (api/secrets)
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 
@@ -177,6 +192,7 @@ CREATE TABLE booking (
     status       booking_status NOT NULL DEFAULT 'confirmed',
     rules_accepted_at TIMESTAMPTZ NULL,                 -- when the resident ticked "I have read the rules"
     cancelled_at TIMESTAMPTZ    NULL,
+    cancelled_by booking_canceller NULL,               -- who cancelled it, for the indicators
     created_at   TIMESTAMPTZ    NOT NULL DEFAULT NOW(),
     updated_at   TIMESTAMPTZ    NOT NULL DEFAULT NOW(),
     -- check-in: the booking QR carries only this random token, no personal data
@@ -186,6 +202,7 @@ CREATE TABLE booking (
     -- invite link: others fill the facility's capacity; a new token revokes the old link
     invite_token         UUID        NULL,
     CHECK (ends_at > starts_at),
+    CHECK ((status = 'cancelled') = (cancelled_by IS NOT NULL)),
 
     -- no two confirmed bookings may overlap on the same facility
     EXCLUDE USING gist (

@@ -14,6 +14,48 @@ import (
 	"github.com/google/uuid"
 )
 
+type BookingCanceller string
+
+const (
+	BookingCancellerUser    BookingCanceller = "user"
+	BookingCancellerCouncil BookingCanceller = "council"
+)
+
+func (e *BookingCanceller) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = BookingCanceller(s)
+	case string:
+		*e = BookingCanceller(s)
+	default:
+		return fmt.Errorf("unsupported scan type for BookingCanceller: %T", src)
+	}
+	return nil
+}
+
+type NullBookingCanceller struct {
+	BookingCanceller BookingCanceller `json:"booking_canceller"`
+	Valid            bool             `json:"valid"` // Valid is true if BookingCanceller is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullBookingCanceller) Scan(value interface{}) error {
+	if value == nil {
+		ns.BookingCanceller, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.BookingCanceller.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullBookingCanceller) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.BookingCanceller), nil
+}
+
 type BookingStatus string
 
 const (
@@ -159,20 +201,21 @@ type AppUser struct {
 }
 
 type Booking struct {
-	ID                uuid.UUID     `json:"id"`
-	FacilityID        uuid.UUID     `json:"facility_id"`
-	UserID            uuid.NullUUID `json:"user_id"`
-	StartsAt          time.Time     `json:"starts_at"`
-	EndsAt            time.Time     `json:"ends_at"`
-	Status            BookingStatus `json:"status"`
-	RulesAcceptedAt   sql.NullTime  `json:"rules_accepted_at"`
-	CancelledAt       sql.NullTime  `json:"cancelled_at"`
-	CreatedAt         time.Time     `json:"created_at"`
-	UpdatedAt         time.Time     `json:"updated_at"`
-	CheckinToken      uuid.UUID     `json:"checkin_token"`
-	CheckedInAt       sql.NullTime  `json:"checked_in_at"`
-	CheckedInDeviceID uuid.NullUUID `json:"checked_in_device_id"`
-	InviteToken       uuid.NullUUID `json:"invite_token"`
+	ID                uuid.UUID            `json:"id"`
+	FacilityID        uuid.UUID            `json:"facility_id"`
+	UserID            uuid.NullUUID        `json:"user_id"`
+	StartsAt          time.Time            `json:"starts_at"`
+	EndsAt            time.Time            `json:"ends_at"`
+	Status            BookingStatus        `json:"status"`
+	RulesAcceptedAt   sql.NullTime         `json:"rules_accepted_at"`
+	CancelledAt       sql.NullTime         `json:"cancelled_at"`
+	CancelledBy       NullBookingCanceller `json:"cancelled_by"`
+	CreatedAt         time.Time            `json:"created_at"`
+	UpdatedAt         time.Time            `json:"updated_at"`
+	CheckinToken      uuid.UUID            `json:"checkin_token"`
+	CheckedInAt       sql.NullTime         `json:"checked_in_at"`
+	CheckedInDeviceID uuid.NullUUID        `json:"checked_in_device_id"`
+	InviteToken       uuid.NullUUID        `json:"invite_token"`
 }
 
 type BookingParticipant struct {
@@ -280,4 +323,10 @@ type TenantMembership struct {
 	TenantID  uuid.UUID  `json:"tenant_id"`
 	Role      TenantRole `json:"role"`
 	CreatedAt time.Time  `json:"created_at"`
+}
+
+type TenantSmtp struct {
+	TenantID  uuid.UUID `json:"tenant_id"`
+	Config    []byte    `json:"config"`
+	UpdatedAt time.Time `json:"updated_at"`
 }

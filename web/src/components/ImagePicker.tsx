@@ -14,7 +14,7 @@ type Props = {
   folder: MediaFolder
   value: StoredImage | null // the form keeps the ref; the url is only for the preview
   onChange: (value: StoredImage | null) => void
-  shape?: 'square' | 'wide' | 'large' | 'avatar' // large: full width, as tall as a map; avatar: a 160px circle
+  shape?: 'square' | 'wide' | 'large' | 'avatar' // large: full width, as tall as a map; avatar: a 96px circle
   hideLabel?: boolean // when the card's heading already names it
 }
 
@@ -73,7 +73,7 @@ export function ImagePicker({ label, folder, value, onChange, shape = 'square', 
           }}
           className={cn(
             'relative flex shrink-0 items-center justify-center overflow-hidden border bg-muted text-muted-foreground transition-colors',
-            shape === 'avatar' ? 'size-40 rounded-full' : 'rounded-md',
+            shape === 'avatar' ? 'size-24 rounded-full' : 'rounded-md',
             shape === 'square' ? 'size-20' : shape === 'wide' ? 'h-20 w-32' : shape === 'large' ? 'h-64 w-full' : '',
             value ? 'border-solid' : 'border-dashed',
             dragging && 'border-primary bg-accent',

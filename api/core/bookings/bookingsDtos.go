@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"librequenda/checkin"
 	"librequenda/model"
+	"librequenda/storage"
 	"sort"
 	"time"
 
@@ -27,6 +28,18 @@ func (d *CreateBookingDto) Validate() []string {
 	return errs
 }
 
+// ChangeBookingDto: the new turn, on the same facility.
+type ChangeBookingDto struct {
+	StartsAt time.Time `json:"starts_at"`
+}
+
+func (d *ChangeBookingDto) Validate() []string {
+	if d.StartsAt.IsZero() {
+		return []string{"starts_at is required"}
+	}
+	return nil
+}
+
 type BookingDto struct {
 	Id           string     `json:"id"`
 	StartsAt     time.Time  `json:"starts_at"`
@@ -34,9 +47,11 @@ type BookingDto struct {
 	Status       string     `json:"status"`
 	FacilityId   string     `json:"facility_id"`
 	FacilityName string     `json:"facility_name"`
+	FacilitySlug string     `json:"facility_slug"`
 	TenantSlug   string     `json:"tenant_slug"`
 	TenantName   string     `json:"tenant_name"`
 	CanCancel    bool       `json:"can_cancel"`
+	CanChange    bool       `json:"can_change"` // owner only: another time, on the same terms as cancelling
 	CancelUntil  time.Time  `json:"cancel_until"`
 	CheckinCode  string     `json:"checkin_code"` // QR content, upcoming confirmed bookings only
 	CheckedInAt  *time.Time `json:"checked_in_at"`
@@ -47,6 +62,42 @@ type BookingDto struct {
 	ParticipantCount int         `json:"participant_count"` // people who joined, not counting the owner
 	CanLeave         bool        `json:"can_leave"`         // participant only, until the start
 	People           []PersonDto `json:"people"`            // who is coming: the owner first, then by joining order
+	// what the booking details show; empty in the create and change responses
+	Facility FacilityDetailsDto `json:"facility"`
+}
+
+// FacilityDetailsDto: where to go and what to know before going, for the booking details and the invite page.
+type FacilityDetailsDto struct {
+	ImageUrl          string   `json:"image_url"`
+	Sport             string   `json:"sport"`
+	Address           string   `json:"address"`
+	Latitude          *float64 `json:"latitude"`
+	Longitude         *float64 `json:"longitude"`
+	AccessibilityInfo string   `json:"accessibility_info"`
+	SlotMinutes       int32    `json:"slot_minutes"`
+	MinCancelHours    int32    `json:"min_cancel_hours"`
+	MinAge            *int32   `json:"min_age"` // age control: null = none
+	UsageRules        string   `json:"usage_rules"`
+}
+
+func FacilityDetails(f model.Facility) FacilityDetailsDto {
+	var details = FacilityDetailsDto{
+		ImageUrl:          storage.URL(f.ImageRef.String),
+		Sport:             f.Sport.String,
+		Address:           f.Address.String,
+		AccessibilityInfo: f.AccessibilityInfo.String,
+		SlotMinutes:       f.SlotMinutes,
+		MinCancelHours:    f.MinCancelHours,
+		UsageRules:        f.UsageRulesText.String,
+	}
+	if f.Latitude.Valid && f.Longitude.Valid {
+		details.Latitude = &f.Latitude.Float64
+		details.Longitude = &f.Longitude.Float64
+	}
+	if f.MinAge.Valid {
+		details.MinAge = &f.MinAge.Int32
+	}
+	return details
 }
 
 // PersonDto is what players see of each other: a name, never an email or an age.
@@ -140,6 +191,7 @@ func mapParticipation(row model.ListParticipationsByUserRow, now time.Time) Book
 		Status:           string(row.Status),
 		FacilityId:       row.FacilityID.String(),
 		FacilityName:     row.FacilityName,
+		FacilitySlug:     row.FacilitySlug,
 		TenantSlug:       row.TenantSlug,
 		TenantName:       row.TenantName,
 		CheckedInAt:      checkedInAt,
@@ -148,11 +200,13 @@ func mapParticipation(row model.ListParticipationsByUserRow, now time.Time) Book
 		Capacity:         invitableCapacity(row.Capacity),
 		ParticipantCount: int(row.ParticipantCount),
 		CanLeave:         row.Status == model.BookingStatusConfirmed && now.Before(row.StartsAt),
+		Facility:         FacilityDetails(row.Facility),
 	}
 }
 
 func mapBooking(row model.ListBookingsByUserRow, now time.Time) BookingDto {
 	var cancelUntil = row.StartsAt.Add(-time.Duration(row.MinCancelHours) * time.Hour)
+	var canCancel = row.Status == model.BookingStatusConfirmed && now.Before(cancelUntil)
 	var checkinCode string
 	if row.Status == model.BookingStatusConfirmed && row.EndsAt.After(now) {
 		checkinCode = checkin.Payload(row.CheckinToken)
@@ -168,12 +222,15 @@ func mapBooking(row model.ListBookingsByUserRow, now time.Time) BookingDto {
 		Status:       string(row.Status),
 		FacilityId:   row.FacilityID.String(),
 		FacilityName: row.FacilityName,
+		FacilitySlug: row.FacilitySlug,
 		TenantSlug:   row.TenantSlug,
 		TenantName:   row.TenantName,
-		CanCancel:    row.Status == model.BookingStatusConfirmed && now.Before(cancelUntil),
+		CanCancel:    canCancel,
+		CanChange:    canCancel,
 		CancelUntil:  cancelUntil,
 		CheckinCode:  checkinCode,
 		CheckedInAt:  checkedInAt,
 		Role:         RoleOwner,
+		Facility:     FacilityDetails(row.Facility),
 	}
 }

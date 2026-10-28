@@ -234,14 +234,18 @@ SELECT
     t.name AS tenant_name,
     t.slug AS tenant_slug,
     u.full_name,
-    u.preferred_language
+    u.preferred_language,
+    t.id AS tenant_id,
+    s.config AS smtp_config
 FROM
     tenant_invitation i
     JOIN tenant t ON t.id = i.tenant_id
     LEFT JOIN app_user u ON lower(u.email) = lower(i.email)
+    LEFT JOIN tenant_smtp s ON s.tenant_id = t.id
 WHERE
     i.emailed_at IS NULL
     AND i.accepted_at IS NULL
+    AND (sqlc.arg('env_relay')::BOOLEAN OR s.tenant_id IS NOT NULL)
 ORDER BY
     i.created_at ASC
 LIMIT sqlc.arg('max_rows');

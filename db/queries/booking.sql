@@ -20,13 +20,45 @@ RETURNING
 UPDATE booking
 SET
     status       = 'cancelled',
-    cancelled_at = NOW()
+    cancelled_at = NOW(),
+    cancelled_by = 'user'
 WHERE
     id = sqlc.arg('id')
     AND user_id = sqlc.arg('user_id')
     AND status = 'confirmed'
 RETURNING
     *;
+
+-- name: ChangeBookingTime :one
+-- Moves the owner's booking to another turn of the same facility; overlaps are
+-- rejected by the exclusion constraint on booking.
+UPDATE booking
+SET
+    starts_at  = sqlc.arg('starts_at'),
+    ends_at    = sqlc.arg('ends_at'),
+    updated_at = NOW()
+WHERE
+    id = sqlc.arg('id')
+    AND user_id = sqlc.arg('user_id')
+    AND status = 'confirmed'
+RETURNING
+    *;
+
+-- name: LockOwnedBooking :one
+-- Inside the change transaction: joins to this booking wait (they lock it too),
+-- so nobody joins while the people coming are checked against the new time.
+SELECT
+    b.id,
+    b.starts_at,
+    b.status,
+    f.min_cancel_hours
+FROM
+    booking b
+    JOIN facility f ON f.id = b.facility_id
+WHERE
+    b.id = sqlc.arg('id')
+    AND b.user_id = sqlc.arg('user_id')
+FOR UPDATE OF b;
 
 -- name: ListBookingsByUser :many
 SELECT
@@ -38,9 +70,11 @@ SELECT
     b.checked_in_at,
     f.id   AS facility_id,
     f.name AS facility_name,
+    f.slug AS facility_slug,
     f.min_cancel_hours,
     t.slug AS tenant_slug,
-    t.name AS tenant_name
+    t.name AS tenant_name,
+    sqlc.embed(f) -- what the booking details show: image, address, rules
 FROM
     booking b
     JOIN facility f ON f.id = b.facility_id
@@ -82,6 +116,7 @@ SELECT
     b.starts_at,
     b.ends_at,
     b.status,
+    b.facility_id,
     f.min_cancel_hours
 FROM
     booking b
@@ -98,11 +133,13 @@ SELECT pg_advisory_xact_lock(hashtextextended(sqlc.arg('user_id')::UUID::TEXT, 0
 -- name: UserHasOverlappingBooking :one
 -- A person is in one place at a time: their own confirmed bookings and the
 -- ones they joined through an invite, in any facility and any council.
+-- except_booking_id: the booking being moved, which does not count against itself.
 SELECT EXISTS (
     SELECT 1
     FROM booking b
     WHERE
         b.status = 'confirmed'
+        AND b.id IS DISTINCT FROM sqlc.narg('except_booking_id')
         AND b.starts_at < sqlc.arg('ends_at')
         AND b.ends_at   > sqlc.arg('starts_at')
         AND (
@@ -110,6 +147,39 @@ SELECT EXISTS (
             OR EXISTS (
                 SELECT 1 FROM booking_participant p
                 WHERE p.booking_id = b.id AND p.user_id = sqlc.arg('user_id')
+            )
+        )
+);
+
+-- name: LockParticipantBookings :exec
+-- Inside the change transaction: the people who joined wait like the owner
+-- (LockUserBookings), in a fixed order.
+SELECT pg_advisory_xact_lock(hashtextextended(p.user_id::TEXT, 0))
+FROM booking_participant p
+WHERE
+    p.booking_id = sqlc.arg('booking_id')
+    AND p.user_id IS NOT NULL
+ORDER BY
+    p.user_id;
+
+-- name: ParticipantsHaveOverlappingBooking :one
+-- Someone who joined with an account is somewhere else in the new time,
+-- as owner or invited (the same rule as UserHasOverlappingBooking).
+SELECT EXISTS (
+    SELECT 1
+    FROM booking_participant p
+    JOIN booking b ON b.id <> p.booking_id
+    WHERE
+        p.booking_id = sqlc.arg('booking_id')
+        AND p.user_id IS NOT NULL
+        AND b.status = 'confirmed'
+        AND b.starts_at < sqlc.arg('ends_at')
+        AND b.ends_at   > sqlc.arg('starts_at')
+        AND (
+            b.user_id = p.user_id
+            OR EXISTS (
+                SELECT 1 FROM booking_participant o
+                WHERE o.booking_id = b.id AND o.user_id = p.user_id
             )
         )
 );

@@ -56,13 +56,18 @@ func trustedProxies(value string) []string {
 	return proxies
 }
 
-// Outgoing email (booking reminders). Empty SMTP_HOST = no emails are sent.
+// Outgoing email: the relay for councils without one of their own (tenant_smtp).
+// Empty SMTP_HOST = only councils with their own relay get emails.
 // STARTTLS is used when the server offers it; port 465 (implicit TLS) is not supported.
 var SMTP_HOST = os.Getenv("SMTP_HOST")
 var SMTP_PORT = envOr("SMTP_PORT", "587")
 var SMTP_USERNAME = os.Getenv("SMTP_USERNAME")
 var SMTP_PASSWORD = os.Getenv("SMTP_PASSWORD")
 var SMTP_FROM = os.Getenv("SMTP_FROM") // e.g. LibreQuenda <noreply@concello.gal>
+
+// Key that encrypts stored credentials (a council's SMTP password): 32 bytes in
+// hex (openssl rand -hex 32). Losing it means typing those passwords again.
+var SECRETS_KEY = os.Getenv("SECRETS_KEY")
 
 // Address of the web app, for links in emails, e.g. https://reservas.concello.gal
 var PUBLIC_URL = strings.TrimRight(os.Getenv("PUBLIC_URL"), "/")

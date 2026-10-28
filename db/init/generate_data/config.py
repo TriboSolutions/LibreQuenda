@@ -70,12 +70,44 @@ RESIDENTS = [
     {"key": "brais", "full_name": "Brais Otero", "email": "brais.otero@example.com"},
     {"key": "antia", "full_name": "Antía Vázquez", "email": "antia.vazquez@example.com"},
     {"key": "xoan", "full_name": "Xoán Castro", "email": "xoan.castro@example.com"},
+    # residents who only appear in the booking history (see history.sql)
+    {"key": "iago", "full_name": "Iago Fernández", "email": "iago.fernandez@example.com"},
+    {"key": "noa", "full_name": "Noa Rodríguez", "email": "noa.rodriguez@example.com"},
+    {"key": "martin", "full_name": "Martín López", "email": "martin.lopez@example.com"},
+    {"key": "lucia", "full_name": "Lucía Gómez", "email": "lucia.gomez@example.com"},
+    {"key": "breixo", "full_name": "Breixo Souto", "email": "breixo.souto@example.com"},
+    {"key": "sabela", "full_name": "Sabela Rial", "email": "sabela.rial@example.com"},
+    {"key": "roi", "full_name": "Roi Barreiro", "email": "roi.barreiro@example.com"},
+    {"key": "carme", "full_name": "Carme Dopico", "email": "carme.dopico@example.com"},
+    {"key": "anxo", "full_name": "Anxo Varela", "email": "anxo.varela@example.com"},
+    {"key": "aldara", "full_name": "Aldara Pena", "email": "aldara.pena@example.com"},
+    {"key": "pablo", "full_name": "Pablo Iglesias Sanmartín", "email": "pablo.iglesias@example.com"},
+    {"key": "maria", "full_name": "María Fraga", "email": "maria.fraga@example.com"},
+    {"key": "hugo", "full_name": "Hugo Seoane", "email": "hugo.seoane@example.com"},
+    {"key": "olaia", "full_name": "Olaia Carballo", "email": "olaia.carballo@example.com"},
+    {"key": "daniel", "full_name": "Daniel Rey", "email": "daniel.rey@example.com"},
+    {"key": "iria", "full_name": "Iria Mosquera", "email": "iria.mosquera@example.com"},
 ]
 
 # Relative to the day the database is created: (facility, day offset, start, end, reason)
 CLOSURES = [
     ("tenis", 0, "12:00", "14:00", "Cambio da rede"),
+    # past: the bookings they caught show as cancelled by the council in the indicators
+    ("pavillon", -23, "09:00", "22:00", "Mantemento do parqué"),
+    ("futbol-7", -9, "17:00", "23:00", "Campo asolagado polo temporal"),
 ]
+
+# QR readers at the entrance: (facility, name). Check-ins in the history only
+# happen where there is one. Seeded without a usable key: create a new reader
+# from the admin page to try the check-in.
+READERS = [
+    ("padel-1", "Porta do parque"),
+    ("pavillon", "Entrada principal"),
+    ("futbol-7", "Porta do campo"),
+]
+
+# Days of booking history before the day the database is created (see history.sql)
+HISTORY_DAYS = 90
 
 # Relative to the day the database is created: (facility, resident, day offset, start)
 # The length is the facility's slot; every start must be one of its turns.

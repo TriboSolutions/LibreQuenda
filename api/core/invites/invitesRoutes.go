@@ -75,6 +75,6 @@ func (r *invitesRoutes) RegisterRoutes() {
 		Path:              "/invites/{token}/join",
 		Method:            http.MethodPost,
 		AdditionalMethods: []router.HTTPMethod{router.OPTIONS},
-		Handler:           middlewares.VersionMiddleware(middlewares.WithRetries(h.JoinAsGuest)),
+		Handler:           middlewares.VersionMiddleware(middlewares.WithStrictRateLimit(h.JoinAsGuest)),
 	})
 }

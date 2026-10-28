@@ -65,10 +65,6 @@
     "when": "Cuándo",
     "where": "Dónde",
     "spots": "Plazas",
-    "spotsLeft_one": "Queda {{count}} plaza de {{capacity}}",
-    "spotsLeft_other": "Quedan {{count}} plazas de {{capacity}}",
-    "minAge": "Edad mínima: {{count}} años",
-    "full": "Esta reserva está completa.",
     "closed": "Esta reserva ya no admite más gente: se canceló o ya empezó.",
     "notFound": "Este enlace de invitación no funciona. Pide uno nuevo a quien reservó.",
     "withAccount": "Unirme con mi cuenta",
@@ -93,5 +89,16 @@
     "organiser": "hizo la reserva",
     "noAccount": "sin cuenta",
     "unnamed": "Sin nombre"
+  },
+  "meter": {
+    "left_one": "Queda {{count}} plaza",
+    "left_other": "Quedan {{count}} plazas",
+    "full": "Completa: no quedan plazas",
+    "label": "{{taken}} de {{capacity}} personas"
+  },
+  "details": {
+    "cancelUntil": "Puedes cambiarla o cancelarla hasta el {{date}}.",
+    "accessibility": "Accesibilidad",
+    "rules": "Normas y condiciones"
   }
 }
