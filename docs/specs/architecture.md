@@ -204,7 +204,7 @@ A booking belongs to the period its start falls in, in the council's time zone. 
 
 **Comparison and facility detail.** Any period (the last 7, 30, 90 or 365 days, or a range of your own up to a year) is compared by default with the same number of days just before it, or with the same dates a year earlier (`compare=previous|year|none`). The API returns the same figures for both periods (`previous`), computed in the same snapshot; the web shows growth in % for counts and averages and in percentage points for rates (cancellations, no-shows and occupancy), green or red by whether the change is good news. Choosing a facility, from the filter or the per-facility table, turns the dashboard into that facility's detail: the same boards for it alone, plus occupancy by weekday and how people book (people per booking, owner plus invited; and the median notice between booking and playing), each against the compared period.
 
-CSV export (`…/indicators/export?kind=summary|daily|hours|usage`). **Every export is anonymous**: no row is a booking or a person, so nothing in it can be matched back to someone, not even by the council against its own database.
+CSV export (`…/indicators/export?kind=summary|daily|hours|usage`). **Every indicators export is anonymous**: no row is a booking or a person, so nothing in it can be matched back to someone, not even by the council against its own database.
 
 | `kind` | One row per | Contents |
 |---|---|---|
@@ -212,6 +212,8 @@ CSV export (`…/indicators/export?kind=summary|daily|hours|usage`). **Every exp
 | `daily` | facility × day (empty days too) | bookings, confirmed, cancelled by resident / council, booked and open hours, occupancy, check-ins, invited people |
 | `hours` | facility × weekday × starting hour | confirmed bookings added up over the whole period (never a single date and hour, which would be one booking) |
 | `usage` | band of bookings per person (1, 2–4, 5–9, 10+) | how many people booked that often, as owner or invited |
+
+**Council data export** (`GET /tenants/{slug}/admin/export`, data sovereignty: "portabilidade íntegra dos datos"). The council takes everything it keeps in LibreQuenda to another system as one ZIP. It has one CSV per table (`council`, `facilities`, `opening_hours`, `closures`, `checkin_devices`, `bookings`, `booking_participants`; RFC 4180, UTF-8), the council logo and facility images under `media/`, and a `datapackage.json` ([Frictionless Data Package](https://specs.frictionlessdata.io/)) giving every column's type and meaning plus the primary and foreign keys between the tables, so any Frictionless tool can validate and load it. Times are RFC 3339 in UTC; opening hours are local to the council's `timezone`. Unlike the indicators, it has a row per booking. It still leaves out secrets (SMTP, device keys, QR and invite tokens) and resident identities: a person is their account id, the same across tables, and their name and email stay theirs (`GET /me/export`). Guests appear only as guests, with no name or age. It is read in one snapshot and rate-limited like other heavy routes; the web offers it in the council sheet.
 
 Counts of 1 or 2 come out as `<3`, and the figures worked out from them (hours, rates, occupancy) are left empty, so a quiet slot does not point at whoever uses it. This is primary suppression only: combining several totals can still narrow a hidden count down, which is accepted for figures this coarse. The dashboard is internal and shows exact numbers.
 
@@ -262,7 +264,7 @@ Development defaults that must change before a real deployment:
 |---|---|---|
 | Public | `GET /tenants` (council list), `GET /tenants/{slug}/day?date=` (every active facility with its slots for one day), `GET /tenants/{slug}/facilities/{facility}?date=` (details, slots, weekly schedule), `GET /media/{ref}` (images) | none |
 | Resident | `GET /me`, `GET\|POST /me/bookings`, `DELETE /me/bookings/{id}` (cancel) | logged in |
-| Council admin | `GET\|POST /tenants/{slug}/admin/facilities`, `GET\|PUT\|DELETE …/facilities/{id}`, `PUT …/facilities/{id}/schedule`, `GET /tenants/{slug}/admin/indicators?days=&facility=`, `GET …/indicators/export?kind=&excel=` (CSV), `GET /geocode`, `POST /media` (upload) | council admin or superadmin |
+| Council admin | `GET\|POST /tenants/{slug}/admin/facilities`, `GET\|PUT\|DELETE …/facilities/{id}`, `PUT …/facilities/{id}/schedule`, `GET /tenants/{slug}/admin/indicators?days=&facility=`, `GET …/indicators/export?kind=&excel=` (CSV), `GET …/admin/export` (ZIP, full data), `GET /geocode`, `POST /media` (upload) | council admin or superadmin |
 | Superadmin | `GET\|POST /admin/tenants`, `GET\|PUT\|DELETE /admin/tenants/{slug}`, `POST /admin/tenants/{slug}/invitations`, `DELETE …/invitations/{id}`, `DELETE …/admins/{userId}`, `GET\|POST /admin/superadmins`, `DELETE /admin/superadmins/{userId}` | superadmin |
 | Planned | `PATCH /me/bookings/{id}`, `GET /me/notifications`, `GET /me/export`, `…/closures` | |
 

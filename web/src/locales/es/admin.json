@@ -401,5 +401,12 @@
     "removeConfirm": "Borrar configuración",
     "removed": "Configuración borrada.",
     "unreadable": "No se puede leer la configuración guardada porque cambió la clave de cifrado del servidor. Escríbela de nuevo, contraseña incluida, y guarda."
+  },
+  "councilExport": {
+    "title": "Exportar los datos del ayuntamiento",
+    "help": "Un ZIP con todo lo que el ayuntamiento guarda en LibreQuenda, para llevarlo a otro sistema: instalaciones y normas de uso, horarios, cierres, lectores QR y todas las reservas, en CSV, con las imágenes originales y un datapackage.json (Frictionless Data) que describe cada columna.",
+    "privacy": "No incluye contraseñas ni claves, ni los nombres o correos de los vecinos: cada persona aparece con el identificador de su cuenta.",
+    "download": "Descargar ZIP",
+    "downloading": "Preparando…"
   }
 }

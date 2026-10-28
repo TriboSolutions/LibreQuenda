@@ -401,5 +401,12 @@
     "removeConfirm": "Borrar configuración",
     "removed": "Configuración borrada.",
     "unreadable": "Non se pode ler a configuración gardada porque cambiou a chave de cifrado do servidor. Escríbea de novo, contrasinal incluído, e garda."
+  },
+  "councilExport": {
+    "title": "Exportar os datos do concello",
+    "help": "Un ZIP con todo o que o concello garda en LibreQuenda, para levalo a outro sistema: instalacións e normas de uso, horarios, peches, lectores QR e todas as reservas, en CSV, coas imaxes orixinais e un datapackage.json (Frictionless Data) que describe cada columna.",
+    "privacy": "Non leva contrasinais nin claves, nin os nomes ou correos dos veciños: cada persoa aparece co identificador da súa conta.",
+    "download": "Descargar ZIP",
+    "downloading": "Preparando…"
   }
 }

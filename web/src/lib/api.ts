@@ -489,6 +489,24 @@ async function exportIndicators(token: string, slug: string, query: IndicatorsQu
   URL.revokeObjectURL(url)
 }
 
+/** GET …/admin/export: the council's full data as a ZIP, fetched with the token and saved. */
+async function exportCouncilData(token: string, slug: string) {
+  const res = await fetch(`/api/tenants/${encodeURIComponent(slug)}/admin/export`, {
+    headers: { Authorization: `Bearer ${token}`, 'Accept-Language': i18n.resolvedLanguage ?? 'gl' },
+  })
+  if (!res.ok) {
+    if (res.status === 429) throw new ApiError(429, i18n.t('common:rateLimited'))
+    const data = await res.json().catch(() => ({}))
+    throw new ApiError(res.status, data.error ?? `HTTP ${res.status}`)
+  }
+  const url = URL.createObjectURL(await res.blob())
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `librequenda-${slug}-${new Date().toISOString().slice(0, 10)}.zip`
+  link.click()
+  URL.revokeObjectURL(url)
+}
+
 /** GET /me/export: the user's data as a file (RXPD / GDPR), fetched with the token and saved. */
 async function exportMyData(token: string, format: 'json' | 'csv') {
   const res = await fetch(`/api/me/export?format=${format}`, {
@@ -638,6 +656,7 @@ export const api = {
     indicators: (token: string, slug: string, query: IndicatorsQuery) =>
       request<Indicators>(`/tenants/${encodeURIComponent(slug)}/admin/indicators?${indicatorsParams(query)}`, { token }),
     exportIndicators,
+    exportData: exportCouncilData,
     smtp: (token: string, slug: string) => request<CouncilSmtp>(`/tenants/${encodeURIComponent(slug)}/admin/smtp`, { token }),
     saveSmtp: (token: string, slug: string, input: CouncilSmtpInput) =>
       request<CouncilSmtp>(`/tenants/${encodeURIComponent(slug)}/admin/smtp`, { token, method: 'PUT', body: input }),

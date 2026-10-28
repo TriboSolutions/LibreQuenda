@@ -24,6 +24,7 @@ Scope: bases §1.1 (minimum) + §1.2 (technical). See [architecture plan](docs/s
 - [x] Usage rules editable per facility
 - [x] Indicators dashboard: bookings per facility, occupancy, cancellation rate, busiest days/hours, active users
 - [x] Indicators CSV export
+- [x] Full council data export (`…/admin/export`): ZIP of CSVs + Frictionless `datapackage.json` + images, for data portability
 - [x] Council members management (`…/admin/members`)
 - [x] SMTP settings per council (falls back to the `SMTP_*` relay; with neither, the council's emails wait)
 
