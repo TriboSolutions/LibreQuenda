@@ -10,6 +10,7 @@ import { CancelDialog } from '@/components/CancelDialog'
 import { DayPicker } from '@/components/DayPicker'
 import { MyBookings } from '@/components/MyBookings'
 import { BookingQrDialog } from '@/components/BookingQrDialog'
+import { CouncilHeading } from '@/components/CouncilHeading'
 import { TopBar } from '@/components/TopBar'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -136,7 +137,11 @@ export function CouncilPage() {
       <main id="main" tabIndex={-1} className="mx-auto max-w-[1152px] px-4 pt-8 pb-16 sm:px-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="min-w-0">
-            <h1 className="text-[28px] leading-9 font-bold tracking-[-0.02em] sm:text-[32px] sm:leading-10">{t('home:title')}</h1>
+            <CouncilHeading
+              section={t('home:title')}
+              council={tenants.data?.tenants.find((c) => c.slug === tenantSlug)}
+              otherCouncils={(tenants.data?.tenants.length ?? 0) > 1}
+            />
             {day.data ? (
               <p className="mt-1 max-w-[62ch] text-base text-muted-foreground">{finding(day.data, today)}</p>
             ) : (

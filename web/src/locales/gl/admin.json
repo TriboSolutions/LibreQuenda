@@ -245,7 +245,7 @@
   },
   "councilAdmin": {
     "title": "Xestión do concello",
-    "subtitle": "{{council}}: instalacións, horarios, normas e indicadores.",
+    "subtitle": "Instalacións, horarios, normas e indicadores.",
     "settings": "Axustes do concello"
   },
   "indicators": {

@@ -245,7 +245,7 @@
   },
   "councilAdmin": {
     "title": "Gestió de l'ajuntament",
-    "subtitle": "{{council}}: instal·lacions, horaris, normes i indicadors.",
+    "subtitle": "Instal·lacions, horaris, normes i indicadors.",
     "settings": "Configuració de l'ajuntament"
   },
   "indicators": {
