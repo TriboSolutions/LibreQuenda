@@ -61,6 +61,6 @@ Scope: bases §1.1 (minimum) + §1.2 (technical). See [architecture plan](docs/s
 
 ## Optional (bases §1.3, only if cheap)
 
-- [ ] `.ics` export / calendar feed of the user's bookings
+- [x] `.ics` calendar feed of the user's bookings (subscribe from /perfil)
 - [ ] QR code on each booking
 - [ ] Mobile app (`app/`)

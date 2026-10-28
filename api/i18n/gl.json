@@ -85,6 +85,8 @@
     "invalid_device_key": "A clave do lector non é válida ou foi retirada.",
     "checkin_failed": "Non foi posible comprobar a reserva. Téntao de novo.",
     "qr_failed": "Non foi posible crear o teu QR. Téntao de novo.",
+    "calendar_failed": "Non foi posible preparar o teu calendario. Téntao de novo.",
+    "calendar_not_found": "Este enderezo de calendario non funciona: pode que o cambiases ou o desactivases en /perfil.",
     "no_turn_soon": "Ningunha quenda comeza nos próximos 15 minutos.",
     "invite_not_found": "Esta ligazón de convite non funciona: pode que quen reservou a cambiase.",
     "invite_closed": "Esta reserva xa non admite máis xente: cancelouse ou xa comezou.",

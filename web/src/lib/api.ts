@@ -114,6 +114,9 @@ export type CreatedCheckinDevice = CheckinDevice & { key: string }
 /** The personal QR on /perfil: a new code every `refresh_seconds`; each one works once, until `expires_at`. */
 export type PersonalQr = { code: string; expires_at: string; refresh_seconds: number }
 
+/** The .ics feed of the user's bookings: url is empty while it is off. */
+export type CalendarFeed = { url: string }
+
 // --- entrance reader (signs in with its device key) -------------------------
 
 export type Reader = {
@@ -508,6 +511,12 @@ export const api = {
   me: (token: string) => request<Me>('/me', { token }),
   updateProfile: (token: string, input: ProfileInput) => request<Me>('/me/profile', { token, method: 'PUT', body: input }),
   personalQr: (token: string) => request<PersonalQr>('/me/qr', { token }),
+  calendarFeed: {
+    get: (token: string) => request<CalendarFeed>('/me/calendar', { token }),
+    // turns the feed on, or gives it a new address: the old one stops working
+    reset: (token: string) => request<CalendarFeed>('/me/calendar', { token, method: 'POST' }),
+    turnOff: (token: string) => request<void>('/me/calendar', { token, method: 'DELETE' }),
+  },
   exportMyData,
   // erases the account for good: upcoming bookings are cancelled and the sign-in account is deleted
   deleteAccount: (token: string) => request<void>('/me', { token, method: 'DELETE' }),

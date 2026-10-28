@@ -326,6 +326,81 @@ func (q *Queries) ListBookingsByUser(ctx context.Context, userID uuid.NullUUID) 
 	return items, nil
 }
 
+const listCalendarBookings = `-- name: ListCalendarBookings :many
+SELECT
+    b.id,
+    b.starts_at,
+    b.ends_at,
+    b.status,
+    b.updated_at,
+    f.name AS facility_name,
+    f.address,
+    f.latitude,
+    f.longitude,
+    t.name AS tenant_name
+FROM
+    booking b
+    JOIN facility f ON f.id = b.facility_id
+    JOIN tenant   t ON t.id = f.tenant_id
+WHERE
+    (
+        b.user_id = $1
+        OR b.id IN (SELECT p.booking_id FROM booking_participant p WHERE p.user_id = $1)
+    )
+    AND b.ends_at > NOW() - INTERVAL '30 days'
+ORDER BY
+    b.starts_at ASC
+`
+
+type ListCalendarBookingsRow struct {
+	ID           uuid.UUID       `json:"id"`
+	StartsAt     time.Time       `json:"starts_at"`
+	EndsAt       time.Time       `json:"ends_at"`
+	Status       BookingStatus   `json:"status"`
+	UpdatedAt    time.Time       `json:"updated_at"`
+	FacilityName string          `json:"facility_name"`
+	Address      sql.NullString  `json:"address"`
+	Latitude     sql.NullFloat64 `json:"latitude"`
+	Longitude    sql.NullFloat64 `json:"longitude"`
+	TenantName   string          `json:"tenant_name"`
+}
+
+// The .ics feed: the user's own bookings and the ones they joined, from a month
+// back. Cancelled ones stay in, so calendar apps that already have them drop them.
+func (q *Queries) ListCalendarBookings(ctx context.Context, userID uuid.NullUUID) ([]ListCalendarBookingsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listCalendarBookings, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListCalendarBookingsRow
+	for rows.Next() {
+		var i ListCalendarBookingsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.StartsAt,
+			&i.EndsAt,
+			&i.Status,
+			&i.UpdatedAt,
+			&i.FacilityName,
+			&i.Address,
+			&i.Latitude,
+			&i.Longitude,
+			&i.TenantName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listConfirmedBookingsInRange = `-- name: ListConfirmedBookingsInRange :many
 SELECT
     starts_at,

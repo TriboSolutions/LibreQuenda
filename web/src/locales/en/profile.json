@@ -94,5 +94,19 @@
     "failed": "Your QR could not be loaded. Check your connection.",
     "retry": "Try again",
     "incomplete": "Add your date of birth below to book with your QR."
+  },
+  "calendar": {
+    "title": "Calendar",
+    "help": "Your bookings in your phone's or computer's calendar, kept up to date.",
+    "how": "Subscribe to this address in Google Calendar, Apple Calendar, Outlook, Thunderbird or any app that reads iCalendar (.ics). It has your bookings and the ones you joined, and updates by itself when you book, change or cancel.",
+    "turnOn": "Turn on the calendar",
+    "address": "Calendar address",
+    "copy": "Copy",
+    "copied": "Copied",
+    "private": "Anyone with this address sees your bookings. Do not share it.",
+    "subscribe": "Add to my calendar",
+    "reset": "New address",
+    "resetHint": "The current address stops working; you will have to subscribe again.",
+    "turnOff": "Turn off"
   }
 }

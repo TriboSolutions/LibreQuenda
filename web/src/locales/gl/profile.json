@@ -94,5 +94,19 @@
     "failed": "Non foi posible cargar o teu QR. Comproba a conexión.",
     "retry": "Tentar de novo",
     "incomplete": "Engade a túa data de nacemento máis abaixo para reservar co teu QR."
+  },
+  "calendar": {
+    "title": "Calendario",
+    "help": "As túas reservas no calendario do teu móbil ou ordenador, ao día.",
+    "how": "Subscríbete a este enderezo en Google Calendar, Calendario de Apple, Outlook, Thunderbird ou calquera aplicación que lea iCalendar (.ics). Inclúe as túas reservas e as ás que te uniches, e actualízase só cando reservas, cambias ou cancelas.",
+    "turnOn": "Activar o calendario",
+    "address": "Enderezo do calendario",
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "private": "Quen teña este enderezo ve as túas reservas. Non o compartas.",
+    "subscribe": "Engadir ao meu calendario",
+    "reset": "Novo enderezo",
+    "resetHint": "O enderezo actual deixa de funcionar; terás que subscribirte de novo.",
+    "turnOff": "Desactivar"
   }
 }

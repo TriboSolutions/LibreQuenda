@@ -12,6 +12,32 @@ import (
 	"github.com/google/uuid"
 )
 
+const clearCalendarToken = `-- name: ClearCalendarToken :exec
+UPDATE app_user SET calendar_token = NULL WHERE id = $1
+`
+
+func (q *Queries) ClearCalendarToken(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, clearCalendarToken, id)
+	return err
+}
+
+const getCalendarToken = `-- name: GetCalendarToken :one
+
+SELECT calendar_token FROM app_user WHERE id = $1
+`
+
+// ============================================================
+//
+//	Calendar feed (.ics): calendar apps fetch it with the token in the address
+//
+// ============================================================
+func (q *Queries) GetCalendarToken(ctx context.Context, id uuid.UUID) (uuid.NullUUID, error) {
+	row := q.db.QueryRowContext(ctx, getCalendarToken, id)
+	var calendar_token uuid.NullUUID
+	err := row.Scan(&calendar_token)
+	return calendar_token, err
+}
+
 const getUserBirthDate = `-- name: GetUserBirthDate :one
 SELECT birth_date FROM app_user WHERE id = $1
 `
@@ -21,6 +47,17 @@ func (q *Queries) GetUserBirthDate(ctx context.Context, id uuid.UUID) (sql.NullT
 	var birth_date sql.NullTime
 	err := row.Scan(&birth_date)
 	return birth_date, err
+}
+
+const getUserIdByCalendarToken = `-- name: GetUserIdByCalendarToken :one
+SELECT id FROM app_user WHERE calendar_token = $1
+`
+
+func (q *Queries) GetUserIdByCalendarToken(ctx context.Context, calendarToken uuid.NullUUID) (uuid.UUID, error) {
+	row := q.db.QueryRowContext(ctx, getUserIdByCalendarToken, calendarToken)
+	var id uuid.UUID
+	err := row.Scan(&id)
+	return id, err
 }
 
 const getUserIdBySubject = `-- name: GetUserIdBySubject :one
@@ -167,6 +204,24 @@ func (q *Queries) HasTenantRole(ctx context.Context, arg HasTenantRoleParams) (b
 	var exists bool
 	err := row.Scan(&exists)
 	return exists, err
+}
+
+const resetCalendarToken = `-- name: ResetCalendarToken :one
+UPDATE app_user
+SET
+    calendar_token = gen_random_uuid()
+WHERE
+    id = $1
+RETURNING
+    calendar_token
+`
+
+// Turns the feed on, or gives it a new address: the old one stops working.
+func (q *Queries) ResetCalendarToken(ctx context.Context, id uuid.UUID) (uuid.NullUUID, error) {
+	row := q.db.QueryRowContext(ctx, resetCalendarToken, id)
+	var calendar_token uuid.NullUUID
+	err := row.Scan(&calendar_token)
+	return calendar_token, err
 }
 
 const updateUserProfile = `-- name: UpdateUserProfile :exec
