@@ -433,6 +433,24 @@ async function exportIndicators(token: string, slug: string, query: IndicatorsQu
   URL.revokeObjectURL(url)
 }
 
+/** GET /me/export: the user's data as a file (RXPD / GDPR), fetched with the token and saved. */
+async function exportMyData(token: string, format: 'json' | 'csv') {
+  const res = await fetch(`/api/me/export?format=${format}`, {
+    headers: { Authorization: `Bearer ${token}`, 'Accept-Language': i18n.resolvedLanguage ?? 'gl' },
+  })
+  if (!res.ok) {
+    if (res.status === 429) throw new ApiError(429, i18n.t('common:rateLimited'))
+    const data = await res.json().catch(() => ({}))
+    throw new ApiError(res.status, data.error ?? `HTTP ${res.status}`)
+  }
+  const url = URL.createObjectURL(await res.blob())
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `librequenda-${new Date().toISOString().slice(0, 10)}.${format}`
+  link.click()
+  URL.revokeObjectURL(url)
+}
+
 /** POST /media: multipart upload, answered with { ref, url }. */
 async function uploadImage(token: string, folder: MediaFolder, file: File): Promise<StoredImage> {
   const body = new FormData()
@@ -457,6 +475,9 @@ export const api = {
     request<Day>(`/tenants/${encodeURIComponent(slug)}/day${date ? `?date=${date}` : ''}`),
   me: (token: string) => request<Me>('/me', { token }),
   updateProfile: (token: string, input: ProfileInput) => request<Me>('/me/profile', { token, method: 'PUT', body: input }),
+  exportMyData,
+  // erases the account for good: upcoming bookings are cancelled and the sign-in account is deleted
+  deleteAccount: (token: string) => request<void>('/me', { token, method: 'DELETE' }),
   account: {
     get: (token: string) => request<Account>('/me/account', { token }),
     setName: (token: string, givenName: string, familyName: string) =>

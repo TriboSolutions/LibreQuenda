@@ -59,5 +59,27 @@
       "symbol": "A symbol (such as ! ? # or ñ)"
     }
   },
-  "signInToVerify": "Sign in to finish verifying your email. You will come back here and it will be verified."
+  "signInToVerify": "Sign in to finish verifying your email. You will come back here and it will be verified.",
+  "privacy": {
+    "title": "Your data",
+    "help": "Under the GDPR you can take a copy of everything LibreQuenda keeps about you, or delete your account.",
+    "exportTitle": "Download your data",
+    "exportHelp": "Your profile, roles, bookings, the bookings you joined and your notices. JSON is for other apps; CSV opens in a spreadsheet.",
+    "exportJson": "Download JSON",
+    "exportCsv": "Download CSV",
+    "preparing": "Preparing…",
+    "deleteTitle": "Delete account",
+    "deleteHelp": "Deletes your sign-in account and your personal details for good. This cannot be undone.",
+    "delete": "Delete my account",
+    "deleteDialogTitle": "Delete your account?",
+    "deleteDialogBody": "This cannot be undone. Download your data first if you want to keep a copy.",
+    "deleteUpcoming": "Your upcoming bookings are cancelled and their invite links stop working.",
+    "deletePast": "Past bookings stay in the council's statistics, with nothing that identifies you.",
+    "deleteSignIn": "Your sign-in account, profile, photo, roles and notices are deleted.",
+    "deleteConfirmLabel": "To confirm, type your email: {{email}}",
+    "deleteConfirm": "Delete for good",
+    "deleting": "Deleting…",
+    "deletedTitle": "Your account has been deleted.",
+    "deletedBody": "Your personal details are gone from LibreQuenda. You can create a new account whenever you like."
+  }
 }

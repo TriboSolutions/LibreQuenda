@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
-import { useSearchParams } from 'react-router'
+import { useLocation, useSearchParams } from 'react-router'
 import { DatePicker } from '@/components/DatePicker'
 import { AccountSettings } from '@/components/AccountSettings'
 import { ImagePicker } from '@/components/ImagePicker'
+import { PrivacySettings } from '@/components/PrivacySettings'
 import { TopBar } from '@/components/TopBar'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -29,11 +30,19 @@ export function ProfilePage() {
   const { me } = useMe()
   const { login } = useLogin()
   const [params] = useSearchParams()
+  const accountDeleted = (useLocation().state as { accountDeleted?: boolean } | null)?.accountDeleted === true
   const tenants = useAsync(() => api.tenants(), 'tenants')
 
   let body
   if (auth.isLoading || (auth.isAuthenticated && !me)) {
     body = <Skeleton className="h-64 w-full max-w-[760px]" />
+  } else if (!auth.isAuthenticated && accountDeleted) {
+    body = (
+      <div className="grid max-w-[760px] gap-2 rounded-lg border bg-card p-5">
+        <p className="font-semibold">{t('profile:privacy.deletedTitle')}</p>
+        <p className="text-muted-foreground">{t('profile:privacy.deletedBody')}</p>
+      </div>
+    )
   } else if (!auth.isAuthenticated || !me) {
     body = (
       <div className="grid max-w-[760px] gap-4 rounded-lg border bg-card p-5">
@@ -49,6 +58,7 @@ export function ProfilePage() {
       <>
         <ProfileForm key={me.id} me={me} />
         <AccountSettings />
+        <PrivacySettings me={me} />
       </>
     )
   }

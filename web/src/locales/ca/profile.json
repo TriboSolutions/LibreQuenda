@@ -59,5 +59,27 @@
       "symbol": "Un símbol (com ! ? # o ñ)"
     }
   },
-  "signInToVerify": "Inicia la sessió per acabar de verificar el teu correu. Tornaràs aquí i quedarà verificat."
+  "signInToVerify": "Inicia la sessió per acabar de verificar el teu correu. Tornaràs aquí i quedarà verificat.",
+  "privacy": {
+    "title": "Les teves dades",
+    "help": "D'acord amb el RGPD pots endur-te una còpia de tot el que LibreQuenda guarda sobre tu, o eliminar el teu compte.",
+    "exportTitle": "Descarregar les teves dades",
+    "exportHelp": "El teu perfil, rols, reserves, les reserves a què et vas unir i els teus avisos. JSON serveix per a altres aplicacions; CSV s'obre en un full de càlcul.",
+    "exportJson": "Descarregar JSON",
+    "exportCsv": "Descarregar CSV",
+    "preparing": "Preparant…",
+    "deleteTitle": "Eliminar el compte",
+    "deleteHelp": "Esborra per sempre el teu compte d'accés i les teves dades personals. No es pot desfer.",
+    "delete": "Eliminar el meu compte",
+    "deleteDialogTitle": "Vols eliminar el teu compte?",
+    "deleteDialogBody": "No es pot desfer. Descarrega abans les teves dades si en vols conservar una còpia.",
+    "deleteUpcoming": "Les teves properes reserves es cancel·len i els seus enllaços d'invitació deixen de funcionar.",
+    "deletePast": "Les reserves passades queden a les estadístiques de l'ajuntament, sense res que t'identifiqui.",
+    "deleteSignIn": "S'esborren el teu compte d'accés, perfil, foto, rols i avisos.",
+    "deleteConfirmLabel": "Per confirmar-ho, escriu el teu correu: {{email}}",
+    "deleteConfirm": "Eliminar per sempre",
+    "deleting": "Eliminant…",
+    "deletedTitle": "El teu compte s'ha eliminat.",
+    "deletedBody": "Les teves dades personals ja no són a LibreQuenda. Pots crear un compte nou quan vulguis."
+  }
 }

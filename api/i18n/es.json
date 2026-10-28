@@ -121,7 +121,9 @@
     "smtp_not_configured": "No hay ningún servidor SMTP para enviar: configura el del concello o pide a la administración de la plataforma que configure uno común.",
     "smtp_test_failed": "El servidor SMTP no aceptó el correo de prueba: {{0}}",
     "secrets_key_missing": "El servidor no tiene clave de cifrado (SECRETS_KEY), así que la contraseña no se puede guardar de forma segura. Avisa a la administración de la plataforma.",
-    "smtp_password_unreadable": "No se puede leer la configuración SMTP guardada (cambió la clave de cifrado). Escríbela de nuevo y guarda."
+    "smtp_password_unreadable": "No se puede leer la configuración SMTP guardada (cambió la clave de cifrado). Escríbela de nuevo y guarda.",
+    "export_failed": "No se pudieron preparar tus datos. Inténtalo de nuevo.",
+    "account_delete_failed": "No se pudo eliminar tu cuenta. No se borró nada; inténtalo de nuevo en un momento."
   },
   "email": {
     "greeting": "Hola {{0}}:",
