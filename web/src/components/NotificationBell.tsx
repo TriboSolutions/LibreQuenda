@@ -95,7 +95,7 @@ function NotificationItem({ notification: n, today, highlighted, onSelect }: Ite
       <Icon aria-hidden className={`mt-0.5 shrink-0 ${sorry ? 'text-destructive' : 'text-muted-foreground'}`} />
       <span className="min-w-0 whitespace-normal">
         <span className={`block text-sm ${highlighted ? 'font-medium' : ''}`}>
-          {t(n.closed_from && n.closed_until ? 'type.booking_cancelled_by_closure' : `type.${n.type}`, {
+          {t(n.closed_from && n.closed_until ? 'type.booking_cancelled_by_closure' : n.by_staff ? 'type.booking_cancelled_by_staff' : `type.${n.type}`, {
             facility: n.facility_name,
             day: n.starts_at ? formatBookingDay(n.starts_at, TIME_ZONE, today) : '',
             time: n.starts_at ? formatTime(n.starts_at, TIME_ZONE) : '',

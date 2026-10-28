@@ -120,6 +120,47 @@ export type AdminFacility = FacilityInput & {
   timezone: string // the council's: closure dates are typed in it
 }
 
+// --- staff booking (the "Reservas" tab of the council administration) ---------
+
+/** A booking as council staff see it, with how to reach the person. */
+export type StaffBooking = {
+  id: string
+  starts_at: string
+  ends_at: string
+  booked_by_staff: boolean
+  has_account: boolean
+  name: string // "" once a deleted account or a forgotten name
+  email: string
+  phone: string
+  checked_in_at: string | null
+  participant_count: number
+  can_cancel: boolean // until it starts
+  checkin_code: string // booked by staff only: the entry QR to print for the person
+}
+
+export type StaffSlot = { starts_at: string; ends_at: string; status: SlotStatus; booking_id: string }
+
+/** One facility's turns on one day, and who holds each booking. */
+export type StaffDay = {
+  date: string
+  timezone: string
+  facility_id: string
+  min_age: number | null
+  slot_minutes: number
+  slots: StaffSlot[]
+  bookings: StaffBooking[]
+}
+
+/** For an account (email) or for someone without one (name, phone): exactly one of the two. */
+export type StaffBookingInput = {
+  facility_id: string
+  starts_at: string
+  email: string
+  name: string
+  phone: string
+  accept_rules: boolean // staff told the person the usage rules
+}
+
 /** A closure (works, maintenance, an event): its slots show as closed. */
 export type Closure = { id: string; starts_at: string; ends_at: string; reason: string }
 
@@ -235,6 +276,7 @@ export type AppNotification = {
   reason: string // council cancellations
   closed_from: string | null // council cancellations caused by a closure
   closed_until: string | null
+  by_staff: boolean // a council cancellation of this one booking, by staff
   tenant_name: string // council_admin_granted
   tenant_slug: string
   created_at: string
@@ -653,6 +695,13 @@ export const api = {
       }),
     deleteDevice: (token: string, slug: string, facilityId: string, deviceId: string) =>
       request<void>(`/tenants/${encodeURIComponent(slug)}/admin/facilities/${facilityId}/devices/${deviceId}`, { token, method: 'DELETE' }),
+    staffDay: (token: string, slug: string, facilityId: string, date: string) =>
+      request<StaffDay>(`/tenants/${encodeURIComponent(slug)}/admin/facilities/${facilityId}/bookings?date=${date}`, { token }),
+    staffBook: (token: string, slug: string, input: StaffBookingInput) =>
+      request<StaffBooking>(`/tenants/${encodeURIComponent(slug)}/admin/bookings`, { token, method: 'POST', body: input }),
+    // the resident is told if they have an account, with the reason when there is one
+    staffCancel: (token: string, slug: string, bookingId: string, reason: string) =>
+      request<void>(`/tenants/${encodeURIComponent(slug)}/admin/bookings/${bookingId}/cancel`, { token, method: 'POST', body: { reason } }),
     indicators: (token: string, slug: string, query: IndicatorsQuery) =>
       request<Indicators>(`/tenants/${encodeURIComponent(slug)}/admin/indicators?${indicatorsParams(query)}`, { token }),
     exportIndicators,

@@ -137,10 +137,12 @@ type emailView struct {
 }
 
 // councilCancellation is what CancelBookingsInRange stores: why, and for a closure until when.
+// bookings.StaffCancel stores by_staff instead: staff cancelled that one booking.
 type councilCancellation struct {
 	Reason      string     `json:"reason"`
 	ClosedFrom  *time.Time `json:"closed_from"`
 	ClosedUntil *time.Time `json:"closed_until"`
+	ByStaff     bool       `json:"by_staff"`
 }
 
 var emailTemplate = template.Must(template.New("notification").Parse(`<!doctype html>
@@ -187,6 +189,9 @@ func notificationEmail(row model.ListPendingEmailsRow, now time.Time) (mailer.Me
 	if row.Type == model.NotificationTypeBookingCancelledByCouncil {
 		var why councilCancellation
 		_ = json.Unmarshal(row.Payload, &why) // older notices carry no reason: the plain text is still right
+		if why.ByStaff {
+			view.Intro = t(kind+".intro_staff", row.FacilityName, row.TenantName, date, start, end)
+		}
 		if why.ClosedFrom != nil && why.ClosedUntil != nil {
 			const stamp = "02/01/2006 15:04"
 			view.Intro = t(kind+".intro_closure", row.FacilityName, row.TenantName, date, start, end,

@@ -19,6 +19,7 @@ import type {
   Notifications,
   PublicInvite,
   Reader,
+  StaffDay,
   Superadmin,
   Tenant,
   WeeklyWindow,
@@ -178,8 +179,8 @@ const account: Account = {
 const notifications: Notifications = {
   unread_count: 2,
   notifications: [
-    { id: 'n1', type: 'booking_confirmed', facility_name: 'Pista de pádel 1', starts_at: at(3), ends_at: at(4), reason: '', closed_from: null, closed_until: null, tenant_name: 'Concello de Lugo', tenant_slug: 'lugo', created_at: at(-1), read: false },
-    { id: 'n2', type: 'booking_cancelled_by_council', facility_name: 'Pavillón municipal', starts_at: at(30), ends_at: at(31), reason: 'Obras', closed_from: at(29), closed_until: at(40), tenant_name: 'Concello de Lugo', tenant_slug: 'lugo', created_at: at(-5), read: false },
+    { id: 'n1', type: 'booking_confirmed', facility_name: 'Pista de pádel 1', starts_at: at(3), ends_at: at(4), reason: '', closed_from: null, closed_until: null, by_staff: false, tenant_name: 'Concello de Lugo', tenant_slug: 'lugo', created_at: at(-1), read: false },
+    { id: 'n2', type: 'booking_cancelled_by_council', facility_name: 'Pavillón municipal', starts_at: at(30), ends_at: at(31), reason: 'Obras', closed_from: at(29), closed_until: at(40), by_staff: false, tenant_name: 'Concello de Lugo', tenant_slug: 'lugo', created_at: at(-5), read: false },
   ],
 }
 
@@ -334,6 +335,25 @@ const smtp: CouncilSmtp = {
   env_relay: true,
 }
 
+// the Reservas tab: a free turn, one walk-in booked by staff, one online booking with someone checked in
+const staffDay: StaffDay = {
+  date: iso(now).slice(0, 10),
+  timezone: TZ,
+  facility_id: 'f1',
+  min_age: 16,
+  slot_minutes: 60,
+  slots: [
+    { starts_at: at(1), ends_at: at(2), status: 'free', booking_id: '' },
+    { starts_at: at(2), ends_at: at(3), status: 'booked', booking_id: 'sb1' },
+    { starts_at: at(3), ends_at: at(4), status: 'booked', booking_id: 'sb2' },
+    { starts_at: at(4), ends_at: at(5), status: 'closed', booking_id: '' },
+  ],
+  bookings: [
+    { id: 'sb1', starts_at: at(2), ends_at: at(3), booked_by_staff: true, has_account: false, name: 'Carmen Souto', email: '', phone: '600123123', checked_in_at: null, participant_count: 0, can_cancel: true, checkin_code: 'lq1:5c1d3b8e-3f6a-4b0e-9d6e-2a7c1f0b9e41' },
+    { id: 'sb2', starts_at: at(3), ends_at: at(4), booked_by_staff: false, has_account: true, name: 'Ana Pérez', email: 'ana@example.org', phone: '', checked_in_at: null, participant_count: 2, can_cancel: true, checkin_code: '' },
+  ],
+}
+
 const reader: Reader = {
   name: 'Entrada principal',
   facility_name: 'Pista de pádel 1',
@@ -350,6 +370,7 @@ const routes: [RegExp, () => unknown][] = [
   [/^\/tenants\/[^/]+\/day/, () => day],
   [/^\/tenants\/[^/]+\/facilities\/[^/?]+/, () => facilityPage],
   [/^\/tenants\/[^/]+\/admin\/facilities$/, () => ({ facilities: adminFacilities })],
+  [/^\/tenants\/[^/]+\/admin\/facilities\/[^/]+\/bookings/, () => staffDay],
   [/^\/tenants\/[^/]+\/admin\/facilities\/[^/]+\/devices$/, () => ({ devices: [{ id: 'd1', name: 'Entrada principal', key_hint: 'ab12', last_seen_at: at(-1), created_at: at(-100) }] })],
   [/^\/tenants\/[^/]+\/admin\/facilities\/[^/]+$/, () => adminFacility],
   [/^\/tenants\/[^/]+\/admin\/indicators/, indicators],

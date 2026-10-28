@@ -16,7 +16,7 @@ Scope is limited to what the contest bases ask for (§1.1, §1.2). Anything else
 | Block | Requirement (bases) | Covered by |
 |---|---|---|
 | Cidadanía | Consulta de instalacións | Public facility catalogue per council, with availability |
-| Cidadanía | Reserva online | Booking of free slots |
+| Cidadanía | Reserva online | Booking of free slots; council staff book for residents who phone or come to the desk (§6.1) |
 | Cidadanía | Modificación e cancelación | Change or cancel own bookings within the facility's rules |
 | Cidadanía | Historial | List of the user's past and upcoming bookings |
 | Cidadanía | Avisos | Email + in-app notifications (§7) |
@@ -163,7 +163,7 @@ app_user ─┬─< notification
 | `facility` usage rules | slot_minutes, max_advance_days, min_cancel_hours, max_active_bookings_per_user, usage_rules_text | "Normas de uso". Columns on `facility`. |
 | `opening_hours` | facility_id, weekday, opens_at, closes_at | Weekly schedule ("horarios") |
 | `closure` | facility_id, starts_at, ends_at, reason | Holidays, maintenance |
-| `booking` | id, facility_id, user_id, starts_at, ends_at, status (`confirmed`, `cancelled`), cancelled_by (`user`, `council`), rules_accepted_at, created_at, cancelled_at | No overlaps: PostgreSQL exclusion constraint on (facility_id, tstzrange) for confirmed bookings. `user_id` becomes NULL on account erasure, so indicators keep the booking |
+| `booking` | id, facility_id, user_id, starts_at, ends_at, status (`confirmed`, `cancelled`), cancelled_by (`user`, `council`), rules_accepted_at, channel (`online`, `staff`), booked_by, holder_name, holder_phone, created_at, cancelled_at | No overlaps: PostgreSQL exclusion constraint on (facility_id, tstzrange) for confirmed bookings. `user_id` becomes NULL on account erasure, so indicators keep the booking. `holder_*`: someone without an account, booked by staff (§6.1) |
 | `app_user` | id, idp_subject (Zitadel `sub`), email, full_name, email_verified | Mirror of identity, nothing more |
 | `platform_admin` | user_id | Superadministrators |
 | `tenant_membership` | user_id, tenant_id, role | Authorisation |
@@ -171,6 +171,15 @@ app_user ─┬─< notification
 | `notification` | id, user_id, booking_id, type, payload, created_at, read_at, emailed_at | "Avisos". `emailed_at` NULL = pending in the email queue |
 
 Booking rules are enforced in the API inside a transaction: within opening hours, not during a closure, within the advance window, below the user's active-booking limit, and no overlap (guaranteed by the database). The resident must accept the facility's usage rules to book (`rules_accepted_at`).
+
+### 6.1 Booking by phone or at the desk
+
+Many residents, often elderly people, phone or come to the desk instead of using the app. Council admins have a **Reservas** tab (`/<council>/admin?vista=reservas`): one facility's day, turn by turn, with who holds each booking and how to reach them.
+
+- **Book a free turn for someone,** either for their account (by email: they get the usual confirmation, QR and reminders, and see it in the app) or by name and an optional phone, without an account. The turn must be free on the same schedule as in the app. Someone with an account cannot be booked into two places at once. Staff confirm they told the person the usage rules (`rules_accepted_at`). The per-person limit and the minimum age are left to staff, who are talking to the person.
+- **Entry QR:** for a booking by name, staff print the QR (or the person photographs it), so the entrance reader works for them too.
+- **Cancel any booking before it starts,** e.g. when the resident phones to say they cannot come. It counts as cancelled by the council. People with an account get a notice and email, with the reason if staff gave one.
+- **RXPD:** the name and phone of someone without an account are removed 30 days after the booking ends (hourly job). The booking stays, anonymous, for the indicators.
 
 Images (council logos, facility photos) are stored in Garage. The database only keeps a storage reference (`logo_ref`, `image_ref`), never a URL. Uploads are limited to JPEG, PNG and WebP up to 5 MB, with the type detected from the file's bytes (no SVG, which can carry scripts).
 
@@ -239,7 +248,7 @@ Development defaults that must change before a real deployment:
 - **Already handled:** with `PUBLIC_SCHEME=https`, `zitadel-setup` turns off the OIDC app's `devMode` (no plain-HTTP redirects) and drops the `localhost:5173` redirect URIs.
 
 ### 9.2 Data protection (RXPD / GDPR)
-- Data minimisation: name, email and bookings only.
+- Data minimisation: name, email and bookings only. For residents booked by staff without an account, a name and an optional phone, removed 30 days after the booking (§6.1).
 - **Export:** a user can download their data (JSON/CSV).
 - **Erasure:** account deletion removes `app_user` data in the API (bookings anonymised for indicators) and deletes the identity in Zitadel via its API.
 - Personal data stays on the deployment's infrastructure. The SMTP provider is chosen by the council.
@@ -264,7 +273,7 @@ Development defaults that must change before a real deployment:
 |---|---|---|
 | Public | `GET /tenants` (council list), `GET /tenants/{slug}/day?date=` (every active facility with its slots for one day), `GET /tenants/{slug}/facilities/{facility}?date=` (details, slots, weekly schedule), `GET /media/{ref}` (images) | none |
 | Resident | `GET /me`, `GET\|POST /me/bookings`, `DELETE /me/bookings/{id}` (cancel) | logged in |
-| Council admin | `GET\|POST /tenants/{slug}/admin/facilities`, `GET\|PUT\|DELETE …/facilities/{id}`, `PUT …/facilities/{id}/schedule`, `GET /tenants/{slug}/admin/indicators?days=&facility=`, `GET …/indicators/export?kind=&excel=` (CSV), `GET …/admin/export` (ZIP, full data), `GET /geocode`, `POST /media` (upload) | council admin or superadmin |
+| Council admin | `GET /tenants/{slug}/admin/facilities/{id}/bookings?date=` (staff day view), `POST /tenants/{slug}/admin/bookings` (book for a resident), `POST …/admin/bookings/{id}/cancel`, `GET\|POST /tenants/{slug}/admin/facilities`, `GET\|PUT\|DELETE …/facilities/{id}`, `PUT …/facilities/{id}/schedule`, `GET /tenants/{slug}/admin/indicators?days=&facility=`, `GET …/indicators/export?kind=&excel=` (CSV), `GET …/admin/export` (ZIP, full data), `GET /geocode`, `POST /media` (upload) | council admin or superadmin |
 | Superadmin | `GET\|POST /admin/tenants`, `GET\|PUT\|DELETE /admin/tenants/{slug}`, `POST /admin/tenants/{slug}/invitations`, `DELETE …/invitations/{id}`, `DELETE …/admins/{userId}`, `GET\|POST /admin/superadmins`, `DELETE /admin/superadmins/{userId}` | superadmin |
 | Planned | `PATCH /me/bookings/{id}`, `GET /me/notifications`, `GET /me/export`, `…/closures` | |
 

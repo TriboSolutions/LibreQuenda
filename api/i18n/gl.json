@@ -102,6 +102,11 @@
     "invalid_guest_age": "A idade debe estar entre 1 e 120.",
     "guest_age_restricted": "Esta instalación ten unha idade mínima que a persoa convidada non cumpre.",
     "booking_overlaps": "Xa tes unha reserva a esa hora.",
+    "staff_booking_holder": "Indica o correo da conta da persoa ou o seu nome.",
+    "staff_booking_holder_too_long": "O nome pode ter ata 80 caracteres e o teléfono ata 30.",
+    "person_not_found": "Ningunha conta de LibreQuenda usa ese correo. Reserva no seu nome.",
+    "person_overlaps": "Esa persoa xa ten unha reserva a esa hora.",
+    "booking_started": "Esta reserva xa comezou e non se pode cancelar.",
     "notifications_load_failed": "Non se puideron cargar os teus avisos.",
     "notifications_update_failed": "Non se puideron actualizar os teus avisos.",
     "invalid_closure_dates": "As datas do peche non son válidas: o final debe ser posterior ao comezo e futuro, e o peche pode durar como moito un ano.",
@@ -157,7 +162,8 @@
     "booking_cancelled_by_council": {
       "subject": "Sentímolo: cancelouse a túa reserva en {{0}}",
       "intro": "Sentímolo. {{1}} pechou {{0}}, así que a túa reserva do {{2}}, de {{3}} a {{4}}, foi cancelada. Podes reservar outro turno libre cando queiras.",
-      "intro_closure": "Sentímolo. {{0}} ({{1}}) está pechada do {{5}} ao {{6}}, así que a túa reserva do {{2}}, de {{3}} a {{4}}, foi cancelada. Podes reservar outro turno libre cando queiras."
+      "intro_closure": "Sentímolo. {{0}} ({{1}}) está pechada do {{5}} ao {{6}}, así que a túa reserva do {{2}}, de {{3}} a {{4}}, foi cancelada. Podes reservar outro turno libre cando queiras.",
+      "intro_staff": "Sentímolo. {{1}} cancelou a túa reserva en {{0}} o {{2}}, de {{3}} a {{4}}. Podes reservar outra quenda libre cando queiras."
     },
     "reason": "Motivo: {{0}}",
     "council_admin": {

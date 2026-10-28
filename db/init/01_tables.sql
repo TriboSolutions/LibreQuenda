@@ -16,6 +16,11 @@ CREATE TYPE booking_canceller AS ENUM (
     'council'   -- a closure, or the facility deactivated
 );
 
+CREATE TYPE booking_channel AS ENUM (
+    'online',   -- the resident, in the app (or at a reader with the personal QR)
+    'staff'     -- council staff, for someone who phoned or came to the desk
+);
+
 CREATE TYPE notification_type AS ENUM (
     'booking_confirmed',
     'booking_changed',
@@ -202,7 +207,13 @@ CREATE TABLE booking (
     starts_at    TIMESTAMPTZ    NOT NULL,
     ends_at      TIMESTAMPTZ    NOT NULL,
     status       booking_status NOT NULL DEFAULT 'confirmed',
-    rules_accepted_at TIMESTAMPTZ NULL,                 -- when the resident ticked "I have read the rules"
+    rules_accepted_at TIMESTAMPTZ NULL,                 -- when the resident ticked "I have read the rules" (or staff, that they told them)
+    -- booked by council staff: for an account (user_id), or for someone without one
+    -- (holder_*, forgotten 30 days after the booking ends)
+    channel      booking_channel NOT NULL DEFAULT 'online',
+    booked_by    UUID           NULL REFERENCES app_user(id) ON DELETE SET NULL,
+    holder_name  VARCHAR(80)    NULL,
+    holder_phone VARCHAR(30)    NULL,
     cancelled_at TIMESTAMPTZ    NULL,
     cancelled_by booking_canceller NULL,               -- who cancelled it, for the indicators
     created_at   TIMESTAMPTZ    NOT NULL DEFAULT NOW(),
@@ -215,6 +226,8 @@ CREATE TABLE booking (
     invite_token         UUID        NULL,
     CHECK (ends_at > starts_at),
     CHECK ((status = 'cancelled') = (cancelled_by IS NOT NULL)),
+    CHECK (holder_name IS NULL OR (user_id IS NULL AND channel = 'staff')),
+    CHECK (holder_phone IS NULL OR holder_name IS NOT NULL),
 
     -- no two confirmed bookings may overlap on the same facility
     EXCLUDE USING gist (
