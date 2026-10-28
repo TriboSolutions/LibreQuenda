@@ -100,7 +100,7 @@ for (const theme of ['light', 'dark'] as const) {
       })
     }
 
-    // the Reservas tab: book a free turn for someone, cancel someone's booking
+    // the bookings view (a facility row's Reservas button): book a free turn for someone, cancel someone's booking
     for (const button of [/^Reservar:/, /^Cancelar: Ana/]) {
       test(`staff booking dialog ${button.source}`, async ({ page }) => {
         await open(page, '/lugo/admin?vista=reservas', { theme })

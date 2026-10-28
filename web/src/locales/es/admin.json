@@ -102,7 +102,8 @@
     "edit": "Editar",
     "noSchedule": "sin horario",
     "back": "Todas las instalaciones",
-    "viewPage": "Abrir su página"
+    "viewPage": "Abrir su página",
+    "actions": "Acciones"
   },
   "editor": {
     "newTitle": "Nueva instalación",
@@ -410,7 +411,8 @@
     "downloading": "Preparando…"
   },
   "staff": {
-    "tab": "Reservas",
+    "open": "Reservas",
+    "back": "Instalaciones",
     "title": "Reservas por teléfono o en ventanilla",
     "help": "Para quien llama o viene en persona: resérvale un turno libre, con su cuenta o solo con su nombre, y cancela cualquier reserva antes de que empiece.",
     "noFacilities": "No hay instalaciones activas que reservar.",

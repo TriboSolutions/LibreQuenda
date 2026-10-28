@@ -102,7 +102,8 @@
     "edit": "Editar",
     "noSchedule": "sen horario",
     "back": "Todas as instalacións",
-    "viewPage": "Abrir a súa páxina"
+    "viewPage": "Abrir a súa páxina",
+    "actions": "Accións"
   },
   "editor": {
     "newTitle": "Nova instalación",
@@ -410,7 +411,8 @@
     "downloading": "Preparando…"
   },
   "staff": {
-    "tab": "Reservas",
+    "open": "Reservas",
+    "back": "Instalacións",
     "title": "Reservas por teléfono ou no mostrador",
     "help": "Para quen chama ou vén en persoa: resérvalle unha quenda libre, coa súa conta ou só co seu nome, e cancela calquera reserva antes de que comece.",
     "noFacilities": "Non hai instalacións activas que reservar.",
