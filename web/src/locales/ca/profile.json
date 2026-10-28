@@ -94,5 +94,19 @@
     "failed": "No s'ha pogut carregar el teu QR. Comprova la connexió.",
     "retry": "Torna-ho a provar",
     "incomplete": "Afegeix la teva data de naixement més avall per reservar amb el teu QR."
+  },
+  "calendar": {
+    "title": "Calendari",
+    "help": "Les teves reserves al calendari del mòbil o de l'ordinador, al dia.",
+    "how": "Subscriu-te a aquesta adreça a Google Calendar, Calendari d'Apple, Outlook, Thunderbird o qualsevol aplicació que llegeixi iCalendar (.ics). Inclou les teves reserves i aquelles a què t'has unit, i s'actualitza sola quan reserves, canvies o cancel·les.",
+    "turnOn": "Activar el calendari",
+    "address": "Adreça del calendari",
+    "copy": "Copiar",
+    "copied": "Copiat",
+    "private": "Qui tingui aquesta adreça veu les teves reserves. No la comparteixis.",
+    "subscribe": "Afegir al meu calendari",
+    "reset": "Nova adreça",
+    "resetHint": "L'adreça actual deixa de funcionar; t'hauràs de tornar a subscriure.",
+    "turnOff": "Desactivar"
   }
 }

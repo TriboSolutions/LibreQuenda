@@ -8,6 +8,7 @@ import (
 
 	"librequenda/auth"
 	"librequenda/core/bookings"
+	"librequenda/core/calendar"
 	"librequenda/core/counciladmin"
 	"librequenda/core/health"
 	"librequenda/core/invites"
@@ -51,6 +52,7 @@ func main() {
 	tenants.TenantsRoutes(dbConexion, router).RegisterRoutes()
 	bookings.BookingsRoutes(dbConexion, router).RegisterRoutes()
 	invites.InvitesRoutes(dbConexion, router).RegisterRoutes()
+	calendar.CalendarRoutes(dbConexion, router).RegisterRoutes()
 	notifications.NotificationsRoutes(dbConexion, router).RegisterRoutes()
 	platform.PlatformRoutes(dbConexion, router).RegisterRoutes()
 	media.MediaRoutes(dbConexion, router).RegisterRoutes()

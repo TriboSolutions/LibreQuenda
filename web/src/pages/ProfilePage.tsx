@@ -4,6 +4,7 @@ import { useAuth } from 'react-oidc-context'
 import { useLocation, useSearchParams } from 'react-router'
 import { DatePicker } from '@/components/DatePicker'
 import { AccountSettings } from '@/components/AccountSettings'
+import { CalendarFeed } from '@/components/CalendarFeed'
 import { ImagePicker } from '@/components/ImagePicker'
 import { PersonalQr } from '@/components/PersonalQr'
 import { PrivacySettings } from '@/components/PrivacySettings'
@@ -61,6 +62,7 @@ export function ProfilePage() {
     body = (
       <>
         <PersonalQr me={me} />
+        <CalendarFeed />
         <ProfileForm key={me.id} me={me} />
         <AccountSettings />
         <PrivacySettings me={me} />

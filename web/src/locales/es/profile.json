@@ -94,5 +94,19 @@
     "failed": "No se ha podido cargar tu QR. Comprueba la conexión.",
     "retry": "Intentar de nuevo",
     "incomplete": "Añade tu fecha de nacimiento más abajo para reservar con tu QR."
+  },
+  "calendar": {
+    "title": "Calendario",
+    "help": "Tus reservas en el calendario de tu móvil u ordenador, al día.",
+    "how": "Suscríbete a esta dirección en Google Calendar, Calendario de Apple, Outlook, Thunderbird o cualquier aplicación que lea iCalendar (.ics). Incluye tus reservas y aquellas a las que te uniste, y se actualiza solo cuando reservas, cambias o cancelas.",
+    "turnOn": "Activar el calendario",
+    "address": "Dirección del calendario",
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "private": "Quien tenga esta dirección ve tus reservas. No la compartas.",
+    "subscribe": "Añadir a mi calendario",
+    "reset": "Nueva dirección",
+    "resetHint": "La dirección actual deja de funcionar; tendrás que suscribirte de nuevo.",
+    "turnOff": "Desactivar"
   }
 }

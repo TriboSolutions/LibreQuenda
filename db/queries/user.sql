@@ -84,3 +84,26 @@ SELECT (birth_date IS NOT NULL)::BOOLEAN AS complete FROM app_user WHERE id = sq
 
 -- name: GetUserBirthDate :one
 SELECT birth_date FROM app_user WHERE id = sqlc.arg('id');
+
+-- ============================================================
+--  Calendar feed (.ics): calendar apps fetch it with the token in the address
+-- ============================================================
+
+-- name: GetCalendarToken :one
+SELECT calendar_token FROM app_user WHERE id = sqlc.arg('id');
+
+-- name: ResetCalendarToken :one
+-- Turns the feed on, or gives it a new address: the old one stops working.
+UPDATE app_user
+SET
+    calendar_token = gen_random_uuid()
+WHERE
+    id = sqlc.arg('id')
+RETURNING
+    calendar_token;
+
+-- name: ClearCalendarToken :exec
+UPDATE app_user SET calendar_token = NULL WHERE id = sqlc.arg('id');
+
+-- name: GetUserIdByCalendarToken :one
+SELECT id FROM app_user WHERE calendar_token = sqlc.arg('calendar_token');
