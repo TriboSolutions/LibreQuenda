@@ -286,134 +286,161 @@ export function IndicatorsPanel({ slug, facilities }: { slug: string; facilities
       aria-labelledby="indicators-title"
       className={cn('grid min-w-0 grid-cols-1 gap-4', dashboardFull && 'content-start overflow-auto bg-background p-6')}
     >
-      <div className="flex flex-wrap items-end justify-between gap-3 rounded-lg border bg-card p-4">
+      <div className="rounded-lg border bg-card">
         {dashboardFull ? (
           // the filter and export menus open outside the full-screen element, so they stay on the page
-          <div>
-            <p className="text-2xl font-semibold" aria-hidden="true">
-              {chosen?.name ?? t('admin:indicators.title')}
-            </p>
-            <p className="num text-sm text-muted-foreground">{caption}</p>
+          <div className="flex flex-wrap items-center justify-between gap-3 p-4">
+            <div>
+              <p className="text-2xl font-semibold" aria-hidden="true">
+                {chosen?.name ?? t('admin:indicators.title')}
+              </p>
+              <p className="num text-sm text-muted-foreground">{caption}</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={indicators.reload}
+                disabled={indicators.loading || !rangeValid}
+                aria-label={t('admin:indicators.refresh')}
+              >
+                <RefreshCw className={indicators.loading ? 'animate-spin motion-reduce:animate-none' : undefined} />
+              </Button>
+              {canFullscreen && <FullscreenButton full={dashboardFull} board={chosen?.name ?? t('admin:indicators.title')} onClick={toggleDashboard} />}
+            </div>
           </div>
         ) : (
-          <div className="flex flex-wrap items-end gap-3">
-            <div className="grid gap-1.5">
-              <Label htmlFor="indicators-facility">{t('admin:indicators.facility')}</Label>
-              <Select value={facility} onValueChange={setFacility}>
-                <SelectTrigger id="indicators-facility" className="w-56">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={ALL}>{t('admin:indicators.allFacilities')}</SelectItem>
-                  {facilities.map((f) => (
-                    <SelectItem key={f.id} value={f.id}>
-                      {f.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          <>
+            {/* what the figures cover: one row that fills the card, the dates joining it for a range of your own */}
+            <div
+              className={cn(
+                'grid gap-3 p-4 sm:grid-cols-2',
+                custom
+                  ? 'lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.2fr)]'
+                  : 'lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,1.2fr)]',
+              )}
+            >
+              <div className="grid min-w-0 gap-1.5">
+                <Label htmlFor="indicators-facility">{t('admin:indicators.facility')}</Label>
+                <Select value={facility} onValueChange={setFacility}>
+                  <SelectTrigger id="indicators-facility" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={ALL}>{t('admin:indicators.allFacilities')}</SelectItem>
+                    {facilities.map((f) => (
+                      <SelectItem key={f.id} value={f.id}>
+                        {f.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid min-w-0 gap-1.5">
+                <Label htmlFor="indicators-period">{t('admin:indicators.period')}</Label>
+                <Select value={period} onValueChange={setPeriod}>
+                  <SelectTrigger id="indicators-period" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PERIODS.map((p) => (
+                      <SelectItem key={p} value={p}>
+                        {t(`admin:indicators.periods.${p}`)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {custom && (
+                <>
+                  <div className="grid min-w-0 gap-1.5">
+                    <Label htmlFor="indicators-from">{t('admin:indicators.from')}</Label>
+                    <DatePicker id="indicators-from" value={from} onChange={setFrom} max={to || today()} className="w-full" />
+                  </div>
+                  <div className="grid min-w-0 gap-1.5">
+                    <Label htmlFor="indicators-to">{t('admin:indicators.to')}</Label>
+                    <DatePicker id="indicators-to" value={to} onChange={setTo} min={from} max={today()} className="w-full" />
+                  </div>
+                </>
+              )}
+              <div className="grid min-w-0 gap-1.5 sm:col-span-2 lg:col-span-1">
+                <Label htmlFor="indicators-compare">{t('admin:indicators.compare')}</Label>
+                <Select value={compare} onValueChange={(value) => setCompare(value as IndicatorsCompare)}>
+                  <SelectTrigger id="indicators-compare" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {COMPARE.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {t(`admin:indicators.compareOptions.${c}`)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div className="grid gap-1.5">
-              <Label htmlFor="indicators-period">{t('admin:indicators.period')}</Label>
-              <Select value={period} onValueChange={setPeriod}>
-                <SelectTrigger id="indicators-period" className="w-44">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {PERIODS.map((p) => (
-                    <SelectItem key={p} value={p}>
-                      {t(`admin:indicators.periods.${p}`)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            {custom && (
-              <>
-                <div className="grid gap-1.5">
-                  <Label htmlFor="indicators-from">{t('admin:indicators.from')}</Label>
-                  <DatePicker id="indicators-from" value={from} onChange={setFrom} max={to || today()} className="w-44" />
-                </div>
-                <div className="grid gap-1.5">
-                  <Label htmlFor="indicators-to">{t('admin:indicators.to')}</Label>
-                  <DatePicker id="indicators-to" value={to} onChange={setTo} min={from} max={today()} className="w-44" />
-                </div>
-              </>
-            )}
-            <div className="grid gap-1.5">
-              <Label htmlFor="indicators-compare">{t('admin:indicators.compare')}</Label>
-              <Select value={compare} onValueChange={(value) => setCompare(value as IndicatorsCompare)}>
-                <SelectTrigger id="indicators-compare" className="w-56">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {COMPARE.map((c) => (
-                    <SelectItem key={c} value={c}>
-                      {t(`admin:indicators.compareOptions.${c}`)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid gap-1.5">
-              <Label htmlFor="indicators-refresh">{t('admin:indicators.autoRefresh')}</Label>
-              <Select value={refresh} onValueChange={changeRefresh}>
-                <SelectTrigger id="indicators-refresh" className="w-44">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {REFRESH.map((r) => (
-                    <SelectItem key={r} value={r}>
-                      {t(`admin:indicators.refreshOptions.${r}`)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        )}
-        <div className="flex flex-wrap items-center gap-2">
-          {data && !dashboardFull && (
-            <span className="num text-sm text-muted-foreground" aria-live="polite">
-              {t('admin:indicators.updatedAt', { time: formatTime(data.generated_at, data.timezone) })}
-            </span>
-          )}
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={indicators.reload}
-            disabled={indicators.loading || !rangeValid}
-            aria-label={t('admin:indicators.refresh')}
-          >
-            <RefreshCw className={indicators.loading ? 'animate-spin motion-reduce:animate-none' : undefined} />
-          </Button>
-          {!dashboardFull && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" disabled={!rangeValid}>
-                  <Download />
-                  {t('admin:indicators.export')}
+            {/* how the figures stay fresh, and what to do with them: a quieter bar under the filters */}
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t px-4 py-3">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                <Label htmlFor="indicators-refresh" className="font-normal text-muted-foreground">
+                  {t('admin:indicators.autoRefresh')}
+                </Label>
+                <Select value={refresh} onValueChange={changeRefresh}>
+                  <SelectTrigger id="indicators-refresh" size="sm" className="min-w-36">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {REFRESH.map((r) => (
+                      <SelectItem key={r} value={r}>
+                        {t(`admin:indicators.refreshOptions.${r}`)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {data && (
+                  <span className="num text-sm text-muted-foreground" aria-live="polite">
+                    {t('admin:indicators.updatedAt', { time: formatTime(data.generated_at, data.timezone) })}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={indicators.reload}
+                  disabled={indicators.loading || !rangeValid}
+                  aria-label={t('admin:indicators.refresh')}
+                >
+                  <RefreshCw className={indicators.loading ? 'animate-spin motion-reduce:animate-none' : undefined} />
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-72">
-                <DropdownMenuCheckboxItem checked={excel} onCheckedChange={(v) => changeExcel(v === true)} onSelect={(e) => e.preventDefault()}>
-                  {t('admin:indicators.exportExcel')}
-                </DropdownMenuCheckboxItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuLabel>{t('admin:indicators.exportAnonymous')}</DropdownMenuLabel>
-                {EXPORTS.map((kind) => (
-                  <DropdownMenuItem key={kind} onSelect={() => download({ kind, excel })} className="grid gap-0.5">
-                    <span>{t(`admin:indicators.exports.${kind}.label`)}</span>
-                    <span className="text-xs text-muted-foreground">{t(`admin:indicators.exports.${kind}.hint`)}</span>
-                  </DropdownMenuItem>
-                ))}
-                <DropdownMenuSeparator />
-                <p className="px-2 py-1.5 text-xs text-muted-foreground">{t('admin:indicators.exportNote')}</p>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-          {canFullscreen && <FullscreenButton full={dashboardFull} board={chosen?.name ?? t('admin:indicators.title')} onClick={toggleDashboard} />}
-        </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" disabled={!rangeValid}>
+                      <Download />
+                      {t('admin:indicators.export')}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-72">
+                    <DropdownMenuCheckboxItem checked={excel} onCheckedChange={(v) => changeExcel(v === true)} onSelect={(e) => e.preventDefault()}>
+                      {t('admin:indicators.exportExcel')}
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuLabel>{t('admin:indicators.exportAnonymous')}</DropdownMenuLabel>
+                    {EXPORTS.map((kind) => (
+                      <DropdownMenuItem key={kind} onSelect={() => download({ kind, excel })} className="grid gap-0.5">
+                        <span>{t(`admin:indicators.exports.${kind}.label`)}</span>
+                        <span className="text-xs text-muted-foreground">{t(`admin:indicators.exports.${kind}.hint`)}</span>
+                      </DropdownMenuItem>
+                    ))}
+                    <DropdownMenuSeparator />
+                    <p className="px-2 py-1.5 text-xs text-muted-foreground">{t('admin:indicators.exportNote')}</p>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                {canFullscreen && <FullscreenButton full={dashboardFull} board={chosen?.name ?? t('admin:indicators.title')} onClick={toggleDashboard} />}
+              </div>
+            </div>
+          </>
+        )}
       </div>
       <h2 id="indicators-title" className="sr-only">
         {chosen ? t('admin:indicators.facilityTitle', { name: chosen.name }) : t('admin:indicators.title')}
