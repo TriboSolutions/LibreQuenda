@@ -47,6 +47,26 @@ export type Day = {
 
 export type WeeklyWindow = { weekday: number; opens_at: string; closes_at: string } // ISO weekday: 1 = Monday
 
+/** How busy a turn usually is at that facility, from the bookings of the last weeks. */
+export type BusyLevel = 'quiet' | 'moderate' | 'busy'
+
+export type SuggestedSlot = { starts_at: string; ends_at: string; level: BusyLevel }
+
+/** Another facility of the same sport with free turns that day. */
+export type Alternative = {
+  slug: string
+  name: string
+  address: string
+  distance_km: number | null // null when either facility has no map pin
+  free_slots: number
+  slots: SuggestedSlot[] // its quietest free turns
+}
+
+export type Suggestions = {
+  quiet: SuggestedSlot[] // free turns of the day, quietest first; empty without booking history
+  alternatives: Alternative[] // nearest first
+}
+
 export type FacilityPage = {
   tenant: Tenant
   timezone: string
@@ -54,6 +74,7 @@ export type FacilityPage = {
   now: string
   facility: Facility
   schedule: WeeklyWindow[]
+  suggestions: Suggestions
 }
 
 // --- council administration -----------------------------------------------

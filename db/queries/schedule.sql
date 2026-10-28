@@ -85,3 +85,22 @@ WHERE
     f.id = sqlc.arg('id')
     AND f.is_active = TRUE
     AND t.is_active = TRUE;
+
+-- name: ListBusyHoursByTenant :many
+-- Confirmed bookings per facility, local weekday (ISO: 1 = Monday) and starting
+-- hour: how busy each turn usually is, to suggest the quiet ones. Counts only.
+SELECT
+    b.facility_id,
+    EXTRACT(ISODOW FROM b.starts_at AT TIME ZONE sqlc.arg('timezone')::TEXT)::INT AS weekday,
+    EXTRACT(HOUR FROM b.starts_at AT TIME ZONE sqlc.arg('timezone')::TEXT)::INT AS hour,
+    COUNT(*) AS bookings
+FROM
+    booking b
+    JOIN facility f ON f.id = b.facility_id
+WHERE
+    f.tenant_id = sqlc.arg('tenant_id')
+    AND b.status = 'confirmed'
+    AND b.starts_at >= sqlc.arg('range_start')
+    AND b.starts_at < sqlc.arg('range_end')
+GROUP BY
+    1, 2, 3;

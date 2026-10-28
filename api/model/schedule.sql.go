@@ -145,6 +145,73 @@ func (q *Queries) ListActiveFacilitiesByTenant(ctx context.Context, tenantID uui
 	return items, nil
 }
 
+const listBusyHoursByTenant = `-- name: ListBusyHoursByTenant :many
+SELECT
+    b.facility_id,
+    EXTRACT(ISODOW FROM b.starts_at AT TIME ZONE $1::TEXT)::INT AS weekday,
+    EXTRACT(HOUR FROM b.starts_at AT TIME ZONE $1::TEXT)::INT AS hour,
+    COUNT(*) AS bookings
+FROM
+    booking b
+    JOIN facility f ON f.id = b.facility_id
+WHERE
+    f.tenant_id = $2
+    AND b.status = 'confirmed'
+    AND b.starts_at >= $3
+    AND b.starts_at < $4
+GROUP BY
+    1, 2, 3
+`
+
+type ListBusyHoursByTenantParams struct {
+	Timezone   string    `json:"timezone"`
+	TenantID   uuid.UUID `json:"tenant_id"`
+	RangeStart time.Time `json:"range_start"`
+	RangeEnd   time.Time `json:"range_end"`
+}
+
+type ListBusyHoursByTenantRow struct {
+	FacilityID uuid.UUID `json:"facility_id"`
+	Weekday    int32     `json:"weekday"`
+	Hour       int32     `json:"hour"`
+	Bookings   int64     `json:"bookings"`
+}
+
+// Confirmed bookings per facility, local weekday (ISO: 1 = Monday) and starting
+// hour: how busy each turn usually is, to suggest the quiet ones. Counts only.
+func (q *Queries) ListBusyHoursByTenant(ctx context.Context, arg ListBusyHoursByTenantParams) ([]ListBusyHoursByTenantRow, error) {
+	rows, err := q.db.QueryContext(ctx, listBusyHoursByTenant,
+		arg.Timezone,
+		arg.TenantID,
+		arg.RangeStart,
+		arg.RangeEnd,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListBusyHoursByTenantRow
+	for rows.Next() {
+		var i ListBusyHoursByTenantRow
+		if err := rows.Scan(
+			&i.FacilityID,
+			&i.Weekday,
+			&i.Hour,
+			&i.Bookings,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listClosuresByTenantRange = `-- name: ListClosuresByTenantRange :many
 SELECT
     c.facility_id,
