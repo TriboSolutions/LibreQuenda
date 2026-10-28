@@ -21,6 +21,9 @@ RUN pnpm build
 # --- Caddy: serves the SPA and proxies the API and Zitadel ---
 FROM caddy:2.11.7-alpine
 
+# security fixes released after the base image was built
+RUN apk upgrade --no-cache
+
 COPY proxy/Caddyfile /etc/caddy/Caddyfile
 COPY proxy/entrypoint.sh /entrypoint.sh
 COPY --from=web-builder /app/dist /srv/web

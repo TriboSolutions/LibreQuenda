@@ -170,7 +170,8 @@ jobs:
           cache-from: type=gha,scope=${{ matrix.image }}
           cache-to: type=gha,scope=${{ matrix.image }},mode=max
 
-      # fails on HIGH or CRITICAL vulnerabilities that already have a fix
+      # fails on HIGH or CRITICAL vulnerabilities that already have a fix, except
+      # the ones accepted for a while in .trivyignore.yaml (upstream binaries)
       - name: Vulnerabilities (Trivy)
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0, pinned to the commit
         with:
@@ -179,6 +180,7 @@ jobs:
           ignore-unfixed: true
           exit-code: "1"
           format: table
+          trivyignores: .trivyignore.yaml
 
       # the same build again, from the cache
       - name: Publish
