@@ -1,0 +1,81 @@
+{
+  "footerLink": "Declaración de accesibilidad",
+  "title": "Declaración de accesibilidad",
+  "intro": "Los ayuntamientos que ofrecen sus instalaciones deportivas en LibreQuenda se comprometen a hacer accesible este sitio web, de acuerdo con el Real Decreto 1112/2018, de 7 de septiembre, sobre accesibilidad de los sitios web y aplicaciones para dispositivos móviles del sector público. Esta declaración se aplica a {{host}}.",
+  "status": {
+    "title": "Situación de cumplimiento",
+    "body": "Este sitio web es parcialmente conforme con el Real Decreto 1112/2018 por las excepciones y los aspectos que se indican a continuación."
+  },
+  "content": {
+    "title": "Contenido no accesible",
+    "intro": "El contenido que se recoge a continuación no es accesible o queda fuera del ámbito de la norma. Además, cada ayuntamiento es responsable de que sean accesibles las fotografías, las descripciones y las normas de uso que publica.",
+    "nonCompliance": {
+      "title": "Falta de conformidad",
+      "body": "En la última revisión no se encontró ningún incumplimiento de los criterios de nivel A y AA de las WCAG 2.1, que recoge la norma UNE-EN 301 549:2022. Mientras no se haga una auditoría externa, la declaración se mantiene como parcialmente conforme."
+    },
+    "burden": {
+      "title": "Carga desproporcionada",
+      "body": "No se alega carga desproporcionada."
+    },
+    "outOfScope": {
+      "title": "Contenido de terceros, fuera del ámbito de la norma",
+      "items": [
+        "El mapa de las instalaciones, con imágenes de OpenStreetMap. La dirección se muestra siempre también en texto.",
+        "Las indicaciones de «Cómo llegar», que se abren en Google Maps."
+      ]
+    },
+    "beyond": {
+      "title": "Más allá del nivel AA",
+      "body": "El sitio cumple también la mayoría de los criterios de nivel AAA que le son aplicables: contraste de 7:1, controles de al menos 44 × 44 píxeles, animaciones desactivables, título en cada página y enlaces que dicen adónde llevan. Aún no se cumplen:",
+      "items": [
+        "En la franja del día de la vista de escritorio, los turnos cortos pueden ser más estrechos de 44 píxeles. Cada turno se puede reservar también desde la página de la instalación, con botones de tamaño completo.",
+        "No hay una versión de lectura fácil de los textos (criterio 3.1.5).",
+        "No hay ayuda contextual en cada formulario (criterio 3.3.5).",
+        "La sesión caduca según el servicio de identificación, sin aviso previo (criterio 2.2.6)."
+      ]
+    }
+  },
+  "features": {
+    "title": "Cómo puedes adaptar el sitio",
+    "items": [
+      "Se puede usar solo con el teclado. La primera pulsación de la tecla Tab ofrece «Ir al contenido».",
+      "Tema claro, oscuro o el del sistema, desde el botón de apariencia de la barra superior.",
+      "Cuatro idiomas: gallego, castellano, inglés y catalán.",
+      "El texto se amplía con el navegador hasta el 200 % y el contenido se adapta a pantallas de 320 píxeles de ancho sin desplazamiento horizontal.",
+      "Si el sistema pide reducir el movimiento, las animaciones se desactivan.",
+      "Los avisos (reserva hecha, cambiada o cancelada, errores) se anuncian a los lectores de pantalla."
+    ]
+  },
+  "preparation": {
+    "title": "Preparación de esta declaración",
+    "prepared": "Esta declaración se preparó el {{date}}.",
+    "method": "Método: autoevaluación del equipo de desarrollo de LibreQuenda. Cada cambio pasa pruebas automáticas con axe-core sobre todas las pantallas, en los temas claro y oscuro, y pruebas de uso con el teclado, de ampliación del texto y de pantallas estrechas. Se completó con una revisión manual siguiendo las WCAG 2.1.",
+    "reviewed": "La declaración se revisó por última vez el {{date}}."
+  },
+  "contact": {
+    "title": "Observaciones y datos de contacto",
+    "body": "Escribe al ayuntamiento que gestiona tus reservas para:",
+    "topics": [
+      "Comunicar un incumplimiento de los requisitos de accesibilidad.",
+      "Pedir información que no sea accesible en un formato alternativo.",
+      "Hacer cualquier otra consulta o sugerencia de mejora."
+    ],
+    "response": "El ayuntamiento responderá en el plazo de 20 días hábiles.",
+    "councils": "Contacto de cada ayuntamiento",
+    "email": "Correo electrónico",
+    "phone": "Teléfono",
+    "noDetails": "Este ayuntamiento aún no ha indicado un contacto: dirígete a su sede electrónica.",
+    "noCouncils": "Todavía no se ha dado de alta ningún ayuntamiento.",
+    "loadError": "No se pudieron cargar los contactos de los ayuntamientos."
+  },
+  "complaints": {
+    "title": "Procedimiento de reclamación",
+    "body": "Si no estás conforme con la respuesta, o no la recibes en plazo, puedes presentar una reclamación ante el propio ayuntamiento, en su registro o en su sede electrónica, según el artículo 13 del Real Decreto 1112/2018.",
+    "unit": "Si la reclamación no se resuelve a tu favor, puedes dirigirte a la unidad responsable de accesibilidad que corresponda al ayuntamiento."
+  },
+  "references": {
+    "title": "Normativa y referencias",
+    "law": "Real Decreto 1112/2018, sobre accesibilidad de los sitios web y aplicaciones móviles del sector público (BOE)",
+    "wcag": "Pautas de accesibilidad para el contenido web (WCAG) 2.1 (W3C)"
+  }
+}

@@ -16,6 +16,7 @@ import { api, ApiError, type Facility, type Slot } from '@/lib/api'
 import { directionsUrl } from '@/lib/maps'
 import { formatBookingDay, formatTime, localDate } from '@/lib/time'
 import { usePageTitle } from '@/hooks/usePageTitle'
+import { SiteFooter } from '@/components/SiteFooter'
 
 const WEEK = [1, 2, 3, 4, 5, 6, 7] // ISO weekdays, Monday first
 
@@ -70,6 +71,7 @@ export function FacilityPage() {
         </Link>
         {children}
       </main>
+      <SiteFooter />
     </div>
   )
 

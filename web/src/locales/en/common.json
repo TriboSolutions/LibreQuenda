@@ -21,6 +21,7 @@
     "todayShort": "today",
     "tomorrowShort": "tmrw",
     "longDate": "{{weekday}}, {{month}} {{day}}",
+    "dateWithYear": "{{month}} {{day}}, {{year}}",
     "shortDate": "{{weekday}} {{day}}",
     "shortDateMonth": "{{weekday}} {{month}} {{day}}",
     "dateTime": "{{date}}, {{time}}",

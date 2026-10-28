@@ -16,6 +16,7 @@ import { useLogin } from '@/hooks/useLogin'
 import { useMe } from '@/hooks/useMe'
 import { api } from '@/lib/api'
 import { usePageTitle } from '@/hooks/usePageTitle'
+import { SiteFooter } from '@/components/SiteFooter'
 
 // charts (Recharts) load only when an administrator opens the indicators
 const IndicatorsPanel = lazy(() => import('@/components/admin/IndicatorsPanel').then((m) => ({ default: m.IndicatorsPanel })))
@@ -200,6 +201,7 @@ export function CouncilAdminPage() {
         <p className="mt-1 text-base text-muted-foreground">{t('admin:councilAdmin.subtitle')}</p>
         {body}
       </main>
+      <SiteFooter />
       {settingsOpen && allowed && (
         <CouncilSheet
           slug={slug}

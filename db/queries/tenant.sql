@@ -18,7 +18,9 @@ SELECT
     id,
     slug,
     name,
-    logo_ref
+    logo_ref,
+    contact_email,
+    contact_phone
 FROM
     tenant
 WHERE

@@ -36,8 +36,9 @@ const iso = (d: Date) => d.toISOString()
 const at = (hoursFromNow: number) => iso(new Date(Math.floor(now.getTime() / HOUR) * HOUR + hoursFromNow * HOUR))
 const today = new Intl.DateTimeFormat('en-CA', { timeZone: TZ }).format(now)
 
-const tenant: Tenant = { slug: 'lugo', name: 'Concello de Lugo', logo_url: '' }
-const tenants: Tenant[] = [tenant, { slug: 'ourense', name: 'Concello de Ourense', logo_url: '' }]
+const tenant: Tenant = { slug: 'lugo', name: 'Concello de Lugo', logo_url: '', contact_email: 'deportes@lugo.gal', contact_phone: '982 297 100' }
+// without a contact: the statement sends residents to the council's online office
+const tenants: Tenant[] = [tenant, { slug: 'ourense', name: 'Concello de Ourense', logo_url: '', contact_email: '', contact_phone: '' }]
 
 function slots(): Facility['slots'] {
   // past, then free and booked turns, then one too far ahead and one closed

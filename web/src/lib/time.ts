@@ -73,6 +73,15 @@ export function formatLongDate(date: string) {
   return i18n.t('common:date.longDate', { weekday: name('weekdays', weekday), day, month: name('months', month) })
 }
 
+/** A date with its year, for documents: gl "28 de outubro de 2026", ca "28 d’octubre de 2026" */
+export function formatDateWithYear(date: string) {
+  const { day, month } = calendar(date)
+  const monthName = name('months', month)
+  // Catalan elides "de" before a vowel (d’octubre); the other languages ignore ofMonth
+  const ofMonth = /^[aeiou]/i.test(monthName) ? `d’${monthName}` : `de ${monthName}`
+  return i18n.t('common:date.dateWithYear', { day, month: monthName, ofMonth, year: date.slice(0, 4) })
+}
+
 /** Short weekday and day number: gl "xov" and "29" */
 export function shortDateParts(date: string) {
   const { weekday, day } = calendar(date)

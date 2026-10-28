@@ -1,0 +1,81 @@
+{
+  "footerLink": "Accessibility statement",
+  "title": "Accessibility statement",
+  "intro": "The councils that offer their sports facilities on LibreQuenda are committed to making this website accessible, in accordance with Royal Decree 1112/2018 of 7 September on the accessibility of public sector websites and mobile applications. This statement applies to {{host}}.",
+  "status": {
+    "title": "Compliance status",
+    "body": "This website is partially compliant with Royal Decree 1112/2018 due to the exemptions and the points listed below."
+  },
+  "content": {
+    "title": "Non-accessible content",
+    "intro": "The content listed below is not accessible or falls outside the scope of the regulation. In addition, each council is responsible for making the photos, descriptions and rules of use it publishes accessible.",
+    "nonCompliance": {
+      "title": "Non-compliance",
+      "body": "The last review found no failures of the level A and AA criteria of WCAG 2.1, which standard EN 301 549 incorporates. Until an external audit is done, the statement remains partially compliant."
+    },
+    "burden": {
+      "title": "Disproportionate burden",
+      "body": "No disproportionate burden is claimed."
+    },
+    "outOfScope": {
+      "title": "Third-party content, outside the scope of the regulation",
+      "items": [
+        "The facility map, with imagery from OpenStreetMap. The address is always shown as text too.",
+        "The “Get directions” route, which opens in Google Maps."
+      ]
+    },
+    "beyond": {
+      "title": "Beyond level AA",
+      "body": "The site also meets most of the level AAA criteria that apply to it: 7:1 contrast, controls of at least 44 × 44 pixels, animations that can be turned off, a title on every page and links that say where they go. Not yet met:",
+      "items": [
+        "On the desktop day strip, short turns can be narrower than 44 pixels. Every turn can also be booked from the facility page, with full-size buttons.",
+        "There is no easy-to-read version of the texts (criterion 3.1.5).",
+        "There is no context-sensitive help on each form (criterion 3.3.5).",
+        "The session expires according to the sign-in service, without warning (criterion 2.2.6)."
+      ]
+    }
+  },
+  "features": {
+    "title": "How you can adapt the site",
+    "items": [
+      "It can be used with the keyboard alone. The first press of the Tab key offers “Skip to content”.",
+      "Light theme, dark theme or the system's, from the appearance button in the top bar.",
+      "Four languages: Galician, Spanish, English and Catalan.",
+      "Text can be enlarged with the browser up to 200%, and the content fits screens 320 pixels wide without horizontal scrolling.",
+      "If the system asks for reduced motion, animations are turned off.",
+      "Notices (booking made, changed or cancelled, errors) are announced to screen readers."
+    ]
+  },
+  "preparation": {
+    "title": "Preparation of this statement",
+    "prepared": "This statement was prepared on {{date}}.",
+    "method": "Method: self-assessment by the LibreQuenda development team. Every change passes automated axe-core tests on every screen, in the light and dark themes, plus keyboard, text-enlargement and narrow-screen tests. It was completed with a manual review against WCAG 2.1.",
+    "reviewed": "The statement was last reviewed on {{date}}."
+  },
+  "contact": {
+    "title": "Feedback and contact details",
+    "body": "Write to the council that manages your bookings to:",
+    "topics": [
+      "Report a failure to meet the accessibility requirements.",
+      "Ask for information that is not accessible in an alternative format.",
+      "Send any other question or suggestion for improvement."
+    ],
+    "response": "The council will reply within 20 working days.",
+    "councils": "Each council's contact",
+    "email": "Email",
+    "phone": "Phone",
+    "noDetails": "This council has not given a contact yet: use its online office (sede electrónica).",
+    "noCouncils": "No council has been set up yet.",
+    "loadError": "The councils' contact details could not be loaded."
+  },
+  "complaints": {
+    "title": "Complaints procedure",
+    "body": "If you are not satisfied with the reply, or do not receive it in time, you can file a complaint with the council itself, at its registry or online office, under article 13 of Royal Decree 1112/2018.",
+    "unit": "If the complaint is not resolved in your favour, you can turn to the accessibility unit responsible for the council."
+  },
+  "references": {
+    "title": "Regulations and references",
+    "law": "Royal Decree 1112/2018 on the accessibility of public sector websites and mobile apps (BOE, in Spanish)",
+    "wcag": "Web Content Accessibility Guidelines (WCAG) 2.1 (W3C)"
+  }
+}

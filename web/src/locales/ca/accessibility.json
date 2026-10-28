@@ -1,0 +1,81 @@
+{
+  "footerLink": "Declaració d’accessibilitat",
+  "title": "Declaració d’accessibilitat",
+  "intro": "Els ajuntaments que ofereixen les seves instal·lacions esportives a LibreQuenda es comprometen a fer accessible aquest lloc web, d’acord amb el Reial decret 1112/2018, de 7 de setembre, sobre accessibilitat dels llocs web i aplicacions per a dispositius mòbils del sector públic. Aquesta declaració s’aplica a {{host}}.",
+  "status": {
+    "title": "Situació de compliment",
+    "body": "Aquest lloc web és parcialment conforme amb el Reial decret 1112/2018 per les excepcions i els aspectes que s’indiquen a continuació."
+  },
+  "content": {
+    "title": "Contingut no accessible",
+    "intro": "El contingut que es recull a continuació no és accessible o queda fora de l’àmbit de la norma. A més, cada ajuntament és responsable que siguin accessibles les fotografies, les descripcions i les normes d’ús que publica.",
+    "nonCompliance": {
+      "title": "Manca de conformitat",
+      "body": "A la darrera revisió no es va trobar cap incompliment dels criteris de nivell A i AA de les WCAG 2.1, que recull la norma UNE-EN 301 549:2022. Mentre no es faci una auditoria externa, la declaració es manté com a parcialment conforme."
+    },
+    "burden": {
+      "title": "Càrrega desproporcionada",
+      "body": "No s’al·lega càrrega desproporcionada."
+    },
+    "outOfScope": {
+      "title": "Contingut de tercers, fora de l’àmbit de la norma",
+      "items": [
+        "El mapa de les instal·lacions, amb imatges d’OpenStreetMap. L’adreça es mostra sempre també en text.",
+        "Les indicacions de «Com arribar-hi», que s’obren a Google Maps."
+      ]
+    },
+    "beyond": {
+      "title": "Més enllà del nivell AA",
+      "body": "El lloc compleix també la majoria dels criteris de nivell AAA que li són aplicables: contrast de 7:1, controls d’almenys 44 × 44 píxels, animacions que es poden desactivar, títol a cada pàgina i enllaços que diuen on porten. Encara no es compleixen:",
+      "items": [
+        "A la franja del dia de la vista d’escriptori, els torns curts poden ser més estrets de 44 píxels. Cada torn es pot reservar també des de la pàgina de la instal·lació, amb botons de mida completa.",
+        "No hi ha una versió de lectura fàcil dels textos (criteri 3.1.5).",
+        "No hi ha ajuda contextual a cada formulari (criteri 3.3.5).",
+        "La sessió caduca segons el servei d’identificació, sense avís previ (criteri 2.2.6)."
+      ]
+    }
+  },
+  "features": {
+    "title": "Com pots adaptar el lloc",
+    "items": [
+      "Es pot fer servir només amb el teclat. La primera pulsació de la tecla Tab ofereix «Ves al contingut».",
+      "Tema clar, fosc o el del sistema, des del botó d’aparença de la barra superior.",
+      "Quatre idiomes: gallec, castellà, anglès i català.",
+      "El text s’amplia amb el navegador fins al 200 % i el contingut s’adapta a pantalles de 320 píxels d’amplada sense desplaçament horitzontal.",
+      "Si el sistema demana reduir el moviment, les animacions es desactiven.",
+      "Els avisos (reserva feta, canviada o cancel·lada, errors) s’anuncien als lectors de pantalla."
+    ]
+  },
+  "preparation": {
+    "title": "Preparació d’aquesta declaració",
+    "prepared": "Aquesta declaració es va preparar el {{date}}.",
+    "method": "Mètode: autoavaluació de l’equip de desenvolupament de LibreQuenda. Cada canvi passa proves automàtiques amb axe-core sobre totes les pantalles, en els temes clar i fosc, i proves d’ús amb el teclat, d’ampliació del text i de pantalles estretes. Es va completar amb una revisió manual seguint les WCAG 2.1.",
+    "reviewed": "La declaració es va revisar per darrera vegada el {{date}}."
+  },
+  "contact": {
+    "title": "Observacions i dades de contacte",
+    "body": "Escriu a l’ajuntament que gestiona les teves reserves per:",
+    "topics": [
+      "Comunicar un incompliment dels requisits d’accessibilitat.",
+      "Demanar informació que no sigui accessible en un format alternatiu.",
+      "Fer qualsevol altra consulta o suggeriment de millora."
+    ],
+    "response": "L’ajuntament respondrà en el termini de 20 dies hàbils.",
+    "councils": "Contacte de cada ajuntament",
+    "email": "Correu electrònic",
+    "phone": "Telèfon",
+    "noDetails": "Aquest ajuntament encara no ha indicat cap contacte: adreça’t a la seva seu electrònica.",
+    "noCouncils": "Encara no s’ha donat d’alta cap ajuntament.",
+    "loadError": "No s’han pogut carregar els contactes dels ajuntaments."
+  },
+  "complaints": {
+    "title": "Procediment de reclamació",
+    "body": "Si no estàs conforme amb la resposta, o no la reps dins del termini, pots presentar una reclamació davant del mateix ajuntament, al seu registre o a la seva seu electrònica, segons l’article 13 del Reial decret 1112/2018.",
+    "unit": "Si la reclamació no es resol a favor teu, pots adreçar-te a la unitat responsable d’accessibilitat que correspongui a l’ajuntament."
+  },
+  "references": {
+    "title": "Normativa i referències",
+    "law": "Reial decret 1112/2018, sobre accessibilitat dels llocs web i aplicacions mòbils del sector públic (BOE, en castellà)",
+    "wcag": "Pautes d’accessibilitat per al contingut web (WCAG) 2.1 (W3C)"
+  }
+}

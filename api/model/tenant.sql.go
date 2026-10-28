@@ -58,7 +58,9 @@ SELECT
     id,
     slug,
     name,
-    logo_ref
+    logo_ref,
+    contact_email,
+    contact_phone
 FROM
     tenant
 WHERE
@@ -68,10 +70,12 @@ ORDER BY
 `
 
 type ListTenantsRow struct {
-	ID      uuid.UUID      `json:"id"`
-	Slug    string         `json:"slug"`
-	Name    string         `json:"name"`
-	LogoRef sql.NullString `json:"logo_ref"`
+	ID           uuid.UUID      `json:"id"`
+	Slug         string         `json:"slug"`
+	Name         string         `json:"name"`
+	LogoRef      sql.NullString `json:"logo_ref"`
+	ContactEmail sql.NullString `json:"contact_email"`
+	ContactPhone sql.NullString `json:"contact_phone"`
 }
 
 func (q *Queries) ListTenants(ctx context.Context) ([]ListTenantsRow, error) {
@@ -88,6 +92,8 @@ func (q *Queries) ListTenants(ctx context.Context) ([]ListTenantsRow, error) {
 			&i.Slug,
 			&i.Name,
 			&i.LogoRef,
+			&i.ContactEmail,
+			&i.ContactPhone,
 		); err != nil {
 			return nil, err
 		}

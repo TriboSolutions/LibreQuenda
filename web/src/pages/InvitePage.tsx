@@ -16,6 +16,7 @@ import { useLogin } from '@/hooks/useLogin'
 import { api, ApiError, type PublicInvite } from '@/lib/api'
 import { formatBookingDay, formatTime, localDate } from '@/lib/time'
 import { usePageTitle } from '@/hooks/usePageTitle'
+import { SiteFooter } from '@/components/SiteFooter'
 
 /** /invitacion/:token: anyone with the link joins a booking, with an account or as a guest. */
 export function InvitePage() {
@@ -49,6 +50,7 @@ export function InvitePage() {
         </h1>
         {body}
       </main>
+      <SiteFooter />
     </div>
   )
 }
