@@ -172,7 +172,7 @@ jobs:
 
       # fails on HIGH or CRITICAL vulnerabilities that already have a fix
       - name: Vulnerabilities (Trivy)
-        uses: aquasecurity/trivy-action@0.33.1
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0, pinned to the commit
         with:
           image-ref: librequenda-${{ matrix.image }}:scan
           severity: HIGH,CRITICAL
