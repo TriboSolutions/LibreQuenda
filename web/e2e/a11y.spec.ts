@@ -147,6 +147,13 @@ test.describe('keyboard', () => {
     await expect(slot).toBeFocused()
   })
 
+  test('2.4.3 opening a facility from the indicators table keeps the focus on the page', async ({ page }) => {
+    await open(page, '/lugo/admin?vista=indicadores')
+    await page.getByRole('button', { name: /Pista de pádel 1/ }).focus()
+    await page.keyboard.press('Enter')
+    await expect(page.locator('#indicators-facility')).toBeFocused()
+  })
+
   test('2.1.2 the account menu opens and closes from the keyboard', async ({ page }) => {
     await open(page, '/lugo')
     const trigger = page.getByRole('button', { name: /Ana Pérez/ })

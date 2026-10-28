@@ -14,6 +14,7 @@ import type {
   Indicators,
   Invite,
   Me,
+  PeriodFigures,
   MyBookings,
   Notifications,
   PublicInvite,
@@ -231,27 +232,37 @@ const counts = {
   no_show_rate: 0.125,
 }
 
-function indicators(): Indicators {
+function figures(daysBack: number, scale: number): PeriodFigures {
   const series = Array.from({ length: 14 }, (_, i) => {
-    const d = new Date(now.getTime() - (13 - i) * 24 * HOUR)
-    return { period: d.toISOString().slice(0, 10), confirmed: 5 + ((i * 7) % 9), cancelled: i % 3 }
+    const d = new Date(now.getTime() - (daysBack + 13 - i) * 24 * HOUR)
+    return { period: d.toISOString().slice(0, 10), confirmed: Math.round((5 + ((i * 7) % 9)) * scale), cancelled: i % 3 }
   })
-  const busy_hours = [1, 2, 3, 4, 5, 6, 7].flatMap((weekday) =>
-    Array.from({ length: 14 }, (_, h) => ({ weekday, hour: h + 8, bookings: (weekday * 3 + h * 5) % 11 })),
-  )
+  const weekdays = [1, 2, 3, 4, 5, 6, 7].map((weekday) => ({ weekday, booked_hours: 10 + weekday, open_hours: 42, occupancy: (10 + weekday) / 42 }))
   return {
     from: series[0].period,
-    to: today,
-    bucket: 'day',
-    timezone: TZ,
-    generated_at: iso(now),
-    totals: { ...counts, active_users: 42 },
+    to: series[series.length - 1].period,
+    totals: { ...counts, bookings: Math.round(counts.bookings * scale), active_users: 42, avg_party_size: 2.4, median_lead_hours: 30 },
     facilities: [
       { ...counts, id: 'f1', name: 'Pista de pádel 1', is_active: true, has_reader: true },
       { ...counts, id: 'f2', name: 'Pavillón municipal', is_active: false, has_reader: false, occupancy: null, no_show_rate: null },
     ],
     series,
+    weekdays,
+  }
+}
+
+function indicators(): Indicators {
+  const busy_hours = [1, 2, 3, 4, 5, 6, 7].flatMap((weekday) =>
+    Array.from({ length: 14 }, (_, h) => ({ weekday, hour: h + 8, bookings: (weekday * 3 + h * 5) % 11 })),
+  )
+  return {
+    ...figures(0, 1),
+    bucket: 'day',
+    timezone: TZ,
+    generated_at: iso(now),
     busy_hours,
+    compare: 'previous',
+    previous: figures(14, 0.8),
   }
 }
 

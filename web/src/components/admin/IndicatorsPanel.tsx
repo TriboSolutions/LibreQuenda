@@ -267,7 +267,10 @@ export function IndicatorsPanel({ slug, facilities }: { slug: string; facilities
 
   const openFacility = (id: string) => {
     setFacility(id)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches // WCAG 2.3.3
+    window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' })
+    // the table goes away with its button: keep the keyboard on the filter that now names the facility (WCAG 2.4.3)
+    document.getElementById('indicators-facility')?.focus({ preventScroll: true })
   }
 
   const data = indicators.data
@@ -846,7 +849,7 @@ function FacilityTable({ data, caption, onOpen }: { data: Indicators; caption: s
                     <button
                       type="button"
                       onClick={() => onOpen(f.id)}
-                      className="rounded-sm text-left font-medium text-primary underline-offset-4 hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+                      className="inline-flex min-h-11 items-center rounded-sm text-left font-medium text-primary underline-offset-4 hover:underline focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:outline-none"
                       aria-label={t('indicators.openFacility', { name: f.name })}
                     >
                       {f.name}
