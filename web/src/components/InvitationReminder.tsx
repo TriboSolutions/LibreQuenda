@@ -1,18 +1,7 @@
 import { useTranslation } from 'react-i18next'
-import { useAuth } from 'react-oidc-context'
-import { useLocation } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { useMe } from '@/hooks/useMe'
-
-/**
- * Signs in again: the login (EMAIL_VERIFICATION) stops at "enter the code we emailed
- * you" and then comes back to this page, where GET /me grants the waiting role.
- */
-export function useVerifyEmail() {
-  const auth = useAuth()
-  const location = useLocation()
-  return () => void auth.signinRedirect({ prompt: 'login', state: { returnTo: `${location.pathname}${location.search}` } })
-}
+import { useVerifyEmail } from '@/hooks/useVerifyEmail'
 
 /**
  * Shown while a council role waits for this person: roles only follow a verified email

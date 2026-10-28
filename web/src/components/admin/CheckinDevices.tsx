@@ -17,7 +17,7 @@ type Props = { slug: string; facilityId: string; token: string }
 const localZone = Intl.DateTimeFormat().resolvedOptions().timeZone
 
 /** The reader page signs in with the key in the fragment, which never reaches a server log. */
-export function readerUrl(key: string) {
+function readerUrl(key: string) {
   return `${window.location.origin}/lector#key=${key}`
 }
 
