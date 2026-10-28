@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import { Link } from 'react-router'
+import { CouncilExport } from '@/components/admin/CouncilExport'
 import { CouncilFormDialog } from '@/components/admin/CouncilFormDialog'
 import { SmtpSettings } from '@/components/admin/SmtpSettings'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -27,7 +28,7 @@ type Props = {
   onSlugChanged?: (slug: string) => void // default: close, and reopen from the list
 }
 
-/** Everything about one council: its details, administrators, email relay, and deleting it. */
+/** Everything about one council: its details, administrators, email relay, data export, and deleting it. */
 export function CouncilSheet({ slug, superadmin = true, onClose, onChanged, onDeleted, onSlugChanged }: Props) {
   const { t } = useTranslation(['admin', 'common'])
   const auth = useAuth()
@@ -202,6 +203,8 @@ export function CouncilSheet({ slug, superadmin = true, onClose, onChanged, onDe
               </section>
 
               <SmtpSettings slug={slug} token={token} />
+
+              <CouncilExport slug={slug} token={token} />
 
               {superadmin && (
                 <section aria-labelledby="sheet-delete" className="grid gap-3 border-t pt-5">
