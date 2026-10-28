@@ -73,3 +73,28 @@ func TestMapMyBookingsMergesJoined(t *testing.T) {
 		t.Errorf("a booking nobody joined lists no one, got %+v", p)
 	}
 }
+
+func TestAttendance(t *testing.T) {
+	var now = time.Date(2026, 11, 2, 10, 0, 0, 0, time.UTC)
+	var past, future = now.Add(-time.Hour), now.Add(time.Hour)
+	var cases = []struct {
+		name          string
+		status        model.BookingStatus
+		endsAt        time.Time
+		checkedIn     bool
+		readerAtStart bool
+		want          string
+	}{
+		{"upcoming", model.BookingStatusConfirmed, future, false, true, ""},
+		{"in progress, already inside", model.BookingStatusConfirmed, future, true, true, ""},
+		{"cancelled", model.BookingStatusCancelled, past, false, true, ""},
+		{"checked in", model.BookingStatusConfirmed, past, true, true, AttendanceAttended},
+		{"not scanned at a reader", model.BookingStatusConfirmed, past, false, true, AttendanceNoShow},
+		{"no reader then", model.BookingStatusConfirmed, past, false, false, AttendanceUnknown},
+	}
+	for _, c := range cases {
+		if got := attendance(c.status, c.endsAt, c.checkedIn, c.readerAtStart, now); got != c.want {
+			t.Errorf("%s: attendance = %q, want %q", c.name, got, c.want)
+		}
+	}
+}
