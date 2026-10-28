@@ -126,6 +126,7 @@ function booking(id: string, hoursFromNow: number, extra: Partial<Booking> = {})
     cancel_until: at(hoursFromNow - 2),
     checkin_code: 'LQ-123456',
     checked_in_at: null,
+    attendance: '',
     role: 'owner',
     owner_name: '',
     capacity: 4,
@@ -146,8 +147,9 @@ const myBookings: MyBookings = {
     booking('b2', 26, { role: 'participant', owner_name: 'Uxía', can_cancel: false, can_change: false, can_leave: true }),
   ],
   history: [
-    booking('b3', -30, { checkin_code: '', checked_in_at: at(-30), can_cancel: false, can_change: false }),
+    booking('b3', -30, { checkin_code: '', checked_in_at: at(-30), attendance: 'attended', can_cancel: false, can_change: false }),
     booking('b4', -60, { status: 'cancelled', checkin_code: '', can_cancel: false, can_change: false }),
+    booking('b5', -80, { checkin_code: '', attendance: 'no_show', can_cancel: false, can_change: false }),
   ],
 }
 

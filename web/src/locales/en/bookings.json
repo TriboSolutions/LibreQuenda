@@ -15,7 +15,9 @@
   "history": "History",
   "status": {
     "cancelled": "Cancelled",
-    "done": "Done",
+    "attended": "Attended",
+    "noShow": "No-show",
+    "ended": "Ended",
     "checkedIn": "Inside"
   },
   "notice": {

@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { QrCode } from 'lucide-react'
+import { BookingOutcome } from '@/components/BookingOutcome'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -149,15 +150,7 @@ export function MyBookings({ authenticated, data, loading, error, timeZone, toda
                       <p className="truncate">{booking.facility_name}</p>
                       <When booking={booking} timeZone={timeZone} today={today} />
                     </div>
-                    <span
-                      className={
-                        booking.status === 'cancelled'
-                          ? 'shrink-0 rounded-full bg-pill-neutral-bg px-2 py-0.5 text-xs font-medium text-pill-neutral-ink'
-                          : 'shrink-0 rounded-full bg-pill-positive-bg px-2 py-0.5 text-xs font-medium text-pill-positive-ink'
-                      }
-                    >
-                      {booking.status === 'cancelled' ? t('bookings:status.cancelled') : t('bookings:status.done')}
-                    </span>
+                    <BookingOutcome booking={booking} />
                   </li>
                 ))}
               </ul>

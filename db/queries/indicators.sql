@@ -4,7 +4,9 @@
 
 -- name: IndicatorsByFacility :many
 -- One row per facility, also the ones with no bookings in the period.
--- finished / attended: past confirmed bookings, and those checked in at the door.
+-- finished / attended: past confirmed bookings that began with a QR reader in
+-- place, and those checked in at the door. Before a reader was installed nobody
+-- could check in, so those bookings say nothing about no-shows.
 SELECT
     f.id,
     f.name,
@@ -16,10 +18,11 @@ SELECT
     COUNT(b.id) FILTER (WHERE b.cancelled_by = 'user') AS cancelled_by_user,
     COUNT(b.id) FILTER (WHERE b.cancelled_by = 'council') AS cancelled_by_council,
     COALESCE(SUM(EXTRACT(EPOCH FROM b.ends_at - b.starts_at) / 60) FILTER (WHERE b.status = 'confirmed'), 0)::BIGINT AS booked_minutes,
-    COUNT(b.id) FILTER (WHERE b.status = 'confirmed' AND b.ends_at <= NOW()) AS finished,
-    COUNT(b.id) FILTER (WHERE b.status = 'confirmed' AND b.ends_at <= NOW() AND b.checked_in_at IS NOT NULL) AS attended
+    COUNT(b.id) FILTER (WHERE b.status = 'confirmed' AND b.ends_at <= NOW() AND reader.since <= b.starts_at) AS finished,
+    COUNT(b.id) FILTER (WHERE b.status = 'confirmed' AND b.ends_at <= NOW() AND reader.since <= b.starts_at AND b.checked_in_at IS NOT NULL) AS attended
 FROM
     facility f
+    CROSS JOIN LATERAL (SELECT MIN(d.created_at) AS since FROM checkin_device d WHERE d.facility_id = f.id) reader
     LEFT JOIN booking b ON b.facility_id = f.id
         AND b.starts_at >= sqlc.arg('range_start')
         AND b.starts_at < sqlc.arg('range_end')
@@ -27,7 +30,8 @@ WHERE
     f.tenant_id = sqlc.arg('tenant_id')
     AND (sqlc.narg('facility_id')::UUID IS NULL OR f.id = sqlc.narg('facility_id'))
 GROUP BY
-    f.id
+    f.id,
+    reader.since
 ORDER BY
     f.name ASC;
 

@@ -15,7 +15,9 @@
   "history": "Historial",
   "status": {
     "cancelled": "Cancelada",
-    "done": "Feita",
+    "attended": "Asistida",
+    "noShow": "Non presentada",
+    "ended": "Rematada",
     "checkedIn": "Dentro"
   },
   "notice": {

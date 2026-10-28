@@ -55,6 +55,7 @@ type BookingDto struct {
 	CancelUntil  time.Time  `json:"cancel_until"`
 	CheckinCode  string     `json:"checkin_code"` // QR content, upcoming confirmed bookings only
 	CheckedInAt  *time.Time `json:"checked_in_at"`
+	Attendance   string     `json:"attendance"` // past confirmed bookings only: "attended", "no_show" or "unknown"; "" otherwise
 	// invites: the owner shares a link and others fill the facility's capacity
 	Role             string      `json:"role"`              // "owner" or "participant" (joined through an invite)
 	OwnerName        string      `json:"owner_name"`        // participant only
@@ -133,6 +134,28 @@ const (
 	RoleParticipant = "participant"
 )
 
+// Attendance of a past booking, from the QR readers at the door.
+const (
+	AttendanceAttended = "attended"
+	AttendanceNoShow   = "no_show"
+	AttendanceUnknown  = "unknown" // no reader when the turn began: nobody could check in
+)
+
+// attendance: "" until a confirmed booking has ended; then whether anyone checked in,
+// which only says something if a reader was there to scan the QR.
+func attendance(status model.BookingStatus, endsAt time.Time, checkedIn, readerAtStart bool, now time.Time) string {
+	switch {
+	case status != model.BookingStatusConfirmed || endsAt.After(now):
+		return ""
+	case checkedIn:
+		return AttendanceAttended
+	case readerAtStart:
+		return AttendanceNoShow
+	default:
+		return AttendanceUnknown
+	}
+}
+
 // Spots is the facility capacity and how many joined, per booking the user owns.
 type Spots struct {
 	Capacity     sql.NullInt32
@@ -195,6 +218,7 @@ func mapParticipation(row model.ListParticipationsByUserRow, now time.Time) Book
 		TenantSlug:       row.TenantSlug,
 		TenantName:       row.TenantName,
 		CheckedInAt:      checkedInAt,
+		Attendance:       attendance(row.Status, row.EndsAt, row.CheckedInAt.Valid, row.ReaderAtStart, now),
 		Role:             RoleParticipant,
 		OwnerName:        row.OwnerName,
 		Capacity:         invitableCapacity(row.Capacity),
@@ -230,6 +254,7 @@ func mapBooking(row model.ListBookingsByUserRow, now time.Time) BookingDto {
 		CancelUntil:  cancelUntil,
 		CheckinCode:  checkinCode,
 		CheckedInAt:  checkedInAt,
+		Attendance:   attendance(row.Status, row.EndsAt, row.CheckedInAt.Valid, row.ReaderAtStart, now),
 		Role:         RoleOwner,
 		Facility:     FacilityDetails(row.Facility),
 	}
