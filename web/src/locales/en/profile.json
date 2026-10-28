@@ -81,5 +81,18 @@
     "deleting": "Deleting…",
     "deletedTitle": "Your account has been deleted.",
     "deletedBody": "Your personal details are gone from LibreQuenda. You can create a new account whenever you like."
+  },
+  "personalQr": {
+    "title": "Your QR",
+    "help": "Get in, or book on the spot, at facilities with a QR reader at the entrance.",
+    "alt": "Your personal QR code. It changes every minute.",
+    "checkIn": "If you have a booking at that facility that starts within 15 minutes or is under way, it checks you in.",
+    "book": "If not, it books the turn that starts within the next 15 minutes, if it is free, and lets you in. The same limits apply as booking here, and scanning it means you accept that facility's usage rules.",
+    "private": "The code changes every minute and works only once, so a screenshot will not work. Do not share it.",
+    "brightness": "If the reader does not pick it up, turn up the screen brightness.",
+    "refreshIn": "New code in {{seconds}} s",
+    "failed": "Your QR could not be loaded. Check your connection.",
+    "retry": "Try again",
+    "incomplete": "Add your date of birth below to book with your QR."
   }
 }

@@ -18,6 +18,7 @@ CREATE INDEX idx_booking_participant_booking  ON booking_participant (booking_id
 CREATE UNIQUE INDEX uq_booking_participant_user ON booking_participant (booking_id, user_id) WHERE user_id IS NOT NULL;
 CREATE INDEX idx_booking_participant_user     ON booking_participant (user_id) WHERE user_id IS NOT NULL;
 CREATE INDEX idx_checkin_device_facility  ON checkin_device (facility_id);
+CREATE INDEX idx_user_qr_token_user       ON user_qr_token (user_id);
 
 CREATE INDEX idx_notification_user        ON notification (user_id, created_at DESC);
 CREATE INDEX idx_notification_booking     ON notification (booking_id, type);

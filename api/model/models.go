@@ -330,3 +330,10 @@ type TenantSmtp struct {
 	Config    []byte    `json:"config"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
+
+type UserQrToken struct {
+	Token     uuid.UUID    `json:"token"`
+	UserID    uuid.UUID    `json:"user_id"`
+	ExpiresAt time.Time    `json:"expires_at"`
+	UsedAt    sql.NullTime `json:"used_at"`
+}
