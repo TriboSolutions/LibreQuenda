@@ -46,4 +46,9 @@ func (r *bookingsRoutes) RegisterRoutes() {
 		AdditionalMethods: []router.HTTPMethod{router.OPTIONS},
 		Handler:           middlewares.AuthMiddleware(h.CancelBooking),
 	})
+	r.router.NewRoute(router.Route{
+		Path:    "/me/bookings/{id}",
+		Method:  http.MethodPatch,
+		Handler: middlewares.AuthMiddleware(h.ChangeBooking),
+	})
 }

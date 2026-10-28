@@ -65,10 +65,6 @@
     "when": "Cando",
     "where": "Onde",
     "spots": "Prazas",
-    "spotsLeft_one": "Queda {{count}} praza de {{capacity}}",
-    "spotsLeft_other": "Quedan {{count}} prazas de {{capacity}}",
-    "minAge": "Idade mínima: {{count}} anos",
-    "full": "Esta reserva está completa.",
     "closed": "Esta reserva xa non admite máis xente: cancelouse ou xa comezou.",
     "notFound": "Esta ligazón de convite non funciona. Pídelle unha nova a quen reservou.",
     "withAccount": "Unirme coa miña conta",
@@ -93,5 +89,16 @@
     "organiser": "fixo a reserva",
     "noAccount": "sen conta",
     "unnamed": "Sen nome"
+  },
+  "meter": {
+    "left_one": "Queda {{count}} praza",
+    "left_other": "Quedan {{count}} prazas",
+    "full": "Completa: non quedan prazas",
+    "label": "{{taken}} de {{capacity}} persoas"
+  },
+  "details": {
+    "cancelUntil": "Podes cambiala ou cancelala ata o {{date}}.",
+    "accessibility": "Accesibilidade",
+    "rules": "Normas e condicións"
   }
 }

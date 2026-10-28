@@ -20,6 +20,10 @@
     "booking_already_cancelled": "Esa reserva xa está cancelada.",
     "cancel_too_late": "Xa non se pode cancelar: pasou o prazo de cancelación.",
     "cancel_failed": "Non foi posible cancelar a reserva. Téntao de novo.",
+    "change_too_late": "Xa non se pode cambiar: pasou o prazo de cancelación.",
+    "change_failed": "Non foi posible cambiar a reserva. Téntao de novo.",
+    "booking_same_time": "A reserva xa é a esa hora.",
+    "participant_overlaps": "Alguén que se uniu á túa reserva xa ten outra reserva a esa hora. Quítao ou escolle outra hora.",
     "invalid_request_body": "Revisa os datos enviados: falta información ou ten un formato incorrecto.",
     "invalid_query_params": "Revisa os filtros: hai un valor non válido.",
     "forbidden": "No tes permiso para facer isto.",
@@ -105,7 +109,19 @@
     "current_password_wrong": "O contrasinal actual non é correcto.",
     "password_too_weak": "O novo contrasinal non cumpre as normas indicadas debaixo do campo.",
     "invalid_verification_code": "Ese código non é correcto ou caducou. Pide un novo.",
-    "account_unavailable": "Agora mesmo non se puideron consultar os datos da túa conta. Téntao de novo nun momento."
+    "account_unavailable": "Agora mesmo non se puideron consultar os datos da túa conta. Téntao de novo nun momento.",
+    "invalid_indicators_range": "O período non é válido: o comezo debe ser anterior ao final e pode abranguer como moito un ano.",
+    "indicators_failed": "Non puidemos calcular os indicadores. Téntao de novo.",
+    "invalid_smtp_host": "Escribe o nome do servidor SMTP, p. ex. smtp.concello.gal, sen o porto nin o protocolo.",
+    "invalid_smtp_port": "O porto debe ser un número de 1 a 65535 (normalmente 587).",
+    "invalid_smtp_username": "O usuario pode ter 255 caracteres como máximo.",
+    "invalid_smtp_from": "O remitente non é un enderezo válido. Escríbeo como reservas@concello.gal ou Concello <reservas@concello.gal>.",
+    "smtp_load_failed": "Non se puido cargar a configuración do correo. Téntao de novo.",
+    "smtp_save_failed": "Non se puido gardar a configuración do correo. Téntao de novo.",
+    "smtp_not_configured": "Non hai ningún servidor SMTP para enviar: configura o do concello ou pide á administración da plataforma que configure un común.",
+    "smtp_test_failed": "O servidor SMTP non aceptou o correo de proba: {{0}}",
+    "secrets_key_missing": "O servidor non ten chave de cifrado (SECRETS_KEY), así que o contrasinal non se pode gardar de forma segura. Avisa á administración da plataforma.",
+    "smtp_password_unreadable": "Non se pode ler a configuración SMTP gardada (cambiou a chave de cifrado). Escríbea de novo e garda."
   },
   "email": {
     "greeting": "Ola {{0}},",
@@ -142,6 +158,10 @@
       "intro": "Fixéronte administrador ou administradora de {{0}} en LibreQuenda. Inicia sesión con este enderezo ({{1}}) para xestionar as súas instalacións, horarios e peches. Se aínda non tes conta, créaa con este mesmo enderezo.",
       "manage": "Abrir a administración",
       "footer": "Recibes este correo porque unha persoa administradora da plataforma engadiu este enderezo. Se cres que é un erro, podes ignoralo."
+    },
+    "smtp_test": {
+      "subject": "Correo de proba de LibreQuenda ({{0}})",
+      "body": "Este é un correo de proba de {{0}}, enviado a través de {{1}}. Se o estás a ler, LibreQuenda pode enviar os correos de reservas do concello."
     }
   }
 }

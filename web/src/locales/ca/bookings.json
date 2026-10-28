@@ -8,8 +8,10 @@
   "loadError": "No s'han pogut carregar les teves reserves.",
   "empty": "No tens reserves properes. Tria un torn lliure a la disponibilitat.",
   "cancel": "Cancel·la",
+  "change": "Canviar",
   "noCancel": "Sense cancel·lació",
   "cancelDeadlinePassed": "Només es podia cancel·lar fins a {{date}}",
+  "locked": "Canvis i cancel·lació tancats el {{date}}",
   "history": "Historial",
   "status": {
     "cancelled": "Cancel·lada",
@@ -18,7 +20,8 @@
   },
   "notice": {
     "booked": "Reserva confirmada: {{facility}}, {{day}} a les {{time}}.",
-    "cancelled": "Reserva cancel·lada: {{facility}}, {{day}}."
+    "cancelled": "Reserva cancel·lada: {{facility}}, {{day}}.",
+    "changed": "Reserva canviada: {{facility}}, ara {{day}} a les {{time}}."
   },
   "dialog": {
     "title": "Reserva {{facility}}",
@@ -45,6 +48,21 @@
     "confirming": "Cancel·lant…",
     "needLogin": "Has d'iniciar la sessió.",
     "error": "No s'ha pogut cancel·lar la reserva."
+  },
+  "changeDialog": {
+    "title": "Canviar la reserva a {{facility}}",
+    "description": "Ara {{day}}, {{start}}–{{end}}. Tria una altra hora lliure; qui s'hi ha unit, el QR i l'enllaç d'invitació continuen amb la reserva.",
+    "when": "Nova data i hora",
+    "date": "Data",
+    "times": "Hores",
+    "current": "actual",
+    "closedDay": "Tancat aquest dia. Tria una altra data.",
+    "cancelUntil": "La podràs canviar o cancel·lar fins al {{date}}.",
+    "pick": "Tria una hora",
+    "confirm": "Passar a {{day}}, {{time}}",
+    "saving": "Canviant…",
+    "error": "No s'ha pogut canviar la reserva.",
+    "close": "Tancar"
   },
   "qr": {
     "show": "QR d'entrada",

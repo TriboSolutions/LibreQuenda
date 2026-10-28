@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
+import { SettingsRow } from '@/components/SettingsRow'
 import { useAsync } from '@/hooks/useAsync'
 import { useMe } from '@/hooks/useMe'
 import { api, type Account } from '@/lib/api'
@@ -53,9 +54,10 @@ function Messages({ status }: { status: Status }) {
   )
 }
 
+/** One part of the account card, ruled off from the one above. */
 function Card({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
-    <section aria-labelledby={id} className="grid content-start gap-4 rounded-lg border bg-card p-5">
+    <section aria-labelledby={id} className="grid content-start gap-4 p-5 not-first:border-t">
       <h3 id={id} className="font-semibold">
         {title}
       </h3>
@@ -75,32 +77,24 @@ export function AccountSettings() {
   const account = useAsync(token ? () => api.account.get(token) : null, `account:${auth.user?.profile.sub}`)
 
   return (
-    <section aria-labelledby="sec-sign-in" className="mt-6">
-      <h2 id="sec-sign-in" className="text-lg font-semibold">
-        {t('accountSettings.title')}
-      </h2>
-      <p className="mt-1 max-w-[70ch] text-muted-foreground">{t('accountSettings.help')}</p>
+    <SettingsRow id="sec-sign-in" title={t('accountSettings.title')} description={t('accountSettings.help')}>
       {account.error ? (
-        <div className="mt-4 flex max-w-[760px] items-center justify-between gap-4 rounded-md bg-pill-negative-bg px-4 py-3 text-pill-negative-ink">
+        <div className="flex items-center justify-between gap-4 rounded-md bg-pill-negative-bg px-4 py-3 text-pill-negative-ink">
           <p>{account.error.message}</p>
           <Button variant="ghost" size="sm" onClick={account.reload}>
             {t('common:retry')}
           </Button>
         </div>
       ) : !account.data ? (
-        <div className="mt-4 grid gap-6 lg:grid-cols-3">
-          {Array.from({ length: 3 }, (_, i) => (
-            <Skeleton key={i} className="h-56" />
-          ))}
-        </div>
+        <Skeleton className="h-96" />
       ) : (
-        <div className="mt-4 grid gap-6 lg:grid-cols-3 lg:items-start">
+        <div className="rounded-lg border bg-card">
           <NameCard token={token} account={account.data} />
           <EmailCard token={token} account={account.data} onChanged={account.reload} />
           <PasswordCard token={token} account={account.data} />
         </div>
       )}
-    </section>
+    </SettingsRow>
   )
 }
 
@@ -122,13 +116,15 @@ function NameCard({ token, account }: { token: string; account: Account }) {
   return (
     <Card id="acc-name" title={t('accountSettings.name')}>
       <form onSubmit={save} className="grid gap-4">
-        <div className="grid gap-2">
-          <Label htmlFor="acc-given">{t('accountSettings.givenName')}</Label>
-          <Input id="acc-given" required maxLength={100} autoComplete="given-name" value={given} onChange={(e) => setGiven(e.target.value)} />
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor="acc-family">{t('accountSettings.familyName')}</Label>
-          <Input id="acc-family" required maxLength={100} autoComplete="family-name" value={family} onChange={(e) => setFamily(e.target.value)} />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-2">
+            <Label htmlFor="acc-given">{t('accountSettings.givenName')}</Label>
+            <Input id="acc-given" required maxLength={100} autoComplete="given-name" value={given} onChange={(e) => setGiven(e.target.value)} />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="acc-family">{t('accountSettings.familyName')}</Label>
+            <Input id="acc-family" required maxLength={100} autoComplete="family-name" value={family} onChange={(e) => setFamily(e.target.value)} />
+          </div>
         </div>
         <Messages status={status} />
         <div>
@@ -284,34 +280,36 @@ function PasswordCard({ token, account }: { token: string; account: Account }) {
   return (
     <Card id="acc-password" title={t('accountSettings.password')}>
       <form onSubmit={save} className="grid gap-4">
-        <div className="grid gap-2">
+        <div className="grid gap-2 sm:w-1/2 sm:pr-2">
           <Label htmlFor="acc-current">{t('accountSettings.currentPassword')}</Label>
           <Input id="acc-current" type="password" required autoComplete="current-password" value={current} onChange={(e) => setCurrent(e.target.value)} />
         </div>
-        <div className="grid gap-2">
-          <Label htmlFor="acc-next">{t('accountSettings.newPassword')}</Label>
-          <Input id="acc-next" type="password" required autoComplete="new-password" aria-describedby="acc-rules" value={next} onChange={(e) => setNext(e.target.value)} />
-          <ul id="acc-rules" className="grid gap-0.5 text-sm">
-            {checks.map((check) => (
-              <li key={check.label} className={`flex items-center gap-1.5 ${check.ok ? 'text-pill-positive-ink' : 'text-muted-foreground'}`}>
-                {check.ok ? <Check className="size-3.5" aria-hidden /> : <X className="size-3.5" aria-hidden />}
-                {check.label}
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor="acc-repeat">{t('accountSettings.repeatPassword')}</Label>
-          <Input
-            id="acc-repeat"
-            type="password"
-            required
-            autoComplete="new-password"
-            aria-invalid={mismatch}
-            value={repeat}
-            onChange={(e) => setRepeat(e.target.value)}
-          />
-          {mismatch && <p className="text-sm text-destructive">{t('accountSettings.mismatch')}</p>}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid content-start gap-2">
+            <Label htmlFor="acc-next">{t('accountSettings.newPassword')}</Label>
+            <Input id="acc-next" type="password" required autoComplete="new-password" aria-describedby="acc-rules" value={next} onChange={(e) => setNext(e.target.value)} />
+            <ul id="acc-rules" className="grid gap-0.5 text-sm">
+              {checks.map((check) => (
+                <li key={check.label} className={`flex items-center gap-1.5 ${check.ok ? 'text-pill-positive-ink' : 'text-muted-foreground'}`}>
+                  {check.ok ? <Check className="size-3.5" aria-hidden /> : <X className="size-3.5" aria-hidden />}
+                  {check.label}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="grid content-start gap-2">
+            <Label htmlFor="acc-repeat">{t('accountSettings.repeatPassword')}</Label>
+            <Input
+              id="acc-repeat"
+              type="password"
+              required
+              autoComplete="new-password"
+              aria-invalid={mismatch}
+              value={repeat}
+              onChange={(e) => setRepeat(e.target.value)}
+            />
+            {mismatch && <p className="text-sm text-destructive">{t('accountSettings.mismatch')}</p>}
+          </div>
         </div>
         <Messages status={status} />
         <div>

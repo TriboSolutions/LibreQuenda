@@ -2,6 +2,7 @@ package invites
 
 import (
 	"database/sql"
+	"librequenda/core/bookings"
 	"librequenda/model"
 	"strings"
 	"time"
@@ -39,8 +40,9 @@ type PublicInviteDto struct {
 	EndsAt       time.Time `json:"ends_at"`
 	Capacity     int       `json:"capacity"`
 	SpotsLeft    int       `json:"spots_left"`
-	MinAge       *int      `json:"min_age"`
 	State        string    `json:"state"`
+	// image, address, rules and minimum age: people see them before joining
+	Facility bookings.FacilityDetailsDto `json:"facility"`
 }
 
 type GuestJoinDto struct {

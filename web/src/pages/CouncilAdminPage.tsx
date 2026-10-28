@@ -1,18 +1,24 @@
-import { ChevronRight, Plus } from 'lucide-react'
+import { ChevronRight, Plus, Settings } from 'lucide-react'
+import { lazy, Suspense, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
-import { Link, useParams } from 'react-router'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
+import { CouncilSheet } from '@/components/admin/CouncilSheet'
 import { useVerifyEmail } from '@/components/InvitationReminder'
 import { TopBar } from '@/components/TopBar'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAsync } from '@/hooks/useAsync'
 import { useCouncilAdmin } from '@/hooks/useCouncilAdmin'
 import { useLogin } from '@/hooks/useLogin'
 import { useMe } from '@/hooks/useMe'
 import { api } from '@/lib/api'
 
-/** /:slug/admin: the council's facilities, for its administrators. */
+// charts (Recharts) load only when an administrator opens the indicators
+const IndicatorsPanel = lazy(() => import('@/components/admin/IndicatorsPanel').then((m) => ({ default: m.IndicatorsPanel })))
+
+/** /:slug/admin: the council's facilities and indicators (?vista=indicadores), for its administrators; the gear opens the council's settings. */
 export function CouncilAdminPage() {
   const { slug = '' } = useParams()
   const { t } = useTranslation(['admin', 'common'])
@@ -27,6 +33,11 @@ export function CouncilAdminPage() {
   const tenants = useAsync(() => api.tenants(), 'tenants')
   const facilities = useAsync(allowed ? () => api.council.facilities(token, slug) : null, `council-admin:${slug}:${allowed}`)
   const council = tenants.data?.tenants.find((c) => c.slug === slug)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const view = searchParams.get('vista') === 'indicadores' ? 'indicators' : 'facilities'
+  const changeView = (value: string) => setSearchParams(value === 'indicators' ? { vista: 'indicadores' } : {}, { replace: true })
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const navigate = useNavigate()
 
   let body
   if (auth.isLoading || (auth.isAuthenticated && (loading || !me))) {
@@ -64,8 +75,8 @@ export function CouncilAdminPage() {
     )
   } else {
     const list = facilities.data?.facilities ?? []
-    body = (
-      <section aria-labelledby="facilities-title" className="mt-6 rounded-lg border bg-card p-5">
+    const facilitiesSection = (
+      <section aria-labelledby="facilities-title" className="rounded-lg border bg-card p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-baseline gap-3">
             <h2 id="facilities-title" className="text-lg font-semibold">
@@ -157,16 +168,45 @@ export function CouncilAdminPage() {
         )}
       </section>
     )
+    body = (
+      <Tabs value={view} onValueChange={changeView} className="mt-6 gap-6">
+        <div className="flex items-center justify-between gap-3">
+          <TabsList>
+            <TabsTrigger value="facilities">{t('admin:facilities.title')}</TabsTrigger>
+            <TabsTrigger value="indicators">{t('admin:indicators.title')}</TabsTrigger>
+          </TabsList>
+          <Button variant="outline" size="icon" onClick={() => setSettingsOpen(true)} aria-label={t('admin:councilAdmin.settings')} title={t('admin:councilAdmin.settings')}>
+            <Settings />
+          </Button>
+        </div>
+        <TabsContent value="facilities">{facilitiesSection}</TabsContent>
+        <TabsContent value="indicators">
+          <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+            <IndicatorsPanel slug={slug} facilities={list} />
+          </Suspense>
+        </TabsContent>
+      </Tabs>
+    )
   }
 
   return (
     <div className="min-h-screen">
       <TopBar tenants={tenants.data?.tenants ?? []} tenantSlug={slug} />
       <main className="mx-auto max-w-[1152px] px-4 pt-8 pb-16 sm:px-6">
-        <h1 className="text-[28px] leading-9 font-bold tracking-[-0.02em] sm:text-[32px] sm:leading-10">{t('admin:facilities.title')}</h1>
-        <p className="mt-1 text-base text-muted-foreground">{t('admin:facilities.subtitle', { council: council?.name ?? slug })}</p>
+        <h1 className="text-[28px] leading-9 font-bold tracking-[-0.02em] sm:text-[32px] sm:leading-10">{t('admin:councilAdmin.title')}</h1>
+        <p className="mt-1 text-base text-muted-foreground">{t('admin:councilAdmin.subtitle', { council: council?.name ?? slug })}</p>
         {body}
       </main>
+      {settingsOpen && allowed && (
+        <CouncilSheet
+          slug={slug}
+          superadmin={me?.is_superadmin ?? false}
+          onClose={() => setSettingsOpen(false)}
+          onChanged={() => tenants.reload()}
+          onDeleted={() => navigate('/admin')}
+          onSlugChanged={(next) => navigate(`/${next}/admin${view === 'indicators' ? '?vista=indicadores' : ''}`, { replace: true })}
+        />
+      )}
     </div>
   )
 }

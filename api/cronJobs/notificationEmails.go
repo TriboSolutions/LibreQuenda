@@ -28,9 +28,8 @@ type notificationEmailJob struct {
 // registerNotificationEmailCronJob emails every notification: confirmations and
 // reminders carry the booking QR, cancellations say sorry.
 func registerNotificationEmailCronJob(db *sql.DB, cronScheduler *scheduler.Scheduler) {
-	if !mailer.Enabled() {
-		log.Println("SMTP_HOST or SMTP_FROM not set: notification emails are off")
-		return
+	if _, ok := mailer.EnvRelay(); !ok {
+		log.Println("SMTP_HOST or SMTP_FROM not set: only councils with their own SMTP relay get emails")
 	}
 	var _, err = cronScheduler.ScheduleIntervalJob(
 		notificationEmailInterval,
@@ -66,12 +65,26 @@ func (j *notificationEmailJob) Execute() []any {
 	return []any{sent}
 }
 
+// send goes through the council's relay, or else the environment's.
+func send(council *mailer.Relay, councilErr error, message mailer.Message) error {
+	if councilErr != nil {
+		return councilErr
+	}
+	var relay, err = mailer.Pick(council)
+	if err != nil {
+		return err
+	}
+	return mailer.Send(relay, message)
+}
+
 // SendNotificationEmails works through the email queue. A notification leaves the
 // queue once sent, or skipped when the email no longer makes sense (see shouldEmail).
-// A failed send stays queued for the next run.
+// A failed send stays queued for the next run; so do the emails of a council with
+// no relay while the environment has none either.
 func SendNotificationEmails(ctx context.Context, db *sql.DB) (int, error) {
 	var queries = model.New(db)
-	var rows, err = queries.ListPendingEmails(ctx, notificationEmailBatch)
+	var _, envRelay = mailer.EnvRelay()
+	var rows, err = queries.ListPendingEmails(ctx, model.ListPendingEmailsParams{EnvRelay: envRelay, MaxRows: notificationEmailBatch})
 	if err != nil {
 		return 0, err
 	}
@@ -81,7 +94,8 @@ func SendNotificationEmails(ctx context.Context, db *sql.DB) (int, error) {
 		if shouldEmail(row, now) {
 			var message, buildErr = notificationEmail(row, now)
 			if buildErr == nil {
-				buildErr = mailer.Send(message)
+				var council, councilErr = mailer.OpenRelay(row.SmtpConfig, row.TenantID)
+				buildErr = send(council, councilErr, message)
 			}
 			if buildErr != nil {
 				log.Printf("notification email %s: %v", row.ID, buildErr)
@@ -229,13 +243,15 @@ func notificationEmail(row model.ListPendingEmailsRow, now time.Time) (mailer.Me
 // email verified, with a notice in the bell (AcceptPendingInvitations).
 func SendInvitationEmails(ctx context.Context, db *sql.DB) (int, error) {
 	var queries = model.New(db)
-	var rows, err = queries.ListPendingInvitationEmails(ctx, notificationEmailBatch)
+	var _, envRelay = mailer.EnvRelay()
+	var rows, err = queries.ListPendingInvitationEmails(ctx, model.ListPendingInvitationEmailsParams{EnvRelay: envRelay, MaxRows: notificationEmailBatch})
 	if err != nil {
 		return 0, err
 	}
 	var sent int
 	for _, row := range rows {
-		if err = mailer.Send(invitationEmail(row)); err != nil {
+		var council, councilErr = mailer.OpenRelay(row.SmtpConfig, row.TenantID)
+		if err = send(council, councilErr, invitationEmail(row)); err != nil {
 			log.Printf("invitation email %s: %v", row.ID, err)
 			continue
 		}

@@ -50,6 +50,39 @@ func (h *platformHandler) superadmin(w http.ResponseWriter, r *http.Request) (uu
 	return userId, true
 }
 
+// councilAdmin lets in a superadministrator or an administrator of the council in
+// the path, for that council only. It returns the user's id and whether they are a
+// superadministrator, or answers and returns false.
+func (h *platformHandler) councilAdmin(w http.ResponseWriter, r *http.Request, slug string) (uuid.UUID, bool, bool) {
+	var session, _ = auth.SessionFromContext(r.Context())
+	var userId, userErr = me.CurrentUserId(r.Context(), h.db, session)
+	if userErr != nil {
+		helpers.SendI18NErrorResponse(w, r, userErr.Code, userErr.Message)
+		return uuid.Nil, false, false
+	}
+	var queries = model.New(h.db)
+	var isSuperadmin, err = queries.IsPlatformAdmin(r.Context(), userId)
+	if err != nil {
+		helpers.SendI18NErrorResponse(w, r, http.StatusInternalServerError, "errors.forbidden")
+		return uuid.Nil, false, false
+	}
+	if isSuperadmin {
+		return userId, true, true
+	}
+	var tenant model.GetTenantForPlatformRow
+	tenant, err = queries.GetTenantForPlatform(r.Context(), slug)
+	var allowed bool
+	if err == nil {
+		allowed, err = queries.IsTenantAdmin(r.Context(), model.IsTenantAdminParams{UserID: userId, TenantID: tenant.ID})
+	}
+	if err != nil || !allowed {
+		// a council that does not exist answers the same as one that is not theirs
+		helpers.SendI18NErrorResponse(w, r, http.StatusForbidden, "errors.forbidden")
+		return uuid.Nil, false, false
+	}
+	return userId, false, true
+}
+
 func decode(w http.ResponseWriter, r *http.Request, into any) bool {
 	if err := json.NewDecoder(r.Body).Decode(into); err != nil {
 		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_request_body")
@@ -109,29 +142,36 @@ func (h *platformHandler) CreateTenant(w http.ResponseWriter, r *http.Request) {
 	send(w, r, response, err)
 }
 
+// GetTenant, and the council's administrators below: its own administrators too.
 func (h *platformHandler) GetTenant(w http.ResponseWriter, r *http.Request) {
-	if _, ok := h.superadmin(w, r); !ok {
-		return
-	}
 	var slug, ok = pathSlug(w, r)
 	if !ok {
+		return
+	}
+	if _, _, ok = h.councilAdmin(w, r, slug); !ok {
 		return
 	}
 	var response, err = GetPlatformService(h.db).GetTenant(r.Context(), slug)
 	send(w, r, response, err)
 }
 
+// UpdateTenant: a council's administrators edit its details; only a
+// superadministrator switches the whole council on or off.
 func (h *platformHandler) UpdateTenant(w http.ResponseWriter, r *http.Request) {
-	if _, ok := h.superadmin(w, r); !ok {
-		return
-	}
 	var slug, ok = pathSlug(w, r)
 	if !ok {
+		return
+	}
+	var isSuperadmin bool
+	if _, isSuperadmin, ok = h.councilAdmin(w, r, slug); !ok {
 		return
 	}
 	var input TenantInput
 	if !decode(w, r, &input) {
 		return
+	}
+	if !isSuperadmin {
+		input.IsActive = nil
 	}
 	var response, err = GetPlatformService(h.db).UpdateTenant(r.Context(), slug, input)
 	send(w, r, response, err)
@@ -149,12 +189,12 @@ func (h *platformHandler) DeleteTenant(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *platformHandler) InviteTenantAdmin(w http.ResponseWriter, r *http.Request) {
-	var userId, ok = h.superadmin(w, r)
+	var slug, ok = pathSlug(w, r)
 	if !ok {
 		return
 	}
-	var slug string
-	if slug, ok = pathSlug(w, r); !ok {
+	var userId uuid.UUID
+	if userId, _, ok = h.councilAdmin(w, r, slug); !ok {
 		return
 	}
 	var input EmailInput
@@ -166,11 +206,11 @@ func (h *platformHandler) InviteTenantAdmin(w http.ResponseWriter, r *http.Reque
 }
 
 func (h *platformHandler) DeleteInvitation(w http.ResponseWriter, r *http.Request) {
-	if _, ok := h.superadmin(w, r); !ok {
-		return
-	}
 	var slug, ok = pathSlug(w, r)
 	if !ok {
+		return
+	}
+	if _, _, ok = h.councilAdmin(w, r, slug); !ok {
 		return
 	}
 	var id uuid.UUID
@@ -181,11 +221,11 @@ func (h *platformHandler) DeleteInvitation(w http.ResponseWriter, r *http.Reques
 }
 
 func (h *platformHandler) RemoveTenantAdmin(w http.ResponseWriter, r *http.Request) {
-	if _, ok := h.superadmin(w, r); !ok {
-		return
-	}
 	var slug, ok = pathSlug(w, r)
 	if !ok {
+		return
+	}
+	if _, _, ok = h.councilAdmin(w, r, slug); !ok {
 		return
 	}
 	var userId uuid.UUID

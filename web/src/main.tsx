@@ -11,6 +11,29 @@ import { loadConfig } from './config.ts'
 
 const root = createRoot(document.getElementById('root')!)
 
+// A page opened before a new deployment asks for lazy chunks that no longer
+// exist: load the new build once instead of failing (the flag stops a loop).
+window.addEventListener('vite:preloadError', (event) => {
+  try {
+    if (sessionStorage.getItem('lq:reloaded-for-build')) return
+    sessionStorage.setItem('lq:reloaded-for-build', '1')
+  } catch {
+    return
+  }
+  event.preventDefault()
+  window.location.reload()
+})
+window.addEventListener('load', () => {
+  // a build that loaded fine may reload again after the next deployment
+  window.setTimeout(() => {
+    try {
+      sessionStorage.removeItem('lq:reloaded-for-build')
+    } catch {
+      // nothing to clear
+    }
+  }, 10_000)
+})
+
 loadConfig()
   .then((config) => {
     root.render(

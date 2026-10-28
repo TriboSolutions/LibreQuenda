@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import { Link } from 'react-router'
 import { CouncilFormDialog } from '@/components/admin/CouncilFormDialog'
+import { SmtpSettings } from '@/components/admin/SmtpSettings'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -12,19 +13,25 @@ import { Label } from '@/components/ui/label'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAsync } from '@/hooks/useAsync'
+import { useMe } from '@/hooks/useMe'
 import { api } from '@/lib/api'
 
 type Props = {
   slug: string
+  // a superadministrator also switches the council on or off and deletes it;
+  // its own administrators get the rest, for their council only
+  superadmin?: boolean
   onClose: () => void
   onChanged: (message: string) => void // the list refreshes after any change
-  onDeleted: (message: string) => void
+  onDeleted?: (message: string) => void
+  onSlugChanged?: (slug: string) => void // default: close, and reopen from the list
 }
 
-/** Everything about one council: its details, its administrators, and deleting it. */
-export function CouncilSheet({ slug, onClose, onChanged, onDeleted }: Props) {
+/** Everything about one council: its details, administrators, email relay, and deleting it. */
+export function CouncilSheet({ slug, superadmin = true, onClose, onChanged, onDeleted, onSlugChanged }: Props) {
   const { t } = useTranslation(['admin', 'common'])
   const auth = useAuth()
+  const { me } = useMe()
   const token = auth.user?.access_token ?? ''
   const council = useAsync(() => api.admin.council(token, slug), `council:${slug}`)
   const [editing, setEditing] = useState(false)
@@ -60,7 +67,7 @@ export function CouncilSheet({ slug, onClose, onChanged, onDeleted }: Props) {
     setError(null)
     try {
       await api.admin.deleteCouncil(token, slug)
-      onDeleted(t('admin:notice.deleted', { name: council.data?.name }))
+      onDeleted?.(t('admin:notice.deleted', { name: council.data?.name }))
     } catch (e) {
       setConfirmDelete(false)
       setError(e instanceof Error ? e.message : String(e))
@@ -120,9 +127,11 @@ export function CouncilSheet({ slug, onClose, onChanged, onDeleted }: Props) {
                   <dd className="num">{data.booking_count}</dd>
                 </dl>
                 <div className="flex flex-wrap gap-x-5 gap-y-1">
-                  <Link to={`/${slug}/admin`} className="inline-flex items-center gap-1.5 text-primary hover:underline">
-                    {t('admin:manage.facilities')}
-                  </Link>
+                  {superadmin && (
+                    <Link to={`/${slug}/admin`} className="inline-flex items-center gap-1.5 text-primary hover:underline">
+                      {t('admin:manage.facilities')}
+                    </Link>
+                  )}
                   {data.is_active && (
                     <Link target="_blank" rel="noopener noreferrer" to={`/${slug}`} className="inline-flex items-center gap-1.5 text-primary hover:underline">
                       {t('admin:manage.viewPage')}
@@ -146,15 +155,18 @@ export function CouncilSheet({ slug, onClose, onChanged, onDeleted }: Props) {
                           <p className="truncate font-medium">{admin.full_name || admin.email}</p>
                           <p className="truncate text-muted-foreground">{admin.email}</p>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-destructive hover:text-destructive"
-                          disabled={busy}
-                          onClick={() => void run(() => api.admin.removeAdmin(token, slug, admin.user_id), t('admin:notice.saved'))}
-                        >
-                          {t('admin:manage.remove')}
-                        </Button>
+                        {/* a council's administrator can't lock themselves out */}
+                        {(superadmin || admin.user_id !== me?.id) && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-destructive hover:text-destructive"
+                            disabled={busy}
+                            onClick={() => void run(() => api.admin.removeAdmin(token, slug, admin.user_id), t('admin:notice.saved'))}
+                          >
+                            {t('admin:manage.remove')}
+                          </Button>
+                        )}
                       </li>
                     ))}
                     {data.invitations.map((invitation) => (
@@ -189,23 +201,27 @@ export function CouncilSheet({ slug, onClose, onChanged, onDeleted }: Props) {
                 </form>
               </section>
 
-              <section aria-labelledby="sheet-delete" className="grid gap-3 border-t pt-5">
-                <h3 id="sheet-delete" className="font-semibold">
-                  {t('admin:manage.deleteTitle')}
-                </h3>
-                {data.booking_count > 0 ? (
-                  <p className="text-muted-foreground">{t('admin:manage.deleteBlocked', { count: data.booking_count })}</p>
-                ) : (
-                  <>
-                    <p className="text-muted-foreground">{t('admin:manage.deleteHelp')}</p>
-                    <div>
-                      <Button variant="outline" className="text-destructive hover:text-destructive" onClick={() => setConfirmDelete(true)}>
-                        {t('admin:manage.delete')}
-                      </Button>
-                    </div>
-                  </>
-                )}
-              </section>
+              <SmtpSettings slug={slug} token={token} />
+
+              {superadmin && (
+                <section aria-labelledby="sheet-delete" className="grid gap-3 border-t pt-5">
+                  <h3 id="sheet-delete" className="font-semibold">
+                    {t('admin:manage.deleteTitle')}
+                  </h3>
+                  {data.booking_count > 0 ? (
+                    <p className="text-muted-foreground">{t('admin:manage.deleteBlocked', { count: data.booking_count })}</p>
+                  ) : (
+                    <>
+                      <p className="text-muted-foreground">{t('admin:manage.deleteHelp')}</p>
+                      <div>
+                        <Button variant="outline" className="text-destructive hover:text-destructive" onClick={() => setConfirmDelete(true)}>
+                          {t('admin:manage.delete')}
+                        </Button>
+                      </div>
+                    </>
+                  )}
+                </section>
+              )}
             </>
           )}
         </div>
@@ -213,12 +229,14 @@ export function CouncilSheet({ slug, onClose, onChanged, onDeleted }: Props) {
         {editing && data && (
           <CouncilFormDialog
             council={data}
+            canDeactivate={superadmin}
             onClose={() => setEditing(false)}
             onSaved={(saved) => {
               setEditing(false)
               onChanged(t('admin:notice.saved'))
-              if (saved.slug !== slug) onClose() // its address changed: reopen from the list
-              else council.reload()
+              if (saved.slug === slug) council.reload()
+              else if (onSlugChanged) onSlugChanged(saved.slug)
+              else onClose() // its address changed: reopen from the list
             }}
           />
         )}

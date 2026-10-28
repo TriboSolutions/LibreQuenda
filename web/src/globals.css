@@ -58,6 +58,10 @@
   --pill-accent-ink: #0b3d61;
 
   --hatch-line: #c3ccd5;
+
+  /* indicators: bookings that happened, and cancelled ones beside them */
+  --chart-confirmed: #0a6fb0;
+  --chart-cancelled: #c3ccd5;
 }
 
 /* Dark: true neutral greys (no navy or slate), elevation by lightness alone,
@@ -106,6 +110,9 @@
   --pill-accent-ink: #b5daf3;
 
   --hatch-line: #4a5058;
+
+  --chart-confirmed: #5fb0e6;
+  --chart-cancelled: #4a5058;
 }
 
 @theme inline {
@@ -150,6 +157,9 @@
   --color-pill-accent-bg: var(--pill-accent-bg);
   --color-pill-accent-ink: var(--pill-accent-ink);
 
+  --color-chart-confirmed: var(--chart-confirmed);
+  --color-chart-cancelled: var(--chart-cancelled);
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -191,8 +201,13 @@
     content: "";
     position: absolute;
     inset: 0;
-    background-color: var(--hatch-line);
+    background-color: var(--hatch-color, var(--hatch-line));
     mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='6'%3E%3Cpath d='M-1 1l2-2M0 6l6-6M5 7l2-2' stroke='black' stroke-width='1.2'/%3E%3C/svg%3E");
+  }
+
+  /* a one-off closure: the same hatch, in red */
+  .hatch-closure {
+    --hatch-color: var(--slot-closure);
   }
 }
 

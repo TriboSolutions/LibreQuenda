@@ -54,12 +54,15 @@ services:
       STORAGE_ACCESS_KEY: ${STORAGE_ACCESS_KEY:?set STORAGE_ACCESS_KEY in .env}
       STORAGE_SECRET_KEY: ${STORAGE_SECRET_KEY:?set STORAGE_SECRET_KEY in .env}
 
-      # Notification emails (confirmations, reminders with the QR, cancellations): your SMTP relay
-      SMTP_HOST: ${SMTP_HOST:?set SMTP_HOST in .env}
+      # Notification emails (confirmations, reminders with the QR, cancellations): the relay for
+      # councils without their own (set in each council's admin, "Email" tab)
+      SMTP_HOST: ${SMTP_HOST:-}
       SMTP_PORT: ${SMTP_PORT:-587}
       SMTP_USERNAME: ${SMTP_USERNAME:-}
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
-      SMTP_FROM: ${SMTP_FROM:?set SMTP_FROM in .env}
+      SMTP_FROM: ${SMTP_FROM:-}
+      # Encrypts stored credentials (councils' SMTP passwords)
+      SECRETS_KEY: ${SECRETS_KEY:?set SECRETS_KEY in .env}
       PUBLIC_URL: ${PUBLIC_SCHEME}://${WEB_DOMAIN}
     volumes:
       - runtime-config:/runtime:ro

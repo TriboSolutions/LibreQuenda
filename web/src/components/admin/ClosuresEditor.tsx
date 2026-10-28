@@ -84,7 +84,7 @@ export function ClosuresEditor({ slug, facilityId, token, timeZone, initial }: P
     })
 
   return (
-    <section aria-labelledby="sec-closures" className="mt-6 grid gap-4 rounded-lg border bg-card p-5">
+    <section aria-labelledby="sec-closures" className="grid gap-4 rounded-lg border bg-card p-5">
       <div>
         <h2 id="sec-closures" className="text-lg font-semibold">
           {t('admin:closures.title')}

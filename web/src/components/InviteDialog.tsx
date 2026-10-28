@@ -1,7 +1,8 @@
-import { Check, Copy, RefreshCw, Share2, X } from 'lucide-react'
+import { Check, Copy, RefreshCw, Share2 } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
+import { ParticipantList } from '@/components/ParticipantList'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -142,28 +143,7 @@ function InviteDialogOpen({ booking, timeZone, today, onClose, onChanged }: Prop
                 </Button>
               ))}
 
-            <div>
-              <h3 className="font-medium">{t('dialog.people')}</h3>
-              <ul className="mt-1">
-                <li className="border-t py-2 first:border-t-0">
-                  {t('dialog.you')} <span className="text-muted-foreground">· {t('dialog.owner')}</span>
-                </li>
-                {current.participants.map((p) => (
-                  <li key={p.id} className="flex items-center justify-between gap-3 border-t py-2">
-                    <span className="min-w-0">
-                      <span className="block truncate">{p.name}</span>
-                      {p.is_guest && <span className="num text-sm text-muted-foreground">{t('dialog.guestAge', { age: p.age })}</span>}
-                    </span>
-                    {current.state !== 'closed' && (
-                      <Button variant="ghost" size="icon" aria-label={t('dialog.remove', { name: p.name })} onClick={() => void remove(p.id)} disabled={busy}>
-                        <X aria-hidden />
-                      </Button>
-                    )}
-                  </li>
-                ))}
-              </ul>
-              {current.participants.length === 0 && <p className="text-sm text-muted-foreground">{t('dialog.nobody')}</p>}
-            </div>
+            <ParticipantList participants={current.participants} removable={current.state !== 'closed'} busy={busy} onRemove={(id) => void remove(id)} />
           </div>
         )}
 

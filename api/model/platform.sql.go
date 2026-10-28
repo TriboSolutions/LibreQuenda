@@ -322,18 +322,27 @@ SELECT
     t.name AS tenant_name,
     t.slug AS tenant_slug,
     u.full_name,
-    u.preferred_language
+    u.preferred_language,
+    t.id AS tenant_id,
+    s.config AS smtp_config
 FROM
     tenant_invitation i
     JOIN tenant t ON t.id = i.tenant_id
     LEFT JOIN app_user u ON lower(u.email) = lower(i.email)
+    LEFT JOIN tenant_smtp s ON s.tenant_id = t.id
 WHERE
     i.emailed_at IS NULL
     AND i.accepted_at IS NULL
+    AND ($1::BOOLEAN OR s.tenant_id IS NOT NULL)
 ORDER BY
     i.created_at ASC
-LIMIT $1
+LIMIT $2
 `
+
+type ListPendingInvitationEmailsParams struct {
+	EnvRelay bool  `json:"env_relay"`
+	MaxRows  int32 `json:"max_rows"`
+}
 
 type ListPendingInvitationEmailsRow struct {
 	ID                uuid.UUID      `json:"id"`
@@ -342,11 +351,13 @@ type ListPendingInvitationEmailsRow struct {
 	TenantSlug        string         `json:"tenant_slug"`
 	FullName          sql.NullString `json:"full_name"`
 	PreferredLanguage sql.NullString `json:"preferred_language"`
+	TenantID          uuid.UUID      `json:"tenant_id"`
+	SmtpConfig        []byte         `json:"smtp_config"`
 }
 
 // Invitations still to email, sent whether or not the person has an account yet.
-func (q *Queries) ListPendingInvitationEmails(ctx context.Context, maxRows int32) ([]ListPendingInvitationEmailsRow, error) {
-	rows, err := q.db.QueryContext(ctx, listPendingInvitationEmails, maxRows)
+func (q *Queries) ListPendingInvitationEmails(ctx context.Context, arg ListPendingInvitationEmailsParams) ([]ListPendingInvitationEmailsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listPendingInvitationEmails, arg.EnvRelay, arg.MaxRows)
 	if err != nil {
 		return nil, err
 	}
@@ -361,6 +372,8 @@ func (q *Queries) ListPendingInvitationEmails(ctx context.Context, maxRows int32
 			&i.TenantSlug,
 			&i.FullName,
 			&i.PreferredLanguage,
+			&i.TenantID,
+			&i.SmtpConfig,
 		); err != nil {
 			return nil, err
 		}

@@ -5,6 +5,7 @@ import { Link } from 'react-router'
 import { AxisLabels, type Axis, DayStrip, StripLegend } from '@/components/DayStrip'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import type { Day, Facility, Slot } from '@/lib/api'
 import { clockToMinutes, formatTime, minutesOfDay } from '@/lib/time'
 
@@ -78,10 +79,21 @@ function FacilityRow({ councilSlug, facility, axis, timeZone, now, nowMinutes, o
       </div>
       <div className="hidden items-center justify-end gap-1 md:flex">
         {quick && (
-          <Button variant="outline" size="sm" className="num" onClick={() => onPick(facility, quick)}>
-            <Zap aria-hidden="true" />
-            {t('availability.quickBook', { time: formatTime(quick.starts_at, timeZone) })}
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="num"
+                aria-label={t('availability.quickBook', { time: formatTime(quick.starts_at, timeZone) })}
+                onClick={() => onPick(facility, quick)}
+              >
+                <Zap aria-hidden="true" />
+                {formatTime(quick.starts_at, timeZone)}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent className="num">{t('availability.quickBook', { time: formatTime(quick.starts_at, timeZone) })}</TooltipContent>
+          </Tooltip>
         )}
         {full && <span className="px-3 text-muted-foreground">{t('availability.full')}</span>}
         {afterHours && <span className="px-3 text-muted-foreground">{t('availability.afterHours')}</span>}

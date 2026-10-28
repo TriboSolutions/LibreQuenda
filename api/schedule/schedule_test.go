@@ -62,3 +62,18 @@ func TestISOWeekday(t *testing.T) {
 		t.Error("Monday must be 1")
 	}
 }
+
+func TestOpenMinutes(t *testing.T) {
+	var loc, _ = time.LoadLocation("Europe/Madrid")
+	var day = time.Date(2026, 10, 27, 0, 0, 0, 0, loc)
+	var at = func(h, m int) time.Time { return time.Date(2026, 10, 27, h, m, 0, 0, loc) }
+	var windows = []Window{{clock(9, 0), clock(12, 0)}, {clock(17, 0), clock(19, 30)}}
+
+	// five 60-minute slots (19:00-20:00 does not fit), one of them closed
+	if got := OpenMinutes(day, loc, 60, windows, []Interval{{at(17, 0), at(18, 0)}}); got != 4*60 {
+		t.Errorf("OpenMinutes() = %d, want %d", got, 4*60)
+	}
+	if got := OpenMinutes(day, loc, 0, windows, nil); got != 0 {
+		t.Errorf("no slot length, no open time: got %d", got)
+	}
+}

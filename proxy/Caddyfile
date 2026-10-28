@@ -28,11 +28,23 @@
 		file_server
 	}
 
-	# React SPA: unknown paths fall back to index.html
+	# Built files: hashed names, cached for good. A name from an older build is a
+	# real 404, not the SPA page served as JavaScript (and then cached for a year).
+	handle /assets/* {
+		root * /srv/web
+		route {
+			@missing not file
+			respond @missing 404
+			header Cache-Control "public, max-age=31536000, immutable"
+			file_server
+		}
+	}
+
+	# React SPA: unknown paths fall back to index.html, always revalidated so a
+	# new build is picked up on the next load
 	handle {
 		root * /srv/web
-		@assets path /assets/*
-		header @assets Cache-Control "public, max-age=31536000, immutable"
+		header Cache-Control "no-cache"
 		try_files {path} /index.html
 		file_server
 	}

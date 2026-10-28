@@ -17,13 +17,14 @@ const cancelBooking = `-- name: CancelBooking :one
 UPDATE booking
 SET
     status       = 'cancelled',
-    cancelled_at = NOW()
+    cancelled_at = NOW(),
+    cancelled_by = 'user'
 WHERE
     id = $1
     AND user_id = $2
     AND status = 'confirmed'
 RETURNING
-    id, facility_id, user_id, starts_at, ends_at, status, rules_accepted_at, cancelled_at, created_at, updated_at, checkin_token, checked_in_at, checked_in_device_id, invite_token
+    id, facility_id, user_id, starts_at, ends_at, status, rules_accepted_at, cancelled_at, cancelled_by, created_at, updated_at, checkin_token, checked_in_at, checked_in_device_id, invite_token
 `
 
 type CancelBookingParams struct {
@@ -43,6 +44,58 @@ func (q *Queries) CancelBooking(ctx context.Context, arg CancelBookingParams) (B
 		&i.Status,
 		&i.RulesAcceptedAt,
 		&i.CancelledAt,
+		&i.CancelledBy,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.CheckinToken,
+		&i.CheckedInAt,
+		&i.CheckedInDeviceID,
+		&i.InviteToken,
+	)
+	return i, err
+}
+
+const changeBookingTime = `-- name: ChangeBookingTime :one
+UPDATE booking
+SET
+    starts_at  = $1,
+    ends_at    = $2,
+    updated_at = NOW()
+WHERE
+    id = $3
+    AND user_id = $4
+    AND status = 'confirmed'
+RETURNING
+    id, facility_id, user_id, starts_at, ends_at, status, rules_accepted_at, cancelled_at, cancelled_by, created_at, updated_at, checkin_token, checked_in_at, checked_in_device_id, invite_token
+`
+
+type ChangeBookingTimeParams struct {
+	StartsAt time.Time     `json:"starts_at"`
+	EndsAt   time.Time     `json:"ends_at"`
+	ID       uuid.UUID     `json:"id"`
+	UserID   uuid.NullUUID `json:"user_id"`
+}
+
+// Moves the owner's booking to another turn of the same facility; overlaps are
+// rejected by the exclusion constraint on booking.
+func (q *Queries) ChangeBookingTime(ctx context.Context, arg ChangeBookingTimeParams) (Booking, error) {
+	row := q.db.QueryRowContext(ctx, changeBookingTime,
+		arg.StartsAt,
+		arg.EndsAt,
+		arg.ID,
+		arg.UserID,
+	)
+	var i Booking
+	err := row.Scan(
+		&i.ID,
+		&i.FacilityID,
+		&i.UserID,
+		&i.StartsAt,
+		&i.EndsAt,
+		&i.Status,
+		&i.RulesAcceptedAt,
+		&i.CancelledAt,
+		&i.CancelledBy,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.CheckinToken,
@@ -92,7 +145,7 @@ INSERT INTO booking (
     NOW()
 )
 RETURNING
-    id, facility_id, user_id, starts_at, ends_at, status, rules_accepted_at, cancelled_at, created_at, updated_at, checkin_token, checked_in_at, checked_in_device_id, invite_token
+    id, facility_id, user_id, starts_at, ends_at, status, rules_accepted_at, cancelled_at, cancelled_by, created_at, updated_at, checkin_token, checked_in_at, checked_in_device_id, invite_token
 `
 
 type CreateBookingParams struct {
@@ -120,6 +173,7 @@ func (q *Queries) CreateBooking(ctx context.Context, arg CreateBookingParams) (B
 		&i.Status,
 		&i.RulesAcceptedAt,
 		&i.CancelledAt,
+		&i.CancelledBy,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.CheckinToken,
@@ -136,6 +190,7 @@ SELECT
     b.starts_at,
     b.ends_at,
     b.status,
+    b.facility_id,
     f.min_cancel_hours
 FROM
     booking b
@@ -155,6 +210,7 @@ type GetBookingForUserRow struct {
 	StartsAt       time.Time     `json:"starts_at"`
 	EndsAt         time.Time     `json:"ends_at"`
 	Status         BookingStatus `json:"status"`
+	FacilityID     uuid.UUID     `json:"facility_id"`
 	MinCancelHours int32         `json:"min_cancel_hours"`
 }
 
@@ -166,6 +222,7 @@ func (q *Queries) GetBookingForUser(ctx context.Context, arg GetBookingForUserPa
 		&i.StartsAt,
 		&i.EndsAt,
 		&i.Status,
+		&i.FacilityID,
 		&i.MinCancelHours,
 	)
 	return i, err
@@ -181,9 +238,11 @@ SELECT
     b.checked_in_at,
     f.id   AS facility_id,
     f.name AS facility_name,
+    f.slug AS facility_slug,
     f.min_cancel_hours,
     t.slug AS tenant_slug,
-    t.name AS tenant_name
+    t.name AS tenant_name,
+    f.id, f.tenant_id, f.slug, f.name, f.description, f.sport, f.address, f.latitude, f.longitude, f.capacity, f.accessibility_info, f.image_ref, f.is_active, f.slot_minutes, f.max_advance_days, f.min_cancel_hours, f.max_active_bookings_per_user, f.min_age, f.usage_rules_text, f.created_at, f.updated_at -- what the booking details show: image, address, rules
 FROM
     booking b
     JOIN facility f ON f.id = b.facility_id
@@ -203,9 +262,11 @@ type ListBookingsByUserRow struct {
 	CheckedInAt    sql.NullTime  `json:"checked_in_at"`
 	FacilityID     uuid.UUID     `json:"facility_id"`
 	FacilityName   string        `json:"facility_name"`
+	FacilitySlug   string        `json:"facility_slug"`
 	MinCancelHours int32         `json:"min_cancel_hours"`
 	TenantSlug     string        `json:"tenant_slug"`
 	TenantName     string        `json:"tenant_name"`
+	Facility       Facility      `json:"facility"`
 }
 
 func (q *Queries) ListBookingsByUser(ctx context.Context, userID uuid.NullUUID) ([]ListBookingsByUserRow, error) {
@@ -226,9 +287,31 @@ func (q *Queries) ListBookingsByUser(ctx context.Context, userID uuid.NullUUID) 
 			&i.CheckedInAt,
 			&i.FacilityID,
 			&i.FacilityName,
+			&i.FacilitySlug,
 			&i.MinCancelHours,
 			&i.TenantSlug,
 			&i.TenantName,
+			&i.Facility.ID,
+			&i.Facility.TenantID,
+			&i.Facility.Slug,
+			&i.Facility.Name,
+			&i.Facility.Description,
+			&i.Facility.Sport,
+			&i.Facility.Address,
+			&i.Facility.Latitude,
+			&i.Facility.Longitude,
+			&i.Facility.Capacity,
+			&i.Facility.AccessibilityInfo,
+			&i.Facility.ImageRef,
+			&i.Facility.IsActive,
+			&i.Facility.SlotMinutes,
+			&i.Facility.MaxAdvanceDays,
+			&i.Facility.MinCancelHours,
+			&i.Facility.MaxActiveBookingsPerUser,
+			&i.Facility.MinAge,
+			&i.Facility.UsageRulesText,
+			&i.Facility.CreatedAt,
+			&i.Facility.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -293,6 +376,64 @@ func (q *Queries) ListConfirmedBookingsInRange(ctx context.Context, arg ListConf
 	return items, nil
 }
 
+const lockOwnedBooking = `-- name: LockOwnedBooking :one
+SELECT
+    b.id,
+    b.starts_at,
+    b.status,
+    f.min_cancel_hours
+FROM
+    booking b
+    JOIN facility f ON f.id = b.facility_id
+WHERE
+    b.id = $1
+    AND b.user_id = $2
+FOR UPDATE OF b
+`
+
+type LockOwnedBookingParams struct {
+	ID     uuid.UUID     `json:"id"`
+	UserID uuid.NullUUID `json:"user_id"`
+}
+
+type LockOwnedBookingRow struct {
+	ID             uuid.UUID     `json:"id"`
+	StartsAt       time.Time     `json:"starts_at"`
+	Status         BookingStatus `json:"status"`
+	MinCancelHours int32         `json:"min_cancel_hours"`
+}
+
+// Inside the change transaction: joins to this booking wait (they lock it too),
+// so nobody joins while the people coming are checked against the new time.
+func (q *Queries) LockOwnedBooking(ctx context.Context, arg LockOwnedBookingParams) (LockOwnedBookingRow, error) {
+	row := q.db.QueryRowContext(ctx, lockOwnedBooking, arg.ID, arg.UserID)
+	var i LockOwnedBookingRow
+	err := row.Scan(
+		&i.ID,
+		&i.StartsAt,
+		&i.Status,
+		&i.MinCancelHours,
+	)
+	return i, err
+}
+
+const lockParticipantBookings = `-- name: LockParticipantBookings :exec
+SELECT pg_advisory_xact_lock(hashtextextended(p.user_id::TEXT, 0))
+FROM booking_participant p
+WHERE
+    p.booking_id = $1
+    AND p.user_id IS NOT NULL
+ORDER BY
+    p.user_id
+`
+
+// Inside the change transaction: the people who joined wait like the owner
+// (LockUserBookings), in a fixed order.
+func (q *Queries) LockParticipantBookings(ctx context.Context, bookingID uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, lockParticipantBookings, bookingID)
+	return err
+}
+
 const lockUserBookings = `-- name: LockUserBookings :exec
 SELECT pg_advisory_xact_lock(hashtextextended($1::UUID::TEXT, 0))
 `
@@ -304,34 +445,78 @@ func (q *Queries) LockUserBookings(ctx context.Context, userID uuid.UUID) error 
 	return err
 }
 
+const participantsHaveOverlappingBooking = `-- name: ParticipantsHaveOverlappingBooking :one
+SELECT EXISTS (
+    SELECT 1
+    FROM booking_participant p
+    JOIN booking b ON b.id <> p.booking_id
+    WHERE
+        p.booking_id = $1
+        AND p.user_id IS NOT NULL
+        AND b.status = 'confirmed'
+        AND b.starts_at < $2
+        AND b.ends_at   > $3
+        AND (
+            b.user_id = p.user_id
+            OR EXISTS (
+                SELECT 1 FROM booking_participant o
+                WHERE o.booking_id = b.id AND o.user_id = p.user_id
+            )
+        )
+)
+`
+
+type ParticipantsHaveOverlappingBookingParams struct {
+	BookingID uuid.UUID `json:"booking_id"`
+	EndsAt    time.Time `json:"ends_at"`
+	StartsAt  time.Time `json:"starts_at"`
+}
+
+// Someone who joined with an account is somewhere else in the new time,
+// as owner or invited (the same rule as UserHasOverlappingBooking).
+func (q *Queries) ParticipantsHaveOverlappingBooking(ctx context.Context, arg ParticipantsHaveOverlappingBookingParams) (bool, error) {
+	row := q.db.QueryRowContext(ctx, participantsHaveOverlappingBooking, arg.BookingID, arg.EndsAt, arg.StartsAt)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
 const userHasOverlappingBooking = `-- name: UserHasOverlappingBooking :one
 SELECT EXISTS (
     SELECT 1
     FROM booking b
     WHERE
         b.status = 'confirmed'
-        AND b.starts_at < $1
-        AND b.ends_at   > $2
+        AND b.id IS DISTINCT FROM $1
+        AND b.starts_at < $2
+        AND b.ends_at   > $3
         AND (
-            b.user_id = $3
+            b.user_id = $4
             OR EXISTS (
                 SELECT 1 FROM booking_participant p
-                WHERE p.booking_id = b.id AND p.user_id = $3
+                WHERE p.booking_id = b.id AND p.user_id = $4
             )
         )
 )
 `
 
 type UserHasOverlappingBookingParams struct {
-	EndsAt   time.Time     `json:"ends_at"`
-	StartsAt time.Time     `json:"starts_at"`
-	UserID   uuid.NullUUID `json:"user_id"`
+	ExceptBookingID uuid.NullUUID `json:"except_booking_id"`
+	EndsAt          time.Time     `json:"ends_at"`
+	StartsAt        time.Time     `json:"starts_at"`
+	UserID          uuid.NullUUID `json:"user_id"`
 }
 
 // A person is in one place at a time: their own confirmed bookings and the
 // ones they joined through an invite, in any facility and any council.
+// except_booking_id: the booking being moved, which does not count against itself.
 func (q *Queries) UserHasOverlappingBooking(ctx context.Context, arg UserHasOverlappingBookingParams) (bool, error) {
-	row := q.db.QueryRowContext(ctx, userHasOverlappingBooking, arg.EndsAt, arg.StartsAt, arg.UserID)
+	row := q.db.QueryRowContext(ctx, userHasOverlappingBooking,
+		arg.ExceptBookingID,
+		arg.EndsAt,
+		arg.StartsAt,
+		arg.UserID,
+	)
 	var exists bool
 	err := row.Scan(&exists)
 	return exists, err

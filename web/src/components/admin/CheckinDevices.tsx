@@ -81,7 +81,7 @@ export function CheckinDevices({ slug, facilityId, token }: Props) {
   const list = devices.data?.devices ?? []
 
   return (
-    <section aria-labelledby="sec-readers" className="mt-6 grid gap-4 rounded-lg border bg-card p-5">
+    <section aria-labelledby="sec-readers" className="grid gap-4 rounded-lg border bg-card p-5">
       <div>
         <h2 id="sec-readers" className="text-lg font-semibold">
           {t('admin:readers.title')}

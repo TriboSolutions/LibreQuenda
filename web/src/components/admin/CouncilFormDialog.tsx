@@ -20,11 +20,12 @@ const TIME_ZONES = [
 
 type Props = {
   council: CouncilDetail | null // null: create
+  canDeactivate?: boolean // superadministrators only: a council's own administrators can't switch it off
   onClose: () => void
   onSaved: (council: CouncilDetail, adminEmail: string | null) => void
 }
 
-export function CouncilFormDialog({ council, onClose, onSaved }: Props) {
+export function CouncilFormDialog({ council, canDeactivate = true, onClose, onSaved }: Props) {
   const { t } = useTranslation('admin')
   const auth = useAuth()
   const creating = council === null
@@ -157,20 +158,22 @@ export function CouncilFormDialog({ council, onClose, onSaved }: Props) {
               </p>
             </div>
           ) : (
-            <div className="flex items-start justify-between gap-4">
-              <div className="grid gap-1">
-                <Label htmlFor="council-active">{t('form.active')}</Label>
-                <p id="council-active-help" className="text-xs text-muted-foreground">
-                  {t('form.activeHelp')}
-                </p>
+            canDeactivate && (
+              <div className="flex items-start justify-between gap-4">
+                <div className="grid gap-1">
+                  <Label htmlFor="council-active">{t('form.active')}</Label>
+                  <p id="council-active-help" className="text-xs text-muted-foreground">
+                    {t('form.activeHelp')}
+                  </p>
+                </div>
+                <Switch
+                  id="council-active"
+                  checked={form.is_active}
+                  aria-describedby="council-active-help"
+                  onCheckedChange={(checked) => set('is_active', checked)}
+                />
               </div>
-              <Switch
-                id="council-active"
-                checked={form.is_active}
-                aria-describedby="council-active-help"
-                onCheckedChange={(checked) => set('is_active', checked)}
-              />
-            </div>
+            )
           )}
 
           {error && (

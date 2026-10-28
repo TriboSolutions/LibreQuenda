@@ -20,6 +20,10 @@
     "booking_already_cancelled": "That booking is already cancelled.",
     "cancel_too_late": "It can no longer be cancelled: the cancellation deadline has passed.",
     "cancel_failed": "Could not cancel the booking. Try again.",
+    "change_too_late": "It can no longer be changed: the cancellation deadline has passed.",
+    "change_failed": "Could not change the booking. Try again.",
+    "booking_same_time": "The booking is already at that time.",
+    "participant_overlaps": "Someone who joined your booking already has another booking at that time. Remove them or choose another time.",
     "invalid_request_body": "Check the data you sent: some information is missing or has the wrong format.",
     "invalid_query_params": "Check the filters: there is an invalid value.",
     "forbidden": "You are not allowed to do this.",
@@ -105,7 +109,19 @@
     "current_password_wrong": "The current password is not right.",
     "password_too_weak": "The new password does not meet the rules shown below the field.",
     "invalid_verification_code": "That code is not right or has expired. Ask for a new one.",
-    "account_unavailable": "Your account details could not be reached right now. Try again in a moment."
+    "account_unavailable": "Your account details could not be reached right now. Try again in a moment.",
+    "invalid_indicators_range": "The period is not valid: the start must come before the end, and it can cover a year at most.",
+    "indicators_failed": "We couldn't work out the indicators. Please try again.",
+    "invalid_smtp_host": "Write the SMTP server's name, e.g. smtp.concello.gal, without the port or the protocol.",
+    "invalid_smtp_port": "The port must be a number from 1 to 65535 (usually 587).",
+    "invalid_smtp_username": "The username can be 255 characters at most.",
+    "invalid_smtp_from": "The sender is not a valid address. Write it as reservas@concello.gal or Concello <reservas@concello.gal>.",
+    "smtp_load_failed": "Could not load the email settings. Try again.",
+    "smtp_save_failed": "Could not save the email settings. Try again.",
+    "smtp_not_configured": "There is no SMTP server to send through: set up the council's own, or ask the platform administrator to set one for everyone.",
+    "smtp_test_failed": "The SMTP server did not accept the test email: {{0}}",
+    "secrets_key_missing": "The server has no encryption key (SECRETS_KEY), so the password can't be stored safely. Ask the platform administrator.",
+    "smtp_password_unreadable": "The saved SMTP settings can't be read (the encryption key changed). Type them again and save."
   },
   "email": {
     "greeting": "Hello {{0}},",
@@ -142,6 +158,10 @@
       "intro": "You have been made an administrator of {{0}} in LibreQuenda. Sign in with this email address ({{1}}) to manage its facilities, opening hours and closures. If you don't have an account yet, create it with this same address.",
       "manage": "Open the administration",
       "footer": "You get this email because a platform administrator added this address. If you think it is a mistake, you can ignore it."
+    },
+    "smtp_test": {
+      "subject": "Test email from LibreQuenda ({{0}})",
+      "body": "This is a test email for {{0}}, sent through {{1}}. If you are reading it, LibreQuenda can send the council's booking emails."
     }
   }
 }

@@ -8,8 +8,8 @@ Scope: bases §1.1 (minimum) + §1.2 (technical). See [architecture plan](docs/s
 - [x] Facility catalogue and availability per council
 - [x] Book a free slot
 - [x] Cancel own booking
-- [ ] Quick book, like Enjoy: book a free slot in a few taps
-- [ ] Change own booking (`PATCH /me/bookings/{id}`)
+- [ ] Quick book, like Enjoy: book a free slot close to the facility
+- [x] Change own booking (`PATCH /me/bookings/{id}`): another day or time of the same facility; the owner can remove people who joined
 - [x] Booking history (past and upcoming)
 - [x] In-app notification list (`GET /me/notifications`)
 - [x] Decide if in-app notifications need real-time push (WebSockets, SSE) or if polling is enough: polling every 30 s
@@ -21,11 +21,11 @@ Scope: bases §1.1 (minimum) + §1.2 (technical). See [architecture plan](docs/s
 - [x] Create / edit / deactivate facilities
 - [x] Opening hours (schedule)
 - [x] Closures (cancel the bookings inside, apology notice and email with the reason)
-- [ ] Usage rules editable per facility
-- [ ] Indicators dashboard: bookings per facility, occupancy, cancellation rate, busiest days/hours, active users
-- [ ] Indicators CSV export
-- [ ] Council members management (`…/admin/members`)
-- [ ] SMTP settings per council
+- [x] Usage rules editable per facility
+- [x] Indicators dashboard: bookings per facility, occupancy, cancellation rate, busiest days/hours, active users
+- [x] Indicators CSV export
+- [x] Council members management (`…/admin/members`)
+- [x] SMTP settings per council (falls back to the `SMTP_*` relay; with neither, the council's emails wait)
 
 ## Privacy (RXPD / GDPR)
 

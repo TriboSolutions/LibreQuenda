@@ -1,7 +1,7 @@
 import csv
 from pathlib import Path
 
-from config import TIMEZONE
+from config import HISTORY_DAYS, TIMEZONE
 
 # Path where csv_data/ lives inside the Docker container
 CONTAINER_CSV_DIR = "/docker-initdb-staging/csv_data"
@@ -11,6 +11,7 @@ TABLE_ORDER = [
     "tenant",
     "facility",
     "opening_hours",
+    "checkin_device",
     "app_user",
     "closure",
     "booking",
@@ -46,6 +47,9 @@ RELATIVE_COLUMN_TYPES = {
     "end_time": "TIME",
     "reason": "TEXT",
 }
+
+# Generated in SQL once the schedule is loaded, after the CSV tables
+HISTORY_SQL = Path(__file__).parent / "history.sql"
 
 
 def generate_sql(csv_dir: Path, sql_file: Path) -> None:
@@ -92,6 +96,15 @@ def generate_sql(csv_dir: Path, sql_file: Path) -> None:
         lines.append("")
 
         print(f"  [sql]     {table}  ({row_count} rows)")
+
+    lines.append("-- booking history (history.sql)")
+    lines.append(
+        HISTORY_SQL.read_text(encoding="utf-8")
+        .replace("{LOCAL_DAY}", LOCAL_DAY)
+        .replace("{HISTORY_DAYS}", str(HISTORY_DAYS))
+        .replace("{TIMEZONE}", TIMEZONE)
+    )
+    print(f"  [sql]     booking history  ({HISTORY_DAYS} days)")
 
     sql_file.write_text("\n".join(lines), encoding="utf-8")
     print(f"\n  Written -> {sql_file.relative_to(sql_file.parent.parent.parent)}")

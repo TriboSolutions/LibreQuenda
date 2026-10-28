@@ -17,7 +17,7 @@ const statusKey: Record<Slot['status'], string> = {
 const statusClass: Record<Slot['status'], string> = {
   free: 'bg-slot-free hover:bg-slot-free-hover cursor-pointer',
   booked: 'bg-slot-booked',
-  closed: 'bg-slot-closure',
+  closed: 'hatch hatch-closure',
   past: 'bg-slot-past',
   too_far: 'bg-slot-past',
 }
@@ -90,7 +90,7 @@ function closureReason(facility: Facility, slot: Slot) {
 
 /**
  * The day of one facility on the shared axis: every turn as a block, free turns
- * in the brand hue and clickable, booked in grey, closures in red, and the hours
+ * in the brand hue and clickable, booked in grey, closures hatched in red, and the hours
  * it does not open hatched.
  */
 export function DayStrip({ facility, axis, timeZone, nowMinutes, onPick }: Props) {
@@ -156,7 +156,7 @@ export function StripLegend() {
     { label: t('slot.free'), className: 'bg-slot-free' },
     { label: t('slot.booked'), className: 'bg-slot-booked' },
     { label: t('slot.closed'), className: 'hatch' },
-    { label: t('slot.closure'), className: 'bg-slot-closure' },
+    { label: t('slot.closure'), className: 'hatch hatch-closure' },
     { label: t('slot.past'), className: 'bg-slot-past' },
   ]
   return (

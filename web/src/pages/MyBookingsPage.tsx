@@ -1,12 +1,16 @@
-import { QrCode, UserPlus, Users } from 'lucide-react'
+import { CalendarClock, ChevronDown, ExternalLink, MapPin, QrCode, UserPlus } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import { Link } from 'react-router'
 import { BookingQrDialog } from '@/components/BookingQrDialog'
 import { CancelDialog } from '@/components/CancelDialog'
+import { FacilityInfo } from '@/components/FacilityInfo'
+import { ChangeBookingDialog } from '@/components/ChangeBookingDialog'
 import { InviteDialog } from '@/components/InviteDialog'
 import { LeaveDialog } from '@/components/LeaveDialog'
+import { PeopleList } from '@/components/PeopleList'
+import { SpotsMeter } from '@/components/SpotsMeter'
 import { TopBar } from '@/components/TopBar'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -14,8 +18,9 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useAsync } from '@/hooks/useAsync'
 import { useLogin } from '@/hooks/useLogin'
 import { useMe } from '@/hooks/useMe'
-import { api, type Booking, type Person } from '@/lib/api'
-import { formatBookingDay, formatTime, localDate } from '@/lib/time'
+import { api, type Booking } from '@/lib/api'
+import { directionsUrl } from '@/lib/maps'
+import { formatBookingDay, formatDateTime, formatTime, localDate } from '@/lib/time'
 
 // Bookings can span councils; all of them are in Galicia today
 const TIME_ZONE = 'Europe/Madrid'
@@ -39,6 +44,7 @@ export function MyBookingsPage() {
   const [now] = useState(() => new Date().toISOString())
   const today = localDate(now, TIME_ZONE)
   const [toCancel, setToCancel] = useState<Booking | null>(null)
+  const [toChange, setToChange] = useState<Booking | null>(null)
   const [toLeave, setToLeave] = useState<Booking | null>(null)
   const [toInvite, setToInvite] = useState<Booking | null>(null)
   const [showQr, setShowQr] = useState<Booking | null>(null)
@@ -55,6 +61,18 @@ export function MyBookingsPage() {
     } catch (error) {
       return error instanceof Error ? error.message : t('bookings:cancelDialog.error')
     }
+  }
+
+  const changed = (booking: Booking) => {
+    setToChange(null)
+    setNotice(
+      t('bookings:notice.changed', {
+        facility: booking.facility_name,
+        day: formatBookingDay(booking.starts_at, TIME_ZONE, today),
+        time: formatTime(booking.starts_at, TIME_ZONE),
+      }),
+    )
+    bookings.reload()
   }
 
   const confirmLeave = async (booking: Booking) => {
@@ -101,8 +119,8 @@ export function MyBookingsPage() {
     const upcoming = bookings.data?.upcoming ?? []
     const history = bookings.data?.history ?? []
     body = (
-      <div className="mt-6 grid max-w-[760px] gap-6">
-        <div aria-live="polite">
+      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:items-start">
+        <div aria-live="polite" className="empty:hidden lg:col-span-2">
           {notice && (
             <Alert className="border-0 bg-pill-positive-bg text-pill-positive-ink">
               <AlertDescription className="text-pill-positive-ink">{notice}</AlertDescription>
@@ -110,19 +128,19 @@ export function MyBookingsPage() {
           )}
         </div>
 
-        <section aria-labelledby="upcoming-title" className="rounded-lg border bg-card p-5">
+        <section aria-labelledby="upcoming-title">
           <h2 id="upcoming-title" className="text-lg font-semibold">
             {t('invites:myBookings.upcoming')} <span className="num font-normal text-muted-foreground">· {upcoming.length}</span>
           </h2>
           {upcoming.length === 0 ? (
-            <div className="mt-4 rounded-md border border-dashed px-4 py-3 text-muted-foreground">
+            <div className="mt-4 rounded-lg border border-dashed px-5 py-4 text-muted-foreground">
               <p>{t('invites:myBookings.emptyUpcoming')}</p>
               <Link to="/" className="mt-1 inline-block font-medium text-foreground underline-offset-4 hover:underline">
                 {t('invites:myBookings.findTurn')}
               </Link>
             </div>
           ) : (
-            <ul className="mt-2">
+            <ul className="mt-4 grid gap-4">
               {upcoming.map((booking) => (
                 <BookingRow key={booking.id} booking={booking} today={today}>
                   {booking.role === 'owner' ? (
@@ -136,6 +154,12 @@ export function MyBookingsPage() {
                         <Button variant="outline" size="sm" onClick={() => setToInvite(booking)}>
                           <UserPlus aria-hidden />
                           {t('invites:actions.invite')}
+                        </Button>
+                      )}
+                      {booking.can_change && (
+                        <Button variant="outline" size="sm" onClick={() => setToChange(booking)}>
+                          <CalendarClock aria-hidden />
+                          {t('bookings:change')}
                         </Button>
                       )}
                       {booking.can_cancel && (
@@ -159,18 +183,14 @@ export function MyBookingsPage() {
 
         <section aria-labelledby="history-title" className="rounded-lg border bg-card p-5">
           <h2 id="history-title" className="text-lg font-semibold">
-            {t('invites:myBookings.history')}
+            {t('invites:myBookings.history')} <span className="num font-normal text-muted-foreground">· {history.length}</span>
           </h2>
           {history.length === 0 ? (
             <p className="mt-4 text-muted-foreground">{t('invites:myBookings.emptyHistory')}</p>
           ) : (
             <ul className="mt-2">
               {history.map((booking) => (
-                <BookingRow key={booking.id} booking={booking} today={today}>
-                  <span className={booking.status === 'cancelled' ? pill.neutral : pill.positive}>
-                    {booking.status === 'cancelled' ? t('bookings:status.cancelled') : t('bookings:status.done')}
-                  </span>
-                </BookingRow>
+                <HistoryRow key={booking.id} booking={booking} today={today} />
               ))}
             </ul>
           )}
@@ -189,6 +209,15 @@ export function MyBookingsPage() {
       </main>
 
       <CancelDialog key={toCancel?.id ?? 'none'} booking={toCancel} timeZone={TIME_ZONE} today={today} onClose={() => setToCancel(null)} onConfirm={confirmCancel} />
+      <ChangeBookingDialog
+        key={toChange?.id ?? 'none'}
+        booking={toChange}
+        timeZone={TIME_ZONE}
+        today={today}
+        onClose={() => setToChange(null)}
+        onChanged={changed}
+        onPeopleChanged={bookings.reload}
+      />
       <LeaveDialog key={toLeave?.id ?? 'none'} booking={toLeave} timeZone={TIME_ZONE} today={today} onClose={() => setToLeave(null)} onConfirm={confirmLeave} />
       <InviteDialog
         key={toInvite?.id ?? 'none'}
@@ -203,50 +232,114 @@ export function MyBookingsPage() {
   )
 }
 
-function BookingRow({ booking, today, children }: { booking: Booking; today: string; children: React.ReactNode }) {
-  const { t } = useTranslation('invites')
+type RowProps = {
+  booking: Booking
+  today: string
+  children?: React.ReactNode // actions
+}
+
+/** A past booking, in one line: what, when, and how it ended. */
+function HistoryRow({ booking, today }: { booking: Booking; today: string }) {
+  const { t } = useTranslation(['invites', 'bookings'])
+  const cancelled = booking.status === 'cancelled'
   return (
-    <li className="flex flex-col gap-2 border-t py-3 first:border-t-0 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-      <div className="min-w-0">
-        <p className="truncate font-medium">
-          {booking.facility_name} <span className="font-normal text-muted-foreground">· {booking.tenant_name}</span>
-        </p>
-        <p className="num text-muted-foreground">
-          {formatBookingDay(booking.starts_at, TIME_ZONE, today)}, {formatTime(booking.starts_at, TIME_ZONE)}–{formatTime(booking.ends_at, TIME_ZONE)}
-        </p>
-        <p className="mt-1 flex flex-wrap items-center gap-2 text-sm">
-          <span className={booking.role === 'owner' ? pill.neutral : pill.positive}>
-            {booking.role === 'owner' ? t('role.owner') : booking.owner_name ? t('role.invitedBy', { name: booking.owner_name }) : t('role.invited')}
-          </span>
-          {booking.capacity > 0 && (
-            <span className="num inline-flex items-center gap-1 text-muted-foreground">
-              <Users className="size-3.5" aria-hidden />
-              {t('spots', { taken: booking.participant_count + 1, capacity: booking.capacity })}
-            </span>
-          )}
-        </p>
-        {booking.people.length > 0 && <PeopleList people={booking.people} />}
+    <li className="grid gap-0.5 border-t py-3 first:border-t-0">
+      <div className="flex items-start justify-between gap-3">
+        <Link to={`/${booking.tenant_slug}/${booking.facility_slug}`} className="min-w-0 font-medium underline-offset-4 hover:text-primary hover:underline">
+          {booking.facility_name}
+        </Link>
+        <span className={cancelled ? pill.neutral : pill.positive}>{cancelled ? t('bookings:status.cancelled') : t('bookings:status.done')}</span>
       </div>
-      <div className="flex shrink-0 flex-wrap items-center gap-2">{children}</div>
+      <p className="num text-sm text-muted-foreground">
+        {formatBookingDay(booking.starts_at, TIME_ZONE, today)}, {formatTime(booking.starts_at, TIME_ZONE)}–{formatTime(booking.ends_at, TIME_ZONE)} · {booking.tenant_name}
+      </p>
     </li>
   )
 }
 
-/** Who is coming, on the booking itself. */
-function PeopleList({ people }: { people: Person[] }) {
-  const { t } = useTranslation('invites')
+/** An upcoming booking with its details in place: photo, where, when, who is coming, and the rules on demand. */
+function BookingRow({ booking, today, children }: RowProps) {
+  const { t } = useTranslation(['invites', 'bookings', 'facility'])
+  const [open, setOpen] = useState(false)
+  const facility = booking.facility
+  const hasPin = facility.latitude !== null && facility.longitude !== null
+  const rulesId = `rules-${booking.id}`
+
   return (
-    <ul aria-label={t('people.label')} className="mt-2 flex flex-wrap gap-1.5">
-      {people.map((person, i) => (
-        <li
-          key={i}
-          className={`rounded-full border px-2.5 py-0.5 text-sm ${person.is_me ? 'border-transparent bg-accent font-medium text-accent-foreground' : ''}`}
+    <li className="grid gap-4 rounded-lg border bg-card p-5">
+      <div className="flex gap-4">
+        {facility.image_url && <img src={facility.image_url} alt="" className="h-16 w-20 shrink-0 rounded-md object-cover sm:h-24 sm:w-36" />}
+        <div className="grid min-w-0 flex-1 content-start gap-1">
+          <p className="min-w-0 font-medium">
+            <Link to={`/${booking.tenant_slug}/${booking.facility_slug}`} className="underline-offset-4 hover:text-primary hover:underline">
+              {booking.facility_name}
+            </Link>{' '}
+            <span className="font-normal text-muted-foreground">· {booking.tenant_name}</span>
+          </p>
+          <p className="num text-muted-foreground">
+            {formatBookingDay(booking.starts_at, TIME_ZONE, today)}, {formatTime(booking.starts_at, TIME_ZONE)}–{formatTime(booking.ends_at, TIME_ZONE)}
+            {facility.sport && ` · ${facility.sport}`}
+          </p>
+          {(facility.address || hasPin) && (
+            <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+              {facility.address && (
+                <span className="inline-flex min-w-0 items-center gap-1.5">
+                  <MapPin className="size-3.5 shrink-0" aria-hidden />
+                  {facility.address}
+                </span>
+              )}
+              {hasPin && (
+                <a
+                  href={directionsUrl(facility.latitude!, facility.longitude!)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 font-medium text-foreground underline-offset-4 hover:underline"
+                >
+                  {t('facility:directions')}
+                  <ExternalLink className="size-3.5" aria-hidden />
+                </a>
+              )}
+            </p>
+          )}
+          <p className="mt-1 flex flex-wrap items-center gap-2 text-sm">
+            <span className={booking.role === 'owner' ? pill.neutral : pill.positive}>
+              {booking.role === 'owner' ? t('role.owner') : booking.owner_name ? t('role.invitedBy', { name: booking.owner_name }) : t('role.invited')}
+            </span>
+            {booking.role === 'owner' && (
+              // the deadline passed: say so instead of leaving the buttons out silently
+              <span className="num text-muted-foreground">
+                {t(booking.can_cancel ? 'details.cancelUntil' : 'bookings:locked', { date: formatDateTime(booking.cancel_until, TIME_ZONE) })}
+              </span>
+            )}
+          </p>
+        </div>
+      </div>
+
+      {booking.capacity > 0 && (
+        <div className="max-w-sm">
+          <SpotsMeter capacity={booking.capacity} taken={booking.participant_count + 1} />
+        </div>
+      )}
+      {booking.people.length > 0 && <PeopleList people={booking.people} />}
+
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-t pt-4">
+        <button
+          type="button"
+          aria-expanded={open}
+          aria-controls={rulesId}
+          onClick={() => setOpen((v) => !v)}
+          className="inline-flex items-center gap-1 rounded-xs text-sm font-medium underline-offset-4 hover:underline"
         >
-          {person.is_me ? t('people.you') : person.name || t('people.unnamed')}
-          {person.is_owner && <span className="text-muted-foreground"> · {t('people.organiser')}</span>}
-          {person.is_guest && <span className="text-muted-foreground"> · {t('people.noAccount')}</span>}
-        </li>
-      ))}
-    </ul>
+          {t('details.rules')}
+          <ChevronDown className={`size-4 transition-transform ${open ? 'rotate-180' : ''}`} aria-hidden />
+        </button>
+        {children && <div className="flex flex-wrap items-center gap-2">{children}</div>}
+      </div>
+      {open && (
+        <div id={rulesId}>
+          <FacilityInfo facility={facility} withAddress={false} />
+        </div>
+      )}
+    </li>
   )
 }

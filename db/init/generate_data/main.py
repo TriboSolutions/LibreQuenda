@@ -19,6 +19,7 @@ from generators import (
     closures,
     facilities,
     opening_hours,
+    readers,
     tenants,
     users,
 )
@@ -43,6 +44,7 @@ PIPELINE = [
     ("tenant", tenants),
     ("facility", facilities),
     ("opening_hours", opening_hours),
+    ("checkin_device", readers),
     ("app_user", users),
     ("closure", closures),
     ("booking", bookings),

@@ -83,5 +83,6 @@
     "wrongType": "Only JPG, PNG or WebP images.",
     "empty": "No image"
   },
-  "createAccount": "Create account"
+  "createAccount": "Create account",
+  "rateLimited": "Too many attempts in a short time. Wait a moment and try again."
 }

@@ -44,19 +44,42 @@ func DaySlots(day time.Time, loc *time.Location, rules Rules, windows []Window, 
 	if rules.SlotMinutes <= 0 {
 		return slots
 	}
-	var length time.Duration = time.Duration(rules.SlotMinutes) * time.Minute
-	var y, m, d = day.Date()
 	var lastBookableDay time.Time = startOfDay(now.In(loc), loc).AddDate(0, 0, rules.MaxAdvanceDays+1)
+	for _, i := range cut(day, loc, rules.SlotMinutes, windows) {
+		slots = append(slots, Slot{
+			Start:  i.Start,
+			End:    i.End,
+			Status: status(i, closures, busy, now, lastBookableDay),
+		})
+	}
+	return slots
+}
 
+// OpenMinutes is how long a facility can be booked on `day`: its slots that no
+// closure overlaps, booked or not. The occupancy indicator divides by it.
+func OpenMinutes(day time.Time, loc *time.Location, slotMinutes int, windows []Window, closures []Interval) int {
+	var minutes int
+	if slotMinutes <= 0 {
+		return minutes
+	}
+	for _, i := range cut(day, loc, slotMinutes, windows) {
+		if !overlapsAny(i, closures) {
+			minutes += slotMinutes
+		}
+	}
+	return minutes
+}
+
+// cut splits each opening window of `day` into slots of slotMinutes (> 0).
+func cut(day time.Time, loc *time.Location, slotMinutes int, windows []Window) []Interval {
+	var slots []Interval
+	var length time.Duration = time.Duration(slotMinutes) * time.Minute
+	var y, m, d = day.Date()
 	for _, w := range windows {
 		var start time.Time = time.Date(y, m, d, w.Opens.Hour(), w.Opens.Minute(), 0, 0, loc)
 		var closes time.Time = time.Date(y, m, d, w.Closes.Hour(), w.Closes.Minute(), 0, 0, loc)
 		for end := start.Add(length); !end.After(closes); start, end = end, end.Add(length) {
-			slots = append(slots, Slot{
-				Start:  start,
-				End:    end,
-				Status: status(Interval{start, end}, closures, busy, now, lastBookableDay),
-			})
+			slots = append(slots, Interval{start, end})
 		}
 	}
 	return slots

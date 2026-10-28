@@ -48,7 +48,8 @@ INSERT INTO notification (
 );
 
 -- name: ListPendingEmails :many
--- The email queue: every notification is also an email.
+-- The email queue: every notification is also an email, sent through the
+-- council's relay or else the environment's.
 SELECT
     n.id,
     n.type,
@@ -66,15 +67,20 @@ SELECT
     f.address  AS facility_address,
     t.name     AS tenant_name,
     t.slug     AS tenant_slug,
-    t.timezone AS timezone
+    t.timezone AS timezone,
+    t.id       AS tenant_id,
+    s.config AS smtp_config
 FROM
     notification n
     JOIN app_user u ON u.id = n.user_id
     JOIN booking  b ON b.id = n.booking_id
     JOIN facility f ON f.id = b.facility_id
     JOIN tenant   t ON t.id = f.tenant_id
+    LEFT JOIN tenant_smtp s ON s.tenant_id = t.id
 WHERE
     n.emailed_at IS NULL
+    -- with no relay in the environment, a council without its own waits
+    AND (sqlc.arg('env_relay')::BOOLEAN OR s.tenant_id IS NOT NULL)
 ORDER BY
     n.created_at ASC
 LIMIT sqlc.arg('max_rows');

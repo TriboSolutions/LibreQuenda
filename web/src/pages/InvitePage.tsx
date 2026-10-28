@@ -3,6 +3,8 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import { Link, useParams } from 'react-router'
+import { FacilityInfo } from '@/components/FacilityInfo'
+import { SpotsMeter } from '@/components/SpotsMeter'
 import { TopBar } from '@/components/TopBar'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -64,6 +66,7 @@ function InviteCard({ invite, inviteToken, onChanged }: { invite: PublicInvite; 
   const day = formatBookingDay(invite.starts_at, tz, today)
   const time = formatTime(invite.starts_at, tz)
   const facilityPath = `/${invite.tenant_slug}/${invite.facility_slug}`
+  const facility = invite.facility
 
   const join = async (kind: 'account' | 'guest') => {
     setSubmitting(kind)
@@ -89,40 +92,47 @@ function InviteCard({ invite, inviteToken, onChanged }: { invite: PublicInvite; 
 
   return (
     <div className="mt-6 grid max-w-[640px] gap-6">
-      <section className="rounded-lg border bg-card p-5">
-        <dl className="grid gap-3">
-          <div className="flex gap-3">
-            <MapPin className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
-            <div>
-              <dt className="sr-only">{t('invites:page.where')}</dt>
-              <dd>
-                <Link to={facilityPath} className="font-medium underline-offset-4 hover:underline">
-                  {invite.facility_name}
-                </Link>
-                <span className="text-muted-foreground"> · {invite.tenant_name}</span>
-              </dd>
+      <section className="overflow-hidden rounded-lg border bg-card">
+        {facility.image_url && <img src={facility.image_url} alt="" className="aspect-[16/7] w-full object-cover" />}
+        <div className="grid gap-5 p-5">
+          <dl className="grid gap-3">
+            <div className="flex gap-3">
+              <MapPin className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
+              <div>
+                <dt className="sr-only">{t('invites:page.where')}</dt>
+                <dd>
+                  <Link to={facilityPath} className="font-medium underline-offset-4 hover:underline">
+                    {invite.facility_name}
+                  </Link>
+                  <span className="text-muted-foreground"> · {[facility.sport, invite.tenant_name].filter(Boolean).join(' · ')}</span>
+                </dd>
+              </div>
             </div>
-          </div>
-          <div className="flex gap-3">
-            <CalendarClock className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
-            <div>
-              <dt className="sr-only">{t('invites:page.when')}</dt>
-              <dd className="num">
-                {day}, {time}–{formatTime(invite.ends_at, tz)}
-              </dd>
+            <div className="flex gap-3">
+              <CalendarClock className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
+              <div>
+                <dt className="sr-only">{t('invites:page.when')}</dt>
+                <dd className="num">
+                  {day}, {time}–{formatTime(invite.ends_at, tz)}
+                </dd>
+              </div>
             </div>
-          </div>
-          <div className="flex gap-3">
-            <Users className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
-            <div>
-              <dt className="sr-only">{t('invites:page.spots')}</dt>
-              <dd className="num">
-                {invite.state === 'open' ? t('invites:page.spotsLeft', { count: invite.spots_left, capacity: invite.capacity }) : t(`invites:page.${invite.state}`)}
-                {invite.min_age !== null && <span className="block text-muted-foreground">{t('invites:page.minAge', { count: invite.min_age })}</span>}
-              </dd>
+            <div className="flex gap-3">
+              <Users className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
+              <div className="min-w-0 flex-1">
+                <dt className="sr-only">{t('invites:page.spots')}</dt>
+                <dd>
+                  {invite.state === 'closed' ? (
+                    t('invites:page.closed')
+                  ) : (
+                    <SpotsMeter capacity={invite.capacity} taken={invite.capacity - invite.spots_left} />
+                  )}
+                </dd>
+              </div>
             </div>
-          </div>
-        </dl>
+          </dl>
+          <FacilityInfo facility={facility} />
+        </div>
       </section>
 
       <div aria-live="polite" className="empty:hidden">
@@ -194,7 +204,7 @@ function InviteCard({ invite, inviteToken, onChanged }: { invite: PublicInvite; 
                   required
                   type="number"
                   inputMode="numeric"
-                  min={invite.min_age ?? 1}
+                  min={facility.min_age ?? 1}
                   max={120}
                   value={age}
                   onChange={(e) => setAge(e.target.value)}

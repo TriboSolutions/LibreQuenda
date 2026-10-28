@@ -8,8 +8,10 @@
   "loadError": "Non foi posible cargar as túas reservas.",
   "empty": "Non tes reservas próximas. Escolle un turno libre na dispoñibilidade.",
   "cancel": "Cancelar",
+  "change": "Cambiar",
   "noCancel": "Sen cancelación",
   "cancelDeadlinePassed": "Só se podía cancelar ata {{date}}",
+  "locked": "Cambios e cancelación pechados o {{date}}",
   "history": "Historial",
   "status": {
     "cancelled": "Cancelada",
@@ -18,7 +20,8 @@
   },
   "notice": {
     "booked": "Reserva confirmada: {{facility}}, {{day}} ás {{time}}.",
-    "cancelled": "Reserva cancelada: {{facility}}, {{day}}."
+    "cancelled": "Reserva cancelada: {{facility}}, {{day}}.",
+    "changed": "Reserva cambiada: {{facility}}, agora {{day}} ás {{time}}."
   },
   "dialog": {
     "title": "Reservar {{facility}}",
@@ -45,6 +48,21 @@
     "confirming": "Cancelando…",
     "needLogin": "Tes que iniciar sesión.",
     "error": "Non foi posible cancelar a reserva."
+  },
+  "changeDialog": {
+    "title": "Cambiar a reserva en {{facility}}",
+    "description": "Agora {{day}}, {{start}}–{{end}}. Escolle outra hora libre; quen se uniu, o QR e a ligazón de convite seguen coa reserva.",
+    "when": "Nova data e hora",
+    "date": "Data",
+    "times": "Horas",
+    "current": "actual",
+    "closedDay": "Pechado este día. Escolle outra data.",
+    "cancelUntil": "Poderás cambiala ou cancelala ata o {{date}}.",
+    "pick": "Escolle unha hora",
+    "confirm": "Pasar a {{day}}, {{time}}",
+    "saving": "Cambiando…",
+    "error": "Non foi posible cambiar a reserva.",
+    "close": "Pechar"
   },
   "qr": {
     "show": "QR de entrada",

@@ -8,8 +8,10 @@
   "loadError": "Could not load your bookings.",
   "empty": "No upcoming bookings. Pick a free turn in the availability.",
   "cancel": "Cancel",
+  "change": "Change",
   "noCancel": "No cancellation",
   "cancelDeadlinePassed": "Could only be cancelled until {{date}}",
+  "locked": "Changes and cancellation closed {{date}}",
   "history": "History",
   "status": {
     "cancelled": "Cancelled",
@@ -18,7 +20,8 @@
   },
   "notice": {
     "booked": "Booking confirmed: {{facility}}, {{day}} at {{time}}.",
-    "cancelled": "Booking cancelled: {{facility}}, {{day}}."
+    "cancelled": "Booking cancelled: {{facility}}, {{day}}.",
+    "changed": "Booking changed: {{facility}}, now {{day}} at {{time}}."
   },
   "dialog": {
     "title": "Book {{facility}}",
@@ -45,6 +48,21 @@
     "confirming": "Cancelling…",
     "needLogin": "You need to sign in.",
     "error": "Could not cancel the booking."
+  },
+  "changeDialog": {
+    "title": "Change booking at {{facility}}",
+    "description": "Now {{day}}, {{start}}–{{end}}. Pick another free time; the people who joined, the QR and the invite link stay with the booking.",
+    "when": "New date and time",
+    "date": "Date",
+    "times": "Times",
+    "current": "current",
+    "closedDay": "Closed this day. Pick another date.",
+    "cancelUntil": "You can change or cancel it until {{date}}.",
+    "pick": "Pick a time",
+    "confirm": "Move to {{day}}, {{time}}",
+    "saving": "Changing…",
+    "error": "Could not change the booking.",
+    "close": "Close"
   },
   "qr": {
     "show": "Entry QR",

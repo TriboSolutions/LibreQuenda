@@ -233,9 +233,158 @@ function Editor({ slug, facility, tenants, token }: { slug: string; facility: Ad
           )}
         </div>
 
-        <form onSubmit={save} className="mt-6 grid gap-6">
-          {/* what matters most, side by side: how it looks and where it is */}
-          <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
+        {/* the facility itself on the left; the photo, the map and the readers beside it */}
+        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:items-start">
+          <div className="grid gap-6">
+            <form id="facility-form" onSubmit={save} className="grid gap-6">
+              <section aria-labelledby="sec-details" className="grid gap-4 rounded-lg border bg-card p-5">
+                <h2 id="sec-details" className="text-lg font-semibold">
+                  {t('admin:editor.details')}
+                </h2>
+                <div className="grid gap-4 md:grid-cols-2 md:items-start">
+                  <div className="grid gap-2">
+                    <Label htmlFor="f-name">{t('admin:editor.name')}</Label>
+                    <Input
+                      id="f-name"
+                      required
+                      maxLength={255}
+                      placeholder={t('admin:editor.namePlaceholder')}
+                      value={form.name}
+                      onChange={(e) => {
+                        set('name', e.target.value)
+                        if (!slugTouched) set('slug', slugify(e.target.value))
+                      }}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="f-slug">{t('admin:editor.slug')}</Label>
+                    <Input
+                      id="f-slug"
+                      required
+                      maxLength={64}
+                      pattern="[a-z0-9]+(-[a-z0-9]+)*"
+                      value={form.slug}
+                      aria-describedby="f-slug-help"
+                      onChange={(e) => {
+                        setSlugTouched(true)
+                        set('slug', e.target.value.toLowerCase())
+                      }}
+                    />
+                    <p id="f-slug-help" className="text-xs text-muted-foreground">
+                      {t('admin:editor.slugHelp', { url: `${window.location.host}/${slug}/${form.slug || '…'}` })}
+                    </p>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="f-sport">{t('admin:editor.sport')}</Label>
+                    <Input id="f-sport" maxLength={100} placeholder={t('admin:editor.sportPlaceholder')} value={form.sport} onChange={(e) => set('sport', e.target.value)} />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="f-capacity">
+                      {t('admin:editor.capacity')} <span className="font-normal text-muted-foreground">({t('admin:form.optional')})</span>
+                    </Label>
+                    <Input
+                      id="f-capacity"
+                      type="number"
+                      min={1}
+                      value={form.capacity ?? ''}
+                      onChange={(e) => set('capacity', e.target.value === '' ? null : Number(e.target.value))}
+                      className="num"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="f-description">{t('admin:editor.description')}</Label>
+                    <Textarea id="f-description" rows={4} maxLength={5000} value={form.description} onChange={(e) => set('description', e.target.value)} />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="f-accessibility">
+                      {t('admin:editor.accessibility')} <span className="font-normal text-muted-foreground">({t('admin:form.optional')})</span>
+                    </Label>
+                    <Textarea id="f-accessibility" rows={4} maxLength={2000} value={form.accessibility_info} onChange={(e) => set('accessibility_info', e.target.value)} />
+                  </div>
+                </div>
+                <div className="flex justify-end border-t pt-4">
+                  <Button type="submit" disabled={saving}>
+                    {saving ? t('admin:form.saving') : creating ? t('admin:editor.create') : t('admin:editor.save')}
+                  </Button>
+                </div>
+              </section>
+
+              <section aria-labelledby="sec-booking" className="grid gap-4 rounded-lg border bg-card p-5">
+                <h2 id="sec-booking" className="text-lg font-semibold">
+                  {t('admin:editor.booking')}
+                </h2>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {(
+                    [
+                      ['slot_minutes', 'admin:editor.slotMinutes', 15, 480, 5],
+                      ['max_advance_days', 'admin:editor.maxAdvanceDays', 1, 365, 1],
+                      ['min_cancel_hours', 'admin:editor.minCancelHours', 0, 720, 1],
+                      ['max_active_bookings_per_user', 'admin:editor.maxActive', 1, 50, 1],
+                    ] as const
+                  ).map(([field, label, min, max, step]) => (
+                    <div key={field} className="grid gap-2">
+                      <Label htmlFor={`f-${field}`}>{t(label)}</Label>
+                      <Input
+                        id={`f-${field}`}
+                        type="number"
+                        required
+                        min={min}
+                        max={max}
+                        step={step}
+                        value={form[field]}
+                        onChange={(e) => set(field, number(e.target.value))}
+                        className="num"
+                      />
+                    </div>
+                  ))}
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="f-rules">{t('admin:editor.usageRules')}</Label>
+                  <Textarea id="f-rules" rows={4} maxLength={5000} value={form.usage_rules} aria-describedby="f-rules-help" onChange={(e) => set('usage_rules', e.target.value)} />
+                  <p id="f-rules-help" className="text-xs text-muted-foreground">
+                    {t('admin:editor.usageRulesHelp')}
+                  </p>
+                </div>
+                <div className="grid gap-2 sm:max-w-xs">
+                  <Label htmlFor="f-min-age">
+                    {t('admin:editor.minAge')} <span className="font-normal text-muted-foreground">({t('admin:form.optional')})</span>
+                  </Label>
+                  <Input
+                    id="f-min-age"
+                    type="number"
+                    min={1}
+                    max={80}
+                    value={form.min_age ?? ''}
+                    aria-describedby="f-min-age-help"
+                    onChange={(e) => set('min_age', e.target.value === '' ? null : Number(e.target.value))}
+                    className="num"
+                  />
+                  <p id="f-min-age-help" className="text-xs text-muted-foreground">
+                    {t('admin:editor.minAgeHelp')}
+                  </p>
+                </div>
+                <div className="flex justify-end border-t pt-4">
+                  <Button type="submit" disabled={saving}>
+                    {saving ? t('admin:form.saving') : creating ? t('admin:editor.create') : t('admin:editor.save')}
+                  </Button>
+                </div>
+              </section>
+            </form>
+
+            <section aria-labelledby="sec-schedule" className="rounded-lg border bg-card p-5">
+              <h2 id="sec-schedule" className="text-lg font-semibold">
+                {t('admin:editor.schedule')}
+              </h2>
+              <p className="mt-1 text-muted-foreground">{creating ? t('admin:editor.scheduleAfterCreate') : t('admin:editor.scheduleHelp')}</p>
+              {!creating && <div className="mt-3"><ScheduleEditor key={JSON.stringify(schedule)} value={schedule} saving={savingSchedule} onSave={saveSchedule} /></div>}
+            </section>
+
+            {!creating && saved && (
+              <ClosuresEditor slug={slug} facilityId={saved.id} token={token} timeZone={saved.timezone} initial={saved.closures} />
+            )}
+          </div>
+
+          <aside className="grid gap-6">
             <section aria-labelledby="sec-photo" className="grid gap-4 rounded-lg border bg-card p-5">
               <h2 id="sec-photo" className="text-lg font-semibold">
                 {t('admin:editor.image')}
@@ -299,170 +448,30 @@ function Editor({ slug, facility, tenants, token }: { slug: string; facility: Ad
                 )}
               </div>
             </section>
-          </div>
 
-          <section aria-labelledby="sec-details" className="grid gap-4 rounded-lg border bg-card p-5">
-            <h2 id="sec-details" className="text-lg font-semibold">
-              {t('admin:editor.details')}
-            </h2>
-            <div className="grid gap-4 md:grid-cols-2 md:items-start">
-              <div className="grid gap-2">
-                <Label htmlFor="f-name">{t('admin:editor.name')}</Label>
-                <Input
-                  id="f-name"
-                  required
-                  maxLength={255}
-                  placeholder={t('admin:editor.namePlaceholder')}
-                  value={form.name}
-                  onChange={(e) => {
-                    set('name', e.target.value)
-                    if (!slugTouched) set('slug', slugify(e.target.value))
-                  }}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="f-slug">{t('admin:editor.slug')}</Label>
-                <Input
-                  id="f-slug"
-                  required
-                  maxLength={64}
-                  pattern="[a-z0-9]+(-[a-z0-9]+)*"
-                  value={form.slug}
-                  aria-describedby="f-slug-help"
-                  onChange={(e) => {
-                    setSlugTouched(true)
-                    set('slug', e.target.value.toLowerCase())
-                  }}
-                />
-                <p id="f-slug-help" className="text-xs text-muted-foreground">
-                  {t('admin:editor.slugHelp', { url: `${window.location.host}/${slug}/${form.slug || '…'}` })}
-                </p>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="f-sport">{t('admin:editor.sport')}</Label>
-                <Input id="f-sport" maxLength={100} placeholder={t('admin:editor.sportPlaceholder')} value={form.sport} onChange={(e) => set('sport', e.target.value)} />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="f-capacity">
-                  {t('admin:editor.capacity')} <span className="font-normal text-muted-foreground">({t('admin:form.optional')})</span>
-                </Label>
-                <Input
-                  id="f-capacity"
-                  type="number"
-                  min={1}
-                  value={form.capacity ?? ''}
-                  onChange={(e) => set('capacity', e.target.value === '' ? null : Number(e.target.value))}
-                  className="num"
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="f-description">{t('admin:editor.description')}</Label>
-                <Textarea id="f-description" rows={4} maxLength={5000} value={form.description} onChange={(e) => set('description', e.target.value)} />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="f-accessibility">
-                  {t('admin:editor.accessibility')} <span className="font-normal text-muted-foreground">({t('admin:form.optional')})</span>
-                </Label>
-                <Textarea id="f-accessibility" rows={4} maxLength={2000} value={form.accessibility_info} onChange={(e) => set('accessibility_info', e.target.value)} />
-              </div>
-            </div>
-          </section>
+            {!creating && <CheckinDevices slug={slug} facilityId={facility.id} token={token} />}
 
-          <section aria-labelledby="sec-booking" className="grid gap-4 rounded-lg border bg-card p-5">
-            <h2 id="sec-booking" className="text-lg font-semibold">
-              {t('admin:editor.booking')}
-            </h2>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {(
-                [
-                  ['slot_minutes', 'admin:editor.slotMinutes', 15, 480, 5],
-                  ['max_advance_days', 'admin:editor.maxAdvanceDays', 1, 365, 1],
-                  ['min_cancel_hours', 'admin:editor.minCancelHours', 0, 720, 1],
-                  ['max_active_bookings_per_user', 'admin:editor.maxActive', 1, 50, 1],
-                ] as const
-              ).map(([field, label, min, max, step]) => (
-                <div key={field} className="grid gap-2">
-                  <Label htmlFor={`f-${field}`}>{t(label)}</Label>
-                  <Input
-                    id={`f-${field}`}
-                    type="number"
-                    required
-                    min={min}
-                    max={max}
-                    step={step}
-                    value={form[field]}
-                    onChange={(e) => set(field, number(e.target.value))}
-                    className="num"
-                  />
-                </div>
-              ))}
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="f-rules">{t('admin:editor.usageRules')}</Label>
-              <Textarea id="f-rules" rows={4} maxLength={5000} value={form.usage_rules} aria-describedby="f-rules-help" onChange={(e) => set('usage_rules', e.target.value)} />
-              <p id="f-rules-help" className="text-xs text-muted-foreground">
-                {t('admin:editor.usageRulesHelp')}
-              </p>
-            </div>
-            <div className="grid gap-2 sm:max-w-xs">
-              <Label htmlFor="f-min-age">
-                {t('admin:editor.minAge')} <span className="font-normal text-muted-foreground">({t('admin:form.optional')})</span>
-              </Label>
-              <Input
-                id="f-min-age"
-                type="number"
-                min={1}
-                max={80}
-                value={form.min_age ?? ''}
-                aria-describedby="f-min-age-help"
-                onChange={(e) => set('min_age', e.target.value === '' ? null : Number(e.target.value))}
-                className="num"
-              />
-              <p id="f-min-age-help" className="text-xs text-muted-foreground">
-                {t('admin:editor.minAgeHelp')}
-              </p>
-            </div>
-            <div className="flex justify-end border-t pt-4">
-              <Button type="submit" disabled={saving}>
-                {saving ? t('admin:form.saving') : creating ? t('admin:editor.create') : t('admin:editor.save')}
-              </Button>
-            </div>
-          </section>
-        </form>
-
-        <section aria-labelledby="sec-schedule" className="mt-6 rounded-lg border bg-card p-5">
-          <h2 id="sec-schedule" className="text-lg font-semibold">
-            {t('admin:editor.schedule')}
-          </h2>
-          <p className="mt-1 text-muted-foreground">{creating ? t('admin:editor.scheduleAfterCreate') : t('admin:editor.scheduleHelp')}</p>
-          {!creating && <div className="mt-3"><ScheduleEditor key={JSON.stringify(schedule)} value={schedule} saving={savingSchedule} onSave={saveSchedule} /></div>}
-        </section>
-
-        {!creating && saved && (
-          <ClosuresEditor slug={slug} facilityId={saved.id} token={token} timeZone={saved.timezone} initial={saved.closures} />
-        )}
-
-        {!creating && <CheckinDevices slug={slug} facilityId={facility.id} token={token} />}
-
-        {!creating && (
-          <section aria-labelledby="sec-delete" className="mt-6 grid gap-3 rounded-lg border bg-card p-5">
-            <h2 id="sec-delete" className="text-lg font-semibold">
-              {t('admin:editor.deleteTitle')}
-            </h2>
-            {facility.booking_count > 0 ? (
-              <p className="text-muted-foreground">{t('admin:manage.deleteBlocked', { count: facility.booking_count })}</p>
-            ) : (
-              <>
-                <p className="text-muted-foreground">{t('admin:editor.deleteHelp')}</p>
-                <div>
-                  <Button variant="outline" className="text-destructive hover:text-destructive" onClick={() => setConfirmDelete(true)}>
-                    {t('admin:manage.delete')}
-                  </Button>
-                </div>
-              </>
+            {!creating && (
+              <section aria-labelledby="sec-delete" className="grid gap-3 rounded-lg border bg-card p-5">
+                <h2 id="sec-delete" className="text-lg font-semibold">
+                  {t('admin:editor.deleteTitle')}
+                </h2>
+                {facility.booking_count > 0 ? (
+                  <p className="text-muted-foreground">{t('admin:manage.deleteBlocked', { count: facility.booking_count })}</p>
+                ) : (
+                  <>
+                    <p className="text-muted-foreground">{t('admin:editor.deleteHelp')}</p>
+                    <div>
+                      <Button variant="outline" className="text-destructive hover:text-destructive" onClick={() => setConfirmDelete(true)}>
+                        {t('admin:manage.delete')}
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </section>
             )}
-          </section>
-        )}
+          </aside>
+        </div>
 
         {activeInfo && (
           <Dialog open onOpenChange={setActiveInfo}>
