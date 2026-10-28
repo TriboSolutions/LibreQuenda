@@ -372,6 +372,25 @@ func (h *counciladminHandler) ExportIndicators(w http.ResponseWriter, r *http.Re
 	write(w)
 }
 
+// ExportCouncil: the council's full data as a ZIP of CSVs (see exportService.go).
+func (h *counciladminHandler) ExportCouncil(w http.ResponseWriter, r *http.Request) {
+	var tenantId, ok = h.councilAdmin(w, r)
+	if !ok {
+		return
+	}
+	var data, err = GetCounciladminService(h.db).ExportCouncil(r.Context(), tenantId)
+	if err != nil {
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
+		return
+	}
+	w.Header().Set("Content-Type", "application/zip")
+	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="librequenda-%s-%s.zip"`, data.tenant.Slug, data.generatedAt.Format(localDate)))
+	w.Header().Set("Cache-Control", "no-store")
+	if writeErr := data.WriteZip(r.Context(), w); writeErr != nil {
+		shared.Logger.Error("council export %s: %s", data.tenant.Slug, writeErr.Error())
+	}
+}
+
 // --- SMTP relay ------------------------------------------------------------
 
 func (h *counciladminHandler) GetSmtp(w http.ResponseWriter, r *http.Request) {

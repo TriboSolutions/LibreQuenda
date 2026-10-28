@@ -401,5 +401,12 @@
     "removeConfirm": "Delete settings",
     "removed": "Settings deleted.",
     "unreadable": "The saved settings can't be read because the server's encryption key changed. Type them again, password included, and save."
+  },
+  "councilExport": {
+    "title": "Export the council's data",
+    "help": "A ZIP with everything the council keeps in LibreQuenda, to take it to another system: facilities and usage rules, opening hours, closures, QR readers and every booking, as CSV, with the original images and a datapackage.json (Frictionless Data) describing each column.",
+    "privacy": "It holds no passwords or keys, and no residents' names or emails: each person appears as their account id.",
+    "download": "Download ZIP",
+    "downloading": "Preparing…"
   }
 }

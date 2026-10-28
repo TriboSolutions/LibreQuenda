@@ -127,6 +127,7 @@
     "secrets_key_missing": "O servidor non ten chave de cifrado (SECRETS_KEY), así que o contrasinal non se pode gardar de forma segura. Avisa á administración da plataforma.",
     "smtp_password_unreadable": "Non se pode ler a configuración SMTP gardada (cambiou a chave de cifrado). Escríbea de novo e garda.",
     "export_failed": "Non foi posible preparar os teus datos. Téntao de novo.",
+    "council_export_failed": "Non puidemos preparar os datos do concello. Téntao de novo.",
     "account_delete_failed": "Non foi posible eliminar a túa conta. Non se borrou nada; téntao de novo nun momento."
   },
   "email": {
