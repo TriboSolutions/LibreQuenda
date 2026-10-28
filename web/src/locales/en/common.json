@@ -88,5 +88,14 @@
   "rateLimited": "Too many attempts in a short time. Wait a moment and try again.",
   "close": "Close",
   "skipToContent": "Skip to content",
-  "newTab": " (opens in a new tab)"
+  "newTab": " (opens in a new tab)",
+  "footer": {
+    "about": "Municipal sports facility booking for Galician councils. Open source, auditable and free of vendor lock-in.",
+    "badge": "Free software · AGPL-3.0",
+    "project": "Project",
+    "source": "Source code on GitHub",
+    "license": "AGPL-3.0 licence",
+    "legal": "Legal",
+    "copyright": "© {{year}} Tribo Solutions. LibreQuenda is free software: you can use, study, change and share it under the GNU AGPL-3.0 licence."
+  }
 }

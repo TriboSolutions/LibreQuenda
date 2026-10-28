@@ -33,6 +33,16 @@ export type Facility = {
 // contact: where residents send accessibility feedback and complaints (RD 1112/2018); "" when not given
 export type Tenant = { slug: string; name: string; logo_url: string; contact_email: string; contact_phone: string }
 
+/** The home page's council card: how the council uses LibreQuenda. */
+export type TenantStats = {
+  facilities: number
+  sports: string[]
+  free_today: number // turns still free today across its facilities
+  bookings: number // confirmed, past and upcoming
+  residents: number // distinct accounts that have booked
+}
+export type TenantCard = Tenant & { stats: TenantStats }
+
 /** An uploaded image: forms save the ref (storage reference); screens only show the url. */
 export type StoredImage = { ref: string; url: string }
 export type MediaFolder = 'councils' | 'facilities' | 'users'
@@ -588,7 +598,7 @@ async function uploadImage(token: string, folder: MediaFolder, file: File): Prom
 
 export const api = {
   uploadImage,
-  tenants: () => request<{ tenants: Tenant[] }>('/tenants'),
+  tenants: () => request<{ tenants: TenantCard[] }>('/tenants'),
   day: (slug: string, date?: string) =>
     request<Day>(`/tenants/${encodeURIComponent(slug)}/day${date ? `?date=${date}` : ''}`),
   me: (token: string) => request<Me>('/me', { token }),

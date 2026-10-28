@@ -9,6 +9,7 @@ import (
 	"librequenda/shared"
 	"librequenda/storage"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -30,21 +31,64 @@ func GetTenantsService(db *sql.DB) *tenantsService {
 }
 
 func (s *tenantsService) GetTenants(ctx context.Context) (*TenantsResponse, *shared.ErrorResponse) {
-	var rows, err = model.New(s.db).ListTenants(ctx)
+	var queries = model.New(s.db)
+	var rows, err = queries.ListTenants(ctx)
 	if err != nil {
 		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.tenants_load_failed"}
 	}
-	var response = &TenantsResponse{Tenants: make([]TenantDto, 0, len(rows))}
+	var stats []model.ListTenantStatsRow
+	stats, err = queries.ListTenantStats(ctx)
+	if err != nil {
+		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.tenants_load_failed"}
+	}
+	var statsByTenant = make(map[uuid.UUID]model.ListTenantStatsRow, len(stats))
+	for _, row := range stats {
+		statsByTenant[row.ID] = row
+	}
+	var response = &TenantsResponse{Tenants: make([]TenantCardDto, 0, len(rows))}
 	for _, row := range rows {
-		response.Tenants = append(response.Tenants, TenantDto{
-			Slug:         row.Slug,
-			Name:         row.Name,
-			LogoUrl:      storage.URL(row.LogoRef.String),
-			ContactEmail: row.ContactEmail.String,
-			ContactPhone: row.ContactPhone.String,
+		var stat = statsByTenant[row.ID]
+		var sports = []string{}
+		if stat.Sports != "" {
+			sports = strings.Split(stat.Sports, ",")
+		}
+		response.Tenants = append(response.Tenants, TenantCardDto{
+			TenantDto: TenantDto{
+				Slug:         row.Slug,
+				Name:         row.Name,
+				LogoUrl:      storage.URL(row.LogoRef.String),
+				ContactEmail: row.ContactEmail.String,
+				ContactPhone: row.ContactPhone.String,
+			},
+			Stats: TenantStatsDto{
+				Facilities: stat.Facilities,
+				Sports:     sports,
+				FreeToday:  s.freeToday(ctx, row.Slug),
+				Bookings:   stat.Bookings,
+				Residents:  stat.Residents,
+			},
 		})
 	}
 	return response, nil
+}
+
+// freeToday counts the turns still free today at the council's facilities. It
+// reuses the day view, so it costs a few queries per council: fine while the
+// councils fit on one home page. On error the card just shows no free turns.
+func (s *tenantsService) freeToday(ctx context.Context, slug string) int {
+	var day, _, _, err = s.loadDay(ctx, slug, "")
+	if err != nil {
+		return 0
+	}
+	var free = 0
+	for _, f := range day.Facilities {
+		for _, slot := range f.Slots {
+			if slot.Status == schedule.SlotFree {
+				free++
+			}
+		}
+	}
+	return free
 }
 
 func (s *tenantsService) GetDay(ctx context.Context, slug string, dateParam string) (*DayResponse, *shared.ErrorResponse) {
@@ -112,7 +156,13 @@ func (s *tenantsService) loadDay(ctx context.Context, slug string, dateParam str
 	}
 
 	var response = &DayResponse{
-		Tenant:     TenantDto{Slug: tenant.Slug, Name: tenant.Name, LogoUrl: storage.URL(tenant.LogoRef.String)},
+		Tenant: TenantDto{
+			Slug:         tenant.Slug,
+			Name:         tenant.Name,
+			LogoUrl:      storage.URL(tenant.LogoRef.String),
+			ContactEmail: tenant.ContactEmail.String,
+			ContactPhone: tenant.ContactPhone.String,
+		},
 		Timezone:   tenant.Timezone,
 		Date:       day.Format(time.DateOnly),
 		Now:        now,

@@ -36,11 +36,11 @@
     "bookAria": "Reserva {{facility}}, {{time}}",
     "closure": "Tancament puntual"
   },
-  "rules": {
-    "title": "Normes de reserva",
-    "days": "d",
-    "hours": "h",
-    "figures": "Dies · h · màx.",
-    "figuresHelp": "Dies d'antelació per reservar, hores abans del torn per cancel·lar, reserves actives per persona"
+  "contact": {
+    "title": "Contacte de l’ajuntament",
+    "lead": "Dubtes amb una reserva o una instal·lació? Parla amb el servei d’esports.",
+    "phone": "Telèfon",
+    "email": "Correu electrònic",
+    "none": "Aquest ajuntament encara no ha publicat les seves dades de contacte."
   }
 }

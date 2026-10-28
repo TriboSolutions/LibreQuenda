@@ -14,8 +14,22 @@ type TenantDto struct {
 	ContactPhone string `json:"contact_phone"`
 }
 
+// TenantCardDto is a council on the home page: who it is and how it uses LibreQuenda.
+type TenantCardDto struct {
+	TenantDto
+	Stats TenantStatsDto `json:"stats"`
+}
+
+type TenantStatsDto struct {
+	Facilities int32    `json:"facilities"` // active ones
+	Sports     []string `json:"sports"`
+	FreeToday  int      `json:"free_today"` // turns still free today, across its facilities
+	Bookings   int32    `json:"bookings"`   // confirmed, past and upcoming
+	Residents  int32    `json:"residents"`  // distinct accounts that have booked
+}
+
 type TenantsResponse struct {
-	Tenants []TenantDto `json:"tenants"`
+	Tenants []TenantCardDto `json:"tenants"`
 }
 
 type WindowDto struct {

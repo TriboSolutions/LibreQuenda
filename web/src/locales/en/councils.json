@@ -2,7 +2,6 @@
   "title": "Choose your council",
   "subtitle_one": "{{count}} council books its sports facilities with LibreQuenda.",
   "subtitle_other": "{{count}} councils book their sports facilities with LibreQuenda.",
-  "listTitle": "Councils",
   "search": "Search for a council",
   "noResults": "No council matches “{{query}}”.",
   "empty": "No council has joined yet.",
@@ -12,5 +11,29 @@
     "title": "Council not found",
     "body": "There is no council at “/{{slug}}”. Check the address or choose one from the list."
   },
-  "allCouncils": "All councils"
+  "allCouncils": "All councils",
+  "hero": {
+    "eyebrow": "Free software for Galician councils",
+    "slogan": "Your council’s sport, one turn away.",
+    "lead": "Book municipal courts, pools and sports halls in seconds, from your phone or computer. No queues, no phone calls.",
+    "councils_one": "council",
+    "councils_other": "councils",
+    "facilities_one": "facility",
+    "facilities_other": "facilities",
+    "bookings_one": "booking made",
+    "bookings_other": "bookings made",
+    "residents_one": "person has booked",
+    "residents_other": "people have booked"
+  },
+  "card": {
+    "facilities_one": "facility",
+    "facilities_other": "facilities",
+    "freeToday_one": "free turn today",
+    "freeToday_other": "free turns today",
+    "bookings_one": "booking",
+    "bookings_other": "bookings",
+    "residents_one": "user",
+    "residents_other": "users",
+    "cta": "See facilities and book"
+  }
 }

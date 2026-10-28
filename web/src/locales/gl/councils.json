@@ -2,7 +2,6 @@
   "title": "Escolle o teu concello",
   "subtitle_one": "{{count}} concello reserva as súas instalacións deportivas con LibreQuenda.",
   "subtitle_other": "{{count}} concellos reservan as súas instalacións deportivas con LibreQuenda.",
-  "listTitle": "Concellos",
   "search": "Buscar concello",
   "noResults": "Ningún concello coincide con «{{query}}».",
   "empty": "Aínda non se deu de alta ningún concello.",
@@ -12,5 +11,29 @@
     "title": "Concello non atopado",
     "body": "Non hai ningún concello en «/{{slug}}». Revisa o enderezo ou escolle un da lista."
   },
-  "allCouncils": "Todos os concellos"
+  "allCouncils": "Todos os concellos",
+  "hero": {
+    "eyebrow": "Software libre para os concellos galegos",
+    "slogan": "O deporte do teu concello, a unha quenda de distancia.",
+    "lead": "Reserva pistas, piscinas e pavillóns municipais en segundos, desde o móbil ou o ordenador. Sen colas nin chamadas.",
+    "councils_one": "concello",
+    "councils_other": "concellos",
+    "facilities_one": "instalación",
+    "facilities_other": "instalacións",
+    "bookings_one": "reserva feita",
+    "bookings_other": "reservas feitas",
+    "residents_one": "persoa reservou",
+    "residents_other": "persoas reservaron"
+  },
+  "card": {
+    "facilities_one": "instalación",
+    "facilities_other": "instalacións",
+    "freeToday_one": "quenda libre hoxe",
+    "freeToday_other": "quendas libres hoxe",
+    "bookings_one": "reserva",
+    "bookings_other": "reservas",
+    "residents_one": "usuario",
+    "residents_other": "usuarios",
+    "cta": "Ver instalacións e reservar"
+  }
 }
