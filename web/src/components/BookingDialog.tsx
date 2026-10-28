@@ -77,7 +77,7 @@ export function BookingDialog({ pick, timeZone, today, authenticated, onClose, o
           <h3 id="booking-rules" className="font-medium">
             {t('bookings:dialog.rules')}
           </h3>
-          <p className="max-h-40 overflow-y-auto whitespace-pre-line">{facility.usage_rules || t('bookings:dialog.noRules')}</p>
+          <p tabIndex={0} className="max-h-40 overflow-y-auto rounded-sm whitespace-pre-line">{facility.usage_rules || t('bookings:dialog.noRules')}</p>
           {authenticated && !needsProfile && (
             <div className="flex items-start gap-2 pt-1">
               <Checkbox id="accept-rules" checked={accepted} onCheckedChange={(value) => setAccepted(value === true)} className="mt-0.5" />

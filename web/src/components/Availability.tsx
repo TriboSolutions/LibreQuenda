@@ -98,8 +98,9 @@ function FacilityRow({ councilSlug, facility, axis, timeZone, now, nowMinutes, o
         {full && <span className="px-3 text-muted-foreground">{t('availability.full')}</span>}
         {afterHours && <span className="px-3 text-muted-foreground">{t('availability.afterHours')}</span>}
         <Button asChild variant="ghost" size="sm">
-          <Link to={`/${councilSlug}/${facility.slug}`} aria-label={t('availability.details', { facility: facility.name })}>
+          <Link to={`/${councilSlug}/${facility.slug}`}>
             {t('availability.book')}
+            <span className="sr-only"> · {facility.name}</span>
           </Link>
         </Button>
       </div>
@@ -118,7 +119,10 @@ function FacilityRow({ councilSlug, facility, axis, timeZone, now, nowMinutes, o
             </Button>
           )}
           <Button asChild variant="ghost" className="h-11">
-            <Link to={`/${councilSlug}/${facility.slug}`}>{t('availability.book')}</Link>
+            <Link to={`/${councilSlug}/${facility.slug}`}>
+              {t('availability.book')}
+              <span className="sr-only"> · {facility.name}</span>
+            </Link>
           </Button>
         </div>
       )}

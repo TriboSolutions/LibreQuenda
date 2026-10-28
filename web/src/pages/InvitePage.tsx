@@ -15,6 +15,7 @@ import { useAsync } from '@/hooks/useAsync'
 import { useLogin } from '@/hooks/useLogin'
 import { api, ApiError, type PublicInvite } from '@/lib/api'
 import { formatBookingDay, formatTime, localDate } from '@/lib/time'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 /** /invitacion/:token: anyone with the link joins a booking, with an account or as a guest. */
 export function InvitePage() {
@@ -22,6 +23,7 @@ export function InvitePage() {
   const { t } = useTranslation(['invites', 'common'])
   const tenants = useAsync(() => api.tenants(), 'tenants')
   const invite = useAsync(() => api.invites.open(inviteToken), `invite:${inviteToken}`)
+  usePageTitle(t('invites:page.title'), invite.data?.facility_name)
 
   let body
   if (invite.error) {
@@ -41,7 +43,7 @@ export function InvitePage() {
   return (
     <div className="min-h-screen">
       <TopBar tenants={tenants.data?.tenants ?? []} tenantSlug={invite.data?.tenant_slug ?? null} />
-      <main className="mx-auto max-w-[1152px] px-4 pt-8 pb-16 sm:px-6">
+      <main id="main" tabIndex={-1} className="mx-auto max-w-[1152px] px-4 pt-8 pb-16 sm:px-6">
         <h1 className="text-[28px] leading-9 font-bold tracking-[-0.02em] sm:text-[32px] sm:leading-10">
           {invite.data?.owner_name ? t('invites:page.invitedBy', { name: invite.data.owner_name }) : t('invites:page.title')}
         </h1>
@@ -96,42 +98,42 @@ function InviteCard({ invite, inviteToken, onChanged }: { invite: PublicInvite; 
         {facility.image_url && <img src={facility.image_url} alt="" className="aspect-[16/7] w-full object-cover" />}
         <div className="grid gap-5 p-5">
           <dl className="grid gap-3">
-            <div className="flex gap-3">
-              <MapPin className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
-              <div>
-                <dt className="sr-only">{t('invites:page.where')}</dt>
-                <dd>
+            <div>
+              <dt className="sr-only">{t('invites:page.where')}</dt>
+              <dd className="flex gap-3">
+                <MapPin className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
+                <div>
                   <Link to={facilityPath} className="font-medium underline-offset-4 hover:underline">
                     {invite.facility_name}
                   </Link>
                   <span className="text-muted-foreground"> · {[facility.sport, invite.tenant_name].filter(Boolean).join(' · ')}</span>
-                </dd>
-              </div>
+                </div>
+              </dd>
             </div>
-            <div className="flex gap-3">
-              <CalendarClock className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
-              <div>
-                <dt className="sr-only">{t('invites:page.when')}</dt>
-                <dd className="num">
+            <div>
+              <dt className="sr-only">{t('invites:page.when')}</dt>
+              <dd className="num flex gap-3">
+                <CalendarClock className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
+                <span>
                   {day}, {time}–{formatTime(invite.ends_at, tz)}
-                </dd>
-              </div>
+                </span>
+              </dd>
             </div>
-            <div className="flex gap-3">
-              <Users className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
-              <div className="min-w-0 flex-1">
-                <dt className="sr-only">{t('invites:page.spots')}</dt>
-                <dd>
+            <div>
+              <dt className="sr-only">{t('invites:page.spots')}</dt>
+              <dd className="flex gap-3">
+                <Users className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
+                <div className="min-w-0 flex-1">
                   {invite.state === 'closed' ? (
                     t('invites:page.closed')
                   ) : (
                     <SpotsMeter capacity={invite.capacity} taken={invite.capacity - invite.spots_left} />
                   )}
-                </dd>
-              </div>
+                </div>
+              </dd>
             </div>
           </dl>
-          <FacilityInfo facility={facility} />
+          <FacilityInfo facility={facility} headingLevel={2} />
         </div>
       </section>
 

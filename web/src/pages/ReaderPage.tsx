@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { useAsync } from '@/hooks/useAsync'
 import { api, ApiError, type CheckinResult, type Reader } from '@/lib/api'
 import { formatBookingDay, formatTime, localDate } from '@/lib/time'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 /*
   Entrance reader: a demo of what a device at the door runs. It signs in with
@@ -54,6 +55,8 @@ export function ReaderPage() {
   const [key, setKey] = useState(() => keyFromLink() || storedKey())
   const reader = useAsync(key ? () => api.reader.me(key) : null, key)
   const rejected = reader.error instanceof ApiError && reader.error.status === 401
+  const { t } = useTranslation('reader')
+  usePageTitle(reader.data?.facility_name ?? t('signIn.title'))
 
   const signIn = (value: string) => {
     storeKey(value)
@@ -94,7 +97,7 @@ function KeyForm({ rejected, onSubmit }: { rejected: boolean; onSubmit: (key: st
     if (value.trim()) onSubmit(value.trim())
   }
   return (
-    <div className="grid min-h-dvh place-items-center bg-background p-4">
+    <main id="main" className="grid min-h-dvh place-items-center bg-background p-4">
       <form onSubmit={submit} className="grid w-full max-w-md gap-4 rounded-lg border bg-card p-6">
         <div className="flex items-center gap-3">
           <Mark className="size-8" />
@@ -122,7 +125,7 @@ function KeyForm({ rejected, onSubmit }: { rejected: boolean; onSubmit: (key: st
           {t('signIn.submit')}
         </Button>
       </form>
-    </div>
+    </main>
   )
 }
 
@@ -263,12 +266,13 @@ function Scanner({ deviceKey, reader, onSignOut }: { deviceKey: string; reader: 
             <p className="truncate text-muted-foreground">{reader.tenant_name}</p>
           </div>
         </div>
-        <p className="num shrink-0 text-2xl font-semibold sm:text-3xl" aria-label={t('clock')}>
+        <p className="num shrink-0 text-2xl font-semibold sm:text-3xl">
+          <span className="sr-only">{t('clock')}: </span>
           {formatTime(now.toISOString(), reader.timezone)}
         </p>
       </header>
 
-      <main className="flex flex-1 flex-col items-center justify-center gap-5 p-4 sm:p-6">
+      <main id="main" tabIndex={-1} className="flex flex-1 flex-col items-center justify-center gap-5 p-4 sm:p-6">
         <div className="relative aspect-square w-full max-w-[min(32rem,60dvh)] overflow-hidden rounded-xl bg-black">
           <video ref={video} muted playsInline className={`size-full object-cover ${mirrored ? '-scale-x-100' : ''}`} />
           {camera === 'running' ? (
@@ -295,7 +299,8 @@ function Scanner({ deviceKey, reader, onSignOut }: { deviceKey: string; reader: 
         </Button>
       </footer>
 
-      {shown && <Answer shown={shown} reader={reader} now={now} onDismiss={dismiss} />}
+      {/* always mounted, so each answer is announced as it appears (WCAG 4.1.3) */}
+      <div role="status">{shown && <Answer shown={shown} reader={reader} now={now} onDismiss={dismiss} />}</div>
     </div>
   )
 }
@@ -392,7 +397,7 @@ function Answer({ shown, reader, now, onDismiss }: { shown: Shown; reader: Reade
       className={`fixed inset-0 z-50 grid cursor-default place-content-center justify-items-center gap-5 p-8 text-center ${tone}`}
     >
       <Icon className="size-24 sm:size-32" strokeWidth={1.75} aria-hidden />
-      <span role="status" className="grid gap-3">
+      <span className="grid gap-3">
         <span className="text-3xl font-semibold text-balance sm:text-5xl">{title}</span>
         {detail && <span className="num max-w-2xl text-xl text-balance sm:text-2xl">{detail}</span>}
       </span>

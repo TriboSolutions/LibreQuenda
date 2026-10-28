@@ -14,6 +14,7 @@ import { useCouncilAdmin } from '@/hooks/useCouncilAdmin'
 import { useLogin } from '@/hooks/useLogin'
 import { useMe } from '@/hooks/useMe'
 import { api } from '@/lib/api'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 // charts (Recharts) load only when an administrator opens the indicators
 const IndicatorsPanel = lazy(() => import('@/components/admin/IndicatorsPanel').then((m) => ({ default: m.IndicatorsPanel })))
@@ -31,6 +32,7 @@ export function CouncilAdminPage() {
   const verify = useVerifyEmail()
   const token = auth.user?.access_token ?? ''
   const tenants = useAsync(() => api.tenants(), 'tenants')
+  usePageTitle(t('admin:councilAdmin.title'), tenants.data?.tenants.find((c) => c.slug === slug)?.name)
   const facilities = useAsync(allowed ? () => api.council.facilities(token, slug) : null, `council-admin:${slug}:${allowed}`)
   const council = tenants.data?.tenants.find((c) => c.slug === slug)
   const [searchParams, setSearchParams] = useSearchParams()
@@ -192,7 +194,7 @@ export function CouncilAdminPage() {
   return (
     <div className="min-h-screen">
       <TopBar tenants={tenants.data?.tenants ?? []} tenantSlug={slug} />
-      <main className="mx-auto max-w-[1152px] px-4 pt-8 pb-16 sm:px-6">
+      <main id="main" tabIndex={-1} className="mx-auto max-w-[1152px] px-4 pt-8 pb-16 sm:px-6">
         <h1 className="text-[28px] leading-9 font-bold tracking-[-0.02em] sm:text-[32px] sm:leading-10">{t('admin:councilAdmin.title')}</h1>
         <p className="mt-1 text-base text-muted-foreground">{t('admin:councilAdmin.subtitle', { council: council?.name ?? slug })}</p>
         {body}

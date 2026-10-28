@@ -20,24 +20,24 @@
   --popover: #ffffff;
   --popover-foreground: #111827;
 
-  --primary: #0a6fb0; /* 5.4:1 on white */
+  --primary: #074f80; /* 8.6:1 on white, 7.3:1 on the palest fills (WCAG 1.4.6 AAA) */
   --primary-foreground: #ffffff;
   --secondary: #ffffff;
   --secondary-foreground: #111827;
   --muted: #f1f4f7;
-  --muted-foreground: #5b6573; /* 5.9:1 on white */
+  --muted-foreground: #434c59; /* 8.7:1 on white, 7.4:1 on --slot-past */
   --accent: #eef6fb; /* pale tint: hover and selected areas */
   --accent-foreground: #0b3d61;
-  --destructive: #c4242a;
+  --destructive: #9f1c21; /* 7.9:1 on white */
 
   --border: #e3e8ed;
-  --input: #cfd6dd;
+  --input: #758290; /* field borders: 3.9:1 on white (WCAG 1.4.11) */
   --ring: #0a6fb0;
 
   /* day strip: the data */
   --slot-free: #0a6fb0;
   --slot-free-hover: #085a8f;
-  --slot-booked: #c3ccd5;
+  --slot-booked: #848f9c; /* 3:1 on the track, like every mark that carries data (WCAG 1.4.11) */
   --slot-past: #e8edf2;
   --slot-closure: #d93f3f; /* a one-off closure (works, event): red */
   --now: #111827;
@@ -75,7 +75,7 @@
   --popover: #1d1e21;
   --popover-foreground: #f3f4f6;
 
-  --primary: #5fb0e6; /* dark label on a light-blue fill: 8.6:1 */
+  --primary: #8fcaf2; /* 8.5:1 on the cards; dark label on the fill: 8.9:1 */
   --primary-foreground: #06253a;
 
   /* the logo on dark: white "libre", lighter "quenda", white ring (simbolo-blanco) */
@@ -85,18 +85,18 @@
   --secondary: #17181a;
   --secondary-foreground: #f3f4f6;
   --muted: #212226;
-  --muted-foreground: #a9aeb6; /* 7.6:1 on the card */
+  --muted-foreground: #c4c8ce; /* 7.9:1 or more on every dark surface */
   --accent: #10283a;
   --accent-foreground: #b5daf3;
-  --destructive: #f2716b;
+  --destructive: #ffa49e; /* 7.3:1 or more on every dark surface */
 
   --border: #2a2c30;
-  --input: #3d4046;
+  --input: #6b7078; /* 3.6:1 on the card */
   --ring: #5fb0e6;
 
   --slot-free: #4aa3df;
   --slot-free-hover: #74baea;
-  --slot-booked: #3d4248;
+  --slot-booked: #6a717a;
   --slot-past: #222428;
   --slot-closure: #e5605a;
   --now: #f3f4f6;
@@ -104,7 +104,7 @@
   --pill-positive-bg: #12301f;
   --pill-positive-ink: #74d6a0;
   --pill-negative-bg: #3a1a1c;
-  --pill-negative-ink: #ff9a94;
+  --pill-negative-ink: #ffaba6;
   --pill-neutral-bg: #25272b;
   --pill-neutral-ink: #d1d5db;
   --pill-accent-bg: #10283a;
@@ -184,8 +184,32 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    font-size: 14px;
-    line-height: 20px;
+    /* rem, so a larger default font size in the browser scales the text (WCAG 1.4.4) */
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+
+  /* A visible focus for every control, also those without their own ring: links, the map (WCAG 2.4.7) */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  /* the landmark the skip link targets: focused by script, no ring */
+  main:focus {
+    outline: none;
+  }
+}
+
+/* Motion only for those who did not ask the system to reduce it (WCAG 2.3.3) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 

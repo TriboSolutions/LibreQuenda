@@ -60,6 +60,10 @@ deploy/volumes/
 *.dump
 *.sql.gz
 
+# --- Playwright (web/e2e) ---
+test-results/
+playwright-report/
+
 # --- Logs ---
 *.log
 
@@ -77,3 +81,6 @@ db/init/seed_media/
 
 # AGASOL's contest bases: linked from the README, not redistributed
 docs/certame/
+
+# W3C's WCAG 2.1 (https://www.w3.org/TR/WCAG21/), downloaded for reference: not redistributed
+docs/wcag/

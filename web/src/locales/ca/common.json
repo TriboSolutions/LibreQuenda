@@ -84,5 +84,8 @@
     "empty": "Sense imatge"
   },
   "createAccount": "Crea un compte",
-  "rateLimited": "Massa intents en poc temps. Espera un moment i torna-ho a provar."
+  "rateLimited": "Massa intents en poc temps. Espera un moment i torna-ho a provar.",
+  "close": "Tanca",
+  "skipToContent": "Ves al contingut",
+  "newTab": " (s’obre en una pestanya nova)"
 }

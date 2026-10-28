@@ -22,6 +22,7 @@ import { useAsync } from '@/hooks/useAsync'
 import { useCouncilAdmin } from '@/hooks/useCouncilAdmin'
 import { api, type AdminFacility, type FacilityInput, type GeocodeResult, type StoredImage, type WeeklyWindow } from '@/lib/api'
 import { slugify } from '@/lib/slug'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 const EMPTY: FacilityInput = {
   slug: '',
@@ -58,12 +59,13 @@ export function FacilityEditorPage() {
   const tenants = useAsync(() => api.tenants(), 'tenants')
   const existing = useAsync(!creating && allowed ? () => api.council.facility(token, slug, id) : null, `facility-admin:${slug}:${id}:${allowed}`)
   const { t } = useTranslation(['admin', 'common'])
+  usePageTitle(creating ? t('admin:editor.newTitle') : existing.data?.name, tenants.data?.tenants.find((c) => c.slug === slug)?.name)
 
   if (!creating && !existing.data) {
     return (
       <div className="min-h-screen">
         <TopBar tenants={tenants.data?.tenants ?? []} tenantSlug={slug} />
-        <main className="mx-auto max-w-[1152px] px-4 pt-8 sm:px-6">
+        <main id="main" tabIndex={-1} className="mx-auto max-w-[1152px] px-4 pt-8 sm:px-6">
           {existing.error ? <p className="text-destructive">{existing.error.message}</p> : <Skeleton className="h-40 w-full" />}
           {!allowed && !auth.isLoading && (
             <Button asChild variant="outline" className="mt-4">
@@ -189,7 +191,7 @@ function Editor({ slug, facility, tenants, token }: { slug: string; facility: Ad
   return (
     <div className="min-h-screen">
       <TopBar tenants={tenants} tenantSlug={slug} />
-      <main className="mx-auto max-w-[1152px] px-4 pt-8 pb-16 sm:px-6">
+      <main id="main" tabIndex={-1} className="mx-auto max-w-[1152px] px-4 pt-8 pb-16 sm:px-6">
         <Link to={`/${slug}/admin`} className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground">
           <ArrowLeft className="size-4" aria-hidden="true" />
           {t('admin:facilities.back')}
@@ -207,7 +209,7 @@ function Editor({ slug, facility, tenants, token }: { slug: string; facility: Ad
                 onCheckedChange={(checked) => (creating ? set('is_active', checked) : setConfirmActive(checked))}
               />
               <Label htmlFor="f-active">{form.is_active ? t('admin:councils.active') : t('admin:councils.inactive')}</Label>
-              <Button type="button" variant="ghost" size="icon" className="size-7" onClick={() => setActiveInfo(true)} aria-label={t('admin:editor.activeInfo')}>
+              <Button type="button" variant="ghost" size="icon" onClick={() => setActiveInfo(true)} aria-label={t('admin:editor.activeInfo')}>
                 <Info />
               </Button>
             </div>
@@ -413,7 +415,7 @@ function Editor({ slug, facility, tenants, token }: { slug: string; facility: Ad
                   ) : (
                     results.map((place) => (
                       <li key={`${place.latitude},${place.longitude}`} className="border-t first:border-t-0">
-                        <button type="button" className="w-full px-3 py-2 text-left hover:bg-accent" onClick={() => pick(place)}>
+                        <button type="button" className="min-h-11 w-full px-3 py-2 text-left hover:bg-accent" onClick={() => pick(place)}>
                           {place.label}
                         </button>
                       </li>
@@ -425,7 +427,7 @@ function Editor({ slug, facility, tenants, token }: { slug: string; facility: Ad
                 editable
                 latitude={form.latitude}
                 longitude={form.longitude}
-                label={t('admin:editor.location')}
+                label={t('facility:mapLabel')}
                 onChange={(lat, lng) => {
                   set('latitude', Number(lat.toFixed(6)))
                   set('longitude', Number(lng.toFixed(6)))
