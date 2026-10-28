@@ -64,12 +64,14 @@ type WeeklyWindowDto struct {
 	ClosesAt string `json:"closes_at"`
 }
 
-// FacilityPageResponse: one facility's page, with the slots of the chosen day.
+// FacilityPageResponse: one facility's page, with the slots of the chosen day
+// and the turns worth suggesting.
 type FacilityPageResponse struct {
-	Tenant   TenantDto         `json:"tenant"`
-	Timezone string            `json:"timezone"`
-	Date     string            `json:"date"`
-	Now      time.Time         `json:"now"`
-	Facility FacilityDayDto    `json:"facility"`
-	Schedule []WeeklyWindowDto `json:"schedule"`
+	Tenant      TenantDto         `json:"tenant"`
+	Timezone    string            `json:"timezone"`
+	Date        string            `json:"date"`
+	Now         time.Time         `json:"now"`
+	Facility    FacilityDayDto    `json:"facility"`
+	Schedule    []WeeklyWindowDto `json:"schedule"`
+	Suggestions SuggestionsDto    `json:"suggestions"`
 }

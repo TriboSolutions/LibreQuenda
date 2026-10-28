@@ -75,7 +75,26 @@ const facilities = [facility('f1', 'Pista de pádel 1', 'padel-1'), facility('f2
 
 const day: Day = { tenant, timezone: TZ, date: today, now: iso(now), facilities }
 
-const facilityPage: FacilityPage = { tenant, timezone: TZ, date: today, now: iso(now), facility: facilities[0], schedule }
+// every busy level, so axe checks the colours of all three
+const facilityPage: FacilityPage = {
+  tenant,
+  timezone: TZ,
+  date: today,
+  now: iso(now),
+  facility: facilities[0],
+  schedule,
+  suggestions: {
+    quiet: [
+      { starts_at: at(0), ends_at: at(1), level: 'quiet' },
+      { starts_at: at(3), ends_at: at(4), level: 'moderate' },
+      { starts_at: at(6), ends_at: at(7), level: 'busy' },
+    ],
+    alternatives: [
+      { slug: 'padel-2', name: 'Pista de pádel 2', address: 'Rúa Montevideo 3, Lugo', distance_km: 1.4, free_slots: 5, slots: [{ starts_at: at(2), ends_at: at(3), level: 'quiet' }] },
+      { slug: 'padel-3', name: 'Pista de pádel 3', address: '', distance_km: null, free_slots: 1, slots: [{ starts_at: at(4), ends_at: at(5), level: 'moderate' }] },
+    ],
+  },
+}
 
 const details: FacilityDetails = {
   image_url: '',

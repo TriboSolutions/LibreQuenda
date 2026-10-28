@@ -26,5 +26,22 @@
   "notFoundTitle": "Instal·lació no trobada",
   "notFoundBody": "No hi ha cap instal·lació a «{{path}}».",
   "mapLabel": "Mapa amb la ubicació de la instal·lació",
-  "minAge": "Edat mínima: {{count}} anys."
+  "minAge": "Edat mínima: {{count}} anys.",
+  "suggest": {
+    "title": "Suggeriments",
+    "quietTitle": "Hores més tranquil·les",
+    "quietHint": "Els torns lliures que solen tenir menys gent, segons les reserves de les últimes 8 setmanes.",
+    "level": {
+      "quiet": "Sol estar tranquil",
+      "moderate": "Ocupació mitjana",
+      "busy": "Sol estar ple"
+    },
+    "nearbyTitle": "A prop d'aquí",
+    "nearbyFull": "Aquesta instal·lació és plena aquest dia. Altres llocs de {{sport}} amb torns lliures:",
+    "nearbyHint": "Altres llocs de {{sport}} amb torns lliures aquest dia.",
+    "distance": "{{km}} km",
+    "nextDoor": "Al costat",
+    "freeCount_one": "{{count}} torn lliure",
+    "freeCount_other": "{{count}} torns lliures"
+  }
 }

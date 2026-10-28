@@ -2,11 +2,12 @@ import { ArrowLeft, ExternalLink, MapPin } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
-import { Link, useParams } from 'react-router'
+import { Link, useParams, useSearchParams } from 'react-router'
 import { BookingDialog } from '@/components/BookingDialog'
 import { DayPicker } from '@/components/DayPicker'
 import { FacilityMap } from '@/components/FacilityMap'
 import { TopBar } from '@/components/TopBar'
+import { TurnSuggestions } from '@/components/TurnSuggestions'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -19,8 +20,12 @@ import { usePageTitle } from '@/hooks/usePageTitle'
 import { SiteFooter } from '@/components/SiteFooter'
 
 const WEEK = [1, 2, 3, 4, 5, 6, 7] // ISO weekdays, Monday first
+const DATE = /^\d{4}-\d{2}-\d{2}$/
 
-/** /:slug/:facility: one facility, its rules and its turns. Booking always shows the rules first. */
+/**
+ * /:slug/:facility: one facility, its rules and its turns. Booking always shows the rules first.
+ * ?dia=YYYY-MM-DD opens a given day, e.g. from another facility's suggestions.
+ */
 export function FacilityPage() {
   const { slug = '', facility: facilitySlug = '' } = useParams()
   const { t } = useTranslation(['facility', 'bookings', 'common'])
@@ -28,9 +33,11 @@ export function FacilityPage() {
   const { login } = useLogin()
   const tenants = useAsync(() => api.tenants(), 'tenants')
 
+  const [searchParams] = useSearchParams()
+  const linked = searchParams.get('dia') ?? ''
   const [picked, setPicked] = useState<{ key: string; date: string } | null>(null)
   const key = `${slug}/${facilitySlug}`
-  const date = picked?.key === key ? picked.date : undefined
+  const date = picked?.key === key ? picked.date : DATE.test(linked) ? linked : undefined
   const page = useAsync(() => api.facilityPage(slug, facilitySlug, date), `facility:${key}:${date ?? 'today'}`)
   const [pick, setPick] = useState<{ facility: Facility; slot: Slot } | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
@@ -146,6 +153,16 @@ export function FacilityPage() {
               </>
             )}
           </section>
+
+          <TurnSuggestions
+            suggestions={data.suggestions}
+            tenantSlug={slug}
+            sport={f.sport}
+            date={data.date}
+            timeZone={timeZone}
+            full={f.windows.length > 0 && free.length === 0}
+            onPick={(slot) => setPick({ facility: f, slot })}
+          />
         </div>
 
         <aside className="grid gap-6">
