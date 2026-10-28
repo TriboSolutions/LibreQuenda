@@ -1,7 +1,7 @@
 {
   "retry": "Torna-ho a provar",
   "clock": "Hora actual",
-  "instructions": "Apropa el QR de la teva reserva o el QR del teu perfil a la càmera",
+  "instructions": "Apropa el QR de la teva reserva o el de la reserva flash a la càmera",
   "device": "Lector: {{name}}",
   "signOut": "Canviar la clau",
   "signIn": {
@@ -43,18 +43,19 @@
     "bookedDetail": "Torn reservat: {{facility}} · {{start}}–{{end}}",
     "notBooked": "No s'ha pogut reservar cap torn",
     "codeExpired": "Aquest QR ha caducat",
-    "codeExpiredDetail": "Mostra el codi actual del teu perfil: canvia cada minut."
+    "codeExpiredDetail": "Mostra el codi actual de «Reserva flash»: canvia cada minut."
   },
   "reason": {
-    "no_turn_soon": "Cap torn no comença en els propers 15 minuts.",
-    "slot_booked": "El proper torn ja està reservat.",
-    "slot_closed": "La instal·lació està tancada en el proper torn.",
+    "no_turn_soon": "No hi ha cap torn en curs ni en els propers 15 minuts.",
+    "slot_booked": "Aquest torn ja està reservat.",
+    "slot_closed": "La instal·lació està tancada en aquest torn.",
     "slot_too_far": "El proper torn encara no es pot reservar.",
     "profile_incomplete": "Afegeix la teva data de naixement al perfil per reservar.",
     "age_restricted": "No tens l'edat mínima d'aquesta instal·lació.",
     "booking_limit_reached": "Has arribat al límit de reserves en aquesta instal·lació.",
     "booking_overlaps": "Ja tens una altra reserva a aquella hora.",
     "facility_not_found": "Aquesta instal·lació no es pot reservar ara.",
-    "other": "Reserva a l'aplicació o pregunta al personal."
+    "other": "Reserva a l'aplicació o pregunta al personal.",
+    "use_booking_qr": "Ja tens una reserva aquí: entra amb el QR d'aquella reserva."
   }
 }

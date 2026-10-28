@@ -1,7 +1,7 @@
 {
   "retry": "Tentar de novo",
   "clock": "Hora actual",
-  "instructions": "Achega o QR da túa reserva ou o QR do teu perfil á cámara",
+  "instructions": "Achega o QR da túa reserva ou o da reserva flash á cámara",
   "device": "Lector: {{name}}",
   "signOut": "Cambiar clave",
   "signIn": {
@@ -43,18 +43,19 @@
     "bookedDetail": "Quenda reservada: {{facility}} · {{start}}–{{end}}",
     "notBooked": "Non foi posible reservar unha quenda",
     "codeExpired": "Este QR caducou",
-    "codeExpiredDetail": "Amosa o código actual do teu perfil: cambia cada minuto."
+    "codeExpiredDetail": "Amosa o código actual de «Reserva flash»: cambia cada minuto."
   },
   "reason": {
-    "no_turn_soon": "Ningunha quenda comeza nos próximos 15 minutos.",
-    "slot_booked": "A próxima quenda xa está reservada.",
-    "slot_closed": "A instalación está pechada na próxima quenda.",
+    "no_turn_soon": "Non hai ningunha quenda en curso nin nos próximos 15 minutos.",
+    "slot_booked": "Esta quenda xa está reservada.",
+    "slot_closed": "A instalación está pechada nesta quenda.",
     "slot_too_far": "A próxima quenda aínda non se pode reservar.",
     "profile_incomplete": "Engade a túa data de nacemento no teu perfil para reservar.",
     "age_restricted": "Non tes a idade mínima desta instalación.",
     "booking_limit_reached": "Chegaches ao límite de reservas nesta instalación.",
     "booking_overlaps": "Xa tes outra reserva a esa hora.",
     "facility_not_found": "Esta instalación non se pode reservar agora.",
-    "other": "Reserva na aplicación ou pregunta ao persoal."
+    "other": "Reserva na aplicación ou pregunta ao persoal.",
+    "use_booking_qr": "Xa tes unha reserva aquí: entra co QR desa reserva."
   }
 }

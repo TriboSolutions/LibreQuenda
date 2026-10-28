@@ -55,6 +55,31 @@ func DaySlots(day time.Time, loc *time.Location, rules Rules, windows []Window, 
 	return slots
 }
 
+// Current is the rest of the turn under way at `now`: from now (to the minute)
+// until the turn ends, free unless a closure or a booking overlaps that part.
+// Used to book a turn that has already started (a walk-in at the reader).
+func Current(day time.Time, loc *time.Location, slotMinutes int, windows []Window, closures []Interval, busy []Interval, now time.Time) (Slot, bool) {
+	if slotMinutes <= 0 {
+		return Slot{}, false
+	}
+	var start = now.Truncate(time.Minute)
+	for _, i := range cut(day, loc, slotMinutes, windows) {
+		if now.Before(i.Start) || !now.Before(i.End) {
+			continue
+		}
+		var rest = Interval{Start: start, End: i.End}
+		var status = SlotFree
+		switch {
+		case overlapsAny(rest, closures):
+			status = SlotClosed
+		case overlapsAny(rest, busy):
+			status = SlotBooked
+		}
+		return Slot{Start: rest.Start, End: rest.End, Status: status}, true
+	}
+	return Slot{}, false
+}
+
 // OpenMinutes is how long a facility can be booked on `day`: its slots that no
 // closure overlaps, booked or not. The occupancy indicator divides by it.
 func OpenMinutes(day time.Time, loc *time.Location, slotMinutes int, windows []Window, closures []Interval) int {

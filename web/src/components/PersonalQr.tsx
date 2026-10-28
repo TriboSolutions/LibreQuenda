@@ -14,11 +14,12 @@ import { api, type PersonalQr as Qr } from '@/lib/api'
 const RETRY_MS = 10_000
 
 /*
-  Quick entry: the personal QR, opened from the account menu or /perfil. At a
-  facility's reader it checks the person in to their booking there, or books the
-  turn that starts within 15 minutes. The code changes every minute and works
-  once, so a screenshot soon stops working. Codes are only asked for while the
-  dialog is open.
+  Flash booking: the personal QR, opened from the account menu or /perfil. At a
+  facility's reader it books a free turn on the spot, from now until the turn
+  under way ends or the one about to start (bookings.FlashTurn in the API); a
+  booking already made goes in with its own QR, not this one. The code changes
+  every minute and works once, so a screenshot soon stops working. Codes are
+  only asked for while the dialog is open.
 */
 export function PersonalQrDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const { t } = useTranslation('profile')
@@ -153,9 +154,10 @@ export function PersonalQr() {
     <SettingsRow id="sec-qr" title={t('personalQr.title')} description={t('personalQr.help')}>
       <div className="grid gap-4 rounded-lg border bg-card p-5">
         <ul className="grid list-disc gap-2 pl-5">
-          <li>{t('personalQr.checkIn')}</li>
-          <li>{t('personalQr.book')}</li>
+          <li>{t('personalQr.now')}</li>
+          <li>{t('personalQr.soon')}</li>
         </ul>
+        <p className="text-muted-foreground">{t('personalQr.ownBooking')}</p>
         <p className="text-muted-foreground">{t('personalQr.private')}</p>
         <div>
           <Button onClick={() => setOpen(true)}>

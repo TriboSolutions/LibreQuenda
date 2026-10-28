@@ -78,10 +78,10 @@ for (const theme of ['light', 'dark'] as const) {
       await expectAccessible(page, { overlay: true })
     })
 
-    test('quick entry dialog', async ({ page }) => {
+    test('flash booking dialog', async ({ page }) => {
       await open(page, '/lugo', { theme })
       await page.getByRole('button', { name: /Ana Pérez/ }).click()
-      await page.getByRole('menuitem', { name: /Entrada rápida/ }).click()
+      await page.getByRole('menuitem', { name: /Reserva flash/ }).click()
       await expect(page.getByRole('dialog')).toBeVisible()
       await expect(page.getByRole('img', { name: /QR/ })).toBeVisible()
       await page.waitForTimeout(300)

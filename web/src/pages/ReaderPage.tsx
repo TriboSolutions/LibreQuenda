@@ -15,8 +15,8 @@ import { usePageTitle } from '@/hooks/usePageTitle'
 /*
   Entrance reader: a demo of what a device at the door runs. It signs in with
   the reader key (from /lector#key=… or typed in), asks for the camera, reads
-  booking QR codes, and the personal QR from /perfil (which can book the turn
-  about to start), and shows the answer full screen for a few seconds.
+  booking QR codes, and the flash booking QR (which books a free turn on the
+  spot), and shows the answer full screen for a few seconds.
   An IoT device can skip this page and call POST /api/reader/checkin itself.
 */
 
