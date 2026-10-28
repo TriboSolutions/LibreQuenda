@@ -102,7 +102,8 @@
     "edit": "Edita",
     "noSchedule": "sense horari",
     "back": "Totes les instal·lacions",
-    "viewPage": "Obre la seva pàgina"
+    "viewPage": "Obre la seva pàgina",
+    "actions": "Accions"
   },
   "editor": {
     "newTitle": "Nova instal·lació",
@@ -410,7 +411,8 @@
     "downloading": "S'està preparant…"
   },
   "staff": {
-    "tab": "Reserves",
+    "open": "Reserves",
+    "back": "Instal·lacions",
     "title": "Reserves per telèfon o a la finestreta",
     "help": "Per a qui truca o ve en persona: reserva-li un torn lliure, amb el seu compte o només amb el seu nom, i cancel·la qualsevol reserva abans que comenci.",
     "noFacilities": "No hi ha instal·lacions actives per reservar.",

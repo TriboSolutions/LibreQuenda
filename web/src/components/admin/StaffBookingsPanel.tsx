@@ -19,20 +19,20 @@ import { useAsync } from '@/hooks/useAsync'
 import { api, type AdminFacilitySummary, type StaffBooking, type StaffDay, type StaffSlot } from '@/lib/api'
 import { addDays, formatLongDate, formatTime } from '@/lib/time'
 
-type Props = { slug: string; facilities: AdminFacilitySummary[] }
+// facilityId: the one chosen with its row's "Reservas" button (kept in the URL); "" = the first
+type Props = { slug: string; facilities: AdminFacilitySummary[]; facilityId: string; onFacilityChange: (id: string) => void }
 
 const pill = 'rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap'
 
 /*
-  The "Reservas" tab: one facility's day, turn by turn, with who holds each
+  The bookings view (each facility's "Reservas" button): one facility's day, turn by turn, with who holds each
   booking. Staff book a free turn for someone who phoned or came to the desk
   (their account, or just a name), and cancel any booking before it starts.
 */
-export function StaffBookingsPanel({ slug, facilities }: Props) {
+export function StaffBookingsPanel({ slug, facilities, facilityId, onFacilityChange }: Props) {
   const { t } = useTranslation('admin')
   const token = useAuth().user?.access_token ?? ''
   const active = facilities.filter((f) => f.is_active)
-  const [facilityId, setFacilityId] = useState('')
   const [date, setDate] = useState('') // "" = today, in the council's time zone
   const facility = active.find((f) => f.id === facilityId) ?? active[0]
   const day = useAsync(facility ? () => api.council.staffDay(token, slug, facility.id, date) : null, `staff-day:${slug}:${facility?.id}:${date}`)
@@ -56,7 +56,7 @@ export function StaffBookingsPanel({ slug, facilities }: Props) {
       <div className="flex flex-wrap items-end gap-3">
         <div className="grid min-w-56 flex-1 gap-1.5 sm:flex-none">
           <Label htmlFor="staff-facility">{t('staff.facility')}</Label>
-          <Select value={facility?.id} onValueChange={setFacilityId}>
+          <Select value={facility?.id} onValueChange={onFacilityChange}>
             <SelectTrigger id="staff-facility" className="w-full sm:w-64">
               <SelectValue />
             </SelectTrigger>
