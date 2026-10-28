@@ -11,7 +11,36 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
+
+const addFacilityTags = `-- name: AddFacilityTags :execrows
+INSERT INTO facility_tag (facility_id, tag_id)
+SELECT $1, t.id FROM tag t WHERE t.slug = ANY($2::TEXT[])
+`
+
+type AddFacilityTagsParams struct {
+	FacilityID uuid.UUID `json:"facility_id"`
+	Slugs      []string  `json:"slugs"`
+}
+
+// The tags by slug; a slug not in the catalogue adds no row.
+func (q *Queries) AddFacilityTags(ctx context.Context, arg AddFacilityTagsParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, addFacilityTags, arg.FacilityID, pq.Array(arg.Slugs))
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
+const clearFacilityTags = `-- name: ClearFacilityTags :exec
+DELETE FROM facility_tag WHERE facility_id = $1
+`
+
+func (q *Queries) ClearFacilityTags(ctx context.Context, facilityID uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, clearFacilityTags, facilityID)
+	return err
+}
 
 const countBookingsByFacility = `-- name: CountBookingsByFacility :one
 SELECT COUNT(*) FROM booking WHERE facility_id = $1
@@ -26,15 +55,15 @@ func (q *Queries) CountBookingsByFacility(ctx context.Context, facilityID uuid.U
 
 const createFacility = `-- name: CreateFacility :one
 INSERT INTO facility (
-    tenant_id, slug, name, description, sport, address, latitude, longitude, capacity,
-    accessibility_info, image_ref, is_active, slot_minutes, max_advance_days, min_cancel_hours,
+    tenant_id, slug, name, description, address, latitude, longitude, capacity,
+    accessibility_info, contact_phone, contact_email, image_ref, is_active, slot_minutes, max_advance_days, min_cancel_hours,
     max_active_bookings_per_user, min_age, usage_rules_text
 ) VALUES (
-    $1, $2, $3, $4, $5,
-    $6, $7, $8, $9,
-    $10, $11, $12, $13,
-    $14, $15, $16,
-    $17, $18
+    $1, $2, $3, $4,
+    $5, $6, $7, $8,
+    $9, $10, $11, $12, $13, $14,
+    $15, $16, $17,
+    $18, $19
 )
 RETURNING
     id
@@ -45,12 +74,13 @@ type CreateFacilityParams struct {
 	Slug                     string          `json:"slug"`
 	Name                     string          `json:"name"`
 	Description              sql.NullString  `json:"description"`
-	Sport                    sql.NullString  `json:"sport"`
 	Address                  sql.NullString  `json:"address"`
 	Latitude                 sql.NullFloat64 `json:"latitude"`
 	Longitude                sql.NullFloat64 `json:"longitude"`
 	Capacity                 sql.NullInt32   `json:"capacity"`
 	AccessibilityInfo        sql.NullString  `json:"accessibility_info"`
+	ContactPhone             sql.NullString  `json:"contact_phone"`
+	ContactEmail             sql.NullString  `json:"contact_email"`
 	ImageRef                 sql.NullString  `json:"image_ref"`
 	IsActive                 bool            `json:"is_active"`
 	SlotMinutes              int32           `json:"slot_minutes"`
@@ -67,12 +97,13 @@ func (q *Queries) CreateFacility(ctx context.Context, arg CreateFacilityParams) 
 		arg.Slug,
 		arg.Name,
 		arg.Description,
-		arg.Sport,
 		arg.Address,
 		arg.Latitude,
 		arg.Longitude,
 		arg.Capacity,
 		arg.AccessibilityInfo,
+		arg.ContactPhone,
+		arg.ContactEmail,
 		arg.ImageRef,
 		arg.IsActive,
 		arg.SlotMinutes,
@@ -118,7 +149,7 @@ func (q *Queries) DeleteOpeningHoursByFacility(ctx context.Context, facilityID u
 
 const getFacilityForAdmin = `-- name: GetFacilityForAdmin :one
 SELECT
-    id, tenant_id, slug, name, description, sport, address, latitude, longitude, capacity, accessibility_info, image_ref, is_active, slot_minutes, max_advance_days, min_cancel_hours, max_active_bookings_per_user, min_age, usage_rules_text, created_at, updated_at
+    id, tenant_id, slug, name, description, address, latitude, longitude, capacity, accessibility_info, contact_phone, contact_email, image_ref, is_active, slot_minutes, max_advance_days, min_cancel_hours, max_active_bookings_per_user, min_age, usage_rules_text, created_at, updated_at
 FROM
     facility
 WHERE
@@ -140,12 +171,13 @@ func (q *Queries) GetFacilityForAdmin(ctx context.Context, arg GetFacilityForAdm
 		&i.Slug,
 		&i.Name,
 		&i.Description,
-		&i.Sport,
 		&i.Address,
 		&i.Latitude,
 		&i.Longitude,
 		&i.Capacity,
 		&i.AccessibilityInfo,
+		&i.ContactPhone,
+		&i.ContactEmail,
 		&i.ImageRef,
 		&i.IsActive,
 		&i.SlotMinutes,
@@ -215,7 +247,11 @@ SELECT
     f.id,
     f.slug,
     f.name,
-    f.sport,
+    facility_sport(f.id)::TEXT AS sport,
+    ARRAY(
+        SELECT tg.slug FROM facility_tag ft JOIN tag tg ON tg.id = ft.tag_id JOIN tag_category tc ON tc.id = tg.category_id
+        WHERE ft.facility_id = f.id ORDER BY tc.position, tg.name
+    )::TEXT[] AS tags,
     f.image_ref,
     f.is_active,
     (SELECT COUNT(*) FROM opening_hours oh WHERE oh.facility_id = f.id)::INT AS opening_window_count,
@@ -233,7 +269,8 @@ type ListFacilitiesForAdminRow struct {
 	ID                   uuid.UUID      `json:"id"`
 	Slug                 string         `json:"slug"`
 	Name                 string         `json:"name"`
-	Sport                sql.NullString `json:"sport"`
+	Sport                string         `json:"sport"`
+	Tags                 []string       `json:"tags"`
 	ImageRef             sql.NullString `json:"image_ref"`
 	IsActive             bool           `json:"is_active"`
 	OpeningWindowCount   int32          `json:"opening_window_count"`
@@ -254,6 +291,7 @@ func (q *Queries) ListFacilitiesForAdmin(ctx context.Context, tenantID uuid.UUID
 			&i.Slug,
 			&i.Name,
 			&i.Sport,
+			pq.Array(&i.Tags),
 			&i.ImageRef,
 			&i.IsActive,
 			&i.OpeningWindowCount,
@@ -272,29 +310,67 @@ func (q *Queries) ListFacilitiesForAdmin(ctx context.Context, tenantID uuid.UUID
 	return items, nil
 }
 
+const listFacilityTagSlugs = `-- name: ListFacilityTagSlugs :many
+SELECT
+    t.slug
+FROM
+    facility_tag ft
+    JOIN tag t ON t.id = ft.tag_id
+    JOIN tag_category c ON c.id = t.category_id
+WHERE
+    ft.facility_id = $1
+ORDER BY
+    c.position,
+    t.name
+`
+
+func (q *Queries) ListFacilityTagSlugs(ctx context.Context, facilityID uuid.UUID) ([]string, error) {
+	rows, err := q.db.QueryContext(ctx, listFacilityTagSlugs, facilityID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var slug string
+		if err := rows.Scan(&slug); err != nil {
+			return nil, err
+		}
+		items = append(items, slug)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateFacility = `-- name: UpdateFacility :one
 UPDATE facility
 SET
     slug                         = $1,
     name                         = $2,
     description                  = $3,
-    sport                        = $4,
-    address                      = $5,
-    latitude                     = $6,
-    longitude                    = $7,
-    capacity                     = $8,
-    accessibility_info           = $9,
-    image_ref                    = $10,
-    is_active                    = $11,
-    slot_minutes                 = $12,
-    max_advance_days             = $13,
-    min_cancel_hours             = $14,
-    max_active_bookings_per_user = $15,
-    min_age                      = $16,
-    usage_rules_text             = $17
+    address                      = $4,
+    latitude                     = $5,
+    longitude                    = $6,
+    capacity                     = $7,
+    accessibility_info           = $8,
+    contact_phone                = $9,
+    contact_email                = $10,
+    image_ref                    = $11,
+    is_active                    = $12,
+    slot_minutes                 = $13,
+    max_advance_days             = $14,
+    min_cancel_hours             = $15,
+    max_active_bookings_per_user = $16,
+    min_age                      = $17,
+    usage_rules_text             = $18
 WHERE
-    id = $18
-    AND tenant_id = $19
+    id = $19
+    AND tenant_id = $20
 RETURNING
     id
 `
@@ -303,12 +379,13 @@ type UpdateFacilityParams struct {
 	Slug                     string          `json:"slug"`
 	Name                     string          `json:"name"`
 	Description              sql.NullString  `json:"description"`
-	Sport                    sql.NullString  `json:"sport"`
 	Address                  sql.NullString  `json:"address"`
 	Latitude                 sql.NullFloat64 `json:"latitude"`
 	Longitude                sql.NullFloat64 `json:"longitude"`
 	Capacity                 sql.NullInt32   `json:"capacity"`
 	AccessibilityInfo        sql.NullString  `json:"accessibility_info"`
+	ContactPhone             sql.NullString  `json:"contact_phone"`
+	ContactEmail             sql.NullString  `json:"contact_email"`
 	ImageRef                 sql.NullString  `json:"image_ref"`
 	IsActive                 bool            `json:"is_active"`
 	SlotMinutes              int32           `json:"slot_minutes"`
@@ -326,12 +403,13 @@ func (q *Queries) UpdateFacility(ctx context.Context, arg UpdateFacilityParams) 
 		arg.Slug,
 		arg.Name,
 		arg.Description,
-		arg.Sport,
 		arg.Address,
 		arg.Latitude,
 		arg.Longitude,
 		arg.Capacity,
 		arg.AccessibilityInfo,
+		arg.ContactPhone,
+		arg.ContactEmail,
 		arg.ImageRef,
 		arg.IsActive,
 		arg.SlotMinutes,

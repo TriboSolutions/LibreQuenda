@@ -38,9 +38,19 @@
   },
   "contact": {
     "title": "Contacto do concello",
+    "facilityTitle": "Contacto da instalación",
     "lead": "Dúbidas cunha reserva ou cunha instalación? Fala co servizo de deportes.",
+    "facilityLead": "Dúbidas cunha reserva ou coa instalación? Fala con quen a xestiona.",
     "phone": "Teléfono",
     "email": "Correo electrónico",
     "none": "Este concello aínda non publicou os seus datos de contacto."
+  },
+  "tags": {
+    "label": "Filtrar instalacións por etiqueta",
+    "clear": "Quitar filtros",
+    "noMatch": "Ningunha instalación ten todas esas etiquetas. Quita algunha.",
+    "filterBy_one": "Filtrar por {{category}}, {{count}} escollida",
+    "filterBy_other": "Filtrar por {{category}}, {{count}} escollidas",
+    "clearCategory": "Quitar estas"
   }
 }

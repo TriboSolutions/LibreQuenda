@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
 
 const exportBookingParticipants = `-- name: ExportBookingParticipants :many
@@ -254,7 +255,12 @@ func (q *Queries) ExportClosures(ctx context.Context, tenantID uuid.UUID) ([]Clo
 
 const exportFacilities = `-- name: ExportFacilities :many
 SELECT
-    id, tenant_id, slug, name, description, sport, address, latitude, longitude, capacity, accessibility_info, image_ref, is_active, slot_minutes, max_advance_days, min_cancel_hours, max_active_bookings_per_user, min_age, usage_rules_text, created_at, updated_at
+    facility.id, facility.tenant_id, facility.slug, facility.name, facility.description, facility.address, facility.latitude, facility.longitude, facility.capacity, facility.accessibility_info, facility.contact_phone, facility.contact_email, facility.image_ref, facility.is_active, facility.slot_minutes, facility.max_advance_days, facility.min_cancel_hours, facility.max_active_bookings_per_user, facility.min_age, facility.usage_rules_text, facility.created_at, facility.updated_at,
+    facility_sport(facility.id)::TEXT AS sport,
+    ARRAY(
+        SELECT tg.slug FROM facility_tag ft JOIN tag tg ON tg.id = ft.tag_id
+        WHERE ft.facility_id = facility.id ORDER BY tg.slug
+    )::TEXT[] AS tags
 FROM
     facility
 WHERE
@@ -263,37 +269,46 @@ ORDER BY
     name ASC
 `
 
-func (q *Queries) ExportFacilities(ctx context.Context, tenantID uuid.UUID) ([]Facility, error) {
+type ExportFacilitiesRow struct {
+	Facility Facility `json:"facility"`
+	Sport    string   `json:"sport"`
+	Tags     []string `json:"tags"`
+}
+
+func (q *Queries) ExportFacilities(ctx context.Context, tenantID uuid.UUID) ([]ExportFacilitiesRow, error) {
 	rows, err := q.db.QueryContext(ctx, exportFacilities, tenantID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Facility
+	var items []ExportFacilitiesRow
 	for rows.Next() {
-		var i Facility
+		var i ExportFacilitiesRow
 		if err := rows.Scan(
-			&i.ID,
-			&i.TenantID,
-			&i.Slug,
-			&i.Name,
-			&i.Description,
+			&i.Facility.ID,
+			&i.Facility.TenantID,
+			&i.Facility.Slug,
+			&i.Facility.Name,
+			&i.Facility.Description,
+			&i.Facility.Address,
+			&i.Facility.Latitude,
+			&i.Facility.Longitude,
+			&i.Facility.Capacity,
+			&i.Facility.AccessibilityInfo,
+			&i.Facility.ContactPhone,
+			&i.Facility.ContactEmail,
+			&i.Facility.ImageRef,
+			&i.Facility.IsActive,
+			&i.Facility.SlotMinutes,
+			&i.Facility.MaxAdvanceDays,
+			&i.Facility.MinCancelHours,
+			&i.Facility.MaxActiveBookingsPerUser,
+			&i.Facility.MinAge,
+			&i.Facility.UsageRulesText,
+			&i.Facility.CreatedAt,
+			&i.Facility.UpdatedAt,
 			&i.Sport,
-			&i.Address,
-			&i.Latitude,
-			&i.Longitude,
-			&i.Capacity,
-			&i.AccessibilityInfo,
-			&i.ImageRef,
-			&i.IsActive,
-			&i.SlotMinutes,
-			&i.MaxAdvanceDays,
-			&i.MinCancelHours,
-			&i.MaxActiveBookingsPerUser,
-			&i.MinAge,
-			&i.UsageRulesText,
-			&i.CreatedAt,
-			&i.UpdatedAt,
+			pq.Array(&i.Tags),
 		); err != nil {
 			return nil, err
 		}

@@ -77,6 +77,7 @@ SELECT
     f.min_cancel_hours,
     t.slug AS tenant_slug,
     t.name AS tenant_name,
+    facility_sport(f.id)::TEXT AS facility_sport,
     sqlc.embed(f) -- what the booking details show: image, address, rules
 FROM
     booking b

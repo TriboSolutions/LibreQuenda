@@ -18,7 +18,10 @@ export type Facility = {
   latitude: number | null
   longitude: number | null
   sport: string
+  tags: string[] // tag slugs (see api.tags), in the catalogue's order
   address: string
+  contact_phone: string // its own, "" when not given: show the council's instead (FacilityContact)
+  contact_email: string
   slot_minutes: number
   max_advance_days: number
   min_cancel_hours: number
@@ -41,7 +44,28 @@ export type TenantStats = {
   bookings: number // confirmed, past and upcoming
   residents: number // distinct accounts that have booked
 }
+export type GeoPoint = { latitude: number; longitude: number }
 export type TenantCard = Tenant & { stats: TenantStats }
+
+/** One facility on the home page's list and map, from any council. */
+export type FacilityCard = {
+  id: string
+  slug: string
+  name: string
+  sport: string
+  tags: string[]
+  image_url: string
+  address: string
+  latitude: number | null // null without a map pin
+  longitude: number | null
+  free_today: number // turns still free today
+  council: Tenant
+}
+
+/** A facility tag from the platform's catalogue; facilities and addresses use its slug. */
+export type Tag = { id: string; slug: string; name: string; facility_count: number }
+export type TagCategory = { id: string; name: string; position: number; tags: Tag[] }
+export type TagCatalogue = { categories: TagCategory[] }
 
 /** An uploaded image: forms save the ref (storage reference); screens only show the url. */
 export type StoredImage = { ref: string; url: string }
@@ -57,26 +81,6 @@ export type Day = {
 
 export type WeeklyWindow = { weekday: number; opens_at: string; closes_at: string } // ISO weekday: 1 = Monday
 
-/** How busy a turn usually is at that facility, from the bookings of the last weeks. */
-export type BusyLevel = 'quiet' | 'moderate' | 'busy'
-
-export type SuggestedSlot = { starts_at: string; ends_at: string; level: BusyLevel }
-
-/** Another facility of the same sport with free turns that day. */
-export type Alternative = {
-  slug: string
-  name: string
-  address: string
-  distance_km: number | null // null when either facility has no map pin
-  free_slots: number
-  slots: SuggestedSlot[] // its quietest free turns
-}
-
-export type Suggestions = {
-  quiet: SuggestedSlot[] // free turns of the day, quietest first; empty without booking history
-  alternatives: Alternative[] // nearest first
-}
-
 export type FacilityPage = {
   tenant: Tenant
   timezone: string
@@ -84,7 +88,6 @@ export type FacilityPage = {
   now: string
   facility: Facility
   schedule: WeeklyWindow[]
-  suggestions: Suggestions
 }
 
 // --- council administration -----------------------------------------------
@@ -94,6 +97,7 @@ export type AdminFacilitySummary = {
   slug: string
   name: string
   sport: string
+  tags: string[]
   image_url: string
   is_active: boolean
   opening_window_count: number
@@ -104,12 +108,14 @@ export type FacilityInput = {
   slug: string
   name: string
   description: string
-  sport: string
+  tags: string[] // tag slugs from the platform's catalogue (api.tags); its sport line comes from them
   address: string
   latitude: number | null
   longitude: number | null
   capacity: number | null
   accessibility_info: string
+  contact_phone: string // optional: without them, residents see the council's
+  contact_email: string
   image_ref: string // a storage reference, never a URL
   is_active: boolean
   slot_minutes: number
@@ -599,6 +605,8 @@ async function uploadImage(token: string, folder: MediaFolder, file: File): Prom
 export const api = {
   uploadImage,
   tenants: () => request<{ tenants: TenantCard[] }>('/tenants'),
+  tags: () => request<TagCatalogue>('/tags'),
+  facilities: () => request<{ facilities: FacilityCard[] }>('/facilities'),
   day: (slug: string, date?: string) =>
     request<Day>(`/tenants/${encodeURIComponent(slug)}/day${date ? `?date=${date}` : ''}`),
   me: (token: string) => request<Me>('/me', { token }),
@@ -664,7 +672,8 @@ export const api = {
       request<{ facilities: AdminFacilitySummary[] }>(`/tenants/${encodeURIComponent(slug)}/admin/facilities`, { token }),
     facility: (token: string, slug: string, id: string) =>
       request<AdminFacility>(`/tenants/${encodeURIComponent(slug)}/admin/facilities/${id}`, { token }),
-    createFacility: (token: string, slug: string, input: FacilityInput) =>
+    // the schedule goes with it, so a new facility is set up in one go
+    createFacility: (token: string, slug: string, input: FacilityInput & { schedule?: { windows: WeeklyWindow[] } }) =>
       request<AdminFacility>(`/tenants/${encodeURIComponent(slug)}/admin/facilities`, { token, method: 'POST', body: input }),
     updateFacility: (token: string, slug: string, id: string, input: FacilityInput) =>
       request<AdminFacility>(`/tenants/${encodeURIComponent(slug)}/admin/facilities/${id}`, { token, method: 'PUT', body: input }),
@@ -756,5 +765,16 @@ export const api = {
       request<void>('/admin/superadmins', { token, method: 'POST', body: { email } }),
     removeSuperadmin: (token: string, userId: string) =>
       request<void>(`/admin/superadmins/${userId}`, { token, method: 'DELETE' }),
+    // the tag catalogue: each change answers with the whole catalogue as it is now
+    createTagCategory: (token: string, name: string) =>
+      request<TagCatalogue>('/admin/tag-categories', { token, method: 'POST', body: { name } }),
+    updateTagCategory: (token: string, id: string, input: { name: string; position?: number }) =>
+      request<TagCatalogue>(`/admin/tag-categories/${id}`, { token, method: 'PUT', body: input }),
+    deleteTagCategory: (token: string, id: string) => request<TagCatalogue>(`/admin/tag-categories/${id}`, { token, method: 'DELETE' }),
+    createTag: (token: string, input: { category_id: string; name: string; slug: string }) =>
+      request<TagCatalogue>('/admin/tags', { token, method: 'POST', body: input }),
+    updateTag: (token: string, id: string, input: { category_id: string; name: string }) =>
+      request<TagCatalogue>(`/admin/tags/${id}`, { token, method: 'PUT', body: input }),
+    deleteTag: (token: string, id: string) => request<TagCatalogue>(`/admin/tags/${id}`, { token, method: 'DELETE' }),
   },
 }

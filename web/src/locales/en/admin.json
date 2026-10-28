@@ -4,7 +4,8 @@
   "menuLink": "Platform administration",
   "tabs": {
     "councils": "Councils",
-    "superadmins": "Superadministrators"
+    "superadmins": "Superadministrators",
+    "tags": "Tags"
   },
   "guard": {
     "signIn": "Sign in to open the administration.",
@@ -34,8 +35,6 @@
     "createDescription": "Its page goes live at once; its administrator adds the facilities.",
     "name": "Name",
     "namePlaceholder": "Concello de Lalín",
-    "slug": "Address",
-    "slugHelp": "Lowercase letters, numbers and hyphens. Page: {{url}}",
     "timezone": "Time zone",
     "tzMadrid": "Peninsula and Balearic Islands",
     "tzCanary": "Canary Islands",
@@ -50,7 +49,8 @@
     "save": "Save changes",
     "saving": "Saving…",
     "cancel": "Cancel",
-    "logo": "Coat of arms or logo"
+    "logo": "Coat of arms or logo",
+    "pageUrl": "Its page: {{url}}"
   },
   "manage": {
     "details": "Details",
@@ -110,14 +110,18 @@
     "details": "Details",
     "name": "Name",
     "namePlaceholder": "Pista de pádel 1",
-    "slug": "Address",
     "slugHelp": "Page: {{url}}",
-    "sport": "Sport or use",
-    "sportPlaceholder": "Pádel",
+    "tags": "Tags",
+    "tagsHelp": "Every sport that can be played and what the facility is like. Residents filter by them.",
     "description": "Description",
     "image": "Photo",
     "capacity": "Capacity",
     "accessibility": "Accessibility",
+    "contact": "Facility contact",
+    "contactPhone": "Phone",
+    "contactEmail": "Email",
+    "contactInherits": "Empty: the council's is shown, {{value}}.",
+    "contactNone": "Empty: the council has none either, so none is shown.",
     "location": "Location",
     "address": "Street address",
     "search": "Find on the map",
@@ -139,7 +143,7 @@
     "saved": "Saved.",
     "schedule": "Weekly opening hours",
     "scheduleHelp": "Turns are cut from these windows; a window can be split (for example morning and afternoon).",
-    "scheduleAfterCreate": "Save the facility first to set its opening hours.",
+    "scheduleWithCreate": "Turns are cut within these windows; a day can have several (morning and afternoon, for example). It is saved with the facility when you create it.",
     "addWindow": "Add window",
     "removeWindow": "Remove window",
     "copyWeekdays": "Copy Monday to Tuesday–Friday",
@@ -179,7 +183,10 @@
       "deactivatedKept_other": "Facility deactivated. Its {{count}} upcoming bookings are kept.",
       "deactivatedCancelled_one": "Facility deactivated. {{count}} booking was cancelled and its owner notified.",
       "deactivatedCancelled_other": "Facility deactivated. {{count}} bookings were cancelled and their owners notified."
-    }
+    },
+    "tagsEmpty": "There are no tags yet: ask a superadministrator.",
+    "tagsNone": "None",
+    "tagsClear": "Clear all"
   },
   "readers": {
     "title": "Entrance QR readers",
@@ -411,8 +418,7 @@
     "downloading": "Preparing…"
   },
   "staff": {
-    "open": "Bookings",
-    "back": "Facilities",
+    "tab": "Manual booking",
     "title": "Bookings by phone or at the desk",
     "help": "For residents who call or come in: book a free turn for them, with their account or just their name, and cancel any booking before it starts.",
     "noFacilities": "There are no active facilities to book.",
@@ -420,14 +426,17 @@
     "date": "Day",
     "previousDay": "Previous day",
     "nextDay": "Next day",
+    "previousWeek": "Previous week",
+    "nextWeek": "Next week",
     "today": "Today",
+    "viewLabel": "View",
+    "viewDay": "Day",
+    "viewWeek": "Week",
+    "openDay": "Show {{date}}",
     "minAge": "Minimum age {{age}}: check it for people without an account.",
     "closedDay": "The facility has no turns on this day.",
     "caption": "Turns and bookings on {{date}}",
-    "colTime": "Turn",
-    "colHolder": "Booked by",
     "colContact": "Contact",
-    "colActions": "Actions",
     "status": {
       "free": "Free",
       "booked": "Booked",
@@ -436,6 +445,7 @@
       "too_far": "Cannot be booked yet"
     },
     "noName": "No name (deleted account or removed after 30 days)",
+    "noNameShort": "No name",
     "withAccount": "Account",
     "withoutAccount": "No account",
     "bookedByStaff": "Booked by staff",
@@ -477,5 +487,37 @@
     "keep": "Keep it",
     "cancelling": "Cancelling…",
     "confirmCancel": "Cancel booking"
+  },
+  "tags": {
+    "help": "The tag catalogue for every council, in categories. Councils tag their facilities with them (a facility can have several), and residents filter by them on the home page and on each council's page.",
+    "newCategory": "New category",
+    "newCategoryPlaceholder": "For example: Audience",
+    "addCategory": "Add category",
+    "moveUp": "Move {{name}} up",
+    "moveDown": "Move {{name}} down",
+    "renameCategory": "Rename {{name}}",
+    "deleteCategory": "Delete {{name}}",
+    "noTags": "No tags yet.",
+    "newTagIn": "New tag in {{category}}",
+    "newTagPlaceholder": "New tag",
+    "addTag": "Add",
+    "renameTitle": "Rename the category",
+    "categoryName": "Category name",
+    "save": "Save",
+    "delete": "Delete",
+    "deleteCategoryTitle": "Delete “{{name}}”?",
+    "deleteCategoryBody_one": "Its {{count}} tag goes with it, and comes off {{facilities}} facilities.",
+    "deleteCategoryBody_other": "Its {{count}} tags go with it, and come off {{facilities}} facilities.",
+    "editTitle": "Edit the tag",
+    "usedBy_one": "{{count}} facility uses it.",
+    "usedBy_other": "{{count}} facilities use it.",
+    "tagName": "Name",
+    "slugHelp": "Addresses keep using “{{slug}}”, even if you rename it.",
+    "category": "Category",
+    "deleteTagBody_one": "It also comes off the facility that has it. This cannot be undone.",
+    "deleteTagBody_other": "It also comes off the {{count}} facilities that have it. This cannot be undone.",
+    "confirmDeleteTag": "Yes, delete",
+    "facilitiesUsing_one": "on {{count}} facility",
+    "facilitiesUsing_other": "on {{count}} facilities"
   }
 }

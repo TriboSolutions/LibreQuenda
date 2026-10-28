@@ -38,9 +38,19 @@
   },
   "contact": {
     "title": "Council contact",
+    "facilityTitle": "Facility contact",
     "lead": "Questions about a booking or a facility? Talk to the sports service.",
+    "facilityLead": "Questions about a booking or the facility? Talk to the people who run it.",
     "phone": "Phone",
     "email": "Email",
     "none": "This council has not published its contact details yet."
+  },
+  "tags": {
+    "label": "Filter facilities by tag",
+    "clear": "Clear filters",
+    "noMatch": "No facility has all those tags. Remove one.",
+    "filterBy_one": "Filter by {{category}}, {{count}} chosen",
+    "filterBy_other": "Filter by {{category}}, {{count}} chosen",
+    "clearCategory": "Clear these"
   }
 }

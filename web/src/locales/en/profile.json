@@ -83,7 +83,6 @@
     "deletedBody": "Your personal details are gone from LibreQuenda. You can create a new account whenever you like."
   },
   "personalQr": {
-    "title": "Flash booking",
     "help": "At a facility with a QR reader, and it's free? Book it on the spot with your QR.",
     "alt": "Your flash booking QR code. It changes every minute.",
     "private": "The code changes every minute and works only once, so a screenshot will not work. Do not share it.",
@@ -93,11 +92,7 @@
     "retry": "Try again",
     "incomplete": "Add your date of birth in your profile to book with your QR.",
     "menuLink": "Flash booking",
-    "show": "Show my QR",
-    "close": "Close",
-    "now": "If the turn has started and nobody booked it, it books it for you from now until it ends, even if the next one is booked. For example, with one-hour turns, arriving at 16:15 gives you the facility until 17:00.",
-    "soon": "If the next turn starts soon and is free, it books that whole turn. The same limits apply as booking here, and scanning it means you accept that facility's usage rules.",
-    "ownBooking": "If you already have a booking, go in with that booking's QR in “My bookings”: this one is not for that."
+    "close": "Close"
   },
   "calendar": {
     "title": "Calendar",

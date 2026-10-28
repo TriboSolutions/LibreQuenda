@@ -36,7 +36,7 @@ async function open(page: Page, path: string, options?: MockOptions) {
 }
 
 const pages: { name: string; path: string; signedIn?: boolean }[] = [
-  { name: 'council picker', path: '/', signedIn: false },
+  { name: 'home, facilities and map', path: '/', signedIn: false },
   { name: 'council page, signed out', path: '/lugo', signedIn: false },
   { name: 'council page, signed in', path: '/lugo' },
   { name: 'facility page', path: '/lugo/padel-1' },
@@ -100,11 +100,11 @@ for (const theme of ['light', 'dark'] as const) {
       })
     }
 
-    // the bookings view (a facility row's Reservas button): book a free turn for someone, cancel someone's booking
-    for (const button of [/^Reservar:/, /^Cancelar: Ana/]) {
+    // the bookings calendar (a facility row's Reservas button): book a free turn for someone, open someone's booking
+    for (const button of [/^Reservar:/, /^Ana/]) {
       test(`staff booking dialog ${button.source}`, async ({ page }) => {
         await open(page, '/lugo/admin?vista=reservas', { theme })
-        await page.getByRole('button', { name: button }).click()
+        await page.getByRole('button', { name: button }).first().click()
         await expect(page.getByRole('dialog')).toBeVisible()
         await page.waitForTimeout(300)
         await expectAccessible(page, { overlay: true })
@@ -123,6 +123,13 @@ for (const theme of ['light', 'dark'] as const) {
     test('platform admin, superadmins tab', async ({ page }) => {
       await open(page, '/admin', { theme })
       await page.getByRole('tab').nth(1).click()
+      await expectAccessible(page)
+    })
+
+    test('platform admin, tags tab', async ({ page }) => {
+      await open(page, '/admin', { theme })
+      await page.getByRole('tab').nth(2).click()
+      await expect(page.getByRole('heading', { name: 'Deportes' })).toBeVisible()
       await expectAccessible(page)
     })
   })

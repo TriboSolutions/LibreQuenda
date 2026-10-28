@@ -72,6 +72,45 @@ func (s *tenantsService) GetTenants(ctx context.Context) (*TenantsResponse, *sha
 	return response, nil
 }
 
+// GetFacilities is every active facility of every active council, for the home
+// page's list and map. Like freeToday it reuses the day view, a few queries per
+// council; a council that fails to load is left out rather than failing the page.
+func (s *tenantsService) GetFacilities(ctx context.Context) (*FacilitiesResponse, *shared.ErrorResponse) {
+	var tenants, err = model.New(s.db).ListTenants(ctx)
+	if err != nil {
+		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.tenants_load_failed"}
+	}
+	var response = &FacilitiesResponse{Facilities: []FacilityCardDto{}}
+	for _, tenant := range tenants {
+		var day, _, _, dayErr = s.loadDay(ctx, tenant.Slug, "")
+		if dayErr != nil {
+			continue
+		}
+		for _, f := range day.Facilities {
+			var free = 0
+			for _, slot := range f.Slots {
+				if slot.Status == schedule.SlotFree {
+					free++
+				}
+			}
+			response.Facilities = append(response.Facilities, FacilityCardDto{
+				Id:        f.Id,
+				Slug:      f.Slug,
+				Name:      f.Name,
+				Sport:     f.Sport,
+				Tags:      f.Tags,
+				ImageUrl:  f.ImageUrl,
+				Address:   f.Address,
+				Latitude:  f.Latitude,
+				Longitude: f.Longitude,
+				FreeToday: free,
+				Council:   day.Tenant,
+			})
+		}
+	}
+	return response, nil
+}
+
 // freeToday counts the turns still free today at the council's facilities. It
 // reuses the day view, so it costs a few queries per council: fine while the
 // councils fit on one home page. On error the card just shows no free turns.
@@ -196,8 +235,11 @@ func (s *tenantsService) loadDay(ctx context.Context, slug string, dateParam str
 			ImageUrl:       storage.URL(f.ImageRef.String),
 			Latitude:       latitude,
 			Longitude:      longitude,
-			Sport:          f.Sport.String,
+			Sport:          f.Sport,
+			Tags:           append([]string{}, f.Tags...),
 			Address:        f.Address.String,
+			ContactPhone:   f.ContactPhone.String,
+			ContactEmail:   f.ContactEmail.String,
 			SlotMinutes:    f.SlotMinutes,
 			MaxAdvanceDays: f.MaxAdvanceDays,
 			MinCancelHours: f.MinCancelHours,
@@ -214,7 +256,7 @@ func (s *tenantsService) loadDay(ctx context.Context, slug string, dateParam str
 
 // GetFacilityPage is one active facility of the council with its slots for the day and its weekly schedule.
 func (s *tenantsService) GetFacilityPage(ctx context.Context, slug string, facilitySlug string, dateParam string) (*FacilityPageResponse, *shared.ErrorResponse) {
-	var day, tenantId, loc, err = s.loadDay(ctx, slug, dateParam)
+	var day, _, _, err = s.loadDay(ctx, slug, dateParam)
 	if err != nil {
 		return nil, err
 	}
@@ -231,24 +273,13 @@ func (s *tenantsService) GetFacilityPage(ctx context.Context, slug string, facil
 		for _, h := range hours {
 			schedule = append(schedule, WeeklyWindowDto{Weekday: h.Weekday, OpensAt: h.OpensAt.Format("15:04"), ClosesAt: h.ClosesAt.Format("15:04")})
 		}
-		var now = time.Now()
-		var busy, busyErr = model.New(s.db).ListBusyHoursByTenant(ctx, model.ListBusyHoursByTenantParams{
-			Timezone:   day.Timezone,
-			TenantID:   tenantId,
-			RangeStart: now.AddDate(0, 0, -7*historyWeeks),
-			RangeEnd:   now,
-		})
-		if busyErr != nil {
-			return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.day_load_failed"}
-		}
 		return &FacilityPageResponse{
-			Tenant:      day.Tenant,
-			Timezone:    day.Timezone,
-			Date:        day.Date,
-			Now:         day.Now,
-			Facility:    f,
-			Schedule:    schedule,
-			Suggestions: suggest(f, day.Facilities, busyHistoryByFacility(busy), loc),
+			Tenant:   day.Tenant,
+			Timezone: day.Timezone,
+			Date:     day.Date,
+			Now:      day.Now,
+			Facility: f,
+			Schedule: schedule,
 		}, nil
 	}
 	return nil, &shared.ErrorResponse{Code: http.StatusNotFound, Message: "errors.facility_not_found"}

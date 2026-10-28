@@ -33,6 +33,16 @@ func (h *tenantsHandler) GetTenants(w http.ResponseWriter, r *http.Request) {
 	helpers.SendSuccessResponse(w, response)
 }
 
+// GetFacilities returns every active facility of every council, for the home page.
+func (h *tenantsHandler) GetFacilities(w http.ResponseWriter, r *http.Request) {
+	var response, err = GetTenantsService(h.db).GetFacilities(r.Context())
+	if err != nil {
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
+		return
+	}
+	helpers.SendSuccessResponse(w, response)
+}
+
 // GetFacility returns one facility's page: details, the day's slots (?date=) and its weekly schedule.
 func (h *tenantsHandler) GetFacility(w http.ResponseWriter, r *http.Request) {
 	var slug, slugErr = helpers.GetStringPathValue("slug", r)

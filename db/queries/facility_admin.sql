@@ -16,7 +16,11 @@ SELECT
     f.id,
     f.slug,
     f.name,
-    f.sport,
+    facility_sport(f.id)::TEXT AS sport,
+    ARRAY(
+        SELECT tg.slug FROM facility_tag ft JOIN tag tg ON tg.id = ft.tag_id JOIN tag_category tc ON tc.id = tg.category_id
+        WHERE ft.facility_id = f.id ORDER BY tc.position, tg.name
+    )::TEXT[] AS tags,
     f.image_ref,
     f.is_active,
     (SELECT COUNT(*) FROM opening_hours oh WHERE oh.facility_id = f.id)::INT AS opening_window_count,
@@ -40,13 +44,13 @@ WHERE
 
 -- name: CreateFacility :one
 INSERT INTO facility (
-    tenant_id, slug, name, description, sport, address, latitude, longitude, capacity,
-    accessibility_info, image_ref, is_active, slot_minutes, max_advance_days, min_cancel_hours,
+    tenant_id, slug, name, description, address, latitude, longitude, capacity,
+    accessibility_info, contact_phone, contact_email, image_ref, is_active, slot_minutes, max_advance_days, min_cancel_hours,
     max_active_bookings_per_user, min_age, usage_rules_text
 ) VALUES (
-    sqlc.arg('tenant_id'), sqlc.arg('slug'), sqlc.arg('name'), sqlc.narg('description'), sqlc.narg('sport'),
+    sqlc.arg('tenant_id'), sqlc.arg('slug'), sqlc.arg('name'), sqlc.narg('description'),
     sqlc.narg('address'), sqlc.narg('latitude'), sqlc.narg('longitude'), sqlc.narg('capacity'),
-    sqlc.narg('accessibility_info'), sqlc.narg('image_ref'), sqlc.arg('is_active'), sqlc.arg('slot_minutes'),
+    sqlc.narg('accessibility_info'), sqlc.narg('contact_phone'), sqlc.narg('contact_email'), sqlc.narg('image_ref'), sqlc.arg('is_active'), sqlc.arg('slot_minutes'),
     sqlc.arg('max_advance_days'), sqlc.arg('min_cancel_hours'), sqlc.arg('max_active_bookings_per_user'),
     sqlc.narg('min_age'), sqlc.narg('usage_rules_text')
 )
@@ -59,12 +63,13 @@ SET
     slug                         = sqlc.arg('slug'),
     name                         = sqlc.arg('name'),
     description                  = sqlc.narg('description'),
-    sport                        = sqlc.narg('sport'),
     address                      = sqlc.narg('address'),
     latitude                     = sqlc.narg('latitude'),
     longitude                    = sqlc.narg('longitude'),
     capacity                     = sqlc.narg('capacity'),
     accessibility_info           = sqlc.narg('accessibility_info'),
+    contact_phone                = sqlc.narg('contact_phone'),
+    contact_email                = sqlc.narg('contact_email'),
     image_ref                    = sqlc.narg('image_ref'),
     is_active                    = sqlc.arg('is_active'),
     slot_minutes                 = sqlc.arg('slot_minutes'),
@@ -94,3 +99,24 @@ DELETE FROM opening_hours WHERE facility_id = sqlc.arg('facility_id');
 -- name: InsertOpeningHours :exec
 INSERT INTO opening_hours (facility_id, weekday, opens_at, closes_at)
 VALUES (sqlc.arg('facility_id'), sqlc.arg('weekday'), sqlc.arg('opens_at'), sqlc.arg('closes_at'));
+
+-- name: ListFacilityTagSlugs :many
+SELECT
+    t.slug
+FROM
+    facility_tag ft
+    JOIN tag t ON t.id = ft.tag_id
+    JOIN tag_category c ON c.id = t.category_id
+WHERE
+    ft.facility_id = sqlc.arg('facility_id')
+ORDER BY
+    c.position,
+    t.name;
+
+-- name: ClearFacilityTags :exec
+DELETE FROM facility_tag WHERE facility_id = sqlc.arg('facility_id');
+
+-- name: AddFacilityTags :execrows
+-- The tags by slug; a slug not in the catalogue adds no row.
+INSERT INTO facility_tag (facility_id, tag_id)
+SELECT sqlc.arg('facility_id'), t.id FROM tag t WHERE t.slug = ANY(sqlc.arg('slugs')::TEXT[]);

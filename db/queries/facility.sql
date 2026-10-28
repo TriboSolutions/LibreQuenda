@@ -3,7 +3,7 @@ SELECT
     id,
     name,
     description,
-    sport,
+    facility_sport(id)::TEXT AS sport,
     address,
     image_ref
 FROM

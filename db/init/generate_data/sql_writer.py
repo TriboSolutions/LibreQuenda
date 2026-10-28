@@ -10,6 +10,7 @@ CONTAINER_CSV_DIR = "/docker-initdb-staging/csv_data"
 TABLE_ORDER = [
     "tenant",
     "facility",
+    "facility_tag",
     "opening_hours",
     "checkin_device",
     "app_user",
@@ -17,11 +18,17 @@ TABLE_ORDER = [
     "booking",
 ]
 
-# Tables whose CSV holds a day offset and local times instead of timestamps:
-# they are loaded into a temporary table and converted relative to the day the
-# database is created, so the demo always has a realistic "today".
+# Tables loaded into a temporary table first and converted on the way in: a day
+# offset and local times become timestamps relative to the day the database is
+# created (so the demo always has a realistic "today"), and tag slugs become tag ids.
 LOCAL_DAY = f"(now() AT TIME ZONE '{TIMEZONE}')::date"
 RELATIVE_TABLES = {
+    # by tag slug: the tag ids are made by 06_tags.sql
+    "facility_tag": (
+        "INSERT INTO facility_tag (facility_id, tag_id)\n"
+        "SELECT s.facility_id, t.id\n"
+        "FROM seed_facility_tag s JOIN tag t ON t.slug = s.tag_slug;"
+    ),
     "closure": (
         "INSERT INTO closure (id, facility_id, starts_at, ends_at, reason)\n"
         "SELECT id, facility_id,\n"
@@ -46,6 +53,7 @@ RELATIVE_COLUMN_TYPES = {
     "start_time": "TIME",
     "end_time": "TIME",
     "reason": "TEXT",
+    "tag_slug": "TEXT",
 }
 
 # Generated in SQL once the schedule is loaded, after the CSV tables

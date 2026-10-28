@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import QRCode from 'qrcode'
-import { ChevronLeft, ChevronRight, Printer } from 'lucide-react'
+import { CircleCheck, ChevronLeft, ChevronRight, Plus, Printer } from 'lucide-react'
 import { DatePicker } from '@/components/DatePicker'
 import { QrImage } from '@/components/QrImage'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -17,16 +17,44 @@ import { Textarea } from '@/components/ui/textarea'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { useAsync } from '@/hooks/useAsync'
 import { api, type AdminFacilitySummary, type StaffBooking, type StaffDay, type StaffSlot } from '@/lib/api'
-import { addDays, formatLongDate, formatTime } from '@/lib/time'
+import { addDays, formatLongDate, formatTime, localDate, minutesOfDay, shortDateParts } from '@/lib/time'
+import { cn } from '@/lib/utils'
 
 // facilityId: the one chosen with its row's "Reservas" button (kept in the URL); "" = the first
 type Props = { slug: string; facilities: AdminFacilitySummary[]; facilityId: string; onFacilityChange: (id: string) => void }
 
+type View = 'week' | 'day'
+
 const pill = 'rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap'
+const HOUR_PX = 56 // one hour of the calendar's height
+const DEFAULT_AXIS = { start: 8 * 60, end: 22 * 60 } // a day with no turns at all
+
+/** ISO weekday of a "YYYY-MM-DD": 1 = Monday … 7 = Sunday. */
+function isoWeekday(date: string) {
+  const day = new Date(`${date}T12:00:00Z`).getUTCDay()
+  return day === 0 ? 7 : day
+}
+
+const startOfWeek = (date: string) => addDays(date, 1 - isoWeekday(date))
+
+// a phone gets one day: seven columns do not fit
+const narrowScreen = () => typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches
+
+/** The chosen day first (it says which date "today" is), then, for the week view, the rest of its week. */
+async function loadCalendar(token: string, slug: string, facilityId: string, date: string, view: View) {
+  const now = new Date().toISOString() // for "today" and the line at the current time
+  const first = await api.council.staffDay(token, slug, facilityId, date)
+  if (view === 'day') return { date: first.date, now, days: [first] }
+  const monday = startOfWeek(first.date)
+  const days = await Promise.all(
+    Array.from({ length: 7 }, (_, i) => addDays(monday, i)).map((d) => (d === first.date ? first : api.council.staffDay(token, slug, facilityId, d))),
+  )
+  return { date: first.date, now, days }
+}
 
 /*
-  The bookings view (each facility's "Reservas" button): one facility's day, turn by turn, with who holds each
-  booking. Staff book a free turn for someone who phoned or came to the desk
+  The bookings view (each facility's "Reservas" button): one facility's week (or day) as a calendar,
+  with who holds each booking. Staff book a free turn for someone who phoned or came to the desk
   (their account, or just a name), and cancel any booking before it starts.
 */
 export function StaffBookingsPanel({ slug, facilities, facilityId, onFacilityChange }: Props) {
@@ -34,15 +62,19 @@ export function StaffBookingsPanel({ slug, facilities, facilityId, onFacilityCha
   const token = useAuth().user?.access_token ?? ''
   const active = facilities.filter((f) => f.is_active)
   const [date, setDate] = useState('') // "" = today, in the council's time zone
+  const [view, setView] = useState<View>(() => (narrowScreen() ? 'day' : 'week'))
   const facility = active.find((f) => f.id === facilityId) ?? active[0]
-  const day = useAsync(facility ? () => api.council.staffDay(token, slug, facility.id, date) : null, `staff-day:${slug}:${facility?.id}:${date}`)
-  const [booking, setBooking] = useState<StaffSlot | null>(null)
-  const [cancelling, setCancelling] = useState<StaffBooking | null>(null)
+  const calendar = useAsync(facility ? () => loadCalendar(token, slug, facility.id, date, view) : null, `staff-calendar:${slug}:${facility?.id}:${date}:${view}`)
+  const [booking, setBooking] = useState<{ day: StaffDay; slot: StaffSlot } | null>(null)
+  const [details, setDetails] = useState<{ day: StaffDay; booking: StaffBooking } | null>(null)
+  const [cancelling, setCancelling] = useState<{ day: StaffDay; booking: StaffBooking } | null>(null)
 
   if (active.length === 0) {
     return <p className="rounded-md border border-dashed px-4 py-3 text-muted-foreground">{t('staff.noFacilities')}</p>
   }
-  const shownDate = day.data?.date ?? date
+  const shownDate = calendar.data?.date ?? date
+  const step = view === 'week' ? 7 : 1
+  const minAge = calendar.data?.days[0]?.min_age
 
   return (
     <section aria-labelledby="staff-title" className="grid gap-4">
@@ -72,54 +104,87 @@ export function StaffBookingsPanel({ slug, facilities, facilityId, onFacilityCha
         <div className="grid gap-1.5">
           <Label htmlFor="staff-date">{t('staff.date')}</Label>
           <div className="flex items-center gap-1">
-            <Button variant="outline" size="icon" disabled={!shownDate} onClick={() => setDate(addDays(shownDate, -1))} aria-label={t('staff.previousDay')}>
+            <Button variant="outline" size="icon" disabled={!shownDate} onClick={() => setDate(addDays(shownDate, -step))} aria-label={view === 'week' ? t('staff.previousWeek') : t('staff.previousDay')}>
               <ChevronLeft />
             </Button>
             <DatePicker id="staff-date" value={shownDate} onChange={setDate} className="w-44" />
-            <Button variant="outline" size="icon" disabled={!shownDate} onClick={() => setDate(addDays(shownDate, 1))} aria-label={t('staff.nextDay')}>
+            <Button variant="outline" size="icon" disabled={!shownDate} onClick={() => setDate(addDays(shownDate, step))} aria-label={view === 'week' ? t('staff.nextWeek') : t('staff.nextDay')}>
               <ChevronRight />
             </Button>
           </div>
         </div>
-        <Button variant="ghost" onClick={() => setDate('')}>
+        <Button variant="outline" onClick={() => setDate('')}>
           {t('staff.today')}
         </Button>
+        <ToggleGroup
+          type="single"
+          variant="outline"
+          value={view}
+          onValueChange={(value) => value && setView(value as View)}
+          aria-label={t('staff.viewLabel')}
+          className="sm:ml-auto"
+        >
+          <ToggleGroupItem value="day">{t('staff.viewDay')}</ToggleGroupItem>
+          <ToggleGroupItem value="week">{t('staff.viewWeek')}</ToggleGroupItem>
+        </ToggleGroup>
       </div>
 
-      {day.data?.min_age && <p className="text-muted-foreground">{t('staff.minAge', { age: day.data.min_age })}</p>}
+      {minAge && <p className="text-muted-foreground">{t('staff.minAge', { age: minAge })}</p>}
 
-      {day.error && !day.data ? (
+      {calendar.error && !calendar.data ? (
         <Alert variant="destructive">
-          <AlertDescription>{day.error.message}</AlertDescription>
+          <AlertDescription>{calendar.error.message}</AlertDescription>
         </Alert>
-      ) : !day.data ? (
-        <Skeleton className="h-64 w-full" />
+      ) : !calendar.data ? (
+        <Skeleton className="h-[480px] w-full" />
       ) : (
-        <DayTable day={day.data} facilityName={facility?.name ?? ''} onBook={setBooking} onCancel={setCancelling} />
+        <Calendar
+          days={calendar.data.days}
+          now={calendar.data.now}
+          onBook={(day, slot) => setBooking({ day, slot })}
+          onOpen={(day, b) => setDetails({ day, booking: b })}
+          onPickDay={(d) => {
+            setDate(d)
+            setView('day')
+          }}
+        />
       )}
+      <StatusLegend />
 
-      {booking && day.data && facility && (
+      {booking && facility && (
         <BookDialog
           slug={slug}
           token={token}
           facilityName={facility.name}
-          day={day.data}
-          slot={booking}
+          day={booking.day}
+          slot={booking.slot}
           onClose={() => setBooking(null)}
-          onBooked={day.reload}
+          onBooked={calendar.reload}
         />
       )}
-      {cancelling && day.data && facility && (
+      {details && facility && (
+        <DetailsDialog
+          booking={details.booking}
+          zone={details.day.timezone}
+          facilityName={facility.name}
+          onClose={() => setDetails(null)}
+          onCancel={() => {
+            setCancelling(details)
+            setDetails(null)
+          }}
+        />
+      )}
+      {cancelling && facility && (
         <CancelDialog
           slug={slug}
           token={token}
           facilityName={facility.name}
-          timeZone={day.data.timezone}
-          booking={cancelling}
+          timeZone={cancelling.day.timezone}
+          booking={cancelling.booking}
           onClose={() => setCancelling(null)}
           onCancelled={() => {
             setCancelling(null)
-            day.reload()
+            calendar.reload()
           }}
         />
       )}
@@ -127,138 +192,249 @@ export function StaffBookingsPanel({ slug, facilities, facilityId, onFacilityCha
   )
 }
 
-type DayTableProps = { day: StaffDay; facilityName: string; onBook: (slot: StaffSlot) => void; onCancel: (booking: StaffBooking) => void }
+/** The hours every column shows: from the earliest turn to the latest, on whole hours. */
+function axisOf(days: StaffDay[]) {
+  const spans = days.flatMap((d) => [...d.slots, ...d.bookings].map((x) => [minutesOfDay(x.starts_at, d.timezone), minutesOfDay(x.ends_at, d.timezone) || 24 * 60]))
+  if (spans.length === 0) return DEFAULT_AXIS
+  return { start: Math.floor(Math.min(...spans.map(([s]) => s)) / 60) * 60, end: Math.ceil(Math.max(...spans.map(([, e]) => e)) / 60) * 60 }
+}
 
-function DayTable({ day, facilityName, onBook, onCancel }: DayTableProps) {
+type CalendarProps = {
+  days: StaffDay[]
+  now: string
+  onBook: (day: StaffDay, slot: StaffSlot) => void
+  onOpen: (day: StaffDay, booking: StaffBooking) => void
+  onPickDay: (date: string) => void
+}
+
+/** Columns of days, hours down the side, every booking a block at its time (like a calendar app). */
+function Calendar({ days, now, onBook, onOpen, onPickDay }: CalendarProps) {
   const { t } = useTranslation('admin')
-  const zone = day.timezone
-  const byId = new Map(day.bookings.map((b) => [b.id, b]))
-  // a booking is listed once, on its first turn (it may cover more than one)
-  const listed = new Set<string>()
-  type Row = { key: string; starts_at: string; ends_at: string; slot: StaffSlot | null; booking: StaffBooking | null }
-  const rows: Row[] = []
-  for (const slot of day.slots) {
-    const booking = slot.booking_id ? (byId.get(slot.booking_id) ?? null) : null
-    if (booking && listed.has(booking.id)) continue
-    if (booking) listed.add(booking.id)
-    rows.push({ key: slot.starts_at, starts_at: booking?.starts_at ?? slot.starts_at, ends_at: booking?.ends_at ?? slot.ends_at, slot, booking })
-  }
-  // bookings outside today's turns (the hours changed after they were made)
-  for (const booking of day.bookings) {
-    if (!listed.has(booking.id)) rows.push({ key: booking.id, starts_at: booking.starts_at, ends_at: booking.ends_at, slot: null, booking })
-  }
-  rows.sort((a, b) => a.starts_at.localeCompare(b.starts_at))
+  const zone = days[0].timezone
+  const today = localDate(now, zone)
+  const axis = axisOf(days)
+  const hours = Array.from({ length: (axis.end - axis.start) / 60 }, (_, i) => axis.start + i * 60)
+  const height = ((axis.end - axis.start) / 60) * HOUR_PX
+  const week = days.length > 1
+  const columns = { gridTemplateColumns: `3.5rem repeat(${days.length}, minmax(0, 1fr))` }
 
-  if (rows.length === 0) {
+  if (!week && days[0].slots.length === 0 && days[0].bookings.length === 0) {
     return <p className="rounded-md border border-dashed px-4 py-3 text-muted-foreground">{t('staff.closedDay')}</p>
   }
 
   return (
     <div className="overflow-x-auto rounded-lg border bg-card">
-      <table className="w-full min-w-[640px]">
-        <caption className="sr-only">{t('staff.caption', { date: formatLongDate(day.date) })}</caption>
-        <thead>
-          <tr className="text-xs text-muted-foreground">
-            <th scope="col" className="px-4 py-2 text-left font-normal">
-              {t('staff.colTime')}
-            </th>
-            <th scope="col" className="px-4 py-2 text-left font-normal">
-              {t('staff.colHolder')}
-            </th>
-            <th scope="col" className="px-4 py-2 text-left font-normal">
-              {t('staff.colContact')}
-            </th>
-            <th scope="col" className="px-4 py-2">
-              <span className="sr-only">{t('staff.colActions')}</span>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row) => {
-            const time = `${formatTime(row.starts_at, zone)}–${formatTime(row.ends_at, zone)}`
+      <div className={cn(week && 'min-w-[760px]')}>
+        {/* the days across the top */}
+        <div className="grid border-b" style={columns}>
+          <span />
+          {days.map((day) => {
+            const { weekday, day: number } = shortDateParts(day.date)
+            const isToday = day.date === today
+            const content = (
+              <>
+                <span className={cn('text-xs uppercase', isToday ? 'text-primary' : 'text-muted-foreground')}>{weekday}</span>
+                <span className={cn('num flex size-8 items-center justify-center rounded-full text-lg font-semibold', isToday && 'bg-primary text-primary-foreground')}>{number}</span>
+              </>
+            )
             return (
-              <tr key={row.key} className="border-t align-top">
-                <th scope="row" className="num px-4 py-3 text-left font-medium whitespace-nowrap">
-                  {time}
-                </th>
-                {row.booking ? (
-                  <BookingCells booking={row.booking} zone={zone} time={time} facilityName={facilityName} onCancel={onCancel} />
+              <div key={day.date} className="flex justify-center border-l py-2">
+                {week ? (
+                  <button
+                    type="button"
+                    onClick={() => onPickDay(day.date)}
+                    className="flex flex-col items-center rounded-md px-2 hover:bg-muted"
+                    title={t('staff.openDay', { date: formatLongDate(day.date) })}
+                  >
+                    {content}
+                  </button>
                 ) : (
-                  <SlotCells slot={row.slot!} time={time} onBook={onBook} />
+                  <h3 className="flex flex-col items-center" aria-label={formatLongDate(day.date)}>
+                    {content}
+                  </h3>
                 )}
-              </tr>
+              </div>
             )
           })}
-        </tbody>
-      </table>
+        </div>
+
+        {/* the hours down the side and a column per day */}
+        <div className="grid max-h-[70vh] overflow-y-auto" style={columns}>
+          <div className="relative" style={{ height }} aria-hidden="true">
+            {hours.map((minutes, i) => (
+              <span key={minutes} className="num absolute right-2 -translate-y-1/2 text-xs text-muted-foreground" style={{ top: i * HOUR_PX }}>
+                {i === 0 ? '' : `${String(minutes / 60).padStart(2, '0')}:00`}
+              </span>
+            ))}
+          </div>
+          {days.map((day) => (
+            <DayColumn key={day.date} day={day} axis={axis} height={height} now={day.date === today ? now : null} onBook={onBook} onOpen={onOpen} />
+          ))}
+        </div>
+      </div>
     </div>
   )
 }
 
-type BookingCellsProps = { booking: StaffBooking; zone: string; time: string; facilityName: string; onCancel: (b: StaffBooking) => void }
+type DayColumnProps = {
+  day: StaffDay
+  axis: { start: number; end: number }
+  height: number
+  now: string | null // only on today's column
+  onBook: (day: StaffDay, slot: StaffSlot) => void
+  onOpen: (day: StaffDay, booking: StaffBooking) => void
+}
 
-function BookingCells({ booking: b, zone, time, facilityName, onCancel }: BookingCellsProps) {
+function DayColumn({ day, axis, height, now, onBook, onOpen }: DayColumnProps) {
   const { t } = useTranslation('admin')
-  const labels = { title: t('staff.ticketTitle'), hint: t('staff.ticketHint') }
+  const zone = day.timezone
+  const place = (startsAt: string, endsAt: string) => {
+    const start = minutesOfDay(startsAt, zone)
+    const end = minutesOfDay(endsAt, zone) || 24 * 60 // a turn ending at midnight
+    return { top: ((start - axis.start) / 60) * HOUR_PX, height: Math.max(((end - start) / 60) * HOUR_PX - 2, 18) }
+  }
+  const time = (startsAt: string, endsAt: string) => `${formatTime(startsAt, zone)}–${formatTime(endsAt, zone)}`
+  const nowMinutes = now ? minutesOfDay(now, zone) : null
+
   return (
-    <>
-      <td className="px-4 py-3">
-        <span className="block font-medium">{b.name || <span className="text-muted-foreground">{t('staff.noName')}</span>}</span>
-        <span className="mt-1 flex flex-wrap gap-1.5">
-          <span className={`${pill} ${b.has_account ? 'bg-pill-accent-bg text-pill-accent-ink' : 'bg-pill-neutral-bg text-pill-neutral-ink'}`}>
-            {b.has_account ? t('staff.withAccount') : t('staff.withoutAccount')}
-          </span>
-          {b.booked_by_staff && <span className={`${pill} bg-pill-neutral-bg text-pill-neutral-ink`}>{t('staff.bookedByStaff')}</span>}
-          {b.checked_in_at && (
-            <span className={`${pill} num bg-pill-positive-bg text-pill-positive-ink`}>{t('staff.checkedIn', { time: formatTime(b.checked_in_at, zone) })}</span>
-          )}
-          {b.participant_count > 0 && <span className={`${pill} num bg-pill-neutral-bg text-pill-neutral-ink`}>{t('staff.joined', { count: b.participant_count })}</span>}
-        </span>
-      </td>
-      <td className="px-4 py-3 break-all">
-        {b.phone && (
-          <a href={`tel:${b.phone}`} className="num block underline-offset-4 hover:underline">
-            {b.phone}
-          </a>
-        )}
-        {b.email && <span className="block text-muted-foreground">{b.email}</span>}
-      </td>
-      <td className="px-4 py-3 text-right whitespace-nowrap">
-        {b.checkin_code && (
-          <Button variant="ghost" size="sm" onClick={() => void printTicket(b, zone, facilityName, labels)} aria-label={`${t('staff.printQr')}: ${b.name}, ${time}`}>
-            <Printer />
-            {t('staff.printQr')}
-          </Button>
-        )}
-        {b.can_cancel && (
-          <Button variant="ghost" size="sm" className="text-destructive" onClick={() => onCancel(b)} aria-label={`${t('staff.cancel')}: ${b.name}, ${time}`}>
-            {t('staff.cancel')}
-          </Button>
-        )}
-      </td>
-    </>
+    <ul
+      className="relative border-l bg-[repeating-linear-gradient(to_bottom,transparent_0,transparent_55px,var(--border)_55px,var(--border)_56px)]"
+      style={{ height }}
+      aria-label={t('staff.caption', { date: formatLongDate(day.date) })}
+    >
+      {/* free turns and closures; booked turns are drawn by their booking */}
+      {day.slots.map((slot) => {
+        if (slot.status !== 'free' && slot.status !== 'closed') return null
+        const label = time(slot.starts_at, slot.ends_at)
+        return (
+          <li key={slot.starts_at} className="absolute inset-x-1" style={place(slot.starts_at, slot.ends_at)}>
+            {slot.status === 'free' ? (
+              <button
+                type="button"
+                onClick={() => onBook(day, slot)}
+                className="group flex size-full items-start gap-1 overflow-hidden rounded-md border border-dashed border-pill-positive-ink/40 px-1.5 py-0.5 text-left text-xs text-pill-positive-ink hover:bg-pill-positive-bg"
+                aria-label={`${t('staff.book')}: ${label}, ${t('staff.status.free').toLowerCase()}`}
+              >
+                <Plus className="mt-px size-3 shrink-0 opacity-60 group-hover:opacity-100" aria-hidden="true" />
+                <span className="num truncate">{formatTime(slot.starts_at, zone)}</span>
+              </button>
+            ) : (
+              <span className="hatch block size-full overflow-hidden rounded-md px-1.5 py-0.5 text-xs text-muted-foreground">
+                <span className="sr-only">{label}: </span>
+                {t('staff.status.closed')}
+              </span>
+            )}
+          </li>
+        )
+      })}
+
+      {day.bookings.map((b) => {
+        const box = place(b.starts_at, b.ends_at)
+        const label = time(b.starts_at, b.ends_at)
+        return (
+          <li key={b.id} className="absolute inset-x-1 z-10" style={box}>
+            <button
+              type="button"
+              onClick={() => onOpen(day, b)}
+              className={cn(
+                'flex size-full flex-col overflow-hidden rounded-md border-l-4 px-1.5 py-0.5 text-left text-xs shadow-xs transition-[filter] hover:brightness-95 dark:hover:brightness-125',
+                b.has_account ? 'border-primary bg-pill-accent-bg text-pill-accent-ink' : 'border-pill-neutral-ink/50 bg-pill-neutral-bg text-pill-neutral-ink',
+              )}
+            >
+              <span className="flex items-center gap-1 font-semibold">
+                <span className="truncate">{b.name || <span className="italic">{t('staff.noNameShort')}</span>}</span>
+                {b.checked_in_at && <CircleCheck className="size-3 shrink-0" aria-hidden="true" />}
+              </span>
+              {/* a short block has room for the name only: the time is still read out */}
+              <span className={cn('num truncate', box.height < 34 && 'sr-only')}>{label}</span>
+            </button>
+          </li>
+        )
+      })}
+
+      {nowMinutes !== null && nowMinutes >= axis.start && nowMinutes <= axis.end && (
+        <li className="pointer-events-none absolute inset-x-0 z-20 h-0.5 bg-now" style={{ top: ((nowMinutes - axis.start) / 60) * HOUR_PX }} aria-hidden="true">
+          <span className="absolute -top-1 -left-1 size-2.5 rounded-full bg-now" />
+        </li>
+      )}
+    </ul>
   )
 }
 
-function SlotCells({ slot, time, onBook }: { slot: StaffSlot; time: string; onBook: (slot: StaffSlot) => void }) {
+function StatusLegend() {
   const { t } = useTranslation('admin')
+  const items = [
+    { label: t('staff.withAccount'), className: 'border-l-4 border-primary bg-pill-accent-bg' },
+    { label: t('staff.withoutAccount'), className: 'border-l-4 border-pill-neutral-ink/50 bg-pill-neutral-bg' },
+    { label: t('staff.status.free'), className: 'border border-dashed border-pill-positive-ink/60' },
+    { label: t('staff.status.closed'), className: 'hatch' },
+  ]
   return (
-    <>
-      <td className="px-4 py-3" colSpan={2}>
-        {slot.status === 'free' ? (
-          <span className={`${pill} bg-pill-positive-bg text-pill-positive-ink`}>{t('staff.status.free')}</span>
-        ) : (
-          <span className="text-muted-foreground">{t(`staff.status.${slot.status}`)}</span>
-        )}
-      </td>
-      <td className="px-4 py-3 text-right">
-        {slot.status === 'free' && (
-          <Button size="sm" onClick={() => onBook(slot)} aria-label={`${t('staff.book')}: ${time}`}>
-            {t('staff.book')}
-          </Button>
-        )}
-      </td>
-    </>
+    <ul className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+      {items.map((item) => (
+        <li key={item.label} className="flex items-center gap-1.5">
+          <span className={cn('relative size-3 overflow-hidden rounded-[3px]', item.className)} aria-hidden="true" />
+          {item.label}
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+type DetailsProps = { booking: StaffBooking; zone: string; facilityName: string; onClose: () => void; onCancel: () => void }
+
+/** One booking, opened from the calendar: who holds it, how to reach them, and what staff can do. */
+function DetailsDialog({ booking: b, zone, facilityName, onClose, onCancel }: DetailsProps) {
+  const { t } = useTranslation('admin')
+  const labels = { title: t('staff.ticketTitle'), hint: t('staff.ticketHint') }
+  return (
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>{b.name || t('staff.noName')}</DialogTitle>
+          <DialogDescription className="num">
+            {t('staff.when', { facility: facilityName, date: formatLongDate(localDate(b.starts_at, zone)), start: formatTime(b.starts_at, zone), end: formatTime(b.ends_at, zone) })}
+          </DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-3">
+          <p className="flex flex-wrap gap-1.5">
+            <span className={`${pill} ${b.has_account ? 'bg-pill-accent-bg text-pill-accent-ink' : 'bg-pill-neutral-bg text-pill-neutral-ink'}`}>
+              {b.has_account ? t('staff.withAccount') : t('staff.withoutAccount')}
+            </span>
+            {b.booked_by_staff && <span className={`${pill} bg-pill-neutral-bg text-pill-neutral-ink`}>{t('staff.bookedByStaff')}</span>}
+            {b.checked_in_at && <span className={`${pill} num bg-pill-positive-bg text-pill-positive-ink`}>{t('staff.checkedIn', { time: formatTime(b.checked_in_at, zone) })}</span>}
+            {b.participant_count > 0 && <span className={`${pill} num bg-pill-neutral-bg text-pill-neutral-ink`}>{t('staff.joined', { count: b.participant_count })}</span>}
+          </p>
+          {(b.phone || b.email) && (
+            <dl className="grid gap-1 break-all">
+              <dt className="text-xs text-muted-foreground">{t('staff.colContact')}</dt>
+              {b.phone && (
+                <dd>
+                  <a href={`tel:${b.phone}`} className="num underline-offset-4 hover:underline">
+                    {b.phone}
+                  </a>
+                </dd>
+              )}
+              {b.email && <dd className="text-muted-foreground">{b.email}</dd>}
+            </dl>
+          )}
+        </div>
+        <DialogFooter>
+          {b.checkin_code && (
+            <Button variant="outline" onClick={() => void printTicket(b, zone, facilityName, labels)}>
+              <Printer />
+              {t('staff.printQr')}
+            </Button>
+          )}
+          {b.can_cancel && (
+            <Button variant="outline" className="text-destructive" onClick={onCancel}>
+              {t('staff.cancel')}
+            </Button>
+          )}
+          <Button onClick={onClose}>{t('staff.close')}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
 

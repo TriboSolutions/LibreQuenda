@@ -1,4 +1,4 @@
-import { CalendarDays, ChevronLeft, ChevronRight, Plus, Settings } from 'lucide-react'
+import { ChevronRight, Plus, Settings } from 'lucide-react'
 import { lazy, Suspense, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
@@ -22,7 +22,7 @@ import { SiteFooter } from '@/components/SiteFooter'
 // charts (Recharts) load only when an administrator opens the indicators
 const IndicatorsPanel = lazy(() => import('@/components/admin/IndicatorsPanel').then((m) => ({ default: m.IndicatorsPanel })))
 
-/** /:slug/admin: the council's facilities, a facility's bookings (?vista=reservas&instalacion=<id>, from its row) and indicators (?vista=indicadores), for its administrators; the gear opens the council's settings. */
+/** /:slug/admin: the council's facilities, manual booking (?vista=reservas&instalacion=<id>) and indicators (?vista=indicadores), as tabs for its administrators; the gear opens the council's settings. */
 export function CouncilAdminPage() {
   const { slug = '' } = useParams()
   const { t } = useTranslation(['admin', 'common'])
@@ -43,7 +43,6 @@ export function CouncilAdminPage() {
   const view = vista === 'indicadores' ? 'indicators' : vista === 'reservas' ? 'bookings' : 'facilities'
   const viewParam: Record<string, string> = { indicators: 'indicadores', bookings: 'reservas' }
   const changeView = (value: string) => setSearchParams(viewParam[value] ? { vista: viewParam[value] } : {}, { replace: true })
-  const bookingsFor = (id: string) => `?vista=reservas&instalacion=${encodeURIComponent(id)}`
   const bookingsFacility = searchParams.get('instalacion') ?? ''
   const [settingsOpen, setSettingsOpen] = useState(false)
   const navigate = useNavigate()
@@ -162,14 +161,6 @@ export function CouncilAdminPage() {
                       </span>
                     </td>
                     <td className="py-3 pl-4 text-right whitespace-nowrap">
-                      {f.is_active && (
-                        <Button asChild variant="outline" size="sm" className="mr-1">
-                          <Link to={bookingsFor(f.id)} aria-label={`${t('admin:staff.open')}: ${f.name}`}>
-                            <CalendarDays />
-                            {t('admin:staff.open')}
-                          </Link>
-                        </Button>
-                      )}
                       <Button asChild variant="ghost" size="sm">
                         <Link to={`/${slug}/admin/facilities/${f.id}`} aria-label={`${t('admin:facilities.edit')}: ${f.name}`}>
                           {t('admin:facilities.edit')}
@@ -190,37 +181,33 @@ export function CouncilAdminPage() {
         <Settings />
       </Button>
     )
-    body =
-      view === 'bookings' ? (
-        <div className="mt-6 grid gap-6">
-          <div className="flex items-center justify-between gap-3">
-            <Button asChild variant="ghost" size="sm" className="-ml-2">
-              <Link to={`/${slug}/admin`}>
-                <ChevronLeft />
-                {t('admin:staff.back')}
-              </Link>
-            </Button>
-            {settingsButton}
-          </div>
-          <StaffBookingsPanel slug={slug} facilities={list} facilityId={bookingsFacility} onFacilityChange={(id) => setSearchParams(bookingsFor(id).slice(1), { replace: true })} />
+    body = (
+      <Tabs value={view} onValueChange={changeView} className="mt-6 gap-6">
+        <div className="flex items-center justify-between gap-3">
+          <TabsList>
+            <TabsTrigger value="facilities">{t('admin:facilities.title')}</TabsTrigger>
+            <TabsTrigger value="bookings">{t('admin:staff.tab')}</TabsTrigger>
+            <TabsTrigger value="indicators">{t('admin:indicators.title')}</TabsTrigger>
+          </TabsList>
+          {/* the council's settings belong with its facilities and figures, not with the desk's calendar */}
+          {view !== 'bookings' && settingsButton}
         </div>
-      ) : (
-        <Tabs value={view} onValueChange={changeView} className="mt-6 gap-6">
-          <div className="flex items-center justify-between gap-3">
-            <TabsList>
-              <TabsTrigger value="facilities">{t('admin:facilities.title')}</TabsTrigger>
-              <TabsTrigger value="indicators">{t('admin:indicators.title')}</TabsTrigger>
-            </TabsList>
-            {settingsButton}
-          </div>
-          <TabsContent value="facilities">{facilitiesSection}</TabsContent>
-          <TabsContent value="indicators">
-            <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-              <IndicatorsPanel slug={slug} facilities={list} />
-            </Suspense>
-          </TabsContent>
-        </Tabs>
-      )
+        <TabsContent value="facilities">{facilitiesSection}</TabsContent>
+        <TabsContent value="bookings">
+          <StaffBookingsPanel
+            slug={slug}
+            facilities={list}
+            facilityId={bookingsFacility}
+            onFacilityChange={(id) => setSearchParams({ vista: 'reservas', instalacion: id }, { replace: true })}
+          />
+        </TabsContent>
+        <TabsContent value="indicators">
+          <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+            <IndicatorsPanel slug={slug} facilities={list} />
+          </Suspense>
+        </TabsContent>
+      </Tabs>
+    )
   }
 
   return (

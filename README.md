@@ -76,6 +76,64 @@ The first Zitadel admin (`ZITADEL_ADMIN_*`), Zitadel's email settings and the `Z
 
 **Images from CI:** every push to `main` and every version tag builds the images and publishes them to `ghcr.io/<owner>/librequenda-<image>` (`.github/workflows/ci.yml`).
 
+## Check-in at the entrance
+
+Councils need to know who actually turned up: it frees no-show turns, feeds the attendance indicators and keeps the facility for the people who booked it.
+
+**What LibreQuenda does today.** The facility has a reader at the door (`/lector`): any phone, tablet or small computer with a camera, paired to the facility with a device key from `/<council>/admin`. The resident shows one of two QR codes:
+
+- **Booking QR**: each booking has its own (in the app, in the confirmation and reminder emails, and printable by staff for someone without an account). The reader lets the person in from 15 minutes before the start until the end.
+- **Flash booking QR**: the personal QR in the account menu. It changes every minute and works once, so a screenshot is useless. If the turn under way (or the one about to start) is free, scanning it books it on the spot, within the usual limits and rules.
+
+Staff can also book from the desk ("Reserva manual"), print the entry QR for the person, and cancel.
+
+**Other ways it could work (not built).** Today the resident carries the code and the facility has the reader. The options below turn that around, so a council can choose by budget and by how much it cares about cheating. They would all end in the same check-in on the booking, so the indicators stay the same.
+
+| Way | At the door | How the resident checks in | Cost | Hard to cheat? |
+| --- | --- | --- | --- | --- |
+| Booking or flash QR (built) | A device with a camera running `/lector` | Shows the QR from their phone or a printout | A cheap phone or tablet | Yes: tokens are per booking or change every minute |
+| Printed QR | A sheet of paper with the facility's QR | Scans it with their phone; the app checks in their booking for that facility and turn | Nearly free | Low: a photo of the sheet works from anywhere. Better with a time window and the phone's location |
+| NFC tag | A sticker on the door | Taps it with their phone, which opens the check-in page | A few euros per door | Low with a plain tag (it can be copied). High with a tag that signs every tap (e.g. NTAG 424 DNA "SUN" messages), which the API checks |
+| Rotating code on a display | A small screen (e-ink, ESP32 or an old tablet) showing a code or QR that changes every few minutes, like a TOTP from a secret shared with the API | Types the code in the app or scans it | Tens of euros per door | High: the code is only good for a few minutes, and only at that door |
+| Code on a printed page | A daily sheet at the desk or on the door, with one code per turn | Types the code for their turn | Nearly free | Medium: someone has to change the sheet every day |
+| Staff confirmation | Nobody, or the desk | Staff tick them as arrived on the "Reserva manual" calendar | Staff time | As good as the staff |
+
+What the ones residents start from would need:
+
+- **Printed QR or NFC tag:** a public check-in address per facility (for example `/<council>/<facility>/entrada`) that, once signed in, finds the person's booking for the current turn and checks it in. Without a booking it could offer the flash booking.
+- **Rotating code:** a secret per door, kept like the reader keys, and the same TOTP check on the API (time step and a little drift). The display runs no LibreQuenda code beyond showing the code.
+- **Signed NFC:** the tag's key, stored per door, and a check of the tap counter so a recorded tap cannot be replayed.
+- **Any of them:** an optional location check (the phone within some metres of the facility's map pin) for the cheap options, which the resident has to allow and which never gets stored.
+
+## Next: a personal home (the feed)
+
+*Proposal, not built yet.* Today `/` is the same for everyone: every facility as a list beside a map, with filters. That is the right page for a visitor, but a resident who books the same court every Tuesday should not have to search for it every week. The idea:
+
+- **Not signed in:** `/` stays as it is (list, map and filters).
+- **Signed in:** `/` becomes a feed made from that person's own use. The search (list and map) moves to its own address, for example `/buscar`, one tap away from the feed and from the top bar.
+
+**What the feed would show, most urgent first** (each card with its action right there):
+
+1. **Now and next:** today's or the next booking, with the entry QR, directions, "invite" when there are spots left, and cancel while it still can be.
+2. **Things waiting for them:** invitations to join a booking, and closures or cancellations that touch their bookings (what the bell already knows).
+3. **Book your usual again:** the facility, weekday and hour they booked most in the last weeks ("Pádel, Tuesdays at 19:00"), when it is free this week, as one-tap booking. It says why it shows it.
+4. **Their facilities today:** the facilities they book most (or mark as favourite), with today's free turns.
+5. **Free soon near them:** facilities with free turns in the next hours that share a sport tag with what they usually book, in their council or near their location if they allow it.
+6. **Quiet times:** the hours their usual facility tends to be quiet. The logic existed as the facility page's "Suggestions" (removed; see `api/core/tenants/suggestions.go` in git history) and can be reused here.
+7. **New for them:** facilities or sports recently added in their council.
+
+**Someone with no history yet** gets a short start instead: choose their council and the sports they play (from the tag catalogue). That is saved as their preferences and fills cards 4 and 5 until they have bookings.
+
+**How it could be built:**
+
+- `GET /me/feed` answers a list of typed cards (`next_booking`, `invitation`, `usual_turn`, `favourite_today`, `free_soon`, `quiet_hours`, `new_facility`), each with its data and the reason it is there. The web draws one component per card type. New card types can be added without changing the others.
+- Plain rules ordered by urgency, not machine learning: easy to explain to a resident or a council ("because you book padel on Tuesdays"), and easy to test.
+- New data: the person's preferences (council, sport tags) and optional favourite facilities, for example `user_preference` and `user_favourite_facility` tables. Everything else already exists (bookings, invitations, notifications, tags, opening hours).
+
+**Privacy:** the feed only uses what LibreQuenda already keeps for the booking itself (the person's own bookings and the preferences they choose). It does not track pages viewed or clicks, does not share anything between residents or with the council, and the location is only used in the browser when they allow it, never stored. `/perfil` would say what the feed uses and let them reset their preferences.
+
+**Open questions:** which cards councils care most about for the GOBTEC demo, whether favourites are explicit (a star) or inferred from bookings, and whether the feed should also arrive by email (a weekly "your usual turn is free").
+
 ## Documentation
 
 - [Architecture plan](docs/specs/architecture.md)
