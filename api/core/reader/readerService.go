@@ -5,9 +5,11 @@ import (
 	"database/sql"
 	"errors"
 	"librequenda/checkin"
+	"librequenda/core/bookings"
 	"librequenda/model"
 	"librequenda/shared"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -45,12 +47,21 @@ func decide(booking model.GetBookingByCheckinTokenRow, facilityId uuid.UUID, now
 	return ResultCheckedIn
 }
 
-// CheckIn validates a scanned QR at the reader's facility and records the first entry.
+// CheckIn validates a scanned QR at the reader's facility: a booking QR, or the
+// personal QR from /perfil.
 func (s *readerService) CheckIn(ctx context.Context, device model.GetCheckinDeviceByKeyRow, code string) (*CheckinResultDto, *shared.ErrorResponse) {
+	if token, ok := checkin.ParsePersonalPayload(code); ok {
+		return s.personalCheckIn(ctx, device, token)
+	}
 	var token, ok = checkin.ParsePayload(code)
 	if !ok {
 		return &CheckinResultDto{Result: ResultNotABooking}, nil
 	}
+	return s.bookingCheckIn(ctx, device, token)
+}
+
+// bookingCheckIn records the first entry of the booking with that check-in token.
+func (s *readerService) bookingCheckIn(ctx context.Context, device model.GetCheckinDeviceByKeyRow, token uuid.UUID) (*CheckinResultDto, *shared.ErrorResponse) {
 	var queries = model.New(s.db)
 	var booking, err = queries.GetBookingByCheckinToken(ctx, token)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -96,4 +107,71 @@ func (s *readerService) CheckIn(ctx context.Context, device model.GetCheckinDevi
 		}
 	}
 	return response, nil
+}
+
+// personalCheckIn: the person's own booking here that can go in now is checked
+// in; without one, the turn about to start is booked for them (bookings.QuickBook)
+// and checked in. The QR is used up only when the reader lets the person in.
+func (s *readerService) personalCheckIn(ctx context.Context, device model.GetCheckinDeviceByKeyRow, qrToken uuid.UUID) (*CheckinResultDto, *shared.ErrorResponse) {
+	var failed = &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.checkin_failed"}
+	var queries = model.New(s.db)
+	var owner, err = queries.UseUserQrToken(ctx, qrToken)
+	if errors.Is(err, sql.ErrNoRows) {
+		return &CheckinResultDto{Result: ResultCodeExpired}, nil
+	}
+	if err != nil {
+		return nil, failed
+	}
+
+	var bookingToken uuid.UUID
+	bookingToken, err = queries.GetUserCheckinTokenAtFacility(ctx, model.GetUserCheckinTokenAtFacilityParams{
+		UserID:     uuid.NullUUID{UUID: owner.UserID, Valid: true},
+		FacilityID: device.FacilityID,
+		WindowEnds: time.Now().Add(checkin.EarlyWindow),
+	})
+	if err == nil {
+		return s.bookingCheckIn(ctx, device, bookingToken)
+	}
+	if !errors.Is(err, sql.ErrNoRows) {
+		s.release(ctx, queries, qrToken)
+		return nil, failed
+	}
+
+	var booking, refused = bookings.GetBookingsService(s.db).QuickBook(ctx, owner.UserID, device.FacilityID)
+	if refused != nil {
+		s.release(ctx, queries, qrToken)
+		if refused.Code == http.StatusInternalServerError {
+			return nil, failed
+		}
+		return &CheckinResultDto{Result: ResultNotBooked, Reason: strings.TrimPrefix(refused.Message, "errors.")}, nil
+	}
+
+	// booked: the entry is recorded as well, so the turn never shows as a no-show
+	var checkedInAt sql.NullTime
+	checkedInAt, err = queries.MarkBookingCheckedIn(ctx, model.MarkBookingCheckedInParams{
+		ID:       uuid.MustParse(booking.Id),
+		DeviceID: uuid.NullUUID{UUID: device.ID, Valid: true},
+	})
+	if err != nil {
+		shared.Logger.Error("failed to check in quick booking %s: %v", booking.Id, err)
+		checkedInAt = sql.NullTime{Time: time.Now(), Valid: true}
+	}
+	return &CheckinResultDto{
+		Granted: true,
+		Result:  ResultBooked,
+		Booking: &CheckinBookingDto{
+			FacilityName: booking.FacilityName,
+			FirstName:    firstName(owner.FullName.String),
+			StartsAt:     booking.StartsAt,
+			EndsAt:       booking.EndsAt,
+			CheckedInAt:  &checkedInAt.Time,
+		},
+	}, nil
+}
+
+// release gives a personal QR back after a refusal, so the person can try again with it.
+func (s *readerService) release(ctx context.Context, queries *model.Queries, qrToken uuid.UUID) {
+	if err := queries.ReleaseUserQrToken(ctx, qrToken); err != nil {
+		shared.Logger.Error("failed to release personal QR token: %v", err)
+	}
 }

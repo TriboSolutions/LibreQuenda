@@ -19,6 +19,19 @@ func TestPayloadRoundTrip(t *testing.T) {
 	}
 }
 
+func TestPersonalPayloadRoundTrip(t *testing.T) {
+	var token = uuid.New()
+	var parsed, ok = ParsePersonalPayload(" " + PersonalPayload(token) + "\n")
+	if !ok || parsed != token {
+		t.Fatalf("ParsePersonalPayload(PersonalPayload(%s)) = %s, %v", token, parsed, ok)
+	}
+	for _, text := range []string{"", "lq2:", "lq2:nope", token.String(), Payload(token)} {
+		if _, ok := ParsePersonalPayload(text); ok {
+			t.Errorf("ParsePersonalPayload(%q) accepted", text)
+		}
+	}
+}
+
 func TestDeviceKey(t *testing.T) {
 	var key, hash, hint, err = NewDeviceKey()
 	if err != nil {

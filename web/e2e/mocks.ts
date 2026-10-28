@@ -337,6 +337,7 @@ const routes: [RegExp, () => unknown][] = [
   [/^\/tenants\/[^/]+\/admin\/smtp$/, () => smtp],
   [/^\/me$/, () => me],
   [/^\/me\/account$/, () => account],
+  [/^\/me\/qr$/, () => ({ code: 'lq2:0b5e1a8e-6f1d-4c1e-9a55-3f6c2d7b9e10', expires_at: at(1), refresh_seconds: 60 })],
   [/^\/me\/bookings$/, () => myBookings],
   [/^\/me\/bookings\/[^/]+\/invite$/, () => invite],
   [/^\/me\/notifications$/, () => notifications],

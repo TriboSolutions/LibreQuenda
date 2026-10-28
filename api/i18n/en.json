@@ -84,6 +84,8 @@
     "device_not_found": "That reader was not found.",
     "invalid_device_key": "The reader key is not valid or was revoked.",
     "checkin_failed": "The booking could not be checked. Try again.",
+    "qr_failed": "Your QR could not be created. Try again.",
+    "no_turn_soon": "No turn starts in the next 15 minutes.",
     "invite_not_found": "This invite link does not work: the owner may have replaced it.",
     "invite_closed": "This booking no longer takes people: it was cancelled or has started.",
     "invite_full": "There are no spots left in this booking.",

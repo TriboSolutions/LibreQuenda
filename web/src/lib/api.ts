@@ -111,6 +111,9 @@ export type GeocodeResult = { label: string; latitude: number; longitude: number
 export type CheckinDevice = { id: string; name: string; key_hint: string; last_seen_at: string | null; created_at: string }
 export type CreatedCheckinDevice = CheckinDevice & { key: string }
 
+/** The personal QR on /perfil: a new code every `refresh_seconds`; each one works once, until `expires_at`. */
+export type PersonalQr = { code: string; expires_at: string; refresh_seconds: number }
+
 // --- entrance reader (signs in with its device key) -------------------------
 
 export type Reader = {
@@ -132,10 +135,15 @@ export type CheckinResultCode =
   | 'cancelled'
   | 'too_early'
   | 'ended'
+  // the personal QR from /perfil
+  | 'booked' // the turn about to start was booked, and the entry recorded
+  | 'not_booked' // no booking here to let in, and none could be made: see `reason`
+  | 'code_expired' // expired or already used
 
 export type CheckinResult = {
   granted: boolean
   result: CheckinResultCode
+  reason?: string // not_booked only, e.g. 'no_turn_soon', 'slot_booked', 'booking_limit_reached'
   booking: {
     facility_name: string
     first_name: string // only when granted
@@ -499,6 +507,7 @@ export const api = {
     request<Day>(`/tenants/${encodeURIComponent(slug)}/day${date ? `?date=${date}` : ''}`),
   me: (token: string) => request<Me>('/me', { token }),
   updateProfile: (token: string, input: ProfileInput) => request<Me>('/me/profile', { token, method: 'PUT', body: input }),
+  personalQr: (token: string) => request<PersonalQr>('/me/qr', { token }),
   exportMyData,
   // erases the account for good: upcoming bookings are cancelled and the sign-in account is deleted
   deleteAccount: (token: string) => request<void>('/me', { token, method: 'DELETE' }),

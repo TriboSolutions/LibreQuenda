@@ -5,6 +5,7 @@ import { useLocation, useSearchParams } from 'react-router'
 import { DatePicker } from '@/components/DatePicker'
 import { AccountSettings } from '@/components/AccountSettings'
 import { ImagePicker } from '@/components/ImagePicker'
+import { PersonalQr } from '@/components/PersonalQr'
 import { PrivacySettings } from '@/components/PrivacySettings'
 import { TopBar } from '@/components/TopBar'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -59,6 +60,7 @@ export function ProfilePage() {
   } else {
     body = (
       <>
+        <PersonalQr me={me} />
         <ProfileForm key={me.id} me={me} />
         <AccountSettings />
         <PrivacySettings me={me} />

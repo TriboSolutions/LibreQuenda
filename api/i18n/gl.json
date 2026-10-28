@@ -84,6 +84,8 @@
     "device_not_found": "Non atopamos ese lector.",
     "invalid_device_key": "A clave do lector non é válida ou foi retirada.",
     "checkin_failed": "Non foi posible comprobar a reserva. Téntao de novo.",
+    "qr_failed": "Non foi posible crear o teu QR. Téntao de novo.",
+    "no_turn_soon": "Ningunha quenda comeza nos próximos 15 minutos.",
     "invite_not_found": "Esta ligazón de convite non funciona: pode que quen reservou a cambiase.",
     "invite_closed": "Esta reserva xa non admite máis xente: cancelouse ou xa comezou.",
     "invite_full": "Non quedan prazas libres nesta reserva.",

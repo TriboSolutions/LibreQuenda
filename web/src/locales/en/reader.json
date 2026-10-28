@@ -1,7 +1,7 @@
 {
   "retry": "Try again",
   "clock": "Time now",
-  "instructions": "Hold your booking QR up to the camera",
+  "instructions": "Hold your booking QR or the QR from your profile up to the camera",
   "device": "Reader: {{name}}",
   "signOut": "Change key",
   "signIn": {
@@ -38,6 +38,23 @@
     "unknown": "Booking not found",
     "unknownDetail": "Check that it is the QR of a current booking.",
     "notABooking": "This QR is not a booking",
-    "notABookingDetail": "Show the entry QR from “Your bookings”."
+    "notABookingDetail": "Show the entry QR from “Your bookings”.",
+    "booked": "Booked. Come in!",
+    "bookedDetail": "Turn booked: {{facility}} · {{start}}–{{end}}",
+    "notBooked": "No turn could be booked",
+    "codeExpired": "This QR has expired",
+    "codeExpiredDetail": "Show the code on your profile as it is now: it changes every minute."
+  },
+  "reason": {
+    "no_turn_soon": "No turn starts in the next 15 minutes.",
+    "slot_booked": "The next turn is already booked.",
+    "slot_closed": "The facility is closed for the next turn.",
+    "slot_too_far": "The next turn cannot be booked yet.",
+    "profile_incomplete": "Add your date of birth to your profile to book.",
+    "age_restricted": "You do not meet the minimum age for this facility.",
+    "booking_limit_reached": "You have reached the limit of bookings at this facility.",
+    "booking_overlaps": "You already have another booking at that time.",
+    "facility_not_found": "This facility cannot be booked right now.",
+    "other": "Book in the app, or ask the staff."
   }
 }

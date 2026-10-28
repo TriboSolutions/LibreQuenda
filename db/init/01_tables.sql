@@ -178,6 +178,17 @@ CREATE TABLE checkin_device (
     created_at   TIMESTAMPTZ  NOT NULL DEFAULT NOW()
 );
 
+-- The personal QR on /perfil: a random token that lasts about a minute, so a
+-- screenshot is soon useless. At a reader it checks the person in, or books the
+-- turn about to start. The QR carries only the token, no personal data; a token
+-- works once.
+CREATE TABLE user_qr_token (
+    token      UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id    UUID         NOT NULL REFERENCES app_user(id) ON DELETE CASCADE,
+    expires_at TIMESTAMPTZ  NOT NULL,
+    used_at    TIMESTAMPTZ  NULL
+);
+
 
 -- ============================================================
 --  BOOKINGS (reservas)
