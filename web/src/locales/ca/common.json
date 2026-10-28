@@ -88,5 +88,14 @@
   "rateLimited": "Massa intents en poc temps. Espera un moment i torna-ho a provar.",
   "close": "Tanca",
   "skipToContent": "Ves al contingut",
-  "newTab": " (s’obre en una pestanya nova)"
+  "newTab": " (s’obre en una pestanya nova)",
+  "footer": {
+    "about": "Reserva d’instal·lacions esportives municipals per als ajuntaments gallecs. Codi obert, auditable i sense dependència de cap proveïdor.",
+    "badge": "Programari lliure · AGPL-3.0",
+    "project": "Projecte",
+    "source": "Codi font a GitHub",
+    "license": "Llicència AGPL-3.0",
+    "legal": "Legal",
+    "copyright": "© {{year}} Tribo Solutions. LibreQuenda és programari lliure: el pots fer servir, estudiar, modificar i compartir sota la llicència GNU AGPL-3.0."
+  }
 }

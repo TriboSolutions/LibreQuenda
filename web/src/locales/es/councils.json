@@ -2,7 +2,6 @@
   "title": "Elige tu ayuntamiento",
   "subtitle_one": "{{count}} ayuntamiento reserva sus instalaciones deportivas con LibreQuenda.",
   "subtitle_other": "{{count}} ayuntamientos reservan sus instalaciones deportivas con LibreQuenda.",
-  "listTitle": "Ayuntamientos",
   "search": "Buscar ayuntamiento",
   "noResults": "Ningún ayuntamiento coincide con «{{query}}».",
   "empty": "Todavía no se ha dado de alta ningún ayuntamiento.",
@@ -12,5 +11,29 @@
     "title": "Ayuntamiento no encontrado",
     "body": "No hay ningún ayuntamiento en «/{{slug}}». Revisa la dirección o elige uno de la lista."
   },
-  "allCouncils": "Todos los ayuntamientos"
+  "allCouncils": "Todos los ayuntamientos",
+  "hero": {
+    "eyebrow": "Software libre para los ayuntamientos gallegos",
+    "slogan": "El deporte de tu ayuntamiento, a un turno de distancia.",
+    "lead": "Reserva pistas, piscinas y pabellones municipales en segundos, desde el móvil o el ordenador. Sin colas ni llamadas.",
+    "councils_one": "ayuntamiento",
+    "councils_other": "ayuntamientos",
+    "facilities_one": "instalación",
+    "facilities_other": "instalaciones",
+    "bookings_one": "reserva hecha",
+    "bookings_other": "reservas hechas",
+    "residents_one": "persona ha reservado",
+    "residents_other": "personas han reservado"
+  },
+  "card": {
+    "facilities_one": "instalación",
+    "facilities_other": "instalaciones",
+    "freeToday_one": "turno libre hoy",
+    "freeToday_other": "turnos libres hoy",
+    "bookings_one": "reserva",
+    "bookings_other": "reservas",
+    "residents_one": "usuario",
+    "residents_other": "usuarios",
+    "cta": "Ver instalaciones y reservar"
+  }
 }

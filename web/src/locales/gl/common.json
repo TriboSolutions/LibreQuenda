@@ -88,5 +88,14 @@
   "rateLimited": "Demasiados intentos en pouco tempo. Agarda un momento e téntao de novo.",
   "close": "Pechar",
   "skipToContent": "Ir ao contido",
-  "newTab": " (ábrese nunha nova lapela)"
+  "newTab": " (ábrese nunha nova lapela)",
+  "footer": {
+    "about": "Reserva de instalacións deportivas municipais para os concellos galegos. Código aberto, auditable e sen dependencia de ningún provedor.",
+    "badge": "Software libre · AGPL-3.0",
+    "project": "Proxecto",
+    "source": "Código fonte en GitHub",
+    "license": "Licenza AGPL-3.0",
+    "legal": "Legal",
+    "copyright": "© {{year}} Tribo Solutions. LibreQuenda é software libre: podes usalo, estudalo, modificalo e compartilo baixo a licenza GNU AGPL-3.0."
+  }
 }

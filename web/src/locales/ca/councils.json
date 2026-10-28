@@ -2,7 +2,6 @@
   "title": "Tria el teu ajuntament",
   "subtitle_one": "{{count}} ajuntament reserva les seves instal·lacions esportives amb LibreQuenda.",
   "subtitle_other": "{{count}} ajuntaments reserven les seves instal·lacions esportives amb LibreQuenda.",
-  "listTitle": "Ajuntaments",
   "search": "Cerca un ajuntament",
   "noResults": "Cap ajuntament coincideix amb «{{query}}».",
   "empty": "Encara no s'ha donat d'alta cap ajuntament.",
@@ -12,5 +11,29 @@
     "title": "Ajuntament no trobat",
     "body": "No hi ha cap ajuntament a «/{{slug}}». Revisa l'adreça o tria'n un de la llista."
   },
-  "allCouncils": "Tots els ajuntaments"
+  "allCouncils": "Tots els ajuntaments",
+  "hero": {
+    "eyebrow": "Programari lliure per als ajuntaments gallecs",
+    "slogan": "L’esport del teu ajuntament, a un torn de distància.",
+    "lead": "Reserva pistes, piscines i pavellons municipals en segons, des del mòbil o l’ordinador. Sense cues ni trucades.",
+    "councils_one": "ajuntament",
+    "councils_other": "ajuntaments",
+    "facilities_one": "instal·lació",
+    "facilities_other": "instal·lacions",
+    "bookings_one": "reserva feta",
+    "bookings_other": "reserves fetes",
+    "residents_one": "persona ha reservat",
+    "residents_other": "persones han reservat"
+  },
+  "card": {
+    "facilities_one": "instal·lació",
+    "facilities_other": "instal·lacions",
+    "freeToday_one": "torn lliure avui",
+    "freeToday_other": "torns lliures avui",
+    "bookings_one": "reserva",
+    "bookings_other": "reserves",
+    "residents_one": "usuari",
+    "residents_other": "usuaris",
+    "cta": "Veure instal·lacions i reservar"
+  }
 }

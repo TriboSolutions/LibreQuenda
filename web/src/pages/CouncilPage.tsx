@@ -5,11 +5,11 @@ import { useAuth } from 'react-oidc-context'
 import { Link, useParams } from 'react-router'
 import { Availability } from '@/components/Availability'
 import { BookingDialog } from '@/components/BookingDialog'
-import { BookingRules } from '@/components/BookingRules'
 import { CancelDialog } from '@/components/CancelDialog'
 import { DayPicker } from '@/components/DayPicker'
 import { MyBookings } from '@/components/MyBookings'
 import { BookingQrDialog } from '@/components/BookingQrDialog'
+import { CouncilContact } from '@/components/CouncilContact'
 import { CouncilHeading } from '@/components/CouncilHeading'
 import { TopBar } from '@/components/TopBar'
 import { Button } from '@/components/ui/button'
@@ -184,7 +184,7 @@ export function CouncilPage() {
               onCancel={setToCancel}
               onShowQr={setShowQr}
             />
-            {day.data && day.data.facilities.length > 0 && <BookingRules day={day.data} />}
+            {day.data && <CouncilContact tenant={day.data.tenant} />}
           </div>
         </div>
       </main>
