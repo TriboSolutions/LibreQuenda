@@ -159,6 +159,7 @@ SELECT
     b.ends_at,
     b.status,
     b.checked_in_at,
+    EXISTS (SELECT 1 FROM checkin_device d WHERE d.facility_id = f.id AND d.created_at <= b.starts_at)::BOOLEAN AS reader_at_start,
     f.id   AS facility_id,
     f.name AS facility_name,
     f.slug AS facility_slug,

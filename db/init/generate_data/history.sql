@@ -58,6 +58,10 @@ UPDATE seed_history SET demand =
     * CASE WHEN EXTRACT(ISODOW FROM day) >= 6 THEN 1.3 ELSE 1.0 END
     * (0.65 + 0.35 * (1 - ({LOCAL_DAY} - day)::FLOAT8 / {HISTORY_DAYS}));                -- more residents use it every week
 
+-- the seed readers were installed before the history starts: a booking only
+-- counts as a no-show if a reader was there to check it in
+UPDATE checkin_device SET created_at = ({LOCAL_DAY} - {HISTORY_DAYS} - 1)::TIMESTAMP AT TIME ZONE '{TIMEZONE}';
+
 INSERT INTO booking (id, facility_id, user_id, starts_at, ends_at, status, cancelled_by, cancelled_at, created_at, rules_accepted_at, checked_in_at, checked_in_device_id)
 SELECT
     h.booking_id,

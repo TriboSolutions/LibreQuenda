@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import { Link } from 'react-router'
+import { BookingOutcome } from '@/components/BookingOutcome'
 import { BookingQrDialog } from '@/components/BookingQrDialog'
 import { CancelDialog } from '@/components/CancelDialog'
 import { FacilityInfo } from '@/components/FacilityInfo'
@@ -244,15 +245,13 @@ type RowProps = {
 
 /** A past booking, in one line: what, when, and how it ended. */
 function HistoryRow({ booking, today }: { booking: Booking; today: string }) {
-  const { t } = useTranslation(['invites', 'bookings'])
-  const cancelled = booking.status === 'cancelled'
   return (
     <li className="grid gap-0.5 border-t py-3 first:border-t-0">
       <div className="flex items-start justify-between gap-3">
         <Link to={`/${booking.tenant_slug}/${booking.facility_slug}`} className="min-w-0 font-medium underline-offset-4 hover:text-primary hover:underline">
           {booking.facility_name}
         </Link>
-        <span className={cancelled ? pill.neutral : pill.positive}>{cancelled ? t('bookings:status.cancelled') : t('bookings:status.done')}</span>
+        <BookingOutcome booking={booking} />
       </div>
       <p className="num text-sm text-muted-foreground">
         {formatBookingDay(booking.starts_at, TIME_ZONE, today)}, {formatTime(booking.starts_at, TIME_ZONE)}–{formatTime(booking.ends_at, TIME_ZONE)} · {booking.tenant_name}

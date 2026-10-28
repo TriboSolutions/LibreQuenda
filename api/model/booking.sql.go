@@ -236,6 +236,7 @@ SELECT
     b.status,
     b.checkin_token,
     b.checked_in_at,
+    EXISTS (SELECT 1 FROM checkin_device d WHERE d.facility_id = f.id AND d.created_at <= b.starts_at)::BOOLEAN AS reader_at_start,
     f.id   AS facility_id,
     f.name AS facility_name,
     f.slug AS facility_slug,
@@ -260,6 +261,7 @@ type ListBookingsByUserRow struct {
 	Status         BookingStatus `json:"status"`
 	CheckinToken   uuid.UUID     `json:"checkin_token"`
 	CheckedInAt    sql.NullTime  `json:"checked_in_at"`
+	ReaderAtStart  bool          `json:"reader_at_start"`
 	FacilityID     uuid.UUID     `json:"facility_id"`
 	FacilityName   string        `json:"facility_name"`
 	FacilitySlug   string        `json:"facility_slug"`
@@ -269,6 +271,8 @@ type ListBookingsByUserRow struct {
 	Facility       Facility      `json:"facility"`
 }
 
+// reader_at_start: a QR reader was there when the turn began, so a missing
+// check-in means the person did not show up.
 func (q *Queries) ListBookingsByUser(ctx context.Context, userID uuid.NullUUID) ([]ListBookingsByUserRow, error) {
 	rows, err := q.db.QueryContext(ctx, listBookingsByUser, userID)
 	if err != nil {
@@ -285,6 +289,7 @@ func (q *Queries) ListBookingsByUser(ctx context.Context, userID uuid.NullUUID) 
 			&i.Status,
 			&i.CheckinToken,
 			&i.CheckedInAt,
+			&i.ReaderAtStart,
 			&i.FacilityID,
 			&i.FacilityName,
 			&i.FacilitySlug,
