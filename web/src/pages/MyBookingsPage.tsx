@@ -21,6 +21,7 @@ import { useMe } from '@/hooks/useMe'
 import { api, type Booking } from '@/lib/api'
 import { directionsUrl } from '@/lib/maps'
 import { formatBookingDay, formatDateTime, formatTime, localDate } from '@/lib/time'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 // Bookings can span councils; all of them are in Galicia today
 const TIME_ZONE = 'Europe/Madrid'
@@ -38,6 +39,7 @@ export function MyBookingsPage() {
   const me = useMe()
   const { login } = useLogin()
   const tenants = useAsync(() => api.tenants(), 'tenants')
+  usePageTitle(t('invites:myBookings.title'))
   // GET /me (MeProvider) first creates the user's row; the bookings load after it
   const bookings = useAsync(token && me.me ? () => api.myBookings(token) : null, `bookings:${me.me?.id}`)
 
@@ -202,7 +204,7 @@ export function MyBookingsPage() {
   return (
     <div className="min-h-screen">
       <TopBar tenants={tenants.data?.tenants ?? []} tenantSlug={null} />
-      <main className="mx-auto max-w-[1152px] px-4 pt-8 pb-16 sm:px-6">
+      <main id="main" tabIndex={-1} className="mx-auto max-w-[1152px] px-4 pt-8 pb-16 sm:px-6">
         <h1 className="text-[28px] leading-9 font-bold tracking-[-0.02em] sm:text-[32px] sm:leading-10">{t('invites:myBookings.title')}</h1>
         <p className="mt-1 text-base text-muted-foreground">{t('invites:myBookings.subtitle')}</p>
         {body}
@@ -259,7 +261,7 @@ function HistoryRow({ booking, today }: { booking: Booking; today: string }) {
 
 /** An upcoming booking with its details in place: photo, where, when, who is coming, and the rules on demand. */
 function BookingRow({ booking, today, children }: RowProps) {
-  const { t } = useTranslation(['invites', 'bookings', 'facility'])
+  const { t } = useTranslation(['invites', 'bookings', 'facility', 'common'])
   const [open, setOpen] = useState(false)
   const facility = booking.facility
   const hasPin = facility.latitude !== null && facility.longitude !== null
@@ -297,6 +299,7 @@ function BookingRow({ booking, today, children }: RowProps) {
                 >
                   {t('facility:directions')}
                   <ExternalLink className="size-3.5" aria-hidden />
+                  <span className="sr-only">{t('common:newTab')}</span>
                 </a>
               )}
             </p>
@@ -328,7 +331,7 @@ function BookingRow({ booking, today, children }: RowProps) {
           aria-expanded={open}
           aria-controls={rulesId}
           onClick={() => setOpen((v) => !v)}
-          className="inline-flex items-center gap-1 rounded-xs text-sm font-medium underline-offset-4 hover:underline"
+          className="inline-flex min-h-11 items-center gap-1 rounded-xs text-sm font-medium underline-offset-4 hover:underline"
         >
           {t('details.rules')}
           <ChevronDown className={`size-4 transition-transform ${open ? 'rotate-180' : ''}`} aria-hidden />

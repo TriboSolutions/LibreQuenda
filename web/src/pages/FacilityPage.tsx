@@ -15,6 +15,7 @@ import { useLogin } from '@/hooks/useLogin'
 import { api, ApiError, type Facility, type Slot } from '@/lib/api'
 import { directionsUrl } from '@/lib/maps'
 import { formatBookingDay, formatTime, localDate } from '@/lib/time'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 const WEEK = [1, 2, 3, 4, 5, 6, 7] // ISO weekdays, Monday first
 
@@ -32,6 +33,7 @@ export function FacilityPage() {
   const page = useAsync(() => api.facilityPage(slug, facilitySlug, date), `facility:${key}:${date ?? 'today'}`)
   const [pick, setPick] = useState<{ facility: Facility; slot: Slot } | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
+  usePageTitle(page.data?.facility.name, page.data?.tenant.name)
 
   const data = page.data
   const timeZone = data?.timezone ?? 'Europe/Madrid'
@@ -61,7 +63,7 @@ export function FacilityPage() {
   const shell = (children: React.ReactNode) => (
     <div className="min-h-screen">
       <TopBar tenants={tenants.data?.tenants ?? []} tenantSlug={slug} />
-      <main className="mx-auto max-w-[1152px] px-4 pt-6 pb-16 sm:px-6">
+      <main id="main" tabIndex={-1} className="mx-auto max-w-[1152px] px-4 pt-6 pb-16 sm:px-6">
         <Link to={`/${slug}`} className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground">
           <ArrowLeft className="size-4" aria-hidden="true" />
           {t('facility:back')}
@@ -162,6 +164,7 @@ export function FacilityPage() {
                   <a href={directionsUrl(f.latitude!, f.longitude!)} target="_blank" rel="noopener noreferrer">
                     {t('facility:directions')}
                     <ExternalLink aria-hidden="true" />
+                    <span className="sr-only">{t('common:newTab')}</span>
                   </a>
                 </Button>
               </>

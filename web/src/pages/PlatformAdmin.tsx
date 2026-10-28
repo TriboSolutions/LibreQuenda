@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useLogin } from '@/hooks/useLogin'
 import { useMe } from '@/hooks/useMe'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 /** /admin: the superadministrator's area (councils and superadministrators). */
 export function PlatformAdmin() {
@@ -16,6 +17,7 @@ export function PlatformAdmin() {
   const auth = useAuth()
   const { me, loading } = useMe()
   const { login } = useLogin()
+  usePageTitle(t('admin:title'))
 
   let body
   if (auth.isLoading || (auth.isAuthenticated && (loading || !me))) {
@@ -61,7 +63,7 @@ export function PlatformAdmin() {
   return (
     <div className="min-h-screen">
       <TopBar tenants={[]} tenantSlug={null} />
-      <main className="mx-auto max-w-[1152px] px-4 pt-8 pb-16 sm:px-6">
+      <main id="main" tabIndex={-1} className="mx-auto max-w-[1152px] px-4 pt-8 pb-16 sm:px-6">
         <h1 className="text-[28px] leading-9 font-bold tracking-[-0.02em] sm:text-[32px] sm:leading-10">{t('admin:title')}</h1>
         <p className="mt-1 text-base text-muted-foreground">{t('admin:subtitle')}</p>
         {body}

@@ -97,7 +97,7 @@ export function DayStrip({ facility, axis, timeZone, nowMinutes, onPick }: Props
   const { t } = useTranslation('home')
 
   return (
-    <div className="relative h-8 rounded-sm bg-muted/60">
+    <div className="relative h-11 rounded-sm bg-muted/60">
       {outsideHours(facility, axis).map((gap) => (
         <span
           key={gap.start}
@@ -136,7 +136,7 @@ export function DayStrip({ facility, axis, timeZone, nowMinutes, onPick }: Props
         return (
           <Tooltip key={slot.starts_at}>
             <TooltipTrigger asChild>
-              <span className={className} style={style} aria-label={text} />
+              <span className={className} style={style} role="img" aria-label={text} />
             </TooltipTrigger>
             <TooltipContent className="num">{text}</TooltipContent>
           </Tooltip>

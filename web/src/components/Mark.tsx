@@ -30,7 +30,7 @@ export function Mark({ className, ticks = false }: { className?: string; ticks?:
 /** The name as the logo sets it: "libre" light, "quenda" bold in the brand blue. */
 export function Wordmark({ className }: { className?: string }) {
   return (
-    <span className={className}>
+    <span className={className} data-logotype>
       <span className="font-light text-brand-ink">libre</span>
       <span className="font-bold text-brand-blue">quenda</span>
     </span>

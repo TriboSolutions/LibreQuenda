@@ -54,6 +54,9 @@ export function FacilityMap({ latitude, longitude, label, editable = false, onCh
     const position: L.LatLngExpression = [latitude, longitude]
     if (!marker.current) {
       marker.current = L.marker(position, { icon: pinIcon, draggable: editable, keyboard: editable, alt: label }).addTo(instance)
+      // a div icon has no <img> to carry the alt: name the pin itself (WCAG 4.1.2)
+      marker.current.getElement()?.setAttribute('aria-label', label)
+      if (!editable) marker.current.getElement()?.setAttribute('aria-hidden', 'true')
       marker.current.on('dragend', () => {
         const at = marker.current?.getLatLng()
         if (at) onChangeRef.current?.(at.lat, at.lng)

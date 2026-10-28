@@ -50,6 +50,13 @@ export function TopBar({ tenants, tenantSlug }: Props) {
 
   return (
     <>
+    {/* WCAG 2.4.1: the first stop of the Tab key jumps over the bar */}
+    <a
+      href="#main"
+      className="sr-only rounded-md bg-primary px-4 py-3 font-medium text-primary-foreground focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100]"
+    >
+      {t('common:skipToContent')}
+    </a>
     <header className="border-b bg-card">
       <div className="mx-auto flex h-14 max-w-[1152px] items-center gap-3 px-4 sm:px-6">
         <Link to="/" className="flex shrink-0 items-center gap-2 rounded-md font-semibold" aria-label={t('common:home')}>
@@ -64,7 +71,7 @@ export function TopBar({ tenants, tenantSlug }: Props) {
         )}
         {!tenantSlug ? null : tenants.length > 1 ? (
           <Select value={tenantSlug} onValueChange={(slug) => navigate(`/${slug}`)}>
-            <SelectTrigger size="sm" aria-label={t('common:council')} className="min-w-0 border-0 px-2 hover:bg-accent">
+            <SelectTrigger size="sm" aria-label={`${t('common:council')}: ${tenant?.name ?? ''}`} className="min-w-0 border-0 px-2 hover:bg-accent">
               <SelectValue placeholder={t('common:chooseCouncil')} />
             </SelectTrigger>
             <SelectContent align="start">
@@ -93,9 +100,12 @@ export function TopBar({ tenants, tenantSlug }: Props) {
                   {me?.avatar_url ? (
                     <img src={me.avatar_url} alt="" className="size-7 rounded-full object-cover" />
                   ) : (
-                    <span className="flex size-7 items-center justify-center rounded-full bg-accent text-xs font-semibold text-accent-foreground">
-                      {initials(name)}
-                    </span>
+                    // the initials are decoration (CSS content): the button is named after the person (WCAG 2.5.3)
+                    <span
+                      aria-hidden="true"
+                      data-initials={initials(name)}
+                      className="flex size-7 items-center justify-center rounded-full bg-accent text-xs font-semibold text-accent-foreground before:content-[attr(data-initials)]"
+                    />
                   )}
                   <span className="hidden max-w-40 truncate sm:inline">{name}</span>
                 </Button>

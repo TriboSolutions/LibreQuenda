@@ -32,10 +32,10 @@ Scope: bases §1.1 (minimum) + §1.2 (technical). See [architecture plan](docs/s
 - [ ] Data export for the user (`GET /me/export`, JSON/CSV)
 - [ ] Account erasure: anonymise bookings, delete the identity in Zitadel
 
-## Accessibility (WCAG 2.1 AA)
+## Accessibility (WCAG 2.1 AA, plus the AAA criteria that apply)
 
-- [ ] Keyboard navigation and focus review (slot picker, dialogs)
-- [ ] axe checks in CI
+- [x] Keyboard navigation and focus review (slot picker, dialogs)
+- [x] axe checks in CI (`pnpm test:a11y`, web/e2e)
 - [ ] Accessibility statement page
 
 ## Interoperability and docs

@@ -38,12 +38,13 @@ export function DayPicker({ today, value, days = 7, onChange }: Props) {
           <ToggleGroupItem
             key={date}
             value={date}
-            aria-label={formatLongDate(date)}
-            className="num h-12 min-w-0 flex-col gap-0 px-1 leading-4 data-[state=on]:bg-accent data-[state=on]:text-accent-foreground sm:h-8 sm:flex-row sm:px-3"
+            className="num h-12 min-w-0 flex-col gap-0 px-1 leading-4 data-[state=on]:bg-accent data-[state=on]:text-accent-foreground sm:h-11 sm:flex-row sm:px-3"
           >
             <span className="text-xs text-muted-foreground sm:hidden">{label.top}</span>
             <span className="sm:hidden">{label.bottom}</span>
             <span className="hidden sm:inline">{label.inline}</span>
+            {/* the visible label first, then the full date (WCAG 2.5.3) */}
+            <span className="sr-only">, {formatLongDate(date)}</span>
           </ToggleGroupItem>
         )
       })}

@@ -84,5 +84,8 @@
     "empty": "Sin imagen"
   },
   "createAccount": "Crear cuenta",
-  "rateLimited": "Demasiados intentos en poco tiempo. Espera un momento y vuelve a intentarlo."
+  "rateLimited": "Demasiados intentos en poco tiempo. Espera un momento y vuelve a intentarlo.",
+  "close": "Cerrar",
+  "skipToContent": "Ir al contenido",
+  "newTab": " (se abre en una pestaña nueva)"
 }
