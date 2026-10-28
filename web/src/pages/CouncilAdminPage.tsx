@@ -5,6 +5,7 @@ import { useAuth } from 'react-oidc-context'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import { CouncilSheet } from '@/components/admin/CouncilSheet'
 import { useVerifyEmail } from '@/components/InvitationReminder'
+import { CouncilHeading } from '@/components/CouncilHeading'
 import { TopBar } from '@/components/TopBar'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -195,8 +196,8 @@ export function CouncilAdminPage() {
     <div className="min-h-screen">
       <TopBar tenants={tenants.data?.tenants ?? []} tenantSlug={slug} />
       <main id="main" tabIndex={-1} className="mx-auto max-w-[1152px] px-4 pt-8 pb-16 sm:px-6">
-        <h1 className="text-[28px] leading-9 font-bold tracking-[-0.02em] sm:text-[32px] sm:leading-10">{t('admin:councilAdmin.title')}</h1>
-        <p className="mt-1 text-base text-muted-foreground">{t('admin:councilAdmin.subtitle', { council: council?.name ?? slug })}</p>
+        <CouncilHeading section={t('admin:councilAdmin.title')} council={council} otherCouncils={false} />
+        <p className="mt-1 text-base text-muted-foreground">{t('admin:councilAdmin.subtitle')}</p>
         {body}
       </main>
       {settingsOpen && allowed && (

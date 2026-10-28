@@ -245,7 +245,7 @@
   },
   "councilAdmin": {
     "title": "Council management",
-    "subtitle": "{{council}}: facilities, opening hours, rules and indicators.",
+    "subtitle": "Facilities, opening hours, rules and indicators.",
     "settings": "Council settings"
   },
   "indicators": {
