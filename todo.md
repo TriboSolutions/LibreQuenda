@@ -11,6 +11,7 @@ Scope: bases §1.1 (minimum) + §1.2 (technical). See [architecture plan](docs/s
 - [ ] Quick book, like Enjoy: book a free slot close to the facility
 - [x] Change own booking (`PATCH /me/bookings/{id}`): another day or time of the same facility; the owner can remove people who joined
 - [x] Booking history (past and upcoming)
+- [ ] Ask Angel: what booking window should residents have? Nobody should be able to book, say, every Wednesday until 2028. Today each facility has `max_advance_days` (3–14 days in the seed, enforced for residents and staff) and `max_active_bookings_per_user`; decide whether that is enough or we need more (a council-wide maximum, a weekly cap per person, turns that open at a fixed hour, recurring bookings for staff only…)
 - [x] In-app notification list (`GET /me/notifications`)
 - [x] Decide if in-app notifications need real-time push (WebSockets, SSE) or if polling is enough: polling every 30 s
 - [x] Email notifications: booking confirmed / reminder (15 min before) / cancelled; owner only
@@ -57,7 +58,7 @@ Scope: bases §1.1 (minimum) + §1.2 (technical). See [architecture plan](docs/s
 ## Contest submission
 
 - [ ] Project report (memoria) for the bases
-- [ ] Demo deployment with seed data
+- [ ] Demo deployment with seed data (the seed has three real councils: Lalín, Lugo and Ourense)
 - [ ] Pitch deck for 26 Nov
 
 ## Optional (bases §1.3, only if cheap)
