@@ -1,19 +1,22 @@
-from config import TENANT, TIMEZONE
+from config import COUNCILS, TIMEZONE
 
 from generators.base import stable_uuid
 
 
 def generate(context: dict) -> list:
-    tenant_id = stable_uuid("tenant", TENANT["key"])
-    context["tenant_id"] = tenant_id
-    return [
-        {
-            "id": tenant_id,
-            "slug": TENANT["slug"],
-            "name": TENANT["name"],
-            "timezone": TIMEZONE,
-            "contact_email": TENANT["contact_email"],
-            "contact_phone": TENANT["contact_phone"],
-            "logo_ref": TENANT["logo_ref"],
-        }
-    ]
+    rows = []
+    for council in COUNCILS:
+        tenant_id = stable_uuid("tenant", council["key"])
+        context["tenants"][council["key"]] = tenant_id
+        rows.append(
+            {
+                "id": tenant_id,
+                "slug": council["slug"],
+                "name": council["name"],
+                "timezone": TIMEZONE,
+                "contact_email": council["contact_email"],
+                "contact_phone": council["contact_phone"],
+                "logo_ref": council["logo_ref"],
+            }
+        )
+    return rows

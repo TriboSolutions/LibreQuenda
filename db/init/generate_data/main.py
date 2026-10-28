@@ -33,7 +33,7 @@ SQL_FILE = BASE_DIR.parent / "09_initial_data.sql"
 # Shared state passed through every generator so they can cross-reference IDs.
 def _empty_context() -> dict:
     return {
-        "tenant_id": None,
+        "tenants": {},     # key -> tenant id
         "facilities": {},  # key -> facility config + id
         "residents": {},   # key -> app_user id
     }
