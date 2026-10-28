@@ -255,7 +255,8 @@
       "7": "Últimos 7 días",
       "30": "Últimos 30 días",
       "90": "Últimos 90 días",
-      "365": "Último año"
+      "365": "Último año",
+      "custom": "Personalizado"
     },
     "facility": "Instalación",
     "allFacilities": "Todas las instalaciones",
@@ -331,7 +332,44 @@
         "label": "Frecuencia de uso",
         "hint": "Cuántas personas reservaron 1, 2–4, 5–9 o 10+ veces"
       }
-    }
+    },
+    "from": "Desde",
+    "to": "Hasta",
+    "compare": "Comparar con",
+    "compareOptions": {
+      "previous": "Periodo anterior",
+      "year": "Mismo periodo hace un año",
+      "none": "Sin comparar"
+    },
+    "comparedWith": "Comparado con el {{from}} – {{to}}",
+    "points": "{{value}} p.p.",
+    "change": {
+      "noBase": "Sin datos para comparar",
+      "positive": "mejor que en el periodo comparado",
+      "negative": "peor que en el periodo comparado",
+      "neutral": "frente al periodo comparado"
+    },
+    "habits": {
+      "party": "Personas por reserva",
+      "partyHint": "Quien reserva más las personas que se unen",
+      "lead": "Antelación habitual",
+      "leadHint": "La mitad de las reservas se hace con más antelación que esta",
+      "leadHours": "{{value}} h",
+      "leadDays": "{{value}} días"
+    },
+    "previousConfirmed": "Confirmadas, periodo comparado",
+    "thisPeriod": "Este periodo",
+    "comparedPeriod": "Periodo comparado",
+    "weekdaysTitle": "Ocupación por día de la semana",
+    "weekdaysHint": "Horas reservadas sobre las horas abiertas de cada día de la semana.",
+    "colWeekday": "Día",
+    "colGrowth": "Frente al comparado",
+    "byFacilityHint": "Pulsa en una instalación para ver su detalle.",
+    "openFacility": "Ver los indicadores de {{name}}",
+    "facilityTitle": "Indicadores de {{name}}",
+    "facilityDetail": "Detalle de la instalación",
+    "editFacility": "Editar instalación",
+    "customInvalid": "Elige una fecha de inicio anterior a la de fin, con un año como mucho entre ellas."
   },
   "smtp": {
     "title": "Servidor de correo (SMTP)",

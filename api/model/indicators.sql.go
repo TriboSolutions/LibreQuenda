@@ -387,6 +387,66 @@ func (q *Queries) IndicatorsByFacility(ctx context.Context, arg IndicatorsByFaci
 	return items, nil
 }
 
+const indicatorsByWeekday = `-- name: IndicatorsByWeekday :many
+SELECT
+    EXTRACT(ISODOW FROM b.starts_at AT TIME ZONE $1::TEXT)::INT AS weekday,
+    COALESCE(SUM(EXTRACT(EPOCH FROM b.ends_at - b.starts_at) / 60), 0)::BIGINT AS booked_minutes
+FROM
+    booking b
+    JOIN facility f ON f.id = b.facility_id
+WHERE
+    f.tenant_id = $2
+    AND ($3::UUID IS NULL OR f.id = $3)
+    AND b.status = 'confirmed'
+    AND b.starts_at >= $4
+    AND b.starts_at < $5
+GROUP BY
+    1
+`
+
+type IndicatorsByWeekdayParams struct {
+	Timezone   string        `json:"timezone"`
+	TenantID   uuid.UUID     `json:"tenant_id"`
+	FacilityID uuid.NullUUID `json:"facility_id"`
+	RangeStart time.Time     `json:"range_start"`
+	RangeEnd   time.Time     `json:"range_end"`
+}
+
+type IndicatorsByWeekdayRow struct {
+	Weekday       int32 `json:"weekday"`
+	BookedMinutes int64 `json:"booked_minutes"`
+}
+
+// Confirmed booked time per local weekday (ISO: 1 = Monday), for occupancy by weekday.
+func (q *Queries) IndicatorsByWeekday(ctx context.Context, arg IndicatorsByWeekdayParams) ([]IndicatorsByWeekdayRow, error) {
+	rows, err := q.db.QueryContext(ctx, indicatorsByWeekday,
+		arg.Timezone,
+		arg.TenantID,
+		arg.FacilityID,
+		arg.RangeStart,
+		arg.RangeEnd,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []IndicatorsByWeekdayRow
+	for rows.Next() {
+		var i IndicatorsByWeekdayRow
+		if err := rows.Scan(&i.Weekday, &i.BookedMinutes); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const indicatorsDaily = `-- name: IndicatorsDaily :many
 SELECT
     b.facility_id,
@@ -469,6 +529,50 @@ func (q *Queries) IndicatorsDaily(ctx context.Context, arg IndicatorsDailyParams
 		return nil, err
 	}
 	return items, nil
+}
+
+const indicatorsHabits = `-- name: IndicatorsHabits :one
+SELECT
+    COUNT(*) AS bookings,
+    COALESCE(AVG(1 + invited.people), 0)::FLOAT8 AS avg_party_size,
+    COALESCE(percentile_cont(0.5) WITHIN GROUP (ORDER BY EXTRACT(EPOCH FROM b.starts_at - b.created_at) / 3600), 0)::FLOAT8 AS median_lead_hours
+FROM
+    booking b
+    JOIN facility f ON f.id = b.facility_id
+    CROSS JOIN LATERAL (SELECT COUNT(*) AS people FROM booking_participant bp WHERE bp.booking_id = b.id) invited
+WHERE
+    f.tenant_id = $1
+    AND ($2::UUID IS NULL OR f.id = $2)
+    AND b.status = 'confirmed'
+    AND b.starts_at >= $3
+    AND b.starts_at < $4
+`
+
+type IndicatorsHabitsParams struct {
+	TenantID   uuid.UUID     `json:"tenant_id"`
+	FacilityID uuid.NullUUID `json:"facility_id"`
+	RangeStart time.Time     `json:"range_start"`
+	RangeEnd   time.Time     `json:"range_end"`
+}
+
+type IndicatorsHabitsRow struct {
+	Bookings        int64   `json:"bookings"`
+	AvgPartySize    float64 `json:"avg_party_size"`
+	MedianLeadHours float64 `json:"median_lead_hours"`
+}
+
+// How people book: the average group (owner + invited, guests too) and the
+// median time between booking and playing, over the confirmed bookings.
+func (q *Queries) IndicatorsHabits(ctx context.Context, arg IndicatorsHabitsParams) (IndicatorsHabitsRow, error) {
+	row := q.db.QueryRowContext(ctx, indicatorsHabits,
+		arg.TenantID,
+		arg.FacilityID,
+		arg.RangeStart,
+		arg.RangeEnd,
+	)
+	var i IndicatorsHabitsRow
+	err := row.Scan(&i.Bookings, &i.AvgPartySize, &i.MedianLeadHours)
+	return i, err
 }
 
 const indicatorsSeries = `-- name: IndicatorsSeries :many

@@ -325,20 +325,38 @@ export type IndicatorCounts = {
 
 export type FacilityIndicators = IndicatorCounts & { id: string; name: string; is_active: boolean; has_reader: boolean }
 
-export type Indicators = {
+export type IndicatorTotals = IndicatorCounts & {
+  active_users: number
+  avg_party_size: number | null // people per confirmed booking, owner + invited
+  median_lead_hours: number | null // how long before playing people book
+}
+
+export type WeekdayOccupancy = { weekday: number; booked_hours: number; open_hours: number; occupancy: number | null } // ISO weekday: 1 = Monday
+
+/** The figures of one period: the one asked for, or the one it is compared with. */
+export type PeriodFigures = {
   from: string // YYYY-MM-DD, both days included
   to: string
+  totals: IndicatorTotals
+  facilities: FacilityIndicators[]
+  series: { period: string; confirmed: number; cancelled: number }[]
+  weekdays: WeekdayOccupancy[]
+}
+
+export type IndicatorsCompare = 'previous' | 'year' | 'none'
+
+export type Indicators = PeriodFigures & {
   bucket: 'day' | 'week' | 'month'
   timezone: string
   generated_at: string
-  totals: IndicatorCounts & { active_users: number }
-  facilities: FacilityIndicators[]
-  series: { period: string; confirmed: number; cancelled: number }[]
   busy_hours: { weekday: number; hour: number; bookings: number }[] // ISO weekday: 1 = Monday
+  compare: IndicatorsCompare
+  previous: PeriodFigures | null // null with compare "none"
 }
 
-// days: the last n days up to today in the council's time zone (the API works out the dates)
-export type IndicatorsQuery = { days: number; facility?: string }
+// days: the last n days up to today in the council's time zone (the API works out the dates),
+// or from/to for a range of your own. compare: previous = the same number of days just before.
+export type IndicatorsQuery = { days?: number; from?: string; to?: string; facility?: string; compare?: IndicatorsCompare }
 // every export is anonymous: totals only, counts of 1 or 2 shown as "<3"
 export type IndicatorsExport = { kind: 'summary' | 'daily' | 'hours' | 'usage'; excel: boolean }
 
@@ -407,9 +425,14 @@ async function request<T>(path: string, { token, method = 'GET', body }: Request
   return res.json() as Promise<T>
 }
 
-function indicatorsParams({ days, facility }: IndicatorsQuery) {
-  const params = new URLSearchParams({ days: String(days) })
+function indicatorsParams({ days, from, to, facility, compare }: IndicatorsQuery) {
+  const params = new URLSearchParams()
+  if (from && to) {
+    params.set('from', from)
+    params.set('to', to)
+  } else if (days) params.set('days', String(days))
   if (facility) params.set('facility', facility)
+  if (compare) params.set('compare', compare)
   return params
 }
 
@@ -428,7 +451,7 @@ async function exportIndicators(token: string, slug: string, query: IndicatorsQu
   const url = URL.createObjectURL(await res.blob())
   const link = document.createElement('a')
   link.href = url
-  link.download = `${slug}-${kind}-${query.days}d-${new Date().toISOString().slice(0, 10)}.csv`
+  link.download = `${slug}-${kind}-${query.from && query.to ? `${query.from}_${query.to}` : `${query.days}d-${new Date().toISOString().slice(0, 10)}`}.csv`
   link.click()
   URL.revokeObjectURL(url)
 }

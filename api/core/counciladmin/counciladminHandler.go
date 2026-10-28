@@ -332,7 +332,7 @@ func (h *counciladminHandler) DeleteClosure(w http.ResponseWriter, r *http.Reque
 
 func indicatorsQuery(r *http.Request) IndicatorsQuery {
 	var params = r.URL.Query()
-	var query = IndicatorsQuery{From: params.Get("from"), To: params.Get("to"), Facility: params.Get("facility")}
+	var query = IndicatorsQuery{From: params.Get("from"), To: params.Get("to"), Facility: params.Get("facility"), Compare: params.Get("compare")}
 	if days := params.Get("days"); days != "" {
 		var n, err = strconv.Atoi(days)
 		if err != nil {

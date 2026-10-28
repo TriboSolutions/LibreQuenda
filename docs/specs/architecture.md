@@ -202,6 +202,8 @@ Computed live with SQL over bookings, in one read-only snapshot per request. No 
 
 A booking belongs to the period its start falls in, in the council's time zone. Every chart has a table alternative for screen readers.
 
+**Comparison and facility detail.** Any period (the last 7, 30, 90 or 365 days, or a range of your own up to a year) is compared by default with the same number of days just before it, or with the same dates a year earlier (`compare=previous|year|none`). The API returns the same figures for both periods (`previous`), computed in the same snapshot; the web shows growth in % for counts and averages and in percentage points for rates (cancellations, no-shows and occupancy), green or red by whether the change is good news. Choosing a facility, from the filter or the per-facility table, turns the dashboard into that facility's detail: the same boards for it alone, plus occupancy by weekday and how people book (people per booking, owner plus invited; and the median notice between booking and playing), each against the compared period.
+
 CSV export (`…/indicators/export?kind=summary|daily|hours|usage`). **Every export is anonymous**: no row is a booking or a person, so nothing in it can be matched back to someone, not even by the council against its own database.
 
 | `kind` | One row per | Contents |

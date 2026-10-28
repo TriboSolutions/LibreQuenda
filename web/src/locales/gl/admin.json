@@ -255,7 +255,8 @@
       "7": "Últimos 7 días",
       "30": "Últimos 30 días",
       "90": "Últimos 90 días",
-      "365": "Último ano"
+      "365": "Último ano",
+      "custom": "Personalizado"
     },
     "facility": "Instalación",
     "allFacilities": "Todas as instalacións",
@@ -331,7 +332,44 @@
         "label": "Frecuencia de uso",
         "hint": "Cantas persoas reservaron 1, 2–4, 5–9 ou 10+ veces"
       }
-    }
+    },
+    "from": "Desde",
+    "to": "Ata",
+    "compare": "Comparar con",
+    "compareOptions": {
+      "previous": "Período anterior",
+      "year": "Mesmo período hai un ano",
+      "none": "Sen comparar"
+    },
+    "comparedWith": "Comparado co {{from}} – {{to}}",
+    "points": "{{value}} p.p.",
+    "change": {
+      "noBase": "Sen datos para comparar",
+      "positive": "mellor ca no período comparado",
+      "negative": "peor ca no período comparado",
+      "neutral": "fronte ao período comparado"
+    },
+    "habits": {
+      "party": "Persoas por reserva",
+      "partyHint": "Quen reserva máis as persoas que se unen",
+      "lead": "Antelación habitual",
+      "leadHint": "A metade das reservas faise con máis antelación ca esta",
+      "leadHours": "{{value}} h",
+      "leadDays": "{{value}} días"
+    },
+    "previousConfirmed": "Confirmadas, período comparado",
+    "thisPeriod": "Este período",
+    "comparedPeriod": "Período comparado",
+    "weekdaysTitle": "Ocupación por día da semana",
+    "weekdaysHint": "Horas reservadas sobre as horas abertas de cada día da semana.",
+    "colWeekday": "Día",
+    "colGrowth": "Fronte ao comparado",
+    "byFacilityHint": "Preme nunha instalación para ver o seu detalle.",
+    "openFacility": "Ver os indicadores de {{name}}",
+    "facilityTitle": "Indicadores de {{name}}",
+    "facilityDetail": "Detalle da instalación",
+    "editFacility": "Editar instalación",
+    "customInvalid": "Escolle unha data de comezo anterior á de fin, cun ano como moito entre elas."
   },
   "smtp": {
     "title": "Servidor de correo (SMTP)",

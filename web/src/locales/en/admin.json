@@ -255,7 +255,8 @@
       "7": "Last 7 days",
       "30": "Last 30 days",
       "90": "Last 90 days",
-      "365": "Last year"
+      "365": "Last year",
+      "custom": "Custom"
     },
     "facility": "Facility",
     "allFacilities": "All facilities",
@@ -331,7 +332,44 @@
         "label": "How often people book",
         "hint": "How many people booked 1, 2–4, 5–9 or 10+ times"
       }
-    }
+    },
+    "from": "From",
+    "to": "To",
+    "compare": "Compare with",
+    "compareOptions": {
+      "previous": "Previous period",
+      "year": "Same period a year ago",
+      "none": "No comparison"
+    },
+    "comparedWith": "Compared with {{from}} – {{to}}",
+    "points": "{{value}} pp",
+    "change": {
+      "noBase": "No data to compare",
+      "positive": "better than the compared period",
+      "negative": "worse than the compared period",
+      "neutral": "against the compared period"
+    },
+    "habits": {
+      "party": "People per booking",
+      "partyHint": "Whoever books plus the people who join",
+      "lead": "Usual notice",
+      "leadHint": "Half of the bookings are made further ahead than this",
+      "leadHours": "{{value}} h",
+      "leadDays": "{{value}} days"
+    },
+    "previousConfirmed": "Confirmed, compared period",
+    "thisPeriod": "This period",
+    "comparedPeriod": "Compared period",
+    "weekdaysTitle": "Occupancy by weekday",
+    "weekdaysHint": "Hours booked out of the hours open on each weekday.",
+    "colWeekday": "Day",
+    "colGrowth": "Against compared",
+    "byFacilityHint": "Select a facility to see its detail.",
+    "openFacility": "See the indicators of {{name}}",
+    "facilityTitle": "Indicators of {{name}}",
+    "facilityDetail": "Facility detail",
+    "editFacility": "Edit facility",
+    "customInvalid": "Choose a start date before the end date, at most a year apart."
   },
   "smtp": {
     "title": "Email server (SMTP)",

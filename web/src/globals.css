@@ -62,6 +62,7 @@
   /* indicators: bookings that happened, and cancelled ones beside them */
   --chart-confirmed: #0a6fb0;
   --chart-cancelled: #c3ccd5;
+  --chart-previous: #5b6573; /* the compared period: muted ink, dashed or beside */
 }
 
 /* Dark: true neutral greys (no navy or slate), elevation by lightness alone,
@@ -113,6 +114,7 @@
 
   --chart-confirmed: #5fb0e6;
   --chart-cancelled: #4a5058;
+  --chart-previous: #a9aeb6;
 }
 
 @theme inline {
@@ -159,6 +161,7 @@
 
   --color-chart-confirmed: var(--chart-confirmed);
   --color-chart-cancelled: var(--chart-cancelled);
+  --color-chart-previous: var(--chart-previous);
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
