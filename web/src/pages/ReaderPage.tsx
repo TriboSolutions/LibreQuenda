@@ -15,7 +15,8 @@ import { usePageTitle } from '@/hooks/usePageTitle'
 /*
   Entrance reader: a demo of what a device at the door runs. It signs in with
   the reader key (from /lector#key=… or typed in), asks for the camera, reads
-  booking QR codes and shows the answer full screen for a few seconds.
+  booking QR codes, and the personal QR from /perfil (which can book the turn
+  about to start), and shows the answer full screen for a few seconds.
   An IoT device can skip this page and call POST /api/reader/checkin itself.
 */
 
@@ -379,6 +380,18 @@ function Answer({ shown, reader, now, onDismiss }: { shown: Shown; reader: Reade
         break
       case 'cancelled':
         title = t('result.cancelled')
+        break
+      case 'booked':
+        title = booking?.first_name ? t('result.welcome', { name: booking.first_name }) : t('result.booked')
+        detail = slot ? t('result.bookedDetail', slot) : ''
+        break
+      case 'not_booked':
+        title = t('result.notBooked')
+        detail = t(`reason.${shown.result.reason}`, { defaultValue: t('reason.other') })
+        break
+      case 'code_expired':
+        title = t('result.codeExpired')
+        detail = t('result.codeExpiredDetail')
         break
       case 'unknown_booking':
         title = t('result.unknown')

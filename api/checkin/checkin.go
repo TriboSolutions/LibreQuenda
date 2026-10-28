@@ -34,6 +34,31 @@ func ParsePayload(text string) (uuid.UUID, bool) {
 	return token, err == nil
 }
 
+// personalPrefix marks the personal QR on /perfil: "lq2:" + a token that lasts about a minute.
+const personalPrefix = "lq2:"
+
+// PersonalRefresh: how often /perfil shows a new personal QR. PersonalValidFor is
+// longer, so the code on screen still works while the next one loads.
+const (
+	PersonalRefresh  = time.Minute
+	PersonalValidFor = 90 * time.Second
+)
+
+// PersonalPayload is the text inside a personal QR. Like the booking QR, it carries no personal data.
+func PersonalPayload(token uuid.UUID) string {
+	return personalPrefix + token.String()
+}
+
+// ParsePersonalPayload reads a scanned QR; ok is false for anything that is not a personal QR.
+func ParsePersonalPayload(text string) (uuid.UUID, bool) {
+	var raw, found = strings.CutPrefix(strings.TrimSpace(text), personalPrefix)
+	if !found {
+		return uuid.Nil, false
+	}
+	var token, err = uuid.Parse(raw)
+	return token, err == nil
+}
+
 // PNG renders the booking QR (for emails; the web draws its own).
 func PNG(token uuid.UUID, size int) ([]byte, error) {
 	return qrcode.Encode(Payload(token), qrcode.Medium, size)

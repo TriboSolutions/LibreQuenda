@@ -84,6 +84,8 @@
     "device_not_found": "No hem trobat aquest lector.",
     "invalid_device_key": "La clau del lector no és vàlida o s'ha retirat.",
     "checkin_failed": "No s'ha pogut comprovar la reserva. Torna-ho a provar.",
+    "qr_failed": "No s'ha pogut crear el teu QR. Torna-ho a provar.",
+    "no_turn_soon": "Cap torn no comença en els propers 15 minuts.",
     "invite_not_found": "Aquest enllaç d'invitació no funciona: potser qui va reservar l'ha canviat.",
     "invite_closed": "Aquesta reserva ja no admet més gent: s'ha cancel·lat o ja ha començat.",
     "invite_full": "No queden places lliures en aquesta reserva.",

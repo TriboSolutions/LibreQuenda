@@ -1,7 +1,7 @@
 {
   "retry": "Reintentar",
   "clock": "Hora actual",
-  "instructions": "Acerca el QR de tu reserva a la cámara",
+  "instructions": "Acerca el QR de tu reserva o el QR de tu perfil a la cámara",
   "device": "Lector: {{name}}",
   "signOut": "Cambiar clave",
   "signIn": {
@@ -38,6 +38,23 @@
     "unknown": "No encontramos esta reserva",
     "unknownDetail": "Comprueba que es el QR de una reserva vigente.",
     "notABooking": "Este QR no es de una reserva",
-    "notABookingDetail": "Muestra el QR de entrada de «Tus reservas»."
+    "notABookingDetail": "Muestra el QR de entrada de «Tus reservas».",
+    "booked": "Reservado. ¡Adelante!",
+    "bookedDetail": "Turno reservado: {{facility}} · {{start}}–{{end}}",
+    "notBooked": "No se ha podido reservar un turno",
+    "codeExpired": "Este QR ha caducado",
+    "codeExpiredDetail": "Muestra el código actual de tu perfil: cambia cada minuto."
+  },
+  "reason": {
+    "no_turn_soon": "Ningún turno empieza en los próximos 15 minutos.",
+    "slot_booked": "El próximo turno ya está reservado.",
+    "slot_closed": "La instalación está cerrada en el próximo turno.",
+    "slot_too_far": "El próximo turno aún no se puede reservar.",
+    "profile_incomplete": "Añade tu fecha de nacimiento en tu perfil para reservar.",
+    "age_restricted": "No cumples la edad mínima de esta instalación.",
+    "booking_limit_reached": "Has llegado al límite de reservas en esta instalación.",
+    "booking_overlaps": "Ya tienes otra reserva a esa hora.",
+    "facility_not_found": "Esta instalación no se puede reservar ahora.",
+    "other": "Reserva en la aplicación o pregunta al personal."
   }
 }

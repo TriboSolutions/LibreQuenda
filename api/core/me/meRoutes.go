@@ -41,6 +41,13 @@ func (r *meRoutes) RegisterRoutes() {
 		AdditionalMethods: []router.HTTPMethod{router.OPTIONS},
 		Handler:           middlewares.AuthMiddleware(h.UpdateProfile),
 	})
+	// the personal QR: at a facility's reader it checks the person in, or books the turn about to start
+	r.router.NewRoute(router.Route{
+		Path:              "/me/qr",
+		Method:            http.MethodGet,
+		AdditionalMethods: []router.HTTPMethod{router.OPTIONS},
+		Handler:           middlewares.AuthMiddleware(h.GetPersonalQr),
+	})
 	// RXPD / GDPR: the user's data as a file, and erasure of the whole account
 	r.router.NewRoute(router.Route{
 		Path:              "/me/export",

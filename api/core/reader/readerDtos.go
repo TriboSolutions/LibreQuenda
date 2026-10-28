@@ -33,10 +33,13 @@ func MapReader(device model.GetCheckinDeviceByKeyRow) ReaderDto {
 	}
 }
 
-// Results of a scan. Granted: checked_in, already_checked_in. Every other one is refused.
+// Results of a scan. Granted: checked_in, already_checked_in, booked. Every other one is refused.
 const (
 	ResultCheckedIn        = "checked_in"
 	ResultAlreadyCheckedIn = "already_checked_in"
+	ResultBooked           = "booked"          // personal QR: the turn about to start was booked, and the entry recorded
+	ResultNotBooked        = "not_booked"      // personal QR: no booking to let in, and none could be made (see Reason)
+	ResultCodeExpired      = "code_expired"    // personal QR: expired, already used, or not issued by LibreQuenda
 	ResultNotABooking      = "not_a_booking"   // the QR is not a LibreQuenda booking
 	ResultUnknownBooking   = "unknown_booking" // well formed, but no booking has that token
 	ResultOtherFacility    = "other_facility"
@@ -48,7 +51,8 @@ const (
 type CheckinResultDto struct {
 	Granted bool               `json:"granted"`
 	Result  string             `json:"result"`
-	Booking *CheckinBookingDto `json:"booking"` // nil for an unknown or cancelled booking
+	Reason  string             `json:"reason,omitempty"` // not_booked only: why, e.g. "no_turn_soon", "slot_booked", "booking_limit_reached"
+	Booking *CheckinBookingDto `json:"booking"`          // nil for an unknown or cancelled booking
 }
 
 type CheckinBookingDto struct {

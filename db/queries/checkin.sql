@@ -104,3 +104,63 @@ WHERE
     AND checked_in_at IS NULL
 RETURNING
     checked_in_at;
+
+-- name: DeleteExpiredUserQrTokens :exec
+-- Run before issuing a new personal QR, so a user keeps one or two rows at most.
+DELETE FROM user_qr_token
+WHERE
+    user_id = sqlc.arg('user_id')
+    AND expires_at <= NOW();
+
+-- name: CreateUserQrToken :one
+INSERT INTO user_qr_token (
+    user_id,
+    expires_at
+) VALUES (
+    sqlc.arg('user_id'),
+    sqlc.arg('expires_at')
+)
+RETURNING
+    token,
+    expires_at;
+
+-- name: UseUserQrToken :one
+-- A personal QR works once and only until it expires; no row otherwise.
+UPDATE user_qr_token q
+SET
+    used_at = NOW()
+FROM
+    app_user u
+WHERE
+    q.token = sqlc.arg('token')
+    AND q.used_at IS NULL
+    AND q.expires_at > NOW()
+    AND u.id = q.user_id
+RETURNING
+    q.user_id,
+    u.full_name;
+
+-- name: ReleaseUserQrToken :exec
+-- Gives a scanned personal QR back when the reader refused it, so it can be shown again.
+UPDATE user_qr_token
+SET
+    used_at = NULL
+WHERE
+    token = sqlc.arg('token');
+
+-- name: GetUserCheckinTokenAtFacility :one
+-- The user's own confirmed booking at the facility that a reader would let in
+-- now: not over, and starting before window_ends (now + the early window).
+SELECT
+    checkin_token
+FROM
+    booking
+WHERE
+    user_id = sqlc.arg('user_id')
+    AND facility_id = sqlc.arg('facility_id')
+    AND status = 'confirmed'
+    AND ends_at > NOW()
+    AND starts_at <= sqlc.arg('window_ends')
+ORDER BY
+    starts_at ASC
+LIMIT 1;

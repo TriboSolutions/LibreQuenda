@@ -193,6 +193,24 @@ func (s *bookingsService) bookableSlot(ctx context.Context, queries *model.Queri
 }
 
 func (s *bookingsService) findSlot(ctx context.Context, queries *model.Queries, facility model.GetFacilityForBookingRow, loc *time.Location, day, dayEnd, start time.Time) (*schedule.Slot, *shared.ErrorResponse) {
+	var slots, err = s.daySlots(ctx, queries, facility, loc, day, dayEnd)
+	if err != nil {
+		return nil, err
+	}
+	for _, slot := range slots {
+		if !slot.Start.Equal(start) {
+			continue
+		}
+		if slot.Status != schedule.SlotFree {
+			return nil, &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.slot_" + string(slot.Status)}
+		}
+		return &slot, nil
+	}
+	return nil, &shared.ErrorResponse{Code: http.StatusUnprocessableEntity, Message: "errors.slot_not_found"}
+}
+
+// daySlots: the facility's turns on one day, as the schedule reports them right now.
+func (s *bookingsService) daySlots(ctx context.Context, queries *model.Queries, facility model.GetFacilityForBookingRow, loc *time.Location, day, dayEnd time.Time) ([]schedule.Slot, *shared.ErrorResponse) {
 	var failed = &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.booking_failed"}
 
 	var hours, err = queries.ListOpeningHoursByTenantWeekday(ctx, model.ListOpeningHoursByTenantWeekdayParams{TenantID: facility.TenantID, Weekday: schedule.ISOWeekday(day)})
@@ -229,16 +247,65 @@ func (s *bookingsService) findSlot(ctx context.Context, queries *model.Queries, 
 	}
 
 	var rules = schedule.Rules{SlotMinutes: int(facility.SlotMinutes), MaxAdvanceDays: int(facility.MaxAdvanceDays)}
-	for _, slot := range schedule.DaySlots(day, loc, rules, windows, closureIntervals, busy, time.Now()) {
-		if !slot.Start.Equal(start) {
-			continue
-		}
-		if slot.Status != schedule.SlotFree {
-			return nil, &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.slot_" + string(slot.Status)}
-		}
-		return &slot, nil
+	return schedule.DaySlots(day, loc, rules, windows, closureIntervals, busy, time.Now()), nil
+}
+
+// QuickBook books, for someone scanning their personal QR at the facility's
+// reader, the turn that starts within checkin.EarlyWindow. It goes through
+// CreateBooking, so the limits, the age and the overlap rules are the same as
+// in the app; scanning to quick-book counts as accepting the usage rules.
+func (s *bookingsService) QuickBook(ctx context.Context, userId uuid.UUID, facilityId uuid.UUID) (*BookingDto, *shared.ErrorResponse) {
+	var queries = model.New(s.db)
+	var facility, err = queries.GetFacilityForBooking(ctx, facilityId)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, &shared.ErrorResponse{Code: http.StatusNotFound, Message: "errors.facility_not_found"}
 	}
-	return nil, &shared.ErrorResponse{Code: http.StatusUnprocessableEntity, Message: "errors.slot_not_found"}
+	if err != nil {
+		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.booking_failed"}
+	}
+	var loc, locErr = time.LoadLocation(facility.Timezone)
+	if locErr != nil {
+		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.booking_failed"}
+	}
+
+	var now = time.Now()
+	var today = startOfDay(now, loc)
+	var slots, slotsErr = s.daySlots(ctx, queries, facility, loc, today, today.AddDate(0, 0, 1))
+	if slotsErr != nil {
+		return nil, slotsErr
+	}
+	// near midnight the turn may start on the next day
+	if tomorrow := startOfDay(now.Add(checkin.EarlyWindow), loc); tomorrow.After(today) {
+		var more []schedule.Slot
+		if more, slotsErr = s.daySlots(ctx, queries, facility, loc, tomorrow, tomorrow.AddDate(0, 0, 1)); slotsErr != nil {
+			return nil, slotsErr
+		}
+		slots = append(slots, more...)
+	}
+	var slot, found = NextTurn(slots, now)
+	if !found {
+		return nil, &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.no_turn_soon"}
+	}
+	if slot.Status != schedule.SlotFree {
+		return nil, &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.slot_" + string(slot.Status)}
+	}
+	return s.CreateBooking(ctx, userId, CreateBookingDto{FacilityId: facility.ID, StartsAt: slot.Start, AcceptRules: true})
+}
+
+// NextTurn: the first turn that starts from now until checkin.EarlyWindow later, free or not.
+func NextTurn(slots []schedule.Slot, now time.Time) (schedule.Slot, bool) {
+	var latest = now.Add(checkin.EarlyWindow)
+	for _, slot := range slots {
+		if !slot.Start.Before(now) && !slot.Start.After(latest) {
+			return slot, true
+		}
+	}
+	return schedule.Slot{}, false
+}
+
+func startOfDay(t time.Time, loc *time.Location) time.Time {
+	var local = t.In(loc)
+	return time.Date(local.Year(), local.Month(), local.Day(), 0, 0, 0, 0, loc)
 }
 
 // ChangeBooking moves the owner's booking to another free turn of the same facility,

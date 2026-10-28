@@ -74,6 +74,36 @@ func (q *Queries) CreateCheckinDevice(ctx context.Context, arg CreateCheckinDevi
 	return i, err
 }
 
+const createUserQrToken = `-- name: CreateUserQrToken :one
+INSERT INTO user_qr_token (
+    user_id,
+    expires_at
+) VALUES (
+    $1,
+    $2
+)
+RETURNING
+    token,
+    expires_at
+`
+
+type CreateUserQrTokenParams struct {
+	UserID    uuid.UUID `json:"user_id"`
+	ExpiresAt time.Time `json:"expires_at"`
+}
+
+type CreateUserQrTokenRow struct {
+	Token     uuid.UUID `json:"token"`
+	ExpiresAt time.Time `json:"expires_at"`
+}
+
+func (q *Queries) CreateUserQrToken(ctx context.Context, arg CreateUserQrTokenParams) (CreateUserQrTokenRow, error) {
+	row := q.db.QueryRowContext(ctx, createUserQrToken, arg.UserID, arg.ExpiresAt)
+	var i CreateUserQrTokenRow
+	err := row.Scan(&i.Token, &i.ExpiresAt)
+	return i, err
+}
+
 const deleteCheckinDevice = `-- name: DeleteCheckinDevice :execrows
 DELETE FROM checkin_device d
 USING facility f
@@ -96,6 +126,19 @@ func (q *Queries) DeleteCheckinDevice(ctx context.Context, arg DeleteCheckinDevi
 		return 0, err
 	}
 	return result.RowsAffected()
+}
+
+const deleteExpiredUserQrTokens = `-- name: DeleteExpiredUserQrTokens :exec
+DELETE FROM user_qr_token
+WHERE
+    user_id = $1
+    AND expires_at <= NOW()
+`
+
+// Run before issuing a new personal QR, so a user keeps one or two rows at most.
+func (q *Queries) DeleteExpiredUserQrTokens(ctx context.Context, userID uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, deleteExpiredUserQrTokens, userID)
+	return err
 }
 
 const getBookingByCheckinToken = `-- name: GetBookingByCheckinToken :one
@@ -192,6 +235,37 @@ func (q *Queries) GetCheckinDeviceByKey(ctx context.Context, keyHash []byte) (Ge
 	return i, err
 }
 
+const getUserCheckinTokenAtFacility = `-- name: GetUserCheckinTokenAtFacility :one
+SELECT
+    checkin_token
+FROM
+    booking
+WHERE
+    user_id = $1
+    AND facility_id = $2
+    AND status = 'confirmed'
+    AND ends_at > NOW()
+    AND starts_at <= $3
+ORDER BY
+    starts_at ASC
+LIMIT 1
+`
+
+type GetUserCheckinTokenAtFacilityParams struct {
+	UserID     uuid.NullUUID `json:"user_id"`
+	FacilityID uuid.UUID     `json:"facility_id"`
+	WindowEnds time.Time     `json:"window_ends"`
+}
+
+// The user's own confirmed booking at the facility that a reader would let in
+// now: not over, and starting before window_ends (now + the early window).
+func (q *Queries) GetUserCheckinTokenAtFacility(ctx context.Context, arg GetUserCheckinTokenAtFacilityParams) (uuid.UUID, error) {
+	row := q.db.QueryRowContext(ctx, getUserCheckinTokenAtFacility, arg.UserID, arg.FacilityID, arg.WindowEnds)
+	var checkin_token uuid.UUID
+	err := row.Scan(&checkin_token)
+	return checkin_token, err
+}
+
 const listCheckinDevices = `-- name: ListCheckinDevices :many
 SELECT
     d.id,
@@ -277,6 +351,20 @@ func (q *Queries) MarkBookingCheckedIn(ctx context.Context, arg MarkBookingCheck
 	return checked_in_at, err
 }
 
+const releaseUserQrToken = `-- name: ReleaseUserQrToken :exec
+UPDATE user_qr_token
+SET
+    used_at = NULL
+WHERE
+    token = $1
+`
+
+// Gives a scanned personal QR back when the reader refused it, so it can be shown again.
+func (q *Queries) ReleaseUserQrToken(ctx context.Context, token uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, releaseUserQrToken, token)
+	return err
+}
+
 const touchCheckinDevice = `-- name: TouchCheckinDevice :exec
 UPDATE checkin_device
 SET
@@ -289,4 +377,33 @@ WHERE
 func (q *Queries) TouchCheckinDevice(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.ExecContext(ctx, touchCheckinDevice, id)
 	return err
+}
+
+const useUserQrToken = `-- name: UseUserQrToken :one
+UPDATE user_qr_token q
+SET
+    used_at = NOW()
+FROM
+    app_user u
+WHERE
+    q.token = $1
+    AND q.used_at IS NULL
+    AND q.expires_at > NOW()
+    AND u.id = q.user_id
+RETURNING
+    q.user_id,
+    u.full_name
+`
+
+type UseUserQrTokenRow struct {
+	UserID   uuid.UUID      `json:"user_id"`
+	FullName sql.NullString `json:"full_name"`
+}
+
+// A personal QR works once and only until it expires; no row otherwise.
+func (q *Queries) UseUserQrToken(ctx context.Context, token uuid.UUID) (UseUserQrTokenRow, error) {
+	row := q.db.QueryRowContext(ctx, useUserQrToken, token)
+	var i UseUserQrTokenRow
+	err := row.Scan(&i.UserID, &i.FullName)
+	return i, err
 }

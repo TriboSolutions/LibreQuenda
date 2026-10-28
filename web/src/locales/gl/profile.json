@@ -81,5 +81,18 @@
     "deleting": "Eliminando…",
     "deletedTitle": "A túa conta foi eliminada.",
     "deletedBody": "Os teus datos persoais xa non están en LibreQuenda. Podes crear unha conta nova cando queiras."
+  },
+  "personalQr": {
+    "title": "O teu QR",
+    "help": "Entra, ou reserva no momento, nas instalacións con lector QR na entrada.",
+    "alt": "O teu código QR persoal. Cambia cada minuto.",
+    "checkIn": "Se tes unha reserva nesa instalación que comeza en menos de 15 minutos ou xa está en curso, rexistra a túa entrada.",
+    "book": "Se non, reserva a quenda que comeza nos próximos 15 minutos, se está libre, e déixate entrar. Aplícanse os mesmos límites que ao reservar aquí, e ao escanealo aceptas as normas de uso desa instalación.",
+    "private": "O código cambia cada minuto e só serve unha vez, así que unha captura de pantalla non funciona. Non o compartas.",
+    "brightness": "Se o lector non o detecta, sube o brillo da pantalla.",
+    "refreshIn": "Novo código en {{seconds}} s",
+    "failed": "Non foi posible cargar o teu QR. Comproba a conexión.",
+    "retry": "Tentar de novo",
+    "incomplete": "Engade a túa data de nacemento máis abaixo para reservar co teu QR."
   }
 }
