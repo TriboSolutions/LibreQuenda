@@ -22,6 +22,7 @@ import type {
   StaffDay,
   Superadmin,
   Tenant,
+  TenantCard,
   WeeklyWindow,
 } from '../src/lib/api'
 
@@ -39,7 +40,10 @@ const today = new Intl.DateTimeFormat('en-CA', { timeZone: TZ }).format(now)
 
 const tenant: Tenant = { slug: 'lugo', name: 'Concello de Lugo', logo_url: '', contact_email: 'deportes@lugo.gal', contact_phone: '982 297 100' }
 // without a contact: the statement sends residents to the council's online office
-const tenants: Tenant[] = [tenant, { slug: 'ourense', name: 'Concello de Ourense', logo_url: '', contact_email: '', contact_phone: '' }]
+const tenants: TenantCard[] = [
+  { ...tenant, stats: { facilities: 6, sports: ['Natación', 'Pádel', 'Tenis'], free_today: 42, bookings: 6179, residents: 20 } },
+  { slug: 'ourense', name: 'Concello de Ourense', logo_url: '', contact_email: '', contact_phone: '', stats: { facilities: 5, sports: [], free_today: 0, bookings: 0, residents: 0 } },
+]
 
 function slots(): Facility['slots'] {
   // past, then free and booked turns, then one too far ahead and one closed

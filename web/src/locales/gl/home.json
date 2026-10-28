@@ -36,11 +36,11 @@
     "bookAria": "Reservar {{facility}}, {{time}}",
     "closure": "Peche puntual"
   },
-  "rules": {
-    "title": "Normas de reserva",
-    "days": "d",
-    "hours": "h",
-    "figures": "Días · h · máx.",
-    "figuresHelp": "Días de antelación para reservar, horas antes do turno para cancelar, reservas activas por persoa"
+  "contact": {
+    "title": "Contacto do concello",
+    "lead": "Dúbidas cunha reserva ou cunha instalación? Fala co servizo de deportes.",
+    "phone": "Teléfono",
+    "email": "Correo electrónico",
+    "none": "Este concello aínda non publicou os seus datos de contacto."
   }
 }

@@ -36,11 +36,11 @@
     "bookAria": "Book {{facility}}, {{time}}",
     "closure": "Closure"
   },
-  "rules": {
-    "title": "Booking rules",
-    "days": "d",
-    "hours": "h",
-    "figures": "Days · h · max.",
-    "figuresHelp": "Days in advance to book, hours before the turn to cancel, active bookings per person"
+  "contact": {
+    "title": "Council contact",
+    "lead": "Questions about a booking or a facility? Talk to the sports service.",
+    "phone": "Phone",
+    "email": "Email",
+    "none": "This council has not published its contact details yet."
   }
 }

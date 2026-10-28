@@ -36,11 +36,11 @@
     "bookAria": "Reservar {{facility}}, {{time}}",
     "closure": "Cierre puntual"
   },
-  "rules": {
-    "title": "Normas de reserva",
-    "days": "d",
-    "hours": "h",
-    "figures": "Días · h · máx.",
-    "figuresHelp": "Días de antelación para reservar, horas antes del turno para cancelar, reservas activas por persona"
+  "contact": {
+    "title": "Contacto del ayuntamiento",
+    "lead": "¿Dudas con una reserva o una instalación? Habla con el servicio de deportes.",
+    "phone": "Teléfono",
+    "email": "Correo electrónico",
+    "none": "Este ayuntamiento aún no ha publicado sus datos de contacto."
   }
 }
