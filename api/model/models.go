@@ -196,6 +196,7 @@ type AppUser struct {
 	AvatarRef         sql.NullString `json:"avatar_ref"`
 	PreferredLanguage sql.NullString `json:"preferred_language"`
 	EmailReminders    bool           `json:"email_reminders"`
+	CalendarToken     uuid.NullUUID  `json:"calendar_token"`
 	CreatedAt         time.Time      `json:"created_at"`
 	UpdatedAt         time.Time      `json:"updated_at"`
 }

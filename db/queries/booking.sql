@@ -183,3 +183,30 @@ SELECT EXISTS (
             )
         )
 );
+
+-- name: ListCalendarBookings :many
+-- The .ics feed: the user's own bookings and the ones they joined, from a month
+-- back. Cancelled ones stay in, so calendar apps that already have them drop them.
+SELECT
+    b.id,
+    b.starts_at,
+    b.ends_at,
+    b.status,
+    b.updated_at,
+    f.name AS facility_name,
+    f.address,
+    f.latitude,
+    f.longitude,
+    t.name AS tenant_name
+FROM
+    booking b
+    JOIN facility f ON f.id = b.facility_id
+    JOIN tenant   t ON t.id = f.tenant_id
+WHERE
+    (
+        b.user_id = sqlc.arg('user_id')
+        OR b.id IN (SELECT p.booking_id FROM booking_participant p WHERE p.user_id = sqlc.arg('user_id'))
+    )
+    AND b.ends_at > NOW() - INTERVAL '30 days'
+ORDER BY
+    b.starts_at ASC;
