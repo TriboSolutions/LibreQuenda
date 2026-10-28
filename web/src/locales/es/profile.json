@@ -59,5 +59,27 @@
       "symbol": "Un símbolo (como ! ? # o ñ)"
     }
   },
-  "signInToVerify": "Inicia sesión para terminar de verificar tu correo. Volverás aquí y quedará verificado."
+  "signInToVerify": "Inicia sesión para terminar de verificar tu correo. Volverás aquí y quedará verificado.",
+  "privacy": {
+    "title": "Tus datos",
+    "help": "Según el RGPD puedes llevarte una copia de todo lo que LibreQuenda guarda sobre ti, o eliminar tu cuenta.",
+    "exportTitle": "Descargar tus datos",
+    "exportHelp": "Tu perfil, roles, reservas, las reservas a las que te uniste y tus avisos. JSON sirve para otras aplicaciones; CSV se abre en una hoja de cálculo.",
+    "exportJson": "Descargar JSON",
+    "exportCsv": "Descargar CSV",
+    "preparing": "Preparando…",
+    "deleteTitle": "Eliminar cuenta",
+    "deleteHelp": "Borra para siempre tu cuenta de acceso y tus datos personales. No se puede deshacer.",
+    "delete": "Eliminar mi cuenta",
+    "deleteDialogTitle": "¿Eliminar tu cuenta?",
+    "deleteDialogBody": "No se puede deshacer. Descarga antes tus datos si quieres conservar una copia.",
+    "deleteUpcoming": "Tus próximas reservas se cancelan y sus enlaces de invitación dejan de funcionar.",
+    "deletePast": "Las reservas pasadas quedan en las estadísticas del ayuntamiento, sin nada que te identifique.",
+    "deleteSignIn": "Se borran tu cuenta de acceso, perfil, foto, roles y avisos.",
+    "deleteConfirmLabel": "Para confirmar, escribe tu correo: {{email}}",
+    "deleteConfirm": "Eliminar para siempre",
+    "deleting": "Eliminando…",
+    "deletedTitle": "Tu cuenta se ha eliminado.",
+    "deletedBody": "Tus datos personales ya no están en LibreQuenda. Puedes crear una cuenta nueva cuando quieras."
+  }
 }

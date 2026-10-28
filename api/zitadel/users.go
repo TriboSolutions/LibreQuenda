@@ -24,6 +24,7 @@ var (
 	ErrWrongPassword   = errors.New("zitadel: the current password is wrong")
 	ErrRejected        = errors.New("zitadel: the request was rejected")       // a password or email Zitadel does not accept
 	ErrInvalidCode     = errors.New("zitadel: the verification code is wrong") // or expired
+	ErrNotFound        = errors.New("zitadel: no such user")
 	errUnexpectedReply = errors.New("zitadel: unexpected reply")
 )
 
@@ -90,6 +91,8 @@ func call(ctx context.Context, method string, path string, body any, out any) er
 // classify turns Zitadel's error into one the API can explain to the resident.
 func classify(status int, reply apiError) error {
 	switch {
+	case status == http.StatusNotFound:
+		return ErrNotFound
 	case strings.Contains(reply.Message, "COMMAND-3M0fs"): // "Password is invalid": the current one
 		return ErrWrongPassword
 	case strings.Contains(strings.ToLower(reply.Message), "code"): // wrong or expired verification code
@@ -167,6 +170,15 @@ func ResendEmailCode(ctx context.Context, userId string, linkTemplate string) er
 
 func VerifyEmail(ctx context.Context, userId string, code string) error {
 	return call(ctx, http.MethodPost, "/v2/users/"+userId+"/email/verify", map[string]string{"verificationCode": code}, nil)
+}
+
+// DeleteUser removes the identity for good (account erasure). An account
+// already gone counts as deleted.
+func DeleteUser(ctx context.Context, userId string) error {
+	if err := call(ctx, http.MethodDelete, "/v2/users/"+userId, nil, nil); !errors.Is(err, ErrNotFound) {
+		return err
+	}
+	return nil
 }
 
 // --- password rules -------------------------------------------------------
