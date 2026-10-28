@@ -25,7 +25,6 @@
     "more": "+{{count}} more",
     "quickBook": "Quick book {{time}}",
     "book": "Book",
-    "details": "See {{facility}}",
     "afterHours": "Outside opening hours"
   },
   "slot": {

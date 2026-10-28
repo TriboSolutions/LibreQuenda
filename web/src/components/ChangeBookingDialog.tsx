@@ -140,10 +140,18 @@ function ChangeBookingDialogOpen({ booking, timeZone, today, onClose, onChanged,
                       data-current={current}
                       disabled={slot.status !== 'free'}
                       onClick={() => setPicked(slot)}
-                      aria-label={`${formatTime(slot.starts_at, timeZone)}–${formatTime(slot.ends_at, timeZone)}${current ? `, ${t('changeDialog.current')}` : ''}`}
                     >
-                      {formatTime(slot.starts_at, timeZone)}
-                      {current && <span className="text-xs">{t('changeDialog.current')}</span>}
+                      {/* named by what it shows, the end time added for screen readers (WCAG 2.5.3) */}
+                      <span>
+                        {formatTime(slot.starts_at, timeZone)}
+                        <span className="sr-only">–{formatTime(slot.ends_at, timeZone)}</span>
+                      </span>
+                      {current && (
+                        <span className="text-xs">
+                          <span className="sr-only">, </span>
+                          {t('changeDialog.current')}
+                        </span>
+                      )}
                     </Button>
                   </li>
                 )

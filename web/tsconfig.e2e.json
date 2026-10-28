@@ -1,0 +1,22 @@
+{
+  // the accessibility tests (Node) and the callbacks they run in the page (DOM);
+  // checked against src/lib/api.ts so the mocks follow the API
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.e2e.tsbuildinfo",
+    "target": "es2023",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "types": ["node"],
+    "skipLibCheck": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "resolveJsonModule": true,
+    "paths": { "@/*": ["./src/*"] },
+    "noEmit": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
+  },
+  "include": ["playwright.config.ts", "e2e"]
+}

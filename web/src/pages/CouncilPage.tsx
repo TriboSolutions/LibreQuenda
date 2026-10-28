@@ -18,6 +18,7 @@ import { useLogin } from '@/hooks/useLogin'
 import { useMe } from '@/hooks/useMe'
 import { api, ApiError, type Booking, type Day, type Facility, type Slot } from '@/lib/api'
 import { formatBookingDay, formatLongDate, formatTime, localDate } from '@/lib/time'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 const FALLBACK_TIME_ZONE = 'Europe/Madrid'
 
@@ -55,6 +56,8 @@ export function CouncilPage() {
 
   const tenants = useAsync(() => api.tenants(), 'tenants')
   const { login, register } = useLogin()
+  const councilName = tenants.data?.tenants.find((c) => c.slug === tenantSlug)?.name
+  usePageTitle(t('home:title'), councilName)
 
   // The chosen day belongs to the council it was picked for
   const [picked, setPicked] = useState<{ slug: string; date: string } | null>(null)
@@ -115,7 +118,7 @@ export function CouncilPage() {
     return (
       <div className="min-h-screen">
         <TopBar tenants={tenants.data?.tenants ?? []} tenantSlug={null} />
-        <main className="mx-auto max-w-[1152px] px-4 pt-8 pb-16 sm:px-6">
+        <main id="main" tabIndex={-1} className="mx-auto max-w-[1152px] px-4 pt-8 pb-16 sm:px-6">
           <h1 className="text-[28px] leading-9 font-bold tracking-[-0.02em] sm:text-[32px] sm:leading-10">{t('councils:notFound.title')}</h1>
           <p className="mt-1 max-w-[62ch] text-base text-muted-foreground">{t('councils:notFound.body', { slug: tenantSlug })}</p>
           <Button asChild className="mt-6">
@@ -130,7 +133,7 @@ export function CouncilPage() {
     <div className="min-h-screen">
       <TopBar tenants={tenants.data?.tenants ?? []} tenantSlug={tenantSlug} />
 
-      <main className="mx-auto max-w-[1152px] px-4 pt-8 pb-16 sm:px-6">
+      <main id="main" tabIndex={-1} className="mx-auto max-w-[1152px] px-4 pt-8 pb-16 sm:px-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="min-w-0">
             <h1 className="text-[28px] leading-9 font-bold tracking-[-0.02em] sm:text-[32px] sm:leading-10">{t('home:title')}</h1>

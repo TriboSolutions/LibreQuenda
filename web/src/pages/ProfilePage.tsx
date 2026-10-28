@@ -20,6 +20,7 @@ import { useLogin } from '@/hooks/useLogin'
 import { useMe } from '@/hooks/useMe'
 import { languages } from '@/i18n'
 import { api, type Me, type StoredImage } from '@/lib/api'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 const SAME_AS_WEBSITE = 'auto' // Select items cannot have an empty value
 
@@ -32,6 +33,7 @@ export function ProfilePage() {
   const [params] = useSearchParams()
   const accountDeleted = (useLocation().state as { accountDeleted?: boolean } | null)?.accountDeleted === true
   const tenants = useAsync(() => api.tenants(), 'tenants')
+  usePageTitle(t('profile:title'))
 
   let body
   if (auth.isLoading || (auth.isAuthenticated && !me)) {
@@ -66,7 +68,7 @@ export function ProfilePage() {
   return (
     <div className="min-h-screen">
       <TopBar tenants={tenants.data?.tenants ?? []} tenantSlug={null} />
-      <main className="mx-auto max-w-[1152px] px-4 pt-8 pb-16 sm:px-6">
+      <main id="main" tabIndex={-1} className="mx-auto max-w-[1152px] px-4 pt-8 pb-16 sm:px-6">
         <h1 className="mb-6 text-[28px] leading-9 font-bold tracking-[-0.02em] sm:text-[32px] sm:leading-10">{t('profile:title')}</h1>
         {body}
       </main>
@@ -143,7 +145,7 @@ function ProfileForm({ me }: { me: Me }) {
             <Label htmlFor="p-phone">
               {t('profile:phone')} <span className="font-normal text-muted-foreground">({t('profile:optional')})</span>
             </Label>
-            <Input id="p-phone" type="tel" maxLength={30} value={phone} aria-describedby="p-phone-help" onChange={(e) => setPhone(e.target.value)} className="num" />
+            <Input id="p-phone" type="tel" autoComplete="tel" maxLength={30} value={phone} aria-describedby="p-phone-help" onChange={(e) => setPhone(e.target.value)} className="num" />
             <p id="p-phone-help" className="text-xs text-muted-foreground">
               {t('profile:phoneHelp')}
             </p>

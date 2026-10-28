@@ -49,7 +49,7 @@ export function NotificationBell() {
         <Button variant="ghost" size="icon" className="relative" aria-label={unread > 0 ? t('open', { count: unread }) : t('title')}>
           <Bell aria-hidden />
           {unread > 0 && (
-            <span className="num absolute top-1 right-1 flex min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] leading-4 font-semibold text-white">
+            <span aria-hidden="true" className="num absolute top-1 right-1 flex min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] leading-4 font-semibold text-background">
               {unread > 9 ? '9+' : unread}
             </span>
           )}

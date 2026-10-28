@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAsync } from '@/hooks/useAsync'
 import { api } from '@/lib/api'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 // A search box only pays off once the list is longer than a screen's glance
 const SEARCH_FROM = 8
@@ -21,6 +22,7 @@ export function CouncilPicker() {
   const { t } = useTranslation(['councils', 'common'])
   const tenants = useAsync(() => api.tenants(), 'tenants')
   const [query, setQuery] = useState('')
+  usePageTitle(t('councils:title'))
 
   const list = tenants.data?.tenants ?? []
   if (list.length === 1) return <Navigate to={`/${list[0].slug}`} replace />
@@ -31,7 +33,7 @@ export function CouncilPicker() {
     <div className="min-h-screen">
       <TopBar tenants={list} tenantSlug={null} />
 
-      <main className="mx-auto max-w-[1152px] px-4 pt-8 pb-16 sm:px-6">
+      <main id="main" tabIndex={-1} className="mx-auto max-w-[1152px] px-4 pt-8 pb-16 sm:px-6">
         <h1 className="text-[28px] leading-9 font-bold tracking-[-0.02em] sm:text-[32px] sm:leading-10">{t('councils:title')}</h1>
         {tenants.data ? (
           <p className="mt-1 text-base text-muted-foreground">{t('councils:subtitle', { count: list.length })}</p>
@@ -53,7 +55,7 @@ export function CouncilPicker() {
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder={t('councils:search')}
                   aria-label={t('councils:search')}
-                  className="h-9 pl-9"
+                  className="pl-9"
                 />
               </div>
             )}

@@ -25,7 +25,6 @@
     "more": "+{{count}} máis",
     "quickBook": "Reserva rápida {{time}}",
     "book": "Reservar",
-    "details": "Ver {{facility}}",
     "afterHours": "Fóra de horario"
   },
   "slot": {
