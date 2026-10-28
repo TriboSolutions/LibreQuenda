@@ -47,8 +47,8 @@ func decide(booking model.GetBookingByCheckinTokenRow, facilityId uuid.UUID, now
 	return ResultCheckedIn
 }
 
-// CheckIn validates a scanned QR at the reader's facility: a booking QR, or the
-// personal QR from /perfil.
+// CheckIn validates a scanned QR at the reader's facility: a booking QR lets its
+// booking in; the personal QR (quick entry) flash-books a free turn.
 func (s *readerService) CheckIn(ctx context.Context, device model.GetCheckinDeviceByKeyRow, code string) (*CheckinResultDto, *shared.ErrorResponse) {
 	if token, ok := checkin.ParsePersonalPayload(code); ok {
 		return s.personalCheckIn(ctx, device, token)
@@ -109,9 +109,10 @@ func (s *readerService) bookingCheckIn(ctx context.Context, device model.GetChec
 	return response, nil
 }
 
-// personalCheckIn: the person's own booking here that can go in now is checked
-// in; without one, the turn about to start is booked for them (bookings.QuickBook)
-// and checked in. The QR is used up only when the reader lets the person in.
+// personalCheckIn flash-books a free turn for the person (bookings.QuickBook) and
+// checks them in. It never opens an existing booking: that one goes in with its
+// own QR, so with a booking here that could go in now it is refused. The QR is
+// used up only when the reader lets the person in.
 func (s *readerService) personalCheckIn(ctx context.Context, device model.GetCheckinDeviceByKeyRow, qrToken uuid.UUID) (*CheckinResultDto, *shared.ErrorResponse) {
 	var failed = &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.checkin_failed"}
 	var queries = model.New(s.db)
@@ -123,14 +124,14 @@ func (s *readerService) personalCheckIn(ctx context.Context, device model.GetChe
 		return nil, failed
 	}
 
-	var bookingToken uuid.UUID
-	bookingToken, err = queries.GetUserCheckinTokenAtFacility(ctx, model.GetUserCheckinTokenAtFacilityParams{
+	_, err = queries.GetUserCheckinTokenAtFacility(ctx, model.GetUserCheckinTokenAtFacilityParams{
 		UserID:     uuid.NullUUID{UUID: owner.UserID, Valid: true},
 		FacilityID: device.FacilityID,
 		WindowEnds: time.Now().Add(checkin.EarlyWindow),
 	})
 	if err == nil {
-		return s.bookingCheckIn(ctx, device, bookingToken)
+		s.release(ctx, queries, qrToken)
+		return &CheckinResultDto{Result: ResultNotBooked, Reason: "use_booking_qr"}, nil
 	}
 	if !errors.Is(err, sql.ErrNoRows) {
 		s.release(ctx, queries, qrToken)

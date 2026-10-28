@@ -83,17 +83,21 @@
     "deletedBody": "Os teus datos persoais xa non están en LibreQuenda. Podes crear unha conta nova cando queiras."
   },
   "personalQr": {
-    "title": "O teu QR",
-    "help": "Entra, ou reserva no momento, nas instalacións con lector QR na entrada.",
-    "alt": "O teu código QR persoal. Cambia cada minuto.",
-    "checkIn": "Se tes unha reserva nesa instalación que comeza en menos de 15 minutos ou xa está en curso, rexistra a túa entrada.",
-    "book": "Se non, reserva a quenda que comeza nos próximos 15 minutos, se está libre, e déixate entrar. Aplícanse os mesmos límites que ao reservar aquí, e ao escanealo aceptas as normas de uso desa instalación.",
+    "title": "Reserva flash",
+    "help": "Chegas a unha instalación con lector QR e está libre? Resérvaa no momento co teu QR.",
+    "alt": "O teu código QR de reserva flash. Cambia cada minuto.",
     "private": "O código cambia cada minuto e só serve unha vez, así que unha captura de pantalla non funciona. Non o compartas.",
     "brightness": "Se o lector non o detecta, sube o brillo da pantalla.",
     "refreshIn": "Novo código en {{seconds}} s",
     "failed": "Non foi posible cargar o teu QR. Comproba a conexión.",
     "retry": "Tentar de novo",
-    "incomplete": "Engade a túa data de nacemento máis abaixo para reservar co teu QR."
+    "incomplete": "Engade a túa data de nacemento no teu perfil para reservar co teu QR.",
+    "menuLink": "Reserva flash",
+    "show": "Amosar o meu QR",
+    "close": "Pechar",
+    "now": "Se a quenda xa comezou e ninguén a reservou, resérvacha desde agora ata que remate, aínda que a seguinte estea reservada. Por exemplo, con quendas dunha hora, se chegas ás 16:15 tes a instalación ata as 17:00.",
+    "soon": "Se queda pouco para a seguinte quenda e está libre, reserva esa quenda enteira. Aplícanse os mesmos límites que ao reservar aquí, e ao escanealo aceptas as normas de uso desa instalación.",
+    "ownBooking": "Se xa tes reserva, entra co QR desa reserva en «As miñas reservas»: este non serve para iso."
   },
   "calendar": {
     "title": "Calendario",

@@ -87,7 +87,7 @@
     "qr_failed": "No se ha podido crear tu QR. Inténtalo de nuevo.",
     "calendar_failed": "No se ha podido preparar tu calendario. Inténtalo de nuevo.",
     "calendar_not_found": "Esta dirección de calendario no funciona: puede que la hayas cambiado o desactivado en /perfil.",
-    "no_turn_soon": "Ningún turno empieza en los próximos 15 minutos.",
+    "no_turn_soon": "No hay ningún turno en curso ni en los próximos 15 minutos.",
     "invite_not_found": "Este enlace de invitación no funciona: puede que quien reservó lo haya cambiado.",
     "invite_closed": "Esta reserva ya no admite más gente: se canceló o ya empezó.",
     "invite_full": "No quedan plazas libres en esta reserva.",

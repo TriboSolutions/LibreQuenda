@@ -1,10 +1,12 @@
-import { Building2, CalendarDays, LogOut, ShieldCheck, UserRound } from 'lucide-react'
+import { useState } from 'react'
+import { Building2, CalendarDays, LogOut, QrCode, ShieldCheck, UserRound } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import { Link, useNavigate } from 'react-router'
 import { InvitationReminder } from '@/components/InvitationReminder'
 import { LanguageMenu } from '@/components/LanguageMenu'
 import { NotificationBell } from '@/components/NotificationBell'
+import { PersonalQrDialog } from '@/components/PersonalQr'
 import { ProfileReminder } from '@/components/ProfileReminder'
 import { Mark, Wordmark } from '@/components/Mark'
 import { ThemeMenu } from '@/components/ThemeMenu'
@@ -46,6 +48,7 @@ export function TopBar({ tenants, tenantSlug }: Props) {
   const tenant = tenants.find((t) => t.slug === tenantSlug)
   const profile = auth.user?.profile
   const name = profile?.name ?? profile?.email ?? ''
+  const [qrOpen, setQrOpen] = useState(false)
 
   return (
     <>
@@ -90,6 +93,10 @@ export function TopBar({ tenants, tenantSlug }: Props) {
                   <span className="block truncate text-muted-foreground">{profile?.email}</span>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem onSelect={() => setQrOpen(true)}>
+                  <QrCode />
+                  {t('profile:personalQr.menuLink')}
+                </DropdownMenuItem>
                 <DropdownMenuItem onSelect={() => navigate('/reservas')}>
                   <CalendarDays />
                   {t('invites:myBookings.menuLink')}
@@ -130,6 +137,7 @@ export function TopBar({ tenants, tenantSlug }: Props) {
         </div>
       </div>
     </header>
+    {auth.isAuthenticated && <PersonalQrDialog open={qrOpen} onOpenChange={setQrOpen} />}
     <InvitationReminder />
     <ProfileReminder />
     </>

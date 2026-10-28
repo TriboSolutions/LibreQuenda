@@ -51,7 +51,7 @@ const (
 type CheckinResultDto struct {
 	Granted bool               `json:"granted"`
 	Result  string             `json:"result"`
-	Reason  string             `json:"reason,omitempty"` // not_booked only: why, e.g. "no_turn_soon", "slot_booked", "booking_limit_reached"
+	Reason  string             `json:"reason,omitempty"` // not_booked only: why, e.g. "no_turn_soon", "slot_booked", "use_booking_qr"
 	Booking *CheckinBookingDto `json:"booking"`          // nil for an unknown or cancelled booking
 }
 

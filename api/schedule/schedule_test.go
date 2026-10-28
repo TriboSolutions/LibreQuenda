@@ -77,3 +77,33 @@ func TestOpenMinutes(t *testing.T) {
 		t.Errorf("no slot length, no open time: got %d", got)
 	}
 }
+
+func TestCurrent(t *testing.T) {
+	var loc, _ = time.LoadLocation("Europe/Madrid")
+	var day = time.Date(2026, 10, 27, 0, 0, 0, 0, loc)
+	var at = func(h, m int) time.Time { return time.Date(2026, 10, 27, h, m, 0, 0, loc) }
+	var windows = []Window{{clock(16, 0), clock(19, 0)}}
+	var closures = []Interval{{at(18, 30), at(19, 0)}}
+	var busy = []Interval{{at(17, 0), at(18, 0)}}
+
+	var cases = []struct {
+		name       string
+		now        time.Time
+		start, end time.Time
+		status     SlotStatus
+		found      bool
+	}{
+		{"arriving at 16:15 books until 17:00", at(16, 15).Add(42 * time.Second), at(16, 15), at(17, 0), SlotFree, true},
+		{"right at the start", at(16, 0), at(16, 0), at(17, 0), SlotFree, true},
+		{"a booked turn", at(17, 20), at(17, 20), at(18, 0), SlotBooked, true},
+		{"a closure later in the turn", at(18, 10), at(18, 10), at(19, 0), SlotClosed, true},
+		{"before opening", at(15, 50), time.Time{}, time.Time{}, "", false},
+		{"at closing", at(19, 0), time.Time{}, time.Time{}, "", false},
+	}
+	for _, c := range cases {
+		var slot, found = Current(day, loc, 60, windows, closures, busy, c.now)
+		if found != c.found || !slot.Start.Equal(c.start) || !slot.End.Equal(c.end) || slot.Status != c.status {
+			t.Errorf("%s: Current = %s-%s %s %v; want %s-%s %s %v", c.name, slot.Start.Format("15:04"), slot.End.Format("15:04"), slot.Status, found, c.start.Format("15:04"), c.end.Format("15:04"), c.status, c.found)
+		}
+	}
+}

@@ -8,7 +8,7 @@ Scope: bases §1.1 (minimum) + §1.2 (technical). See [architecture plan](docs/s
 - [x] Facility catalogue and availability per council
 - [x] Book a free slot
 - [x] Cancel own booking
-- [ ] Quick book, like Enjoy: book a free slot close to the facility
+- [x] Flash booking, like Enjoy: the personal QR (account menu → «Reserva flash») books a free turn at the reader, from now until the turn under way ends or the one about to start
 - [x] Change own booking (`PATCH /me/bookings/{id}`): another day or time of the same facility; the owner can remove people who joined
 - [x] Booking history (past and upcoming)
 - [ ] Ask Angel: what booking window should residents have? Nobody should be able to book, say, every Wednesday until 2028. Today each facility has `max_advance_days` (3–14 days in the seed, enforced for residents and staff) and `max_active_bookings_per_user`; decide whether that is enough or we need more (a council-wide maximum, a weekly cap per person, turns that open at a fixed hour, recurring bookings for staff only…)

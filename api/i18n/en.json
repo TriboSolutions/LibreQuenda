@@ -87,7 +87,7 @@
     "qr_failed": "Your QR could not be created. Try again.",
     "calendar_failed": "Your calendar could not be prepared. Try again.",
     "calendar_not_found": "This calendar address does not work: it may have been replaced or turned off in /perfil.",
-    "no_turn_soon": "No turn starts in the next 15 minutes.",
+    "no_turn_soon": "No turn is under way or starts in the next 15 minutes.",
     "invite_not_found": "This invite link does not work: the owner may have replaced it.",
     "invite_closed": "This booking no longer takes people: it was cancelled or has started.",
     "invite_full": "There are no spots left in this booking.",
