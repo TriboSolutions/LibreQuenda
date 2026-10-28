@@ -102,6 +102,11 @@
     "invalid_guest_age": "The age must be between 1 and 120.",
     "guest_age_restricted": "This facility has a minimum age that the guest does not meet.",
     "booking_overlaps": "You already have a booking at that time.",
+    "staff_booking_holder": "Give either the person's account email or their name.",
+    "staff_booking_holder_too_long": "The name can have up to 80 characters and the phone up to 30.",
+    "person_not_found": "No LibreQuenda account uses that email. Book by name instead.",
+    "person_overlaps": "That person already has a booking at that time.",
+    "booking_started": "This booking has already started and can no longer be cancelled.",
     "notifications_load_failed": "Could not load your notifications.",
     "notifications_update_failed": "Could not update your notifications.",
     "invalid_closure_dates": "The closure dates are not valid: the end must come after the start, be in the future, and the closure can last a year at most.",
@@ -157,7 +162,8 @@
     "booking_cancelled_by_council": {
       "subject": "We're sorry: your booking at {{0}} was cancelled",
       "intro": "We're sorry. {{1}} has closed {{0}}, so your booking on {{2}}, from {{3}} to {{4}}, has been cancelled. You can book another free turn whenever you like.",
-      "intro_closure": "We're sorry. {{0}} ({{1}}) is closed from {{5}} to {{6}}, so your booking on {{2}}, from {{3}} to {{4}}, has been cancelled. You can book another free turn whenever you like."
+      "intro_closure": "We're sorry. {{0}} ({{1}}) is closed from {{5}} to {{6}}, so your booking on {{2}}, from {{3}} to {{4}}, has been cancelled. You can book another free turn whenever you like.",
+      "intro_staff": "We're sorry. {{1}} has cancelled your booking at {{0}} on {{2}}, from {{3}} to {{4}}. You can book another free turn whenever you like."
     },
     "reason": "Reason: {{0}}",
     "council_admin": {

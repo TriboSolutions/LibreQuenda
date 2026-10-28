@@ -12,5 +12,6 @@ func InitializeCronJobs(db *sql.DB) {
 
 	registerBookingReminderCronJob(db, cronScheduler)
 	registerNotificationEmailCronJob(db, cronScheduler)
+	registerForgetBookingHoldersCronJob(db, cronScheduler)
 	log.Println("Cron jobs initialized")
 }
