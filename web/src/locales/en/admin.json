@@ -102,7 +102,8 @@
     "edit": "Edit",
     "noSchedule": "no hours",
     "back": "All facilities",
-    "viewPage": "Open its page"
+    "viewPage": "Open its page",
+    "actions": "Actions"
   },
   "editor": {
     "newTitle": "New facility",
@@ -410,7 +411,8 @@
     "downloading": "Preparing…"
   },
   "staff": {
-    "tab": "Bookings",
+    "open": "Bookings",
+    "back": "Facilities",
     "title": "Bookings by phone or at the desk",
     "help": "For residents who call or come in: book a free turn for them, with their account or just their name, and cancel any booking before it starts.",
     "noFacilities": "There are no active facilities to book.",
