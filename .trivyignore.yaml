@@ -1,0 +1,129 @@
+# Trivy: vulnerabilities accepted for a while, each scoped to one binary of an
+# upstream image we don't build. They expire on their own: CI fails again then,
+# so check whether upstream has shipped a fix, and bump the date only if not.
+
+vulnerabilities:
+  - id: CVE-2025-68121
+    paths: ["usr/local/bin/gosu"]
+    statement: gosu in postgres:18-alpine, built with Go 1.24.6; only drops root at startup, no network. Fixed in gosu 1.20, waiting for the Postgres image rebuild
+    expired_at: 2026-11-28
+  - id: CVE-2025-61726
+    paths: ["usr/local/bin/gosu"]
+    statement: gosu in postgres:18-alpine, built with Go 1.24.6; only drops root at startup, no network. Fixed in gosu 1.20, waiting for the Postgres image rebuild
+    expired_at: 2026-11-28
+  - id: CVE-2025-61729
+    paths: ["usr/local/bin/gosu"]
+    statement: gosu in postgres:18-alpine, built with Go 1.24.6; only drops root at startup, no network. Fixed in gosu 1.20, waiting for the Postgres image rebuild
+    expired_at: 2026-11-28
+  - id: CVE-2026-111943
+    paths: ["usr/local/bin/gosu"]
+    statement: gosu in postgres:18-alpine, built with Go 1.24.6; only drops root at startup, no network. Fixed in gosu 1.20, waiting for the Postgres image rebuild
+    expired_at: 2026-11-28
+  - id: CVE-2026-25679
+    paths: ["usr/local/bin/gosu"]
+    statement: gosu in postgres:18-alpine, built with Go 1.24.6; only drops root at startup, no network. Fixed in gosu 1.20, waiting for the Postgres image rebuild
+    expired_at: 2026-11-28
+  - id: CVE-2026-27145
+    paths: ["usr/local/bin/gosu"]
+    statement: gosu in postgres:18-alpine, built with Go 1.24.6; only drops root at startup, no network. Fixed in gosu 1.20, waiting for the Postgres image rebuild
+    expired_at: 2026-11-28
+  - id: CVE-2026-32280
+    paths: ["usr/local/bin/gosu"]
+    statement: gosu in postgres:18-alpine, built with Go 1.24.6; only drops root at startup, no network. Fixed in gosu 1.20, waiting for the Postgres image rebuild
+    expired_at: 2026-11-28
+  - id: CVE-2026-32281
+    paths: ["usr/local/bin/gosu"]
+    statement: gosu in postgres:18-alpine, built with Go 1.24.6; only drops root at startup, no network. Fixed in gosu 1.20, waiting for the Postgres image rebuild
+    expired_at: 2026-11-28
+  - id: CVE-2026-32283
+    paths: ["usr/local/bin/gosu"]
+    statement: gosu in postgres:18-alpine, built with Go 1.24.6; only drops root at startup, no network. Fixed in gosu 1.20, waiting for the Postgres image rebuild
+    expired_at: 2026-11-28
+  - id: CVE-2026-33811
+    paths: ["usr/local/bin/gosu"]
+    statement: gosu in postgres:18-alpine, built with Go 1.24.6; only drops root at startup, no network. Fixed in gosu 1.20, waiting for the Postgres image rebuild
+    expired_at: 2026-11-28
+  - id: CVE-2026-33814
+    paths: ["usr/local/bin/gosu"]
+    statement: gosu in postgres:18-alpine, built with Go 1.24.6; only drops root at startup, no network. Fixed in gosu 1.20, waiting for the Postgres image rebuild
+    expired_at: 2026-11-28
+  - id: CVE-2026-33818
+    paths: ["usr/local/bin/gosu"]
+    statement: gosu in postgres:18-alpine, built with Go 1.24.6; only drops root at startup, no network. Fixed in gosu 1.20, waiting for the Postgres image rebuild
+    expired_at: 2026-11-28
+  - id: CVE-2026-39820
+    paths: ["usr/local/bin/gosu"]
+    statement: gosu in postgres:18-alpine, built with Go 1.24.6; only drops root at startup, no network. Fixed in gosu 1.20, waiting for the Postgres image rebuild
+    expired_at: 2026-11-28
+  - id: CVE-2026-39821
+    paths: ["usr/local/bin/gosu"]
+    statement: gosu in postgres:18-alpine, built with Go 1.24.6; only drops root at startup, no network. Fixed in gosu 1.20, waiting for the Postgres image rebuild
+    expired_at: 2026-11-28
+  - id: CVE-2026-39822
+    paths: ["usr/local/bin/gosu"]
+    statement: gosu in postgres:18-alpine, built with Go 1.24.6; only drops root at startup, no network. Fixed in gosu 1.20, waiting for the Postgres image rebuild
+    expired_at: 2026-11-28
+  - id: CVE-2026-39836
+    paths: ["usr/local/bin/gosu"]
+    statement: gosu in postgres:18-alpine, built with Go 1.24.6; only drops root at startup, no network. Fixed in gosu 1.20, waiting for the Postgres image rebuild
+    expired_at: 2026-11-28
+  - id: CVE-2026-42499
+    paths: ["usr/local/bin/gosu"]
+    statement: gosu in postgres:18-alpine, built with Go 1.24.6; only drops root at startup, no network. Fixed in gosu 1.20, waiting for the Postgres image rebuild
+    expired_at: 2026-11-28
+  - id: CVE-2026-42504
+    paths: ["usr/local/bin/gosu"]
+    statement: gosu in postgres:18-alpine, built with Go 1.24.6; only drops root at startup, no network. Fixed in gosu 1.20, waiting for the Postgres image rebuild
+    expired_at: 2026-11-28
+  - id: CVE-2026-56853
+    paths: ["usr/local/bin/gosu"]
+    statement: gosu in postgres:18-alpine, built with Go 1.24.6; only drops root at startup, no network. Fixed in gosu 1.20, waiting for the Postgres image rebuild
+    expired_at: 2026-11-28
+  - id: CVE-2026-56858
+    paths: ["usr/local/bin/gosu"]
+    statement: gosu in postgres:18-alpine, built with Go 1.24.6; only drops root at startup, no network. Fixed in gosu 1.20, waiting for the Postgres image rebuild
+    expired_at: 2026-11-28
+  - id: CVE-2026-56859
+    paths: ["usr/local/bin/gosu"]
+    statement: gosu in postgres:18-alpine, built with Go 1.24.6; only drops root at startup, no network. Fixed in gosu 1.20, waiting for the Postgres image rebuild
+    expired_at: 2026-11-28
+  - id: CVE-2026-56860
+    paths: ["usr/local/bin/gosu"]
+    statement: gosu in postgres:18-alpine, built with Go 1.24.6; only drops root at startup, no network. Fixed in gosu 1.20, waiting for the Postgres image rebuild
+    expired_at: 2026-11-28
+  - id: CVE-2026-56862
+    paths: ["usr/local/bin/gosu"]
+    statement: gosu in postgres:18-alpine, built with Go 1.24.6; only drops root at startup, no network. Fixed in gosu 1.20, waiting for the Postgres image rebuild
+    expired_at: 2026-11-28
+  - id: CVE-2026-78667
+    paths: ["usr/local/bin/gosu"]
+    statement: gosu in postgres:18-alpine, built with Go 1.24.6; only drops root at startup, no network. Fixed in gosu 1.20, waiting for the Postgres image rebuild
+    expired_at: 2026-11-28
+  - id: CVE-2026-78669
+    paths: ["usr/local/bin/gosu"]
+    statement: gosu in postgres:18-alpine, built with Go 1.24.6; only drops root at startup, no network. Fixed in gosu 1.20, waiting for the Postgres image rebuild
+    expired_at: 2026-11-28
+  - id: CVE-2026-97031
+    paths: ["usr/local/bin/gosu"]
+    statement: gosu in postgres:18-alpine, built with Go 1.24.6; only drops root at startup, no network. Fixed in gosu 1.20, waiting for the Postgres image rebuild
+    expired_at: 2026-11-28
+  - id: CVE-2026-116587
+    paths: ["usr/bin/caddy"]
+    statement: Caddy 2.11.7 (latest) built with Go 1.26.8, go-jose 4.1.5 and x/net 0.59.0; waiting for the next Caddy release
+    expired_at: 2026-11-28
+  - id: CVE-2026-78669
+    paths: ["usr/bin/caddy"]
+    statement: Caddy 2.11.7 (latest) built with Go 1.26.8, go-jose 4.1.5 and x/net 0.59.0; waiting for the next Caddy release
+    expired_at: 2026-11-28
+  - id: CVE-2026-111943
+    paths: ["usr/bin/caddy"]
+    statement: Caddy 2.11.7 (latest) built with Go 1.26.8, go-jose 4.1.5 and x/net 0.59.0; waiting for the next Caddy release
+    expired_at: 2026-11-28
+  - id: CVE-2026-78667
+    paths: ["usr/bin/caddy"]
+    statement: Caddy 2.11.7 (latest) built with Go 1.26.8, go-jose 4.1.5 and x/net 0.59.0; waiting for the next Caddy release
+    expired_at: 2026-11-28
+  - id: CVE-2026-97031
+    paths: ["usr/bin/caddy"]
+    statement: Caddy 2.11.7 (latest) built with Go 1.26.8, go-jose 4.1.5 and x/net 0.59.0; waiting for the next Caddy release
+    expired_at: 2026-11-28
