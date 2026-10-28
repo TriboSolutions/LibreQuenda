@@ -3,6 +3,7 @@ import { lazy, Suspense, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
+import { StaffBookingsPanel } from '@/components/admin/StaffBookingsPanel'
 import { CouncilSheet } from '@/components/admin/CouncilSheet'
 import { useVerifyEmail } from '@/components/InvitationReminder'
 import { CouncilHeading } from '@/components/CouncilHeading'
@@ -21,7 +22,7 @@ import { SiteFooter } from '@/components/SiteFooter'
 // charts (Recharts) load only when an administrator opens the indicators
 const IndicatorsPanel = lazy(() => import('@/components/admin/IndicatorsPanel').then((m) => ({ default: m.IndicatorsPanel })))
 
-/** /:slug/admin: the council's facilities and indicators (?vista=indicadores), for its administrators; the gear opens the council's settings. */
+/** /:slug/admin: the council's facilities, bookings (?vista=reservas) and indicators (?vista=indicadores), for its administrators; the gear opens the council's settings. */
 export function CouncilAdminPage() {
   const { slug = '' } = useParams()
   const { t } = useTranslation(['admin', 'common'])
@@ -38,8 +39,10 @@ export function CouncilAdminPage() {
   const facilities = useAsync(allowed ? () => api.council.facilities(token, slug) : null, `council-admin:${slug}:${allowed}`)
   const council = tenants.data?.tenants.find((c) => c.slug === slug)
   const [searchParams, setSearchParams] = useSearchParams()
-  const view = searchParams.get('vista') === 'indicadores' ? 'indicators' : 'facilities'
-  const changeView = (value: string) => setSearchParams(value === 'indicators' ? { vista: 'indicadores' } : {}, { replace: true })
+  const vista = searchParams.get('vista')
+  const view = vista === 'indicadores' ? 'indicators' : vista === 'reservas' ? 'bookings' : 'facilities'
+  const viewParam: Record<string, string> = { indicators: 'indicadores', bookings: 'reservas' }
+  const changeView = (value: string) => setSearchParams(viewParam[value] ? { vista: viewParam[value] } : {}, { replace: true })
   const [settingsOpen, setSettingsOpen] = useState(false)
   const navigate = useNavigate()
 
@@ -177,6 +180,7 @@ export function CouncilAdminPage() {
         <div className="flex items-center justify-between gap-3">
           <TabsList>
             <TabsTrigger value="facilities">{t('admin:facilities.title')}</TabsTrigger>
+            <TabsTrigger value="bookings">{t('admin:staff.tab')}</TabsTrigger>
             <TabsTrigger value="indicators">{t('admin:indicators.title')}</TabsTrigger>
           </TabsList>
           <Button variant="outline" size="icon" onClick={() => setSettingsOpen(true)} aria-label={t('admin:councilAdmin.settings')} title={t('admin:councilAdmin.settings')}>
@@ -184,6 +188,9 @@ export function CouncilAdminPage() {
           </Button>
         </div>
         <TabsContent value="facilities">{facilitiesSection}</TabsContent>
+        <TabsContent value="bookings">
+          <StaffBookingsPanel slug={slug} facilities={list} />
+        </TabsContent>
         <TabsContent value="indicators">
           <Suspense fallback={<Skeleton className="h-96 w-full" />}>
             <IndicatorsPanel slug={slug} facilities={list} />
@@ -209,7 +216,7 @@ export function CouncilAdminPage() {
           onClose={() => setSettingsOpen(false)}
           onChanged={() => tenants.reload()}
           onDeleted={() => navigate('/admin')}
-          onSlugChanged={(next) => navigate(`/${next}/admin${view === 'indicators' ? '?vista=indicadores' : ''}`, { replace: true })}
+          onSlugChanged={(next) => navigate(`/${next}/admin${viewParam[view] ? `?vista=${viewParam[view]}` : ''}`, { replace: true })}
         />
       )}
     </div>

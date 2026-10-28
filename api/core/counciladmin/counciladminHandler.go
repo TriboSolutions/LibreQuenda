@@ -34,27 +34,33 @@ func CounciladminHandler(db *sql.DB) *counciladminHandler {
 // councilAdmin resolves the council in the path and checks the current user may manage it
 // (its administrator, or a superadministrator). Otherwise it answers and returns false.
 func (h *counciladminHandler) councilAdmin(w http.ResponseWriter, r *http.Request) (uuid.UUID, bool) {
+	var tenantId, _, ok = h.councilAdminUser(w, r)
+	return tenantId, ok
+}
+
+// councilAdminUser is councilAdmin that also returns who is acting, for what they record.
+func (h *counciladminHandler) councilAdminUser(w http.ResponseWriter, r *http.Request) (uuid.UUID, uuid.UUID, bool) {
 	var slug, err = helpers.GetStringPathValue("slug", r)
 	if err != nil {
 		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_query_params")
-		return uuid.Nil, false
+		return uuid.Nil, uuid.Nil, false
 	}
 	var session, _ = auth.SessionFromContext(r.Context())
 	var userId, userErr = me.CurrentUserId(r.Context(), h.db, session)
 	if userErr != nil {
 		helpers.SendI18NErrorResponse(w, r, userErr.Code, userErr.Message)
-		return uuid.Nil, false
+		return uuid.Nil, uuid.Nil, false
 	}
 	var queries = model.New(h.db)
 	var tenant model.GetTenantForPlatformRow
 	tenant, err = queries.GetTenantForPlatform(r.Context(), slug)
 	if errors.Is(err, sql.ErrNoRows) {
 		helpers.SendI18NErrorResponse(w, r, http.StatusNotFound, "errors.tenant_not_found")
-		return uuid.Nil, false
+		return uuid.Nil, uuid.Nil, false
 	}
 	if err != nil {
 		helpers.SendI18NErrorResponse(w, r, http.StatusInternalServerError, "errors.forbidden")
-		return uuid.Nil, false
+		return uuid.Nil, uuid.Nil, false
 	}
 	var allowed bool
 	allowed, err = queries.IsTenantAdmin(r.Context(), model.IsTenantAdminParams{UserID: userId, TenantID: tenant.ID})
@@ -63,9 +69,9 @@ func (h *counciladminHandler) councilAdmin(w http.ResponseWriter, r *http.Reques
 	}
 	if err != nil || !allowed {
 		helpers.SendI18NErrorResponse(w, r, http.StatusForbidden, "errors.forbidden")
-		return uuid.Nil, false
+		return uuid.Nil, uuid.Nil, false
 	}
-	return tenant.ID, true
+	return tenant.ID, userId, true
 }
 
 // anyAdmin: geocoding is a tool for whoever edits facilities.

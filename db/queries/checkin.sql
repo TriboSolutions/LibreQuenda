@@ -84,7 +84,7 @@ SELECT
     b.ends_at,
     b.checked_in_at,
     f.name AS facility_name,
-    u.full_name
+    COALESCE(u.full_name, b.holder_name) AS full_name -- someone without an account, booked by staff
 FROM
     booking b
     JOIN facility f ON f.id = b.facility_id

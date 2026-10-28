@@ -12,6 +12,7 @@
     "booking_cancelled": "Reserva cancel·lada: {{facility}}, {{day}} a les {{time}}.",
     "booking_cancelled_by_council": "Ho sentim: s'ha tancat {{facility}}, així que la teva reserva del {{day}} a les {{time}} s'ha cancel·lat.",
     "booking_cancelled_by_closure": "Ho sentim: {{facility}} és tancada del {{from}} al {{until}}, així que la teva reserva del {{day}} a les {{time}} s'ha cancel·lat.",
+    "booking_cancelled_by_staff": "Ho sentim: {{council}} ha cancel·lat la teva reserva a {{facility}} el {{day}} a les {{time}}.",
     "council_admin_granted": "Ja ets administrador o administradora de {{council}}. Obre'n l'administració des d'aquí o des del menú del teu compte."
   },
   "reason": "Motiu: {{reason}}"

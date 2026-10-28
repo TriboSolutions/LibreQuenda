@@ -15,6 +15,7 @@ type NotificationDto struct {
 	Reason       string     `json:"reason"`      // council cancellations
 	ClosedFrom   *time.Time `json:"closed_from"` // council cancellations caused by a closure
 	ClosedUntil  *time.Time `json:"closed_until"`
+	ByStaff      bool       `json:"by_staff"`    // council cancellation of one booking by staff
 	TenantName   string     `json:"tenant_name"` // council_admin_granted
 	TenantSlug   string     `json:"tenant_slug"`
 	CreatedAt    time.Time  `json:"created_at"`
@@ -26,7 +27,7 @@ type NotificationsResponse struct {
 	Notifications []NotificationDto `json:"notifications"` // most recent first
 }
 
-// payload is what bookings.NotificationPayload and CancelBookingsInRange store.
+// payload is what bookings.NotificationPayload, CancelBookingsInRange and bookings.StaffCancel store.
 type payload struct {
 	FacilityName string     `json:"facility_name"`
 	StartsAt     *time.Time `json:"starts_at"`
@@ -34,6 +35,7 @@ type payload struct {
 	Reason       string     `json:"reason"`
 	ClosedFrom   *time.Time `json:"closed_from"`
 	ClosedUntil  *time.Time `json:"closed_until"`
+	ByStaff      bool       `json:"by_staff"`
 	TenantName   string     `json:"tenant_name"`
 	TenantSlug   string     `json:"tenant_slug"`
 }
@@ -52,6 +54,7 @@ func MapNotifications(rows []model.ListNotificationsByUserRow, unread int64) *No
 			Reason:       data.Reason,
 			ClosedFrom:   data.ClosedFrom,
 			ClosedUntil:  data.ClosedUntil,
+			ByStaff:      data.ByStaff,
 			TenantName:   data.TenantName,
 			TenantSlug:   data.TenantSlug,
 			CreatedAt:    row.CreatedAt,

@@ -102,6 +102,11 @@
     "invalid_guest_age": "L'edat ha de ser entre 1 i 120.",
     "guest_age_restricted": "Aquesta instal·lació té una edat mínima que la persona convidada no compleix.",
     "booking_overlaps": "Ja tens una reserva a aquesta hora.",
+    "staff_booking_holder": "Indica el correu del compte de la persona o el seu nom.",
+    "staff_booking_holder_too_long": "El nom pot tenir fins a 80 caràcters i el telèfon fins a 30.",
+    "person_not_found": "Cap compte de LibreQuenda no fa servir aquest correu. Reserva al seu nom.",
+    "person_overlaps": "Aquesta persona ja té una reserva a aquella hora.",
+    "booking_started": "Aquesta reserva ja ha començat i no es pot cancel·lar.",
     "notifications_load_failed": "No s'han pogut carregar els teus avisos.",
     "notifications_update_failed": "No s'han pogut actualitzar els teus avisos.",
     "invalid_closure_dates": "Les dates del tancament no són vàlides: el final ha de ser posterior a l'inici i futur, i el tancament pot durar com a màxim un any.",
@@ -157,7 +162,8 @@
     "booking_cancelled_by_council": {
       "subject": "Ho sentim: s'ha cancel·lat la teva reserva a {{0}}",
       "intro": "Ho sentim. {{1}} ha tancat {{0}}, així que la teva reserva del {{2}}, de {{3}} a {{4}}, s'ha cancel·lat. Pots reservar un altre torn lliure quan vulguis.",
-      "intro_closure": "Ho sentim. {{0}} ({{1}}) és tancada del {{5}} al {{6}}, així que la teva reserva del {{2}}, de {{3}} a {{4}}, s'ha cancel·lat. Pots reservar un altre torn lliure quan vulguis."
+      "intro_closure": "Ho sentim. {{0}} ({{1}}) és tancada del {{5}} al {{6}}, així que la teva reserva del {{2}}, de {{3}} a {{4}}, s'ha cancel·lat. Pots reservar un altre torn lliure quan vulguis.",
+      "intro_staff": "Ho sentim. {{1}} ha cancel·lat la teva reserva a {{0}} el {{2}}, de {{3}} a {{4}}. Pots reservar un altre torn lliure quan vulguis."
     },
     "reason": "Motiu: {{0}}",
     "council_admin": {

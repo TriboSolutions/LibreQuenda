@@ -46,6 +46,7 @@ const pages: { name: string; path: string; signedIn?: boolean }[] = [
   { name: 'invite, signed in', path: '/invitacion/tok123' },
   { name: 'council admin, facilities', path: '/lugo/admin' },
   { name: 'council admin, indicators', path: '/lugo/admin?vista=indicadores' },
+  { name: 'council admin, bookings', path: '/lugo/admin?vista=reservas' },
   { name: 'facility editor', path: '/lugo/admin/facilities/f1' },
   { name: 'platform admin', path: '/admin' },
   { name: 'entrance reader', path: '/lector' },
@@ -84,6 +85,17 @@ for (const theme of ['light', 'dark'] as const) {
         await page.getByRole('button', { name: button }).first().click()
         await expect(page.getByRole('dialog')).toBeVisible()
         await page.waitForLoadState('networkidle')
+        await page.waitForTimeout(300)
+        await expectAccessible(page, { overlay: true })
+      })
+    }
+
+    // the Reservas tab: book a free turn for someone, cancel someone's booking
+    for (const button of [/^Reservar:/, /^Cancelar: Ana/]) {
+      test(`staff booking dialog ${button.source}`, async ({ page }) => {
+        await open(page, '/lugo/admin?vista=reservas', { theme })
+        await page.getByRole('button', { name: button }).click()
+        await expect(page.getByRole('dialog')).toBeVisible()
         await page.waitForTimeout(300)
         await expectAccessible(page, { overlay: true })
       })

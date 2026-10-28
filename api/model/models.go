@@ -56,6 +56,48 @@ func (ns NullBookingCanceller) Value() (driver.Value, error) {
 	return string(ns.BookingCanceller), nil
 }
 
+type BookingChannel string
+
+const (
+	BookingChannelOnline BookingChannel = "online"
+	BookingChannelStaff  BookingChannel = "staff"
+)
+
+func (e *BookingChannel) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = BookingChannel(s)
+	case string:
+		*e = BookingChannel(s)
+	default:
+		return fmt.Errorf("unsupported scan type for BookingChannel: %T", src)
+	}
+	return nil
+}
+
+type NullBookingChannel struct {
+	BookingChannel BookingChannel `json:"booking_channel"`
+	Valid          bool           `json:"valid"` // Valid is true if BookingChannel is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullBookingChannel) Scan(value interface{}) error {
+	if value == nil {
+		ns.BookingChannel, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.BookingChannel.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullBookingChannel) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.BookingChannel), nil
+}
+
 type BookingStatus string
 
 const (
@@ -209,6 +251,10 @@ type Booking struct {
 	EndsAt            time.Time            `json:"ends_at"`
 	Status            BookingStatus        `json:"status"`
 	RulesAcceptedAt   sql.NullTime         `json:"rules_accepted_at"`
+	Channel           BookingChannel       `json:"channel"`
+	BookedBy          uuid.NullUUID        `json:"booked_by"`
+	HolderName        sql.NullString       `json:"holder_name"`
+	HolderPhone       sql.NullString       `json:"holder_phone"`
 	CancelledAt       sql.NullTime         `json:"cancelled_at"`
 	CancelledBy       NullBookingCanceller `json:"cancelled_by"`
 	CreatedAt         time.Time            `json:"created_at"`
