@@ -17,7 +17,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useCouncilAdmin } from '@/hooks/useCouncilAdmin'
 import { useLogin } from '@/hooks/useLogin'
 import { useMe } from '@/hooks/useMe'
@@ -25,7 +24,7 @@ import type { Tenant } from '@/lib/api'
 
 type Props = {
   tenants: Tenant[]
-  tenantSlug: string | null // null on the council picker
+  tenantSlug: string | null // the council the page is about (its name is in the page title); null when none
 }
 
 function initials(name: string) {
@@ -63,31 +62,6 @@ export function TopBar({ tenants, tenantSlug }: Props) {
           <Mark className="size-7" />
           <Wordmark className="hidden text-[17px] tracking-tight sm:inline" />
         </Link>
-
-        {tenantSlug && (
-          <span className="text-muted-foreground" aria-hidden="true">
-            /
-          </span>
-        )}
-        {!tenantSlug ? null : tenants.length > 1 ? (
-          <Select value={tenantSlug} onValueChange={(slug) => navigate(`/${slug}`)}>
-            <SelectTrigger size="sm" aria-label={`${t('common:council')}: ${tenant?.name ?? ''}`} className="min-w-0 border-0 px-2 hover:bg-accent">
-              <SelectValue placeholder={t('common:chooseCouncil')} />
-            </SelectTrigger>
-            <SelectContent align="start">
-              {tenants.map((t) => (
-                <SelectItem key={t.slug} value={t.slug}>
-                  {t.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        ) : (
-          <span className="flex min-w-0 items-center gap-2 text-muted-foreground">
-            {tenant?.logo_url && <img src={tenant.logo_url} alt="" className="size-6 shrink-0 object-contain" />}
-            <span className="truncate">{tenant?.name ?? ''}</span>
-          </span>
-        )}
 
         <div className="ml-auto flex shrink-0 items-center gap-1">
           <LanguageMenu />
