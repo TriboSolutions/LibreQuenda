@@ -61,11 +61,11 @@ export function ProfilePage() {
   } else {
     body = (
       <>
-        <PersonalQr me={me} />
         <CalendarFeed />
         <ProfileForm key={me.id} me={me} />
         <AccountSettings />
         <PrivacySettings me={me} />
+        <PersonalQr />
       </>
     )
   }

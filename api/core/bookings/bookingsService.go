@@ -94,9 +94,13 @@ func (s *bookingsService) CreateBooking(ctx context.Context, userId uuid.UUID, b
 	if slotErr != nil {
 		return nil, slotErr
 	}
+	return s.book(ctx, queries, userId, facility, slot)
+}
 
-	var active int64
-	active, err = queries.CountActiveBookingsByUserFacility(ctx, model.CountActiveBookingsByUserFacilityParams{
+// book creates the booking of a turn already found free, within the person's
+// limit at the facility, and sends the confirmation.
+func (s *bookingsService) book(ctx context.Context, queries *model.Queries, userId uuid.UUID, facility model.GetFacilityForBookingRow, slot *schedule.Slot) (*BookingDto, *shared.ErrorResponse) {
+	var active, err = queries.CountActiveBookingsByUserFacility(ctx, model.CountActiveBookingsByUserFacilityParams{
 		UserID:     uuid.NullUUID{UUID: userId, Valid: true},
 		FacilityID: facility.ID,
 	})
@@ -180,16 +184,25 @@ func (s *bookingsService) bookableSlot(ctx context.Context, queries *model.Queri
 	var start = startsAt.In(loc)
 	var day = time.Date(start.Year(), start.Month(), start.Day(), 0, 0, 0, 0, loc)
 
-	if facility.MinAge.Valid {
-		var birth, birthErr = queries.GetUserBirthDate(ctx, userId)
-		if birthErr != nil || !birth.Valid {
-			return nil, &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.profile_incomplete"}
-		}
-		if AgeOn(birth.Time, day) < int(facility.MinAge.Int32) {
-			return nil, &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.age_restricted"}
-		}
+	if ageErr := checkAge(ctx, queries, userId, facility, day); ageErr != nil {
+		return nil, ageErr
 	}
 	return s.findSlot(ctx, queries, facility, loc, day, day.AddDate(0, 0, 1), start)
+}
+
+// checkAge: the person is old enough for the facility on that day, when it has a minimum age.
+func checkAge(ctx context.Context, queries *model.Queries, userId uuid.UUID, facility model.GetFacilityForBookingRow, day time.Time) *shared.ErrorResponse {
+	if !facility.MinAge.Valid {
+		return nil
+	}
+	var birth, err = queries.GetUserBirthDate(ctx, userId)
+	if err != nil || !birth.Valid {
+		return &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.profile_incomplete"}
+	}
+	if AgeOn(birth.Time, day) < int(facility.MinAge.Int32) {
+		return &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.age_restricted"}
+	}
+	return nil
 }
 
 func (s *bookingsService) findSlot(ctx context.Context, queries *model.Queries, facility model.GetFacilityForBookingRow, loc *time.Location, day, dayEnd, start time.Time) (*schedule.Slot, *shared.ErrorResponse) {
@@ -211,6 +224,23 @@ func (s *bookingsService) findSlot(ctx context.Context, queries *model.Queries, 
 
 // daySlots: the facility's turns on one day, as the schedule reports them right now.
 func (s *bookingsService) daySlots(ctx context.Context, queries *model.Queries, facility model.GetFacilityForBookingRow, loc *time.Location, day, dayEnd time.Time) ([]schedule.Slot, *shared.ErrorResponse) {
+	var inputs, err = s.dayInputs(ctx, queries, facility, day, dayEnd)
+	if err != nil {
+		return nil, err
+	}
+	var rules = schedule.Rules{SlotMinutes: int(facility.SlotMinutes), MaxAdvanceDays: int(facility.MaxAdvanceDays)}
+	return schedule.DaySlots(day, loc, rules, inputs.windows, inputs.closures, inputs.busy, time.Now()), nil
+}
+
+// scheduleDay: what the schedule of one day is cut from.
+type scheduleDay struct {
+	windows  []schedule.Window
+	closures []schedule.Interval
+	busy     []schedule.Interval
+}
+
+// dayInputs loads the facility's opening hours, closures and confirmed bookings of one day.
+func (s *bookingsService) dayInputs(ctx context.Context, queries *model.Queries, facility model.GetFacilityForBookingRow, day, dayEnd time.Time) (*scheduleDay, *shared.ErrorResponse) {
 	var failed = &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.booking_failed"}
 
 	var hours, err = queries.ListOpeningHoursByTenantWeekday(ctx, model.ListOpeningHoursByTenantWeekdayParams{TenantID: facility.TenantID, Weekday: schedule.ISOWeekday(day)})
@@ -246,50 +276,85 @@ func (s *bookingsService) daySlots(ctx context.Context, queries *model.Queries, 
 		busy = append(busy, schedule.Interval{Start: b.StartsAt, End: b.EndsAt})
 	}
 
-	var rules = schedule.Rules{SlotMinutes: int(facility.SlotMinutes), MaxAdvanceDays: int(facility.MaxAdvanceDays)}
-	return schedule.DaySlots(day, loc, rules, windows, closureIntervals, busy, time.Now()), nil
+	return &scheduleDay{windows: windows, closures: closureIntervals, busy: busy}, nil
 }
 
-// QuickBook books, for someone scanning their personal QR at the facility's
-// reader, the turn that starts within checkin.EarlyWindow. It goes through
-// CreateBooking, so the limits, the age and the overlap rules are the same as
-// in the app; scanning to quick-book counts as accepting the usage rules.
+// QuickBook is the flash booking of someone scanning their personal QR at the
+// facility's reader (FlashTurn picks the turn): the rest of a turn under way,
+// from now until it ends, or the turn about to start. The profile, age, limit
+// and overlap rules are the same as in the app; scanning counts as accepting the
+// usage rules.
 func (s *bookingsService) QuickBook(ctx context.Context, userId uuid.UUID, facilityId uuid.UUID) (*BookingDto, *shared.ErrorResponse) {
+	var failed = &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.booking_failed"}
 	var queries = model.New(s.db)
+	if complete, err := queries.HasBirthDate(ctx, userId); err != nil || !complete {
+		return nil, &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.profile_incomplete"}
+	}
 	var facility, err = queries.GetFacilityForBooking(ctx, facilityId)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, &shared.ErrorResponse{Code: http.StatusNotFound, Message: "errors.facility_not_found"}
 	}
 	if err != nil {
-		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.booking_failed"}
+		return nil, failed
 	}
 	var loc, locErr = time.LoadLocation(facility.Timezone)
 	if locErr != nil {
-		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.booking_failed"}
+		return nil, failed
 	}
 
 	var now = time.Now()
 	var today = startOfDay(now, loc)
-	var slots, slotsErr = s.daySlots(ctx, queries, facility, loc, today, today.AddDate(0, 0, 1))
-	if slotsErr != nil {
-		return nil, slotsErr
+	var inputs, inputsErr = s.dayInputs(ctx, queries, facility, today, today.AddDate(0, 0, 1))
+	if inputsErr != nil {
+		return nil, inputsErr
 	}
+	var current, inProgress = schedule.Current(today, loc, int(facility.SlotMinutes), inputs.windows, inputs.closures, inputs.busy, now)
+	var rules = schedule.Rules{SlotMinutes: int(facility.SlotMinutes), MaxAdvanceDays: int(facility.MaxAdvanceDays)}
+	var slots = schedule.DaySlots(today, loc, rules, inputs.windows, inputs.closures, inputs.busy, now)
 	// near midnight the turn may start on the next day
 	if tomorrow := startOfDay(now.Add(checkin.EarlyWindow), loc); tomorrow.After(today) {
 		var more []schedule.Slot
-		if more, slotsErr = s.daySlots(ctx, queries, facility, loc, tomorrow, tomorrow.AddDate(0, 0, 1)); slotsErr != nil {
-			return nil, slotsErr
+		if more, inputsErr = s.daySlots(ctx, queries, facility, loc, tomorrow, tomorrow.AddDate(0, 0, 1)); inputsErr != nil {
+			return nil, inputsErr
 		}
 		slots = append(slots, more...)
 	}
-	var slot, found = NextTurn(slots, now)
-	if !found {
-		return nil, &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.no_turn_soon"}
+
+	var slot, reason = FlashTurn(current, inProgress, slots, now)
+	if reason != "" {
+		return nil, &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors." + reason}
 	}
-	if slot.Status != schedule.SlotFree {
-		return nil, &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.slot_" + string(slot.Status)}
+	if ageErr := checkAge(ctx, queries, userId, facility, startOfDay(slot.Start, loc)); ageErr != nil {
+		return nil, ageErr
 	}
-	return s.CreateBooking(ctx, userId, CreateBookingDto{FacilityId: facility.ID, StartsAt: slot.Start, AcceptRules: true})
+	return s.book(ctx, queries, userId, facility, &slot)
+}
+
+// FlashTurn picks what a personal QR books at `now`, given the rest of the turn
+// under way (schedule.Current) and the day's turns:
+//  1. the rest of the turn under way, when it is free and at least checkin.EarlyWindow is left;
+//  2. otherwise the turn that starts within checkin.EarlyWindow, when it is free;
+//  3. otherwise whatever is left of the turn under way, when it is free.
+//
+// With nothing to book it returns the reason, e.g. "slot_booked" or "no_turn_soon".
+func FlashTurn(current schedule.Slot, inProgress bool, slots []schedule.Slot, now time.Time) (schedule.Slot, string) {
+	var currentFree = inProgress && current.Status == schedule.SlotFree
+	if currentFree && current.End.Sub(current.Start) >= checkin.EarlyWindow {
+		return current, ""
+	}
+	var next, soon = NextTurn(slots, now)
+	if soon && next.Status == schedule.SlotFree {
+		return next, ""
+	}
+	switch {
+	case currentFree:
+		return current, ""
+	case inProgress:
+		return schedule.Slot{}, "slot_" + string(current.Status)
+	case soon:
+		return schedule.Slot{}, "slot_" + string(next.Status)
+	}
+	return schedule.Slot{}, "no_turn_soon"
 }
 
 // NextTurn: the first turn that starts from now until checkin.EarlyWindow later, free or not.

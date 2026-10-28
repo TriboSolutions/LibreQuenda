@@ -87,7 +87,7 @@
     "qr_failed": "No s'ha pogut crear el teu QR. Torna-ho a provar.",
     "calendar_failed": "No s'ha pogut preparar el teu calendari. Torna-ho a provar.",
     "calendar_not_found": "Aquesta adreça de calendari no funciona: potser l'has canviada o desactivada a /perfil.",
-    "no_turn_soon": "Cap torn no comença en els propers 15 minuts.",
+    "no_turn_soon": "No hi ha cap torn en curs ni en els propers 15 minuts.",
     "invite_not_found": "Aquest enllaç d'invitació no funciona: potser qui va reservar l'ha canviat.",
     "invite_closed": "Aquesta reserva ja no admet més gent: s'ha cancel·lat o ja ha començat.",
     "invite_full": "No queden places lliures en aquesta reserva.",

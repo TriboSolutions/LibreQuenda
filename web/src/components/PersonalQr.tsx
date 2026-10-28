@@ -1,21 +1,63 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
+import { QrCode } from 'lucide-react'
 import { QrImage } from '@/components/QrImage'
 import { SettingsRow } from '@/components/SettingsRow'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Skeleton } from '@/components/ui/skeleton'
-import { api, type Me, type PersonalQr as Qr } from '@/lib/api'
+import { useMe } from '@/hooks/useMe'
+import { api, type PersonalQr as Qr } from '@/lib/api'
 
 const RETRY_MS = 10_000
 
 /*
-  The personal QR on /perfil. At a facility's reader it checks the person in to
-  their booking there, or books the turn that starts within 15 minutes. The code
-  changes every minute and works once, so a screenshot soon stops working.
+  Flash booking: the personal QR, opened from the account menu or /perfil. At a
+  facility's reader it books a free turn on the spot, from now until the turn
+  under way ends or the one about to start (bookings.FlashTurn in the API); a
+  booking already made goes in with its own QR, not this one. The code changes
+  every minute and works once, so a screenshot soon stops working. Codes are
+  only asked for while the dialog is open.
 */
-export function PersonalQr({ me }: { me: Me }) {
+export function PersonalQrDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+  const { t } = useTranslation('profile')
+  const { me } = useMe()
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle>{t('personalQr.menuLink')}</DialogTitle>
+          <DialogDescription>{t('personalQr.help')}</DialogDescription>
+        </DialogHeader>
+
+        {/* mounted only while the dialog is open, so it stops asking for codes once closed */}
+        <RotatingCode />
+
+        {me && !me.profile_complete && (
+          <Alert>
+            <AlertDescription>{t('personalQr.incomplete')}</AlertDescription>
+          </Alert>
+        )}
+
+        <div className="space-y-1.5 text-muted-foreground">
+          <p>{t('personalQr.private')}</p>
+          <p>{t('personalQr.brightness')}</p>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            {t('personalQr.close')}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function RotatingCode() {
   const { t } = useTranslation('profile')
   const auth = useAuth()
   const token = auth.user?.access_token
@@ -67,8 +109,8 @@ export function PersonalQr({ me }: { me: Me }) {
   let code
   if (qr && !expired) {
     code = (
-      <div className="grid w-full max-w-56 gap-2">
-        <QrImage code={qr.value.code} alt={t('personalQr.alt')} className="max-w-56" />
+      <div className="grid w-full max-w-64 gap-2">
+        <QrImage code={qr.value.code} alt={t('personalQr.alt')} />
         {/* visual only: announcing every second would drown out a screen reader */}
         <div aria-hidden className="grid gap-1">
           <div className="h-1 overflow-hidden rounded-full bg-muted">
@@ -83,7 +125,7 @@ export function PersonalQr({ me }: { me: Me }) {
     )
   } else if (failed || expired) {
     code = (
-      <div className="grid w-full max-w-56 content-start gap-3">
+      <div className="grid w-full max-w-64 content-start gap-3">
         <Alert variant="destructive">
           <AlertDescription>{t('personalQr.failed')}</AlertDescription>
         </Alert>
@@ -93,29 +135,38 @@ export function PersonalQr({ me }: { me: Me }) {
       </div>
     )
   } else {
-    code = <Skeleton className="aspect-square w-full max-w-56" />
+    code = <Skeleton className="aspect-square w-full max-w-64" />
   }
 
   return (
+    <div aria-live="polite" className="flex justify-center">
+      {code}
+    </div>
+  )
+}
+
+/** The QR section of /perfil: what the code does, and a button that shows it. */
+export function PersonalQr() {
+  const { t } = useTranslation('profile')
+  const [open, setOpen] = useState(false)
+
+  return (
     <SettingsRow id="sec-qr" title={t('personalQr.title')} description={t('personalQr.help')}>
-      <div className="grid gap-5 rounded-lg border bg-card p-5 sm:grid-cols-[14rem_minmax(0,1fr)]">
-        <div aria-live="polite" className="flex justify-center">
-          {code}
-        </div>
-        <div className="grid content-start gap-3">
-          {!me.profile_complete && (
-            <Alert>
-              <AlertDescription>{t('personalQr.incomplete')}</AlertDescription>
-            </Alert>
-          )}
-          <ul className="grid list-disc gap-2 pl-5">
-            <li>{t('personalQr.checkIn')}</li>
-            <li>{t('personalQr.book')}</li>
-          </ul>
-          <p className="text-muted-foreground">{t('personalQr.private')}</p>
-          <p className="text-muted-foreground">{t('personalQr.brightness')}</p>
+      <div className="grid gap-4 rounded-lg border bg-card p-5">
+        <ul className="grid list-disc gap-2 pl-5">
+          <li>{t('personalQr.now')}</li>
+          <li>{t('personalQr.soon')}</li>
+        </ul>
+        <p className="text-muted-foreground">{t('personalQr.ownBooking')}</p>
+        <p className="text-muted-foreground">{t('personalQr.private')}</p>
+        <div>
+          <Button onClick={() => setOpen(true)}>
+            <QrCode />
+            {t('personalQr.show')}
+          </Button>
         </div>
       </div>
+      <PersonalQrDialog open={open} onOpenChange={setOpen} />
     </SettingsRow>
   )
 }
