@@ -5,9 +5,9 @@ import { useAuth } from 'react-oidc-context'
 import { Link, useParams, useSearchParams } from 'react-router'
 import { BookingDialog } from '@/components/BookingDialog'
 import { DayPicker } from '@/components/DayPicker'
+import { CouncilContact, FacilityContact } from '@/components/CouncilContact'
 import { FacilityMap } from '@/components/FacilityMap'
 import { TopBar } from '@/components/TopBar'
-import { TurnSuggestions } from '@/components/TurnSuggestions'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -24,7 +24,7 @@ const DATE = /^\d{4}-\d{2}-\d{2}$/
 
 /**
  * /:slug/:facility: one facility, its rules and its turns. Booking always shows the rules first.
- * ?dia=YYYY-MM-DD opens a given day, e.g. from another facility's suggestions.
+ * ?dia=YYYY-MM-DD opens a given day.
  */
 export function FacilityPage() {
   const { slug = '', facility: facilitySlug = '' } = useParams()
@@ -114,6 +114,7 @@ export function FacilityPage() {
             </section>
           )}
 
+
           <section aria-labelledby="book-title" className="grid gap-4 rounded-lg border bg-card p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h2 id="book-title" className="text-lg font-semibold">
@@ -154,15 +155,6 @@ export function FacilityPage() {
             )}
           </section>
 
-          <TurnSuggestions
-            suggestions={data.suggestions}
-            tenantSlug={slug}
-            sport={f.sport}
-            date={data.date}
-            timeZone={timeZone}
-            full={f.windows.length > 0 && free.length === 0}
-            onPick={(slot) => setPick({ facility: f, slot })}
-          />
         </div>
 
         <aside className="grid gap-6">
@@ -191,6 +183,10 @@ export function FacilityPage() {
               <p className="text-muted-foreground">{f.address || t('facility:noLocation')}</p>
             )}
           </section>
+
+          {/* its own contact when it has one, and the council's always, each in its own panel */}
+          {(f.contact_phone || f.contact_email) && <FacilityContact facility={f} />}
+          <CouncilContact tenant={data.tenant} />
 
           <section aria-labelledby="conditions-title" className="grid gap-2 rounded-lg border bg-card p-5">
             <h2 id="conditions-title" className="text-lg font-semibold">

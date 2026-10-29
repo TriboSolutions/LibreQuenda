@@ -143,7 +143,8 @@ SELECT
     t.timezone,
     u.full_name AS owner_name,
     (SELECT COUNT(*) FROM booking_participant p WHERE p.booking_id = b.id) AS participant_count,
-    f.id, f.tenant_id, f.slug, f.name, f.description, f.sport, f.address, f.latitude, f.longitude, f.capacity, f.accessibility_info, f.image_ref, f.is_active, f.slot_minutes, f.max_advance_days, f.min_cancel_hours, f.max_active_bookings_per_user, f.min_age, f.usage_rules_text, f.created_at, f.updated_at -- what the invite page shows: image, address, rules
+    facility_sport(f.id)::TEXT AS facility_sport,
+    f.id, f.tenant_id, f.slug, f.name, f.description, f.address, f.latitude, f.longitude, f.capacity, f.accessibility_info, f.contact_phone, f.contact_email, f.image_ref, f.is_active, f.slot_minutes, f.max_advance_days, f.min_cancel_hours, f.max_active_bookings_per_user, f.min_age, f.usage_rules_text, f.created_at, f.updated_at -- what the invite page shows: image, address, rules
 FROM
     booking b
     JOIN facility f ON f.id = b.facility_id
@@ -167,6 +168,7 @@ type GetInviteByTokenRow struct {
 	Timezone         string         `json:"timezone"`
 	OwnerName        sql.NullString `json:"owner_name"`
 	ParticipantCount int64          `json:"participant_count"`
+	FacilitySport    string         `json:"facility_sport"`
 	Facility         Facility       `json:"facility"`
 }
 
@@ -188,17 +190,19 @@ func (q *Queries) GetInviteByToken(ctx context.Context, inviteToken uuid.NullUUI
 		&i.Timezone,
 		&i.OwnerName,
 		&i.ParticipantCount,
+		&i.FacilitySport,
 		&i.Facility.ID,
 		&i.Facility.TenantID,
 		&i.Facility.Slug,
 		&i.Facility.Name,
 		&i.Facility.Description,
-		&i.Facility.Sport,
 		&i.Facility.Address,
 		&i.Facility.Latitude,
 		&i.Facility.Longitude,
 		&i.Facility.Capacity,
 		&i.Facility.AccessibilityInfo,
+		&i.Facility.ContactPhone,
+		&i.Facility.ContactEmail,
 		&i.Facility.ImageRef,
 		&i.Facility.IsActive,
 		&i.Facility.SlotMinutes,
@@ -384,7 +388,8 @@ SELECT
     t.name AS tenant_name,
     COALESCE(u.full_name, '')::TEXT AS owner_name,
     (SELECT COUNT(*) FROM booking_participant c WHERE c.booking_id = b.id) AS participant_count,
-    f.id, f.tenant_id, f.slug, f.name, f.description, f.sport, f.address, f.latitude, f.longitude, f.capacity, f.accessibility_info, f.image_ref, f.is_active, f.slot_minutes, f.max_advance_days, f.min_cancel_hours, f.max_active_bookings_per_user, f.min_age, f.usage_rules_text, f.created_at, f.updated_at
+    facility_sport(f.id)::TEXT AS facility_sport,
+    f.id, f.tenant_id, f.slug, f.name, f.description, f.address, f.latitude, f.longitude, f.capacity, f.accessibility_info, f.contact_phone, f.contact_email, f.image_ref, f.is_active, f.slot_minutes, f.max_advance_days, f.min_cancel_hours, f.max_active_bookings_per_user, f.min_age, f.usage_rules_text, f.created_at, f.updated_at
 FROM
     booking_participant p
     JOIN booking  b ON b.id = p.booking_id
@@ -412,6 +417,7 @@ type ListParticipationsByUserRow struct {
 	TenantName       string        `json:"tenant_name"`
 	OwnerName        string        `json:"owner_name"`
 	ParticipantCount int64         `json:"participant_count"`
+	FacilitySport    string        `json:"facility_sport"`
 	Facility         Facility      `json:"facility"`
 }
 
@@ -440,17 +446,19 @@ func (q *Queries) ListParticipationsByUser(ctx context.Context, userID uuid.Null
 			&i.TenantName,
 			&i.OwnerName,
 			&i.ParticipantCount,
+			&i.FacilitySport,
 			&i.Facility.ID,
 			&i.Facility.TenantID,
 			&i.Facility.Slug,
 			&i.Facility.Name,
 			&i.Facility.Description,
-			&i.Facility.Sport,
 			&i.Facility.Address,
 			&i.Facility.Latitude,
 			&i.Facility.Longitude,
 			&i.Facility.Capacity,
 			&i.Facility.AccessibilityInfo,
+			&i.Facility.ContactPhone,
+			&i.Facility.ContactEmail,
 			&i.Facility.ImageRef,
 			&i.Facility.IsActive,
 			&i.Facility.SlotMinutes,

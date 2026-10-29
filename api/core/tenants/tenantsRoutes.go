@@ -37,6 +37,12 @@ func (r *tenantsRoutes) RegisterRoutes() {
 		Handler:           middlewares.VersionMiddleware(h.GetTenants),
 	})
 	r.router.NewRoute(router.Route{
+		Path:              "/facilities",
+		Method:            http.MethodGet,
+		AdditionalMethods: []router.HTTPMethod{router.HEAD, router.OPTIONS},
+		Handler:           middlewares.VersionMiddleware(h.GetFacilities),
+	})
+	r.router.NewRoute(router.Route{
 		Path:              "/tenants/{slug}/day",
 		Method:            http.MethodGet,
 		AdditionalMethods: []router.HTTPMethod{router.HEAD, router.OPTIONS},

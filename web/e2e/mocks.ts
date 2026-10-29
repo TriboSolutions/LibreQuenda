@@ -9,6 +9,7 @@ import type {
   CouncilSummary,
   Day,
   Facility,
+  FacilityCard,
   FacilityDetails,
   FacilityPage,
   Indicators,
@@ -21,6 +22,7 @@ import type {
   Reader,
   StaffDay,
   Superadmin,
+  TagCatalogue,
   Tenant,
   TenantCard,
   WeeklyWindow,
@@ -40,8 +42,40 @@ const today = new Intl.DateTimeFormat('en-CA', { timeZone: TZ }).format(now)
 
 const tenant: Tenant = { slug: 'lugo', name: 'Concello de Lugo', logo_url: '', contact_email: 'deportes@lugo.gal', contact_phone: '982 297 100' }
 // without a contact: the statement sends residents to the council's online office
+const tagCatalogue: TagCatalogue = {
+  categories: [
+    {
+      id: 'c1',
+      name: 'Deportes',
+      position: 1,
+      tags: [
+        { id: 't1', slug: 'natacion', name: 'Natación', facility_count: 1 },
+        { id: 't2', slug: 'padel', name: 'Pádel', facility_count: 2 },
+      ],
+    },
+    {
+      id: 'c2',
+      name: 'Instalación',
+      position: 2,
+      tags: [
+        { id: 't3', slug: 'cuberta', name: 'Cuberta', facility_count: 1 },
+        { id: 't4', slug: 'piscina', name: 'Piscina', facility_count: 1 },
+        { id: 't5', slug: 'pista', name: 'Pista', facility_count: 2 },
+      ],
+    },
+  ],
+}
+
+const facilityCards: FacilityCard[] = [
+  { id: 'f1', slug: 'padel-1', name: 'Pista de pádel 1', sport: 'Pádel', tags: ['padel', 'pista', 'cuberta'], image_url: '', address: 'Rúa da Raíña 1, Lugo', latitude: 43.0097, longitude: -7.5568, free_today: 4, council: tenant },
+  { id: 'f3', slug: 'piscina', name: 'Piscina municipal', sport: 'Natación', tags: ['natacion', 'piscina'], image_url: '', address: '', latitude: null, longitude: null, free_today: 0, council: tenant },
+]
+
 const tenants: TenantCard[] = [
-  { ...tenant, stats: { facilities: 6, sports: ['Natación', 'Pádel', 'Tenis'], free_today: 42, bookings: 6179, residents: 20 } },
+  {
+    ...tenant,
+    stats: { facilities: 6, sports: ['Natación', 'Pádel', 'Tenis'], free_today: 42, bookings: 6179, residents: 20 },
+  },
   { slug: 'ourense', name: 'Concello de Ourense', logo_url: '', contact_email: '', contact_phone: '', stats: { facilities: 5, sports: [], free_today: 0, bookings: 0, residents: 0 } },
 ]
 
@@ -63,7 +97,10 @@ function facility(id: string, name: string, slug: string): Facility {
     latitude: 43.0097,
     longitude: -7.5568,
     sport: 'Pádel',
+    tags: ['padel', 'pista', 'cuberta'],
     address: 'Rúa da Raíña 1, Lugo',
+    contact_phone: '', // the council's is shown instead
+    contact_email: '',
     slot_minutes: 60,
     max_advance_days: 7,
     min_cancel_hours: 2,
@@ -88,17 +125,6 @@ const facilityPage: FacilityPage = {
   now: iso(now),
   facility: facilities[0],
   schedule,
-  suggestions: {
-    quiet: [
-      { starts_at: at(0), ends_at: at(1), level: 'quiet' },
-      { starts_at: at(3), ends_at: at(4), level: 'moderate' },
-      { starts_at: at(6), ends_at: at(7), level: 'busy' },
-    ],
-    alternatives: [
-      { slug: 'padel-2', name: 'Pista de pádel 2', address: 'Rúa Montevideo 3, Lugo', distance_km: 1.4, free_slots: 5, slots: [{ starts_at: at(2), ends_at: at(3), level: 'quiet' }] },
-      { slug: 'padel-3', name: 'Pista de pádel 3', address: '', distance_km: null, free_slots: 1, slots: [{ starts_at: at(4), ends_at: at(5), level: 'moderate' }] },
-    ],
-  },
 }
 
 const details: FacilityDetails = {
@@ -214,8 +240,8 @@ const publicInvite: PublicInvite = {
 }
 
 const adminFacilities: AdminFacilitySummary[] = [
-  { id: 'f1', slug: 'padel-1', name: 'Pista de pádel 1', sport: 'Pádel', image_url: '', is_active: true, opening_window_count: 5, upcoming_booking_count: 3 },
-  { id: 'f2', slug: 'pavillon', name: 'Pavillón municipal', sport: 'Baloncesto', image_url: '', is_active: false, opening_window_count: 0, upcoming_booking_count: 0 },
+  { id: 'f1', slug: 'padel-1', name: 'Pista de pádel 1', sport: 'Pádel', tags: ['padel', 'pista'], image_url: '', is_active: true, opening_window_count: 5, upcoming_booking_count: 3 },
+  { id: 'f2', slug: 'pavillon', name: 'Pavillón municipal', sport: 'Baloncesto', tags: ['baloncesto', 'pavillon'], image_url: '', is_active: false, opening_window_count: 0, upcoming_booking_count: 0 },
 ]
 
 const adminFacility: AdminFacility = {
@@ -223,12 +249,14 @@ const adminFacility: AdminFacility = {
   slug: 'padel-1',
   name: 'Pista de pádel 1',
   description: 'Pista cuberta con iluminación.',
-  sport: 'Pádel',
+  tags: ['padel', 'pista', 'cuberta'],
   address: 'Rúa da Raíña 1, Lugo',
   latitude: 43.0097,
   longitude: -7.5568,
   capacity: 4,
   accessibility_info: 'Acceso sen chanzos.',
+  contact_phone: '982 000 111',
+  contact_email: '',
   image_ref: '',
   image_url: '',
   is_active: true,
@@ -373,6 +401,8 @@ const reader: Reader = {
 /** GET handlers by path (without /api), first match wins. */
 const routes: [RegExp, () => unknown][] = [
   [/^\/tenants$/, () => ({ tenants })],
+  [/^\/tags$/, () => tagCatalogue],
+  [/^\/facilities$/, () => ({ facilities: facilityCards })],
   [/^\/tenants\/[^/]+\/day/, () => day],
   [/^\/tenants\/[^/]+\/facilities\/[^/?]+/, () => facilityPage],
   [/^\/tenants\/[^/]+\/admin\/facilities$/, () => ({ facilities: adminFacilities })],

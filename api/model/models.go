@@ -299,12 +299,13 @@ type Facility struct {
 	Slug                     string          `json:"slug"`
 	Name                     string          `json:"name"`
 	Description              sql.NullString  `json:"description"`
-	Sport                    sql.NullString  `json:"sport"`
 	Address                  sql.NullString  `json:"address"`
 	Latitude                 sql.NullFloat64 `json:"latitude"`
 	Longitude                sql.NullFloat64 `json:"longitude"`
 	Capacity                 sql.NullInt32   `json:"capacity"`
 	AccessibilityInfo        sql.NullString  `json:"accessibility_info"`
+	ContactPhone             sql.NullString  `json:"contact_phone"`
+	ContactEmail             sql.NullString  `json:"contact_email"`
 	ImageRef                 sql.NullString  `json:"image_ref"`
 	IsActive                 bool            `json:"is_active"`
 	SlotMinutes              int32           `json:"slot_minutes"`
@@ -315,6 +316,11 @@ type Facility struct {
 	UsageRulesText           sql.NullString  `json:"usage_rules_text"`
 	CreatedAt                time.Time       `json:"created_at"`
 	UpdatedAt                time.Time       `json:"updated_at"`
+}
+
+type FacilityTag struct {
+	FacilityID uuid.UUID `json:"facility_id"`
+	TagID      uuid.UUID `json:"tag_id"`
 }
 
 type Notification struct {
@@ -338,6 +344,21 @@ type OpeningHour struct {
 
 type PlatformAdmin struct {
 	UserID    uuid.UUID `json:"user_id"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+type Tag struct {
+	ID         uuid.UUID `json:"id"`
+	CategoryID uuid.UUID `json:"category_id"`
+	Slug       string    `json:"slug"`
+	Name       string    `json:"name"`
+	CreatedAt  time.Time `json:"created_at"`
+}
+
+type TagCategory struct {
+	ID        uuid.UUID `json:"id"`
+	Name      string    `json:"name"`
+	Position  int32     `json:"position"`
 	CreatedAt time.Time `json:"created_at"`
 }
 

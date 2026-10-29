@@ -20,6 +20,25 @@ type TenantCardDto struct {
 	Stats TenantStatsDto `json:"stats"`
 }
 
+// FacilityCardDto is one facility on the home page's list and map, from any council.
+type FacilityCardDto struct {
+	Id        string    `json:"id"`
+	Slug      string    `json:"slug"`
+	Name      string    `json:"name"`
+	Sport     string    `json:"sport"`
+	Tags      []string  `json:"tags"`
+	ImageUrl  string    `json:"image_url"`
+	Address   string    `json:"address"`
+	Latitude  *float64  `json:"latitude"` // null without a map pin
+	Longitude *float64  `json:"longitude"`
+	FreeToday int       `json:"free_today"` // turns still free today
+	Council   TenantDto `json:"council"`
+}
+
+type FacilitiesResponse struct {
+	Facilities []FacilityCardDto `json:"facilities"` // by council, then name
+}
+
 type TenantStatsDto struct {
 	Facilities int32    `json:"facilities"` // active ones
 	Sports     []string `json:"sports"`
@@ -52,7 +71,10 @@ type FacilityDayDto struct {
 	Latitude       *float64        `json:"latitude"`
 	Longitude      *float64        `json:"longitude"`
 	Sport          string          `json:"sport"`
+	Tags           []string        `json:"tags"`
 	Address        string          `json:"address"`
+	ContactPhone   string          `json:"contact_phone"` // its own, "" when not given: the web shows the council's instead
+	ContactEmail   string          `json:"contact_email"`
 	SlotMinutes    int32           `json:"slot_minutes"`
 	MaxAdvanceDays int32           `json:"max_advance_days"`
 	MinCancelHours int32           `json:"min_cancel_hours"`
@@ -78,14 +100,12 @@ type WeeklyWindowDto struct {
 	ClosesAt string `json:"closes_at"`
 }
 
-// FacilityPageResponse: one facility's page, with the slots of the chosen day
-// and the turns worth suggesting.
+// FacilityPageResponse: one facility's page, with the slots of the chosen day.
 type FacilityPageResponse struct {
-	Tenant      TenantDto         `json:"tenant"`
-	Timezone    string            `json:"timezone"`
-	Date        string            `json:"date"`
-	Now         time.Time         `json:"now"`
-	Facility    FacilityDayDto    `json:"facility"`
-	Schedule    []WeeklyWindowDto `json:"schedule"`
-	Suggestions SuggestionsDto    `json:"suggestions"`
+	Tenant   TenantDto         `json:"tenant"`
+	Timezone string            `json:"timezone"`
+	Date     string            `json:"date"`
+	Now      time.Time         `json:"now"`
+	Facility FacilityDayDto    `json:"facility"`
+	Schedule []WeeklyWindowDto `json:"schedule"`
 }

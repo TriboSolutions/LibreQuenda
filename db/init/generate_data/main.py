@@ -18,6 +18,7 @@ from generators import (
     bookings,
     closures,
     facilities,
+    facility_tags,
     opening_hours,
     readers,
     tenants,
@@ -43,6 +44,7 @@ def _empty_context() -> dict:
 PIPELINE = [
     ("tenant", tenants),
     ("facility", facilities),
+    ("facility_tag", facility_tags),
     ("opening_hours", opening_hours),
     ("checkin_device", readers),
     ("app_user", users),

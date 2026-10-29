@@ -118,7 +118,7 @@ func (s *invitesService) GetPublicInvite(ctx context.Context, token uuid.UUID) (
 		Capacity:     int(row.Capacity.Int32),
 		SpotsLeft:    spotsLeft(row.Capacity, row.ParticipantCount),
 		State:        inviteState(row.Status, row.StartsAt, row.Capacity, row.ParticipantCount, time.Now()),
-		Facility:     bookings.FacilityDetails(row.Facility),
+		Facility:     bookings.FacilityDetails(row.Facility, row.FacilitySport),
 	}
 	return invite, nil
 }

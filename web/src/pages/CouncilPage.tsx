@@ -2,12 +2,13 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import i18n from '@/i18n'
 import { useAuth } from 'react-oidc-context'
-import { Link, useParams } from 'react-router'
+import { Link, useParams, useSearchParams } from 'react-router'
 import { Availability } from '@/components/Availability'
 import { BookingDialog } from '@/components/BookingDialog'
 import { CancelDialog } from '@/components/CancelDialog'
 import { DayPicker } from '@/components/DayPicker'
 import { MyBookings } from '@/components/MyBookings'
+import { TagFilters } from '@/components/TagFilters'
 import { BookingQrDialog } from '@/components/BookingQrDialog'
 import { CouncilContact } from '@/components/CouncilContact'
 import { CouncilHeading } from '@/components/CouncilHeading'
@@ -17,6 +18,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useAsync } from '@/hooks/useAsync'
 import { useLogin } from '@/hooks/useLogin'
 import { useMe } from '@/hooks/useMe'
+import { useTags } from '@/hooks/useTags'
 import { api, ApiError, type Booking, type Day, type Facility, type Slot } from '@/lib/api'
 import { formatBookingDay, formatLongDate, formatTime, localDate } from '@/lib/time'
 import { usePageTitle } from '@/hooks/usePageTitle'
@@ -79,6 +81,15 @@ export function CouncilPage() {
   const timeZone = day.data?.timezone ?? FALLBACK_TIME_ZONE
   const today = day.data ? councilToday(day.data) : ''
   const selectedDate = day.data?.date ?? date ?? ''
+
+  // ?etiqueta=<tag>&etiqueta=…: only the facilities with all of them (kept in the address, so a filtered list can be shared)
+  const [params, setParams] = useSearchParams()
+  const catalogue = useTags()
+  const groups = day.data ? catalogue.grouped(day.data.facilities.flatMap((f) => f.tags)) : []
+  const inUse = groups.flatMap((g) => g.tags.map((tag) => tag.slug))
+  const chosen = params.getAll('etiqueta').filter((slug) => inUse.includes(slug))
+  const setChosen = (slugs: string[]) => setParams(new URLSearchParams(slugs.map((slug) => ['etiqueta', slug])), { replace: true })
+  const shownDay = day.data && chosen.length > 0 ? { ...day.data, facilities: day.data.facilities.filter((f) => chosen.every((slug) => f.tags.includes(slug))) } : day.data
 
 
   const confirmBooking = async (facility: Facility, slot: Slot) => {
@@ -153,21 +164,31 @@ export function CouncilPage() {
           {today && <DayPicker today={today} value={selectedDate} onChange={setDate} />}
         </div>
 
+        {groups.length > 0 && (
+          <div role="group" aria-label={t('home:tags.label')} className="mt-6 flex flex-wrap items-center gap-2">
+            <TagFilters groups={groups} chosen={chosen} onChange={setChosen} />
+          </div>
+        )}
+
         {/*
           Grid at 1440: column 1152 − 2 × 24 padding = 1104 = 740 (availability) + 24 + 340 (bookings).
           On a phone a signed-in resident sees their bookings first: that block carries actions.
         */}
         <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
           <div className={auth.isAuthenticated ? 'order-2 lg:order-1' : ''}>
-            <Availability
-              councilSlug={tenantSlug}
-              day={day.data}
-              isToday={!!day.data && day.data.date === today}
-              loading={day.loading}
-              error={day.error}
-              onRetry={day.reload}
-              onPick={(facility, slot) => setPick({ facility, slot })}
-            />
+            {shownDay && shownDay.facilities.length === 0 && chosen.length > 0 ? (
+              <p className="rounded-md border border-dashed px-4 py-3 text-muted-foreground">{t('home:tags.noMatch')}</p>
+            ) : (
+              <Availability
+                councilSlug={tenantSlug}
+                day={shownDay}
+                isToday={!!day.data && day.data.date === today}
+                loading={day.loading}
+                error={day.error}
+                onRetry={day.reload}
+                onPick={(facility, slot) => setPick({ facility, slot })}
+              />
+            )}
           </div>
           <div className={`space-y-6 ${auth.isAuthenticated ? 'order-1 lg:order-2' : ''}`}>
             <MyBookings

@@ -81,10 +81,11 @@ type FacilityDetailsDto struct {
 	UsageRules        string   `json:"usage_rules"`
 }
 
-func FacilityDetails(f model.Facility) FacilityDetailsDto {
+// sport: facility_sport(f.id), its sport tags' names (the facility row has no sport of its own)
+func FacilityDetails(f model.Facility, sport string) FacilityDetailsDto {
 	var details = FacilityDetailsDto{
 		ImageUrl:          storage.URL(f.ImageRef.String),
-		Sport:             f.Sport.String,
+		Sport:             sport,
 		Address:           f.Address.String,
 		AccessibilityInfo: f.AccessibilityInfo.String,
 		SlotMinutes:       f.SlotMinutes,
@@ -224,7 +225,7 @@ func mapParticipation(row model.ListParticipationsByUserRow, now time.Time) Book
 		Capacity:         invitableCapacity(row.Capacity),
 		ParticipantCount: int(row.ParticipantCount),
 		CanLeave:         row.Status == model.BookingStatusConfirmed && now.Before(row.StartsAt),
-		Facility:         FacilityDetails(row.Facility),
+		Facility:         FacilityDetails(row.Facility, row.FacilitySport),
 	}
 }
 
@@ -256,6 +257,6 @@ func mapBooking(row model.ListBookingsByUserRow, now time.Time) BookingDto {
 		CheckedInAt:  checkedInAt,
 		Attendance:   attendance(row.Status, row.EndsAt, row.CheckedInAt.Valid, row.ReaderAtStart, now),
 		Role:         RoleOwner,
-		Facility:     FacilityDetails(row.Facility),
+		Facility:     FacilityDetails(row.Facility, row.FacilitySport),
 	}
 }

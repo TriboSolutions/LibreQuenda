@@ -46,6 +46,7 @@ SELECT
     t.timezone,
     u.full_name AS owner_name,
     (SELECT COUNT(*) FROM booking_participant p WHERE p.booking_id = b.id) AS participant_count,
+    facility_sport(f.id)::TEXT AS facility_sport,
     sqlc.embed(f) -- what the invite page shows: image, address, rules
 FROM
     booking b
@@ -168,6 +169,7 @@ SELECT
     t.name AS tenant_name,
     COALESCE(u.full_name, '')::TEXT AS owner_name,
     (SELECT COUNT(*) FROM booking_participant c WHERE c.booking_id = b.id) AS participant_count,
+    facility_sport(f.id)::TEXT AS facility_sport,
     sqlc.embed(f)
 FROM
     booking_participant p

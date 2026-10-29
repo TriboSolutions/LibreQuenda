@@ -4,7 +4,8 @@
   "menuLink": "Administració de la plataforma",
   "tabs": {
     "councils": "Ajuntaments",
-    "superadmins": "Superadministradors"
+    "superadmins": "Superadministradors",
+    "tags": "Etiquetes"
   },
   "guard": {
     "signIn": "Inicia la sessió per entrar a l'administració.",
@@ -34,8 +35,6 @@
     "createDescription": "La seva pàgina queda publicada al moment; la persona administradora afegeix les instal·lacions.",
     "name": "Nom",
     "namePlaceholder": "Concello de Lalín",
-    "slug": "Adreça",
-    "slugHelp": "Minúscules, números i guions. Pàgina: {{url}}",
     "timezone": "Zona horària",
     "tzMadrid": "Península i Balears",
     "tzCanary": "Canàries",
@@ -50,7 +49,8 @@
     "save": "Desa els canvis",
     "saving": "Desant…",
     "cancel": "Cancel·la",
-    "logo": "Escut o logotip"
+    "logo": "Escut o logotip",
+    "pageUrl": "La seva pàgina: {{url}}"
   },
   "manage": {
     "details": "Dades",
@@ -110,14 +110,18 @@
     "details": "Dades",
     "name": "Nom",
     "namePlaceholder": "Pista de pàdel 1",
-    "slug": "Adreça",
     "slugHelp": "Pàgina: {{url}}",
-    "sport": "Esport o ús",
-    "sportPlaceholder": "Pàdel",
+    "tags": "Etiquetes",
+    "tagsHelp": "Tots els esports que s'hi poden practicar i com és la instal·lació. Els veïns hi filtren.",
     "description": "Descripció",
     "image": "Foto",
     "capacity": "Aforament",
     "accessibility": "Accessibilitat",
+    "contact": "Contacte de la instal·lació",
+    "contactPhone": "Telèfon",
+    "contactEmail": "Correu electrònic",
+    "contactInherits": "Buit: es mostra el de l'ajuntament, {{value}}.",
+    "contactNone": "Buit: l'ajuntament tampoc no en té, així que no se'n mostra cap.",
     "location": "Ubicació",
     "address": "Adreça postal",
     "search": "Cerca al mapa",
@@ -139,7 +143,7 @@
     "saved": "Desat.",
     "schedule": "Horari setmanal",
     "scheduleHelp": "Els torns es tallen dins d'aquestes franges; un dia en pot tenir diverses (per exemple matí i tarda).",
-    "scheduleAfterCreate": "Desa primer la instal·lació per posar-ne l'horari.",
+    "scheduleWithCreate": "Els torns es tallen dins d'aquestes franges; un dia en pot tenir diverses (per exemple matí i tarda). Es desa amb la instal·lació en crear-la.",
     "addWindow": "Afegeix una franja",
     "removeWindow": "Treu la franja",
     "copyWeekdays": "Copia el dilluns de dimarts a divendres",
@@ -179,7 +183,10 @@
       "deactivatedKept_other": "Instal·lació desactivada. Es conserven les seves {{count}} reserves properes.",
       "deactivatedCancelled_one": "Instal·lació desactivada. S'ha cancel·lat {{count}} reserva i s'ha avisat qui la va fer.",
       "deactivatedCancelled_other": "Instal·lació desactivada. S'han cancel·lat {{count}} reserves i s'ha avisat qui les va fer."
-    }
+    },
+    "tagsEmpty": "Encara no hi ha etiquetes: demana-les a un superadministrador.",
+    "tagsNone": "Cap",
+    "tagsClear": "Treu-les totes"
   },
   "readers": {
     "title": "Lectors QR de l'entrada",
@@ -411,8 +418,7 @@
     "downloading": "S'està preparant…"
   },
   "staff": {
-    "open": "Reserves",
-    "back": "Instal·lacions",
+    "tab": "Reserva manual",
     "title": "Reserves per telèfon o a la finestreta",
     "help": "Per a qui truca o ve en persona: reserva-li un torn lliure, amb el seu compte o només amb el seu nom, i cancel·la qualsevol reserva abans que comenci.",
     "noFacilities": "No hi ha instal·lacions actives per reservar.",
@@ -420,14 +426,17 @@
     "date": "Dia",
     "previousDay": "Dia anterior",
     "nextDay": "Dia següent",
+    "previousWeek": "Setmana anterior",
+    "nextWeek": "Setmana següent",
     "today": "Avui",
+    "viewLabel": "Vista",
+    "viewDay": "Dia",
+    "viewWeek": "Setmana",
+    "openDay": "Mostra el {{date}}",
     "minAge": "Edat mínima {{age}}: comprova-la a qui no tingui compte.",
     "closedDay": "La instal·lació no té torns aquest dia.",
     "caption": "Torns i reserves del {{date}}",
-    "colTime": "Torn",
-    "colHolder": "Reservat per",
     "colContact": "Contacte",
-    "colActions": "Accions",
     "status": {
       "free": "Lliure",
       "booked": "Reservat",
@@ -436,6 +445,7 @@
       "too_far": "Encara no es pot reservar"
     },
     "noName": "Sense nom (compte eliminat o esborrat als 30 dies)",
+    "noNameShort": "Sense nom",
     "withAccount": "Amb compte",
     "withoutAccount": "Sense compte",
     "bookedByStaff": "Reservat pel personal",
@@ -477,5 +487,37 @@
     "keep": "Mantenir-la",
     "cancelling": "Cancel·lant…",
     "confirmCancel": "Cancel·lar la reserva"
+  },
+  "tags": {
+    "help": "El catàleg d'etiquetes de tots els ajuntaments, en categories. Els ajuntaments hi marquen les seves instal·lacions (una instal·lació en pot tenir diverses) i els veïns hi filtren a la portada i a la pàgina de cada ajuntament.",
+    "newCategory": "Nova categoria",
+    "newCategoryPlaceholder": "Per exemple: Públic",
+    "addCategory": "Afegeix categoria",
+    "moveUp": "Puja {{name}}",
+    "moveDown": "Baixa {{name}}",
+    "renameCategory": "Canvia el nom de {{name}}",
+    "deleteCategory": "Elimina {{name}}",
+    "noTags": "Encara no té etiquetes.",
+    "newTagIn": "Nova etiqueta a {{category}}",
+    "newTagPlaceholder": "Nova etiqueta",
+    "addTag": "Afegeix",
+    "renameTitle": "Canvia el nom de la categoria",
+    "categoryName": "Nom de la categoria",
+    "save": "Desa",
+    "delete": "Elimina",
+    "deleteCategoryTitle": "Vols eliminar «{{name}}»?",
+    "deleteCategoryBody_one": "S'elimina amb {{count}} etiqueta, que es treu de {{facilities}} instal·lacions.",
+    "deleteCategoryBody_other": "S'elimina amb les seves {{count}} etiquetes, que es treuen de {{facilities}} instal·lacions.",
+    "editTitle": "Edita l'etiqueta",
+    "usedBy_one": "A {{count}} instal·lació.",
+    "usedBy_other": "A {{count}} instal·lacions.",
+    "tagName": "Nom",
+    "slugHelp": "A les adreces continua sent «{{slug}}», encara que hi canviïs el nom.",
+    "category": "Categoria",
+    "deleteTagBody_one": "També es treu de la instal·lació que la té. No es pot desfer.",
+    "deleteTagBody_other": "També es treu de les {{count}} instal·lacions que la tenen. No es pot desfer.",
+    "confirmDeleteTag": "Sí, elimina",
+    "facilitiesUsing_one": "a {{count}} instal·lació",
+    "facilitiesUsing_other": "a {{count}} instal·lacions"
   }
 }

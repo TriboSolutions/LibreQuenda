@@ -12,6 +12,7 @@ import (
 	"librequenda/storage"
 	"path"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -51,7 +52,7 @@ type exportTable struct {
 type councilExport struct {
 	generatedAt  time.Time
 	tenant       model.Tenant
-	facilities   []model.Facility
+	facilities   []model.ExportFacilitiesRow
 	hours        []model.OpeningHour
 	closures     []model.Closure
 	devices      []model.ExportCheckinDevicesRow
@@ -144,9 +145,9 @@ func (data *councilExport) mediaRefs() []string {
 	if data.tenant.LogoRef.Valid && storage.ValidRef(data.tenant.LogoRef.String) {
 		refs = append(refs, data.tenant.LogoRef.String)
 	}
-	for _, f := range data.facilities {
-		if f.ImageRef.Valid && storage.ValidRef(f.ImageRef.String) {
-			refs = append(refs, f.ImageRef.String)
+	for _, row := range data.facilities {
+		if ref := row.Facility.ImageRef; ref.Valid && storage.ValidRef(ref.String) {
+			refs = append(refs, ref.String)
 		}
 	}
 	return refs
@@ -287,12 +288,15 @@ func (data *councilExport) tables(media map[string]string) []exportTable {
 			{"slug", "string", "Name in the web address: /<council>/<slug>"},
 			{"name", "string", "Facility name"},
 			{"description", "string", "Description"},
-			{"sport", "string", "Sport or use"},
+			{"sport", "string", "Its sports: the names of its tags in the first tag category"},
+			{"tags", "string", "Its tags from the platform catalogue (slugs), separated by spaces"},
 			{"address", "string", "Postal address"},
 			{"latitude", "number", "WGS 84 latitude of the map pin"},
 			{"longitude", "number", "WGS 84 longitude of the map pin"},
 			{"capacity", "integer", "People per booking, the owner included; empty = not set"},
 			{"accessibility_info", "string", "Accessibility information"},
+			{"contact_phone", "string", "Its own phone; empty = the council's is shown"},
+			{"contact_email", "string", "Its own email; empty = the council's is shown"},
 			{"image_file", "string", "The facility image inside this ZIP"},
 			{"is_active", "boolean", "Open for booking"},
 			{"slot_minutes", "integer", "Length of a booking slot"},
@@ -306,10 +310,12 @@ func (data *councilExport) tables(media map[string]string) []exportTable {
 		},
 		rows: make([][]string, 0, len(data.facilities)),
 	}
-	for _, f := range data.facilities {
+	for _, row := range data.facilities {
+		var f = row.Facility
 		facilities.rows = append(facilities.rows, []string{
-			f.ID.String(), f.Slug, f.Name, exportNullString(f.Description), exportNullString(f.Sport), exportNullString(f.Address),
+			f.ID.String(), f.Slug, f.Name, exportNullString(f.Description), row.Sport, strings.Join(row.Tags, " "), exportNullString(f.Address),
 			exportNullFloat(f.Latitude), exportNullFloat(f.Longitude), exportNullInt(f.Capacity), exportNullString(f.AccessibilityInfo),
+			exportNullString(f.ContactPhone), exportNullString(f.ContactEmail),
 			exportMedia(f.ImageRef, media), strconv.FormatBool(f.IsActive), strconv.Itoa(int(f.SlotMinutes)),
 			strconv.Itoa(int(f.MaxAdvanceDays)), strconv.Itoa(int(f.MinCancelHours)), strconv.Itoa(int(f.MaxActiveBookingsPerUser)),
 			exportNullInt(f.MinAge), exportNullString(f.UsageRulesText), exportTime(f.CreatedAt), exportTime(f.UpdatedAt),

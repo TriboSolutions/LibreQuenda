@@ -8,16 +8,16 @@ import type { WeeklyWindow } from '@/lib/api'
 // ISO weekdays in display order; Sunday is 7
 const WEEK = [1, 2, 3, 4, 5, 6, 7]
 
-type Props = {
-  value: WeeklyWindow[]
-  saving: boolean
-  onSave: (windows: WeeklyWindow[]) => void
-}
+// Saved on its own with its button (an existing facility), or part of a bigger form
+// that saves it (a new one): then onChange follows every edit and there is no button.
+type Props = { value: WeeklyWindow[] } & ({ saving: boolean; onSave: (windows: WeeklyWindow[]) => void; onChange?: never } | { onChange: (windows: WeeklyWindow[]) => void; saving?: never; onSave?: never })
 
 /** The weekly opening hours: any number of windows per day (morning and afternoon, for example). */
-export function ScheduleEditor({ value, saving, onSave }: Props) {
+export function ScheduleEditor({ value, saving, onSave, onChange }: Props) {
   const { t } = useTranslation(['admin', 'common', 'facility'])
-  const [windows, setWindows] = useState<WeeklyWindow[]>(value)
+  const [draft, setDraft] = useState<WeeklyWindow[]>(value)
+  const windows = onChange ? value : draft
+  const setWindows = (next: (list: WeeklyWindow[]) => WeeklyWindow[]) => (onChange ? onChange(next(windows)) : setDraft(next))
 
   const byDay = (day: number) => windows.map((w, index) => ({ ...w, index })).filter((w) => w.weekday === day)
   const update = (index: number, field: 'opens_at' | 'closes_at', time: string) =>
@@ -77,9 +77,11 @@ export function ScheduleEditor({ value, saving, onSave }: Props) {
         <Button type="button" variant="outline" onClick={copyMonday}>
           {t('admin:editor.copyWeekdays')}
         </Button>
-        <Button type="button" disabled={saving} onClick={() => onSave(windows)}>
-          {saving ? t('admin:form.saving') : t('admin:editor.saveSchedule')}
-        </Button>
+        {onSave && (
+          <Button type="button" disabled={saving} onClick={() => onSave(windows)}>
+            {saving ? t('admin:form.saving') : t('admin:editor.saveSchedule')}
+          </Button>
+        )}
       </div>
     </div>
   )

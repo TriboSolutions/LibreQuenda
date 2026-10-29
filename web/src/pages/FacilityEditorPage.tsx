@@ -8,6 +8,7 @@ import { ImagePicker } from '@/components/ImagePicker'
 import { CheckinDevices } from '@/components/admin/CheckinDevices'
 import { ClosuresEditor } from '@/components/admin/ClosuresEditor'
 import { ScheduleEditor } from '@/components/admin/ScheduleEditor'
+import { TagPicker } from '@/components/admin/TagPicker'
 import { TopBar } from '@/components/TopBar'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -29,12 +30,14 @@ const EMPTY: FacilityInput = {
   slug: '',
   name: '',
   description: '',
-  sport: '',
+  tags: [],
   address: '',
   latitude: null,
   longitude: null,
   capacity: null,
   accessibility_info: '',
+  contact_phone: '',
+  contact_email: '',
   image_ref: '',
   is_active: true,
   slot_minutes: 60,
@@ -85,10 +88,10 @@ function Editor({ slug, facility, tenants, token }: { slug: string; facility: Ad
   const { t } = useTranslation(['admin', 'common'])
   const navigate = useNavigate()
   const creating = facility === null
+  const council = tenants.find((c) => c.slug === slug) // its contact is what an empty facility contact falls back to
   const [form, setForm] = useState<FacilityInput>(facility ? toInput(facility) : EMPTY)
   const [image, setImage] = useState<StoredImage | null>(facility?.image_ref ? { ref: facility.image_ref, url: facility.image_url } : null)
   const [schedule, setSchedule] = useState<WeeklyWindow[]>(facility?.schedule ?? [])
-  const [slugTouched, setSlugTouched] = useState(!creating)
   const [saving, setSaving] = useState(false)
   const [savingSchedule, setSavingSchedule] = useState(false)
   const [notice, setNotice] = useState<string | null>(null)
@@ -124,7 +127,9 @@ function Editor({ slug, facility, tenants, token }: { slug: string; facility: Ad
     setSaving(true)
     void run(async () => {
       const input = { ...form, image_ref: image?.ref ?? '' } // save the reference, never the URL
-      const saved = creating ? await api.council.createFacility(token, slug, input) : await api.council.updateFacility(token, slug, facility.id, input)
+      const saved = creating
+        ? await api.council.createFacility(token, slug, { ...input, schedule: { windows: schedule } })
+        : await api.council.updateFacility(token, slug, facility.id, input)
       if (creating) {
         navigate(`/${slug}/admin/facilities/${saved.id}`, { replace: true })
       } else {
@@ -254,33 +259,16 @@ function Editor({ slug, facility, tenants, token }: { slug: string; facility: Ad
                       maxLength={255}
                       placeholder={t('admin:editor.namePlaceholder')}
                       value={form.name}
+                      aria-describedby="f-url"
                       onChange={(e) => {
                         set('name', e.target.value)
-                        if (!slugTouched) set('slug', slugify(e.target.value))
+                        // the address comes from the name when the facility is created, and then stays: links to it are out there
+                        if (creating) set('slug', slugify(e.target.value))
                       }}
                     />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="f-slug">{t('admin:editor.slug')}</Label>
-                    <Input
-                      id="f-slug"
-                      required
-                      maxLength={64}
-                      pattern="[a-z0-9]+(-[a-z0-9]+)*"
-                      value={form.slug}
-                      aria-describedby="f-slug-help"
-                      onChange={(e) => {
-                        setSlugTouched(true)
-                        set('slug', e.target.value.toLowerCase())
-                      }}
-                    />
-                    <p id="f-slug-help" className="text-xs text-muted-foreground">
+                    <p id="f-url" className="text-xs text-muted-foreground">
                       {t('admin:editor.slugHelp', { url: `${window.location.host}/${slug}/${form.slug || '…'}` })}
                     </p>
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="f-sport">{t('admin:editor.sport')}</Label>
-                    <Input id="f-sport" maxLength={100} placeholder={t('admin:editor.sportPlaceholder')} value={form.sport} onChange={(e) => set('sport', e.target.value)} />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="f-capacity">
@@ -295,6 +283,9 @@ function Editor({ slug, facility, tenants, token }: { slug: string; facility: Ad
                       className="num"
                     />
                   </div>
+                  <div className="md:col-span-2">
+                    <TagPicker value={form.tags} onChange={(tags) => set('tags', tags)} />
+                  </div>
                   <div className="grid gap-2">
                     <Label htmlFor="f-description">{t('admin:editor.description')}</Label>
                     <Textarea id="f-description" rows={4} maxLength={5000} value={form.description} onChange={(e) => set('description', e.target.value)} />
@@ -306,6 +297,44 @@ function Editor({ slug, facility, tenants, token }: { slug: string; facility: Ad
                     <Textarea id="f-accessibility" rows={4} maxLength={2000} value={form.accessibility_info} onChange={(e) => set('accessibility_info', e.target.value)} />
                   </div>
                 </div>
+                {/* its own contact, optional: each one left empty shows the council's on the facility's page */}
+                <fieldset className="grid gap-4 border-t pt-4 md:grid-cols-2 md:items-start">
+                  <legend className="sr-only">{t('admin:editor.contact')}</legend>
+                  <p className="font-medium md:col-span-2">{t('admin:editor.contact')}</p>
+                  <div className="grid gap-2">
+                    <Label htmlFor="f-contact-phone">
+                      {t('admin:editor.contactPhone')} <span className="font-normal text-muted-foreground">({t('admin:form.optional')})</span>
+                    </Label>
+                    <Input
+                      id="f-contact-phone"
+                      type="tel"
+                      maxLength={50}
+                      value={form.contact_phone}
+                      onChange={(e) => set('contact_phone', e.target.value)}
+                      className="num"
+                      aria-describedby="f-contact-phone-help"
+                    />
+                    <p id="f-contact-phone-help" className="text-xs text-muted-foreground">
+                      {council?.contact_phone ? t('admin:editor.contactInherits', { value: council.contact_phone }) : t('admin:editor.contactNone')}
+                    </p>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="f-contact-email">
+                      {t('admin:editor.contactEmail')} <span className="font-normal text-muted-foreground">({t('admin:form.optional')})</span>
+                    </Label>
+                    <Input
+                      id="f-contact-email"
+                      type="email"
+                      maxLength={255}
+                      value={form.contact_email}
+                      onChange={(e) => set('contact_email', e.target.value)}
+                      aria-describedby="f-contact-email-help"
+                    />
+                    <p id="f-contact-email-help" className="text-xs text-muted-foreground">
+                      {council?.contact_email ? t('admin:editor.contactInherits', { value: council.contact_email }) : t('admin:editor.contactNone')}
+                    </p>
+                  </div>
+                </fieldset>
                 <div className="flex justify-end border-t pt-4">
                   <Button type="submit" disabled={saving}>
                     {saving ? t('admin:form.saving') : creating ? t('admin:editor.create') : t('admin:editor.save')}
@@ -379,8 +408,14 @@ function Editor({ slug, facility, tenants, token }: { slug: string; facility: Ad
               <h2 id="sec-schedule" className="text-lg font-semibold">
                 {t('admin:editor.schedule')}
               </h2>
-              <p className="mt-1 text-muted-foreground">{creating ? t('admin:editor.scheduleAfterCreate') : t('admin:editor.scheduleHelp')}</p>
-              {!creating && <div className="mt-3"><ScheduleEditor key={JSON.stringify(schedule)} value={schedule} saving={savingSchedule} onSave={saveSchedule} /></div>}
+              <p className="mt-1 text-muted-foreground">{creating ? t('admin:editor.scheduleWithCreate') : t('admin:editor.scheduleHelp')}</p>
+              <div className="mt-3">
+                {creating ? (
+                  <ScheduleEditor value={schedule} onChange={setSchedule} />
+                ) : (
+                  <ScheduleEditor key={JSON.stringify(schedule)} value={schedule} saving={savingSchedule} onSave={saveSchedule} />
+                )}
+              </div>
             </section>
 
             {!creating && saved && (

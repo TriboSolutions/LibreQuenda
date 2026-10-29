@@ -4,7 +4,8 @@
   "menuLink": "Administración da plataforma",
   "tabs": {
     "councils": "Concellos",
-    "superadmins": "Superadministradores"
+    "superadmins": "Superadministradores",
+    "tags": "Etiquetas"
   },
   "guard": {
     "signIn": "Inicia sesión para entrar na administración.",
@@ -34,8 +35,6 @@
     "createDescription": "A súa páxina queda publicada ao momento; a persoa administradora engade as instalacións.",
     "name": "Nome",
     "namePlaceholder": "Concello de Lalín",
-    "slug": "Enderezo",
-    "slugHelp": "Minúsculas, números e guións. Páxina: {{url}}",
     "timezone": "Zona horaria",
     "tzMadrid": "Península e Baleares",
     "tzCanary": "Canarias",
@@ -50,7 +49,8 @@
     "save": "Gardar cambios",
     "saving": "Gardando…",
     "cancel": "Cancelar",
-    "logo": "Escudo ou logotipo"
+    "logo": "Escudo ou logotipo",
+    "pageUrl": "A súa páxina: {{url}}"
   },
   "manage": {
     "details": "Datos",
@@ -110,14 +110,18 @@
     "details": "Datos",
     "name": "Nome",
     "namePlaceholder": "Pista de pádel 1",
-    "slug": "Enderezo",
     "slugHelp": "Páxina: {{url}}",
-    "sport": "Deporte ou uso",
-    "sportPlaceholder": "Pádel",
+    "tags": "Etiquetas",
+    "tagsHelp": "Todos os deportes que se poden practicar e como é a instalación. Os veciños filtran por elas.",
     "description": "Descrición",
     "image": "Foto",
     "capacity": "Aforo",
     "accessibility": "Accesibilidade",
+    "contact": "Contacto da instalación",
+    "contactPhone": "Teléfono",
+    "contactEmail": "Correo electrónico",
+    "contactInherits": "Baleiro: amósase o do concello, {{value}}.",
+    "contactNone": "Baleiro: o concello tampouco ten un, así que non se amosa ningún.",
     "location": "Localización",
     "address": "Enderezo postal",
     "search": "Buscar no mapa",
@@ -139,7 +143,7 @@
     "saved": "Gardado.",
     "schedule": "Horario semanal",
     "scheduleHelp": "Os turnos córtanse dentro destas franxas; un día pode ter varias (por exemplo mañá e tarde).",
-    "scheduleAfterCreate": "Garda primeiro a instalación para poñer o seu horario.",
+    "scheduleWithCreate": "Os turnos córtanse dentro destas franxas; un día pode ter varias (por exemplo mañá e tarde). Gárdase coa instalación ao creala.",
     "addWindow": "Engadir franxa",
     "removeWindow": "Quitar franxa",
     "copyWeekdays": "Copiar o luns de martes a venres",
@@ -179,7 +183,10 @@
       "deactivatedKept_other": "Instalación desactivada. Consérvanse as súas {{count}} reservas próximas.",
       "deactivatedCancelled_one": "Instalación desactivada. Cancelouse {{count}} reserva e avisouse a quen a fixo.",
       "deactivatedCancelled_other": "Instalación desactivada. Canceláronse {{count}} reservas e avisouse a quen as fixo."
-    }
+    },
+    "tagsEmpty": "Aínda non hai etiquetas: pídellas a un superadministrador.",
+    "tagsNone": "Ningunha",
+    "tagsClear": "Quitar todas"
   },
   "readers": {
     "title": "Lectores QR da entrada",
@@ -411,8 +418,7 @@
     "downloading": "Preparando…"
   },
   "staff": {
-    "open": "Reservas",
-    "back": "Instalacións",
+    "tab": "Reserva manual",
     "title": "Reservas por teléfono ou no mostrador",
     "help": "Para quen chama ou vén en persoa: resérvalle unha quenda libre, coa súa conta ou só co seu nome, e cancela calquera reserva antes de que comece.",
     "noFacilities": "Non hai instalacións activas que reservar.",
@@ -420,14 +426,17 @@
     "date": "Día",
     "previousDay": "Día anterior",
     "nextDay": "Día seguinte",
+    "previousWeek": "Semana anterior",
+    "nextWeek": "Semana seguinte",
     "today": "Hoxe",
+    "viewLabel": "Vista",
+    "viewDay": "Día",
+    "viewWeek": "Semana",
+    "openDay": "Ver o {{date}}",
     "minAge": "Idade mínima {{age}}: compróbaa a quen non teña conta.",
     "closedDay": "A instalación non ten quendas este día.",
     "caption": "Quendas e reservas do {{date}}",
-    "colTime": "Quenda",
-    "colHolder": "Reservado por",
     "colContact": "Contacto",
-    "colActions": "Accións",
     "status": {
       "free": "Libre",
       "booked": "Reservada",
@@ -436,6 +445,7 @@
       "too_far": "Aínda non se pode reservar"
     },
     "noName": "Sen nome (conta eliminada ou borrado aos 30 días)",
+    "noNameShort": "Sen nome",
     "withAccount": "Con conta",
     "withoutAccount": "Sen conta",
     "bookedByStaff": "Reservada polo persoal",
@@ -477,5 +487,37 @@
     "keep": "Mantela",
     "cancelling": "Cancelando…",
     "confirmCancel": "Cancelar reserva"
+  },
+  "tags": {
+    "help": "O catálogo de etiquetas de todos os concellos, en categorías. Os concellos marcan con elas as súas instalacións (unha instalación pode ter varias) e os veciños filtran por elas na portada e na páxina de cada concello.",
+    "newCategory": "Nova categoría",
+    "newCategoryPlaceholder": "Por exemplo: Público",
+    "addCategory": "Engadir categoría",
+    "moveUp": "Subir {{name}}",
+    "moveDown": "Baixar {{name}}",
+    "renameCategory": "Renomear {{name}}",
+    "deleteCategory": "Eliminar {{name}}",
+    "noTags": "Aínda non ten etiquetas.",
+    "newTagIn": "Nova etiqueta en {{category}}",
+    "newTagPlaceholder": "Nova etiqueta",
+    "addTag": "Engadir",
+    "renameTitle": "Renomear a categoría",
+    "categoryName": "Nome da categoría",
+    "save": "Gardar",
+    "delete": "Eliminar",
+    "deleteCategoryTitle": "Eliminar «{{name}}»?",
+    "deleteCategoryBody_one": "Elimínase con {{count}} etiqueta, que se quita de {{facilities}} instalacións.",
+    "deleteCategoryBody_other": "Elimínase coas súas {{count}} etiquetas, que se quitan de {{facilities}} instalacións.",
+    "editTitle": "Editar a etiqueta",
+    "usedBy_one": "En {{count}} instalación.",
+    "usedBy_other": "En {{count}} instalacións.",
+    "tagName": "Nome",
+    "slugHelp": "Nos enderezos segue sendo «{{slug}}», aínda que cambies o nome.",
+    "category": "Categoría",
+    "deleteTagBody_one": "Quítase tamén da instalación que a ten. Non se pode desfacer.",
+    "deleteTagBody_other": "Quítase tamén das {{count}} instalacións que a teñen. Non se pode desfacer.",
+    "confirmDeleteTag": "Si, eliminar",
+    "facilitiesUsing_one": "en {{count}} instalación",
+    "facilitiesUsing_other": "en {{count}} instalacións"
   }
 }
