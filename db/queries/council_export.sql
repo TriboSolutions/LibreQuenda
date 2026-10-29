@@ -1,9 +1,9 @@
 -- ============================================================
 --  COUNCIL DATA EXPORT: everything the council keeps in LibreQuenda, so it
 --  can take it to another system (GET /tenants/{slug}/admin/export)
---  No secrets (SMTP, device keys, QR and invite tokens) and no resident
---  identities: a person is their account id; name and email stay with them
---  (GET /me/export).
+--  No secrets (SMTP, device keys, QR and invite tokens). Resident identities
+--  only when the administrator asks for them (?personal=1); otherwise a person
+--  is their account id.
 -- ============================================================
 
 -- name: ExportTenant :one
@@ -105,12 +105,14 @@ ORDER BY
     b.id ASC;
 
 -- name: ExportBookingParticipants :many
--- Guests come out as guests, without their name or age.
+-- A guest's name and age are written only with ?personal=1.
 SELECT
     p.id,
     p.booking_id,
     p.user_id,
     (p.user_id IS NULL)::BOOLEAN AS is_guest,
+    p.guest_name,
+    p.guest_age,
     p.joined_at
 FROM
     booking_participant p
@@ -121,3 +123,32 @@ WHERE
 ORDER BY
     b.starts_at ASC,
     p.joined_at ASC;
+
+-- name: ExportPeople :many
+-- Everyone who booked at the council or joined one of its bookings (?personal=1).
+SELECT
+    u.id,
+    u.full_name,
+    u.email,
+    u.email_verified,
+    u.phone,
+    u.birth_date,
+    u.preferred_language,
+    u.created_at
+FROM
+    app_user u
+WHERE
+    u.id IN (
+        SELECT b.user_id
+        FROM booking b
+        JOIN facility f ON f.id = b.facility_id
+        WHERE f.tenant_id = sqlc.arg('tenant_id')
+        UNION
+        SELECT p.user_id
+        FROM booking_participant p
+        JOIN booking  b ON b.id = p.booking_id
+        JOIN facility f ON f.id = b.facility_id
+        WHERE f.tenant_id = sqlc.arg('tenant_id')
+    )
+ORDER BY
+    u.id ASC;

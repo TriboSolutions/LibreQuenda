@@ -97,3 +97,46 @@ func TestMediaPath(t *testing.T) {
 		t.Errorf("mediaPath = %q", got)
 	}
 }
+
+func TestCouncilExportPersonal(t *testing.T) {
+	var owner = uuid.New()
+	var base = councilExport{
+		tenant:       model.Tenant{ID: uuid.New(), Slug: "lalin"},
+		bookings:     []model.ExportBookingsRow{{ID: uuid.New(), UserID: uuid.NullUUID{UUID: owner, Valid: true}, Status: model.BookingStatusConfirmed}},
+		participants: []model.ExportBookingParticipantsRow{{ID: uuid.New(), IsGuest: true, GuestName: sql.NullString{String: "Uxía", Valid: true}, GuestAge: sql.NullInt16{Int16: 12, Valid: true}}},
+		people:       []model.ExportPeopleRow{{ID: owner, FullName: sql.NullString{String: "Brais Otero", Valid: true}, Email: "brais@example.org", BirthDate: sql.NullTime{Time: time.Date(1990, 5, 2, 0, 0, 0, 0, time.UTC), Valid: true}}},
+	}
+	for _, personal := range []bool{false, true} {
+		var data = base
+		data.personal = personal
+		var buffer bytes.Buffer
+		if err := data.WriteZip(context.Background(), &buffer); err != nil {
+			t.Fatal(err)
+		}
+		var archive, _ = zip.NewReader(bytes.NewReader(buffer.Bytes()), int64(buffer.Len()))
+		var people, participants []byte
+		for _, f := range archive.File {
+			var r, _ = f.Open()
+			var content bytes.Buffer
+			content.ReadFrom(r)
+			switch f.Name {
+			case "people.csv":
+				people = content.Bytes()
+			case "booking_participants.csv":
+				participants = content.Bytes()
+			}
+		}
+		if !personal {
+			if people != nil || bytes.Contains(participants, []byte("Uxía")) {
+				t.Errorf("without personal=1 the export holds personal data:\n%s", participants)
+			}
+			continue
+		}
+		if !bytes.Contains(people, []byte("brais@example.org")) || !bytes.Contains(people, []byte(",1990-05-02,")) {
+			t.Errorf("people.csv:\n%s", people)
+		}
+		if !bytes.Contains(participants, []byte(",Uxía,12")) {
+			t.Errorf("booking_participants.csv:\n%s", participants)
+		}
+	}
+}

@@ -25,9 +25,9 @@ import (
 // Data Package, https://specs.frictionlessdata.io/) describing every column,
 // key and link between the tables. Times are RFC 3339 in UTC; times of day are
 // local to the council's time zone (council.csv).
-// Left out: secrets (SMTP, device keys, QR and invite tokens) and resident
-// identities. A person is their account id, the same in every table; their
-// name and email are theirs to export (GET /me/export).
+// Left out: secrets (SMTP, device keys, QR and invite tokens). Resident
+// identities only with ?personal=1 (people.csv, and the guests' names and
+// ages); without it a person is just their account id, the same in every table.
 
 type exportField struct {
 	name        string
@@ -51,6 +51,7 @@ type exportTable struct {
 // councilExport: the council's data, read in one snapshot.
 type councilExport struct {
 	generatedAt  time.Time
+	personal     bool // residents' names, contact details and birth dates
 	tenant       model.Tenant
 	facilities   []model.ExportFacilitiesRow
 	hours        []model.OpeningHour
@@ -58,12 +59,13 @@ type councilExport struct {
 	devices      []model.ExportCheckinDevicesRow
 	bookings     []model.ExportBookingsRow
 	participants []model.ExportBookingParticipantsRow
+	people       []model.ExportPeopleRow
 }
 
 // ExportCouncil reads everything first, so a problem still comes back before
 // anything is written.
-func (s *counciladminService) ExportCouncil(ctx context.Context, tenantId uuid.UUID) (*councilExport, *shared.ErrorResponse) {
-	var data = councilExport{generatedAt: time.Now().UTC()}
+func (s *counciladminService) ExportCouncil(ctx context.Context, tenantId uuid.UUID, personal bool) (*councilExport, *shared.ErrorResponse) {
+	var data = councilExport{generatedAt: time.Now().UTC(), personal: personal}
 	var err = s.snapshot(ctx, func(q *model.Queries) error {
 		var err error
 		if data.tenant, err = q.ExportTenant(ctx, tenantId); err != nil {
@@ -84,7 +86,10 @@ func (s *counciladminService) ExportCouncil(ctx context.Context, tenantId uuid.U
 		if data.bookings, err = q.ExportBookings(ctx, tenantId); err != nil {
 			return err
 		}
-		data.participants, err = q.ExportBookingParticipants(ctx, tenantId)
+		if data.participants, err = q.ExportBookingParticipants(ctx, tenantId); err != nil || !personal {
+			return err
+		}
+		data.people, err = q.ExportPeople(ctx, tenantId)
 		return err
 	})
 	if err != nil {
@@ -201,11 +206,17 @@ func (data *councilExport) datapackage(tables []exportTable) map[string]any {
 			"schema":      schema,
 		})
 	}
+	var description = "Facilities, schedules, closures, check-in readers and bookings of the council. Times are RFC 3339 in UTC; times of day are local to the council's time zone. "
+	if data.personal {
+		description += "Includes residents' personal data (people.csv, guests' names and ages): handle it under the GDPR."
+	} else {
+		description += "Resident names and contact details are not included: a person is their account id."
+	}
 	return map[string]any{
 		"profile":     "tabular-data-package",
 		"name":        "librequenda-" + data.tenant.Slug,
 		"title":       data.tenant.Name + " (LibreQuenda)",
-		"description": "Facilities, schedules, closures, check-in readers and bookings of the council. Times are RFC 3339 in UTC; times of day are local to the council's time zone. Resident names and emails are not included: a person is their account id.",
+		"description": description,
 		"created":     exportTime(data.generatedAt),
 		"resources":   resources,
 	}
@@ -240,6 +251,13 @@ func exportNullFloat(n sql.NullFloat64) string {
 		return ""
 	}
 	return strconv.FormatFloat(n.Float64, 'f', -1, 64)
+}
+
+func exportNullDate(t sql.NullTime) string {
+	if !t.Valid {
+		return ""
+	}
+	return t.Time.Format(localDate)
 }
 
 func exportNullUUID(id uuid.NullUUID) string {
@@ -396,6 +414,9 @@ func (data *councilExport) tables(media map[string]string) []exportTable {
 		foreignKeys: []exportForeignKey{{"facility_id", "facilities"}, {"checked_in_device_id", "checkin_devices"}},
 		rows:        make([][]string, 0, len(data.bookings)),
 	}
+	if data.personal {
+		bookings.foreignKeys = append(bookings.foreignKeys, exportForeignKey{"person_id", "people"})
+	}
 	for _, b := range data.bookings {
 		var cancelledBy string
 		if b.CancelledBy.Valid {
@@ -415,15 +436,52 @@ func (data *councilExport) tables(media map[string]string) []exportTable {
 			{"id", "string", "Participation id (UUID)"},
 			{"booking_id", "string", "Booking"},
 			{"person_id", "string", "Account id; empty for a guest"},
-			{"is_guest", "boolean", "Joined without an account (name and age not exported)"},
+			{"is_guest", "boolean", "Joined without an account"},
 			{"joined_at", "datetime", "Joined"},
 		},
 		foreignKeys: []exportForeignKey{{"booking_id", "bookings"}},
 		rows:        make([][]string, 0, len(data.participants)),
 	}
+	if data.personal {
+		participants.fields = append(participants.fields, exportField{"guest_name", "string", "Name a guest gave"}, exportField{"guest_age", "integer", "Age a guest gave"})
+		participants.foreignKeys = append(participants.foreignKeys, exportForeignKey{"person_id", "people"})
+	}
 	for _, p := range data.participants {
-		participants.rows = append(participants.rows, []string{p.ID.String(), p.BookingID.String(), exportNullUUID(p.UserID), strconv.FormatBool(p.IsGuest), exportTime(p.JoinedAt)})
+		var row = []string{p.ID.String(), p.BookingID.String(), exportNullUUID(p.UserID), strconv.FormatBool(p.IsGuest), exportTime(p.JoinedAt)}
+		if data.personal {
+			var age string
+			if p.GuestAge.Valid {
+				age = strconv.Itoa(int(p.GuestAge.Int16))
+			}
+			row = append(row, exportNullString(p.GuestName), age)
+		}
+		participants.rows = append(participants.rows, row)
 	}
 
-	return []exportTable{council, facilities, hours, closures, devices, bookings, participants}
+	var tables = []exportTable{council, facilities, hours, closures, devices, bookings, participants}
+	if !data.personal {
+		return tables
+	}
+	var people = exportTable{
+		name:        "people",
+		description: "Residents who booked at the council or joined one of its bookings. Personal data: handle it under the GDPR.",
+		fields: []exportField{
+			{"id", "string", "Account id (UUID), the person_id of the other tables"},
+			{"full_name", "string", "Full name"},
+			{"email", "string", "Email"},
+			{"email_verified", "boolean", "The email was verified"},
+			{"phone", "string", "Phone"},
+			{"birth_date", "date", "Birth date, for the facilities' minimum age"},
+			{"preferred_language", "string", "Language of the emails: gl, es, en or ca"},
+			{"created_at", "datetime", "Account created"},
+		},
+		rows: make([][]string, 0, len(data.people)),
+	}
+	for _, p := range data.people {
+		people.rows = append(people.rows, []string{
+			p.ID.String(), exportNullString(p.FullName), p.Email, strconv.FormatBool(p.EmailVerified), exportNullString(p.Phone),
+			exportNullDate(p.BirthDate), exportNullString(p.PreferredLanguage), exportTime(p.CreatedAt),
+		})
+	}
+	return append(tables, people)
 }
