@@ -48,6 +48,7 @@ const pages: { name: string; path: string; signedIn?: boolean }[] = [
   { name: 'council admin, indicators', path: '/lugo/admin?vista=indicadores' },
   { name: 'council admin, bookings', path: '/lugo/admin?vista=reservas' },
   { name: 'facility editor', path: '/lugo/admin/facilities/f1' },
+  { name: 'facility editor, check-in', path: '/lugo/admin/facilities/f1?vista=entrada' },
   { name: 'platform admin', path: '/admin' },
   { name: 'entrance reader', path: '/lector' },
   { name: 'accessibility statement', path: '/accesibilidade', signedIn: false },
@@ -120,6 +121,15 @@ for (const theme of ['light', 'dark'] as const) {
       await expectAccessible(page, { overlay: true })
     })
 
+    test('facility editor, check-in with every way on', async ({ page }) => {
+      await open(page, '/lugo/admin/facilities/f1?vista=entrada', { theme })
+      // turning a way on can show more switches (the location check), so until none is left off
+      const off = page.getByRole('switch', { checked: false })
+      while ((await off.count()) > 0) await off.first().click()
+      await expect(page.getByLabel('Tipo de etiqueta')).toBeVisible()
+      await expectAccessible(page)
+    })
+
     test('platform admin, superadmins tab', async ({ page }) => {
       await open(page, '/admin', { theme })
       await page.getByRole('tab').nth(1).click()
@@ -182,6 +192,19 @@ test.describe('keyboard', () => {
     await page.getByRole('button', { name: /Pista de pádel 1/ }).focus()
     await page.keyboard.press('Enter')
     await expect(page.locator('#indicators-facility')).toBeFocused()
+  })
+
+  test('2.1.1 the check-in tab and its ways can be used with the keyboard alone', async ({ page }) => {
+    await open(page, '/lugo/admin/facilities/f1')
+    await page.getByRole('tab', { name: 'Datos' }).focus()
+    await page.keyboard.press('ArrowRight')
+    await expect(page.getByRole('tab', { name: 'Entrada' })).toHaveAttribute('aria-selected', 'true')
+    await expect(page).toHaveURL(/vista=entrada/)
+    const nfc = page.getByRole('switch', { name: 'Etiqueta NFC' })
+    await nfc.focus()
+    await page.keyboard.press('Space')
+    await expect(nfc).toBeChecked()
+    await expect(page.getByLabel('Tipo de etiqueta')).toBeVisible()
   })
 
   test('2.1.2 the account menu opens and closes from the keyboard', async ({ page }) => {

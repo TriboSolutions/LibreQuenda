@@ -2,10 +2,10 @@ import { ArrowLeft, ExternalLink, Info, Search } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
-import { Link, useNavigate, useParams } from 'react-router'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import { FacilityMap } from '@/components/FacilityMap'
 import { ImagePicker } from '@/components/ImagePicker'
-import { CheckinDevices } from '@/components/admin/CheckinDevices'
+import { CheckinMethods } from '@/components/admin/CheckinMethods'
 import { ClosuresEditor } from '@/components/admin/ClosuresEditor'
 import { ScheduleEditor } from '@/components/admin/ScheduleEditor'
 import { TagPicker } from '@/components/admin/TagPicker'
@@ -18,6 +18,7 @@ import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Switch } from '@/components/ui/switch'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { useAsync } from '@/hooks/useAsync'
 import { useCouncilAdmin } from '@/hooks/useCouncilAdmin'
@@ -107,6 +108,10 @@ function Editor({ slug, facility, tenants, token }: { slug: string; facility: Ad
   // deactivating keeps the bookings; cancelling them is an explicit choice with a reason
   const [cancelBookings, setCancelBookings] = useState(false)
   const [cancelReason, setCancelReason] = useState('')
+  // the tab lives in the address (?vista=entrada), like the council admin's
+  const [searchParams, setSearchParams] = useSearchParams()
+  const view = searchParams.get('vista') === 'entrada' ? 'checkin' : 'details'
+  const changeView = (value: string) => setSearchParams(value === 'checkin' ? { vista: 'entrada' } : {}, { replace: true })
 
   const set = <K extends keyof FacilityInput>(field: K, value: FacilityInput[K]) => setForm((f) => ({ ...f, [field]: value }))
   const number = (value: string) => (value === '' ? 0 : Number(value))
@@ -195,6 +200,276 @@ function Editor({ slug, facility, tenants, token }: { slug: string; facility: Ad
       navigate(`/${slug}/admin`, { replace: true })
     }).finally(() => setConfirmDelete(false))
 
+  // the facility itself on the left; the photo and the map beside it
+  const layout = (
+    <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:items-start">
+      <div className="grid gap-6">
+        <form id="facility-form" onSubmit={save} className="grid gap-6">
+          <section aria-labelledby="sec-details" className="grid gap-4 rounded-lg border bg-card p-5">
+            <h2 id="sec-details" className="text-lg font-semibold">
+              {t('admin:editor.details')}
+            </h2>
+            <div className="grid gap-4 md:grid-cols-2 md:items-start">
+              <div className="grid gap-2">
+                <Label htmlFor="f-name">{t('admin:editor.name')}</Label>
+                <Input
+                  id="f-name"
+                  required
+                  maxLength={255}
+                  placeholder={t('admin:editor.namePlaceholder')}
+                  value={form.name}
+                  aria-describedby="f-url"
+                  onChange={(e) => {
+                    set('name', e.target.value)
+                    // the address comes from the name when the facility is created, and then stays: links to it are out there
+                    if (creating) set('slug', slugify(e.target.value))
+                  }}
+                />
+                <p id="f-url" className="text-xs text-muted-foreground">
+                  {t('admin:editor.slugHelp', { url: `${window.location.host}/${slug}/${form.slug || '…'}` })}
+                </p>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="f-capacity">
+                  {t('admin:editor.capacity')} <span className="font-normal text-muted-foreground">({t('admin:form.optional')})</span>
+                </Label>
+                <Input
+                  id="f-capacity"
+                  type="number"
+                  min={1}
+                  value={form.capacity ?? ''}
+                  onChange={(e) => set('capacity', e.target.value === '' ? null : Number(e.target.value))}
+                  className="num"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <TagPicker value={form.tags} onChange={(tags) => set('tags', tags)} />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="f-description">{t('admin:editor.description')}</Label>
+                <Textarea id="f-description" rows={4} maxLength={5000} value={form.description} onChange={(e) => set('description', e.target.value)} />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="f-accessibility">
+                  {t('admin:editor.accessibility')} <span className="font-normal text-muted-foreground">({t('admin:form.optional')})</span>
+                </Label>
+                <Textarea id="f-accessibility" rows={4} maxLength={2000} value={form.accessibility_info} onChange={(e) => set('accessibility_info', e.target.value)} />
+              </div>
+            </div>
+            {/* its own contact, optional: each one left empty shows the council's on the facility's page */}
+            <fieldset className="grid gap-4 border-t pt-4 md:grid-cols-2 md:items-start">
+              <legend className="sr-only">{t('admin:editor.contact')}</legend>
+              <p className="font-medium md:col-span-2">{t('admin:editor.contact')}</p>
+              <div className="grid gap-2">
+                <Label htmlFor="f-contact-phone">
+                  {t('admin:editor.contactPhone')} <span className="font-normal text-muted-foreground">({t('admin:form.optional')})</span>
+                </Label>
+                <Input
+                  id="f-contact-phone"
+                  type="tel"
+                  maxLength={50}
+                  value={form.contact_phone}
+                  onChange={(e) => set('contact_phone', e.target.value)}
+                  className="num"
+                  aria-describedby="f-contact-phone-help"
+                />
+                <p id="f-contact-phone-help" className="text-xs text-muted-foreground">
+                  {council?.contact_phone ? t('admin:editor.contactInherits', { value: council.contact_phone }) : t('admin:editor.contactNone')}
+                </p>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="f-contact-email">
+                  {t('admin:editor.contactEmail')} <span className="font-normal text-muted-foreground">({t('admin:form.optional')})</span>
+                </Label>
+                <Input
+                  id="f-contact-email"
+                  type="email"
+                  maxLength={255}
+                  value={form.contact_email}
+                  onChange={(e) => set('contact_email', e.target.value)}
+                  aria-describedby="f-contact-email-help"
+                />
+                <p id="f-contact-email-help" className="text-xs text-muted-foreground">
+                  {council?.contact_email ? t('admin:editor.contactInherits', { value: council.contact_email }) : t('admin:editor.contactNone')}
+                </p>
+              </div>
+            </fieldset>
+            <div className="flex justify-end border-t pt-4">
+              <Button type="submit" disabled={saving}>
+                {saving ? t('admin:form.saving') : creating ? t('admin:editor.create') : t('admin:editor.save')}
+              </Button>
+            </div>
+          </section>
+
+          <section aria-labelledby="sec-booking" className="grid gap-4 rounded-lg border bg-card p-5">
+            <h2 id="sec-booking" className="text-lg font-semibold">
+              {t('admin:editor.booking')}
+            </h2>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {(
+                [
+                  ['slot_minutes', 'admin:editor.slotMinutes', 15, 480, 5],
+                  ['max_advance_days', 'admin:editor.maxAdvanceDays', 1, 365, 1],
+                  ['min_cancel_hours', 'admin:editor.minCancelHours', 0, 720, 1],
+                  ['max_active_bookings_per_user', 'admin:editor.maxActive', 1, 50, 1],
+                ] as const
+              ).map(([field, label, min, max, step]) => (
+                <div key={field} className="grid gap-2">
+                  <Label htmlFor={`f-${field}`}>{t(label)}</Label>
+                  <Input
+                    id={`f-${field}`}
+                    type="number"
+                    required
+                    min={min}
+                    max={max}
+                    step={step}
+                    value={form[field]}
+                    onChange={(e) => set(field, number(e.target.value))}
+                    className="num"
+                  />
+                </div>
+              ))}
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="f-rules">{t('admin:editor.usageRules')}</Label>
+              <Textarea id="f-rules" rows={4} maxLength={5000} value={form.usage_rules} aria-describedby="f-rules-help" onChange={(e) => set('usage_rules', e.target.value)} />
+              <p id="f-rules-help" className="text-xs text-muted-foreground">
+                {t('admin:editor.usageRulesHelp')}
+              </p>
+            </div>
+            <div className="grid gap-2 sm:max-w-xs">
+              <Label htmlFor="f-min-age">
+                {t('admin:editor.minAge')} <span className="font-normal text-muted-foreground">({t('admin:form.optional')})</span>
+              </Label>
+              <Input
+                id="f-min-age"
+                type="number"
+                min={1}
+                max={80}
+                value={form.min_age ?? ''}
+                aria-describedby="f-min-age-help"
+                onChange={(e) => set('min_age', e.target.value === '' ? null : Number(e.target.value))}
+                className="num"
+              />
+              <p id="f-min-age-help" className="text-xs text-muted-foreground">
+                {t('admin:editor.minAgeHelp')}
+              </p>
+            </div>
+            <div className="flex justify-end border-t pt-4">
+              <Button type="submit" disabled={saving}>
+                {saving ? t('admin:form.saving') : creating ? t('admin:editor.create') : t('admin:editor.save')}
+              </Button>
+            </div>
+          </section>
+        </form>
+
+        <section aria-labelledby="sec-schedule" className="rounded-lg border bg-card p-5">
+          <h2 id="sec-schedule" className="text-lg font-semibold">
+            {t('admin:editor.schedule')}
+          </h2>
+          <p className="mt-1 text-muted-foreground">{creating ? t('admin:editor.scheduleWithCreate') : t('admin:editor.scheduleHelp')}</p>
+          <div className="mt-3">
+            {creating ? (
+              <ScheduleEditor value={schedule} onChange={setSchedule} />
+            ) : (
+              <ScheduleEditor key={JSON.stringify(schedule)} value={schedule} saving={savingSchedule} onSave={saveSchedule} />
+            )}
+          </div>
+        </section>
+
+        {!creating && saved && (
+          <ClosuresEditor slug={slug} facilityId={saved.id} token={token} timeZone={saved.timezone} initial={saved.closures} />
+        )}
+      </div>
+
+      <aside className="grid gap-6">
+        <section aria-labelledby="sec-photo" className="grid gap-4 rounded-lg border bg-card p-5">
+          <h2 id="sec-photo" className="text-lg font-semibold">
+            {t('admin:editor.image')}
+          </h2>
+          <ImagePicker label={t('admin:editor.image')} hideLabel folder="facilities" shape="large" value={image} onChange={setImage} />
+        </section>
+
+        <section aria-labelledby="sec-location" className="grid gap-4 rounded-lg border bg-card p-5">
+          <h2 id="sec-location" className="text-lg font-semibold">
+            {t('admin:editor.location')}
+          </h2>
+          <div className="grid gap-2">
+            <Label htmlFor="f-address">{t('admin:editor.address')}</Label>
+            <div className="flex gap-2">
+              <Input id="f-address" maxLength={500} value={form.address} onChange={(e) => set('address', e.target.value)} />
+              <Button type="button" variant="outline" disabled={searching || form.address.trim().length < 3} onClick={search}>
+                <Search />
+                {searching ? t('admin:editor.searching') : t('admin:editor.search')}
+              </Button>
+            </div>
+          </div>
+          {results && (
+            <ul className="grid rounded-md border">
+              {results.length === 0 ? (
+                <li className="px-3 py-2 text-muted-foreground">{t('admin:editor.noResults')}</li>
+              ) : (
+                results.map((place) => (
+                  <li key={`${place.latitude},${place.longitude}`} className="border-t first:border-t-0">
+                    <button type="button" className="min-h-11 w-full px-3 py-2 text-left hover:bg-accent" onClick={() => pick(place)}>
+                      {place.label}
+                    </button>
+                  </li>
+                ))
+              )}
+            </ul>
+          )}
+          <FacilityMap
+            editable
+            latitude={form.latitude}
+            longitude={form.longitude}
+            label={t('facility:mapLabel')}
+            onChange={(lat, lng) => {
+              set('latitude', Number(lat.toFixed(6)))
+              set('longitude', Number(lng.toFixed(6)))
+            }}
+          />
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs text-muted-foreground">{t('admin:editor.mapHelp')}</p>
+            {form.latitude !== null && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  set('latitude', null)
+                  set('longitude', null)
+                }}
+              >
+                {t('admin:editor.removePin')}
+              </Button>
+            )}
+          </div>
+        </section>
+
+        {!creating && (
+          <section aria-labelledby="sec-delete" className="grid gap-3 rounded-lg border bg-card p-5">
+            <h2 id="sec-delete" className="text-lg font-semibold">
+              {t('admin:editor.deleteTitle')}
+            </h2>
+            {facility.booking_count > 0 ? (
+              <p className="text-muted-foreground">{t('admin:manage.deleteBlocked', { count: facility.booking_count })}</p>
+            ) : (
+              <>
+                <p className="text-muted-foreground">{t('admin:editor.deleteHelp')}</p>
+                <div>
+                  <Button variant="outline" className="text-destructive hover:text-destructive" onClick={() => setConfirmDelete(true)}>
+                    {t('admin:manage.delete')}
+                  </Button>
+                </div>
+              </>
+            )}
+          </section>
+        )}
+      </aside>
+    </div>
+  )
+
   return (
     <div className="min-h-screen">
       <TopBar tenants={tenants} tenantSlug={slug} />
@@ -242,275 +517,20 @@ function Editor({ slug, facility, tenants, token }: { slug: string; facility: Ad
           )}
         </div>
 
-        {/* the facility itself on the left; the photo, the map and the readers beside it */}
-        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:items-start">
-          <div className="grid gap-6">
-            <form id="facility-form" onSubmit={save} className="grid gap-6">
-              <section aria-labelledby="sec-details" className="grid gap-4 rounded-lg border bg-card p-5">
-                <h2 id="sec-details" className="text-lg font-semibold">
-                  {t('admin:editor.details')}
-                </h2>
-                <div className="grid gap-4 md:grid-cols-2 md:items-start">
-                  <div className="grid gap-2">
-                    <Label htmlFor="f-name">{t('admin:editor.name')}</Label>
-                    <Input
-                      id="f-name"
-                      required
-                      maxLength={255}
-                      placeholder={t('admin:editor.namePlaceholder')}
-                      value={form.name}
-                      aria-describedby="f-url"
-                      onChange={(e) => {
-                        set('name', e.target.value)
-                        // the address comes from the name when the facility is created, and then stays: links to it are out there
-                        if (creating) set('slug', slugify(e.target.value))
-                      }}
-                    />
-                    <p id="f-url" className="text-xs text-muted-foreground">
-                      {t('admin:editor.slugHelp', { url: `${window.location.host}/${slug}/${form.slug || '…'}` })}
-                    </p>
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="f-capacity">
-                      {t('admin:editor.capacity')} <span className="font-normal text-muted-foreground">({t('admin:form.optional')})</span>
-                    </Label>
-                    <Input
-                      id="f-capacity"
-                      type="number"
-                      min={1}
-                      value={form.capacity ?? ''}
-                      onChange={(e) => set('capacity', e.target.value === '' ? null : Number(e.target.value))}
-                      className="num"
-                    />
-                  </div>
-                  <div className="md:col-span-2">
-                    <TagPicker value={form.tags} onChange={(tags) => set('tags', tags)} />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="f-description">{t('admin:editor.description')}</Label>
-                    <Textarea id="f-description" rows={4} maxLength={5000} value={form.description} onChange={(e) => set('description', e.target.value)} />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="f-accessibility">
-                      {t('admin:editor.accessibility')} <span className="font-normal text-muted-foreground">({t('admin:form.optional')})</span>
-                    </Label>
-                    <Textarea id="f-accessibility" rows={4} maxLength={2000} value={form.accessibility_info} onChange={(e) => set('accessibility_info', e.target.value)} />
-                  </div>
-                </div>
-                {/* its own contact, optional: each one left empty shows the council's on the facility's page */}
-                <fieldset className="grid gap-4 border-t pt-4 md:grid-cols-2 md:items-start">
-                  <legend className="sr-only">{t('admin:editor.contact')}</legend>
-                  <p className="font-medium md:col-span-2">{t('admin:editor.contact')}</p>
-                  <div className="grid gap-2">
-                    <Label htmlFor="f-contact-phone">
-                      {t('admin:editor.contactPhone')} <span className="font-normal text-muted-foreground">({t('admin:form.optional')})</span>
-                    </Label>
-                    <Input
-                      id="f-contact-phone"
-                      type="tel"
-                      maxLength={50}
-                      value={form.contact_phone}
-                      onChange={(e) => set('contact_phone', e.target.value)}
-                      className="num"
-                      aria-describedby="f-contact-phone-help"
-                    />
-                    <p id="f-contact-phone-help" className="text-xs text-muted-foreground">
-                      {council?.contact_phone ? t('admin:editor.contactInherits', { value: council.contact_phone }) : t('admin:editor.contactNone')}
-                    </p>
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="f-contact-email">
-                      {t('admin:editor.contactEmail')} <span className="font-normal text-muted-foreground">({t('admin:form.optional')})</span>
-                    </Label>
-                    <Input
-                      id="f-contact-email"
-                      type="email"
-                      maxLength={255}
-                      value={form.contact_email}
-                      onChange={(e) => set('contact_email', e.target.value)}
-                      aria-describedby="f-contact-email-help"
-                    />
-                    <p id="f-contact-email-help" className="text-xs text-muted-foreground">
-                      {council?.contact_email ? t('admin:editor.contactInherits', { value: council.contact_email }) : t('admin:editor.contactNone')}
-                    </p>
-                  </div>
-                </fieldset>
-                <div className="flex justify-end border-t pt-4">
-                  <Button type="submit" disabled={saving}>
-                    {saving ? t('admin:form.saving') : creating ? t('admin:editor.create') : t('admin:editor.save')}
-                  </Button>
-                </div>
-              </section>
-
-              <section aria-labelledby="sec-booking" className="grid gap-4 rounded-lg border bg-card p-5">
-                <h2 id="sec-booking" className="text-lg font-semibold">
-                  {t('admin:editor.booking')}
-                </h2>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {(
-                    [
-                      ['slot_minutes', 'admin:editor.slotMinutes', 15, 480, 5],
-                      ['max_advance_days', 'admin:editor.maxAdvanceDays', 1, 365, 1],
-                      ['min_cancel_hours', 'admin:editor.minCancelHours', 0, 720, 1],
-                      ['max_active_bookings_per_user', 'admin:editor.maxActive', 1, 50, 1],
-                    ] as const
-                  ).map(([field, label, min, max, step]) => (
-                    <div key={field} className="grid gap-2">
-                      <Label htmlFor={`f-${field}`}>{t(label)}</Label>
-                      <Input
-                        id={`f-${field}`}
-                        type="number"
-                        required
-                        min={min}
-                        max={max}
-                        step={step}
-                        value={form[field]}
-                        onChange={(e) => set(field, number(e.target.value))}
-                        className="num"
-                      />
-                    </div>
-                  ))}
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="f-rules">{t('admin:editor.usageRules')}</Label>
-                  <Textarea id="f-rules" rows={4} maxLength={5000} value={form.usage_rules} aria-describedby="f-rules-help" onChange={(e) => set('usage_rules', e.target.value)} />
-                  <p id="f-rules-help" className="text-xs text-muted-foreground">
-                    {t('admin:editor.usageRulesHelp')}
-                  </p>
-                </div>
-                <div className="grid gap-2 sm:max-w-xs">
-                  <Label htmlFor="f-min-age">
-                    {t('admin:editor.minAge')} <span className="font-normal text-muted-foreground">({t('admin:form.optional')})</span>
-                  </Label>
-                  <Input
-                    id="f-min-age"
-                    type="number"
-                    min={1}
-                    max={80}
-                    value={form.min_age ?? ''}
-                    aria-describedby="f-min-age-help"
-                    onChange={(e) => set('min_age', e.target.value === '' ? null : Number(e.target.value))}
-                    className="num"
-                  />
-                  <p id="f-min-age-help" className="text-xs text-muted-foreground">
-                    {t('admin:editor.minAgeHelp')}
-                  </p>
-                </div>
-                <div className="flex justify-end border-t pt-4">
-                  <Button type="submit" disabled={saving}>
-                    {saving ? t('admin:form.saving') : creating ? t('admin:editor.create') : t('admin:editor.save')}
-                  </Button>
-                </div>
-              </section>
-            </form>
-
-            <section aria-labelledby="sec-schedule" className="rounded-lg border bg-card p-5">
-              <h2 id="sec-schedule" className="text-lg font-semibold">
-                {t('admin:editor.schedule')}
-              </h2>
-              <p className="mt-1 text-muted-foreground">{creating ? t('admin:editor.scheduleWithCreate') : t('admin:editor.scheduleHelp')}</p>
-              <div className="mt-3">
-                {creating ? (
-                  <ScheduleEditor value={schedule} onChange={setSchedule} />
-                ) : (
-                  <ScheduleEditor key={JSON.stringify(schedule)} value={schedule} saving={savingSchedule} onSave={saveSchedule} />
-                )}
-              </div>
-            </section>
-
-            {!creating && saved && (
-              <ClosuresEditor slug={slug} facilityId={saved.id} token={token} timeZone={saved.timezone} initial={saved.closures} />
-            )}
-          </div>
-
-          <aside className="grid gap-6">
-            <section aria-labelledby="sec-photo" className="grid gap-4 rounded-lg border bg-card p-5">
-              <h2 id="sec-photo" className="text-lg font-semibold">
-                {t('admin:editor.image')}
-              </h2>
-              <ImagePicker label={t('admin:editor.image')} hideLabel folder="facilities" shape="large" value={image} onChange={setImage} />
-            </section>
-
-            <section aria-labelledby="sec-location" className="grid gap-4 rounded-lg border bg-card p-5">
-              <h2 id="sec-location" className="text-lg font-semibold">
-                {t('admin:editor.location')}
-              </h2>
-              <div className="grid gap-2">
-                <Label htmlFor="f-address">{t('admin:editor.address')}</Label>
-                <div className="flex gap-2">
-                  <Input id="f-address" maxLength={500} value={form.address} onChange={(e) => set('address', e.target.value)} />
-                  <Button type="button" variant="outline" disabled={searching || form.address.trim().length < 3} onClick={search}>
-                    <Search />
-                    {searching ? t('admin:editor.searching') : t('admin:editor.search')}
-                  </Button>
-                </div>
-              </div>
-              {results && (
-                <ul className="grid rounded-md border">
-                  {results.length === 0 ? (
-                    <li className="px-3 py-2 text-muted-foreground">{t('admin:editor.noResults')}</li>
-                  ) : (
-                    results.map((place) => (
-                      <li key={`${place.latitude},${place.longitude}`} className="border-t first:border-t-0">
-                        <button type="button" className="min-h-11 w-full px-3 py-2 text-left hover:bg-accent" onClick={() => pick(place)}>
-                          {place.label}
-                        </button>
-                      </li>
-                    ))
-                  )}
-                </ul>
-              )}
-              <FacilityMap
-                editable
-                latitude={form.latitude}
-                longitude={form.longitude}
-                label={t('facility:mapLabel')}
-                onChange={(lat, lng) => {
-                  set('latitude', Number(lat.toFixed(6)))
-                  set('longitude', Number(lng.toFixed(6)))
-                }}
-              />
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="text-xs text-muted-foreground">{t('admin:editor.mapHelp')}</p>
-                {form.latitude !== null && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      set('latitude', null)
-                      set('longitude', null)
-                    }}
-                  >
-                    {t('admin:editor.removePin')}
-                  </Button>
-                )}
-              </div>
-            </section>
-
-            {!creating && <CheckinDevices slug={slug} facilityId={facility.id} token={token} />}
-
-            {!creating && (
-              <section aria-labelledby="sec-delete" className="grid gap-3 rounded-lg border bg-card p-5">
-                <h2 id="sec-delete" className="text-lg font-semibold">
-                  {t('admin:editor.deleteTitle')}
-                </h2>
-                {facility.booking_count > 0 ? (
-                  <p className="text-muted-foreground">{t('admin:manage.deleteBlocked', { count: facility.booking_count })}</p>
-                ) : (
-                  <>
-                    <p className="text-muted-foreground">{t('admin:editor.deleteHelp')}</p>
-                    <div>
-                      <Button variant="outline" className="text-destructive hover:text-destructive" onClick={() => setConfirmDelete(true)}>
-                        {t('admin:manage.delete')}
-                      </Button>
-                    </div>
-                  </>
-                )}
-              </section>
-            )}
-          </aside>
-        </div>
+        {creating ? (
+          <div className="mt-6">{layout}</div>
+        ) : (
+          <Tabs value={view} onValueChange={changeView} className="mt-6 gap-6">
+            <TabsList>
+              <TabsTrigger value="details">{t('admin:editor.tabDetails')}</TabsTrigger>
+              <TabsTrigger value="checkin">{t('admin:editor.tabCheckin')}</TabsTrigger>
+            </TabsList>
+            <TabsContent value="details">{layout}</TabsContent>
+            <TabsContent value="checkin">
+              <CheckinMethods slug={slug} facilityId={facility.id} facilitySlug={facility.slug} token={token} />
+            </TabsContent>
+          </Tabs>
+        )}
 
         {activeInfo && (
           <Dialog open onOpenChange={setActiveInfo}>
