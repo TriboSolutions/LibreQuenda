@@ -7,7 +7,7 @@ import { BrandLogo, BrandName } from '@/components/Brand'
 import { InvitationReminder } from '@/components/InvitationReminder'
 import { LanguageMenu } from '@/components/LanguageMenu'
 import { NotificationBell } from '@/components/NotificationBell'
-import { PersonalQrDialog } from '@/components/PersonalQr'
+import { FlashBookingDialog } from '@/components/PersonalQr'
 import { ProfileReminder } from '@/components/ProfileReminder'
 import { ThemeMenu } from '@/components/ThemeMenu'
 import { Button } from '@/components/ui/button'
@@ -139,7 +139,7 @@ export function TopBar({ tenants, tenantSlug }: Props) {
         </div>
       </div>
     </header>
-    {auth.isAuthenticated && <PersonalQrDialog open={qrOpen} onOpenChange={setQrOpen} />}
+    {auth.isAuthenticated && <FlashBookingDialog open={qrOpen} onOpenChange={setQrOpen} />}
     <InvitationReminder />
     <ProfileReminder />
     </>

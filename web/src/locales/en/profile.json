@@ -83,7 +83,6 @@
     "deletedBody": "Your personal details are gone from {{app}}. You can create a new account whenever you like."
   },
   "personalQr": {
-    "help": "At a facility with a QR reader, and it's free? Book it on the spot with your QR.",
     "alt": "Your flash booking QR code. It changes every minute.",
     "private": "The code changes every minute and works only once, so a screenshot will not work. Do not share it.",
     "brightness": "If the reader does not pick it up, turn up the screen brightness.",
@@ -111,5 +110,30 @@
     "reset": "New address",
     "resetHint": "The current address stops working; you will have to subscribe again.",
     "turnOff": "Turn off"
+  },
+  "flash": {
+    "help": "At a facility with a free turn? Book it on the spot, whichever way in the facility takes.",
+    "ways": "How you go in",
+    "reader": {
+      "tab": "QR reader",
+      "help": "Hold this QR up to the reader at the door: if the turn is free, it is booked and you are in."
+    },
+    "code": {
+      "tab": "Code",
+      "help": "We find the facility you are at with your phone’s location; then type the code at the door. It is checked and never stored.",
+      "locate": "Find where I am",
+      "locating": "Finding…",
+      "again": "Find again",
+      "none": "You are not near any facility that takes bookings with its code.",
+      "facility": "Where you are"
+    },
+    "door": {
+      "tab": "QR at the door",
+      "help": "Scan the QR printed on the door with your phone’s camera. It opens the entrance page, where you can book a free turn on the spot."
+    },
+    "staff": {
+      "tab": "Staff",
+      "help": "Ask at the desk or the staff to book the free turn for you: they can do it with your account or just your name."
+    }
   }
 }

@@ -494,6 +494,71 @@ func (q *Queries) ListCheckinDevices(ctx context.Context, arg ListCheckinDevices
 	return items, nil
 }
 
+const listFlashCodeFacilities = `-- name: ListFlashCodeFacilities :many
+SELECT
+    f.name,
+    f.slug,
+    f.latitude::FLOAT8  AS latitude,
+    f.longitude::FLOAT8 AS longitude,
+    t.name AS tenant_name,
+    t.slug AS tenant_slug,
+    c.radius_m
+FROM
+    facility f
+    JOIN tenant t ON t.id = f.tenant_id
+    JOIN facility_checkin c ON c.facility_id = f.id
+WHERE
+    c.entry_code = TRUE
+    AND c.flash_booking = TRUE
+    AND f.latitude IS NOT NULL
+    AND f.longitude IS NOT NULL
+    AND f.is_active = TRUE
+    AND t.is_active = TRUE
+`
+
+type ListFlashCodeFacilitiesRow struct {
+	Name       string  `json:"name"`
+	Slug       string  `json:"slug"`
+	Latitude   float64 `json:"latitude"`
+	Longitude  float64 `json:"longitude"`
+	TenantName string  `json:"tenant_name"`
+	TenantSlug string  `json:"tenant_slug"`
+	RadiusM    int32   `json:"radius_m"`
+}
+
+// Flash booking with the entry code: the facilities that take it and book free
+// turns at the door. The phone's distance to each is checked in the API.
+func (q *Queries) ListFlashCodeFacilities(ctx context.Context) ([]ListFlashCodeFacilitiesRow, error) {
+	rows, err := q.db.QueryContext(ctx, listFlashCodeFacilities)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListFlashCodeFacilitiesRow
+	for rows.Next() {
+		var i ListFlashCodeFacilitiesRow
+		if err := rows.Scan(
+			&i.Name,
+			&i.Slug,
+			&i.Latitude,
+			&i.Longitude,
+			&i.TenantName,
+			&i.TenantSlug,
+			&i.RadiusM,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const markBookingCheckedIn = `-- name: MarkBookingCheckedIn :one
 UPDATE booking
 SET

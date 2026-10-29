@@ -274,6 +274,29 @@ WHERE
     AND f.is_active = TRUE
     AND t.is_active = TRUE;
 
+-- name: ListFlashCodeFacilities :many
+-- Flash booking with the entry code: the facilities that take it and book free
+-- turns at the door. The phone's distance to each is checked in the API.
+SELECT
+    f.name,
+    f.slug,
+    f.latitude::FLOAT8  AS latitude,
+    f.longitude::FLOAT8 AS longitude,
+    t.name AS tenant_name,
+    t.slug AS tenant_slug,
+    c.radius_m
+FROM
+    facility f
+    JOIN tenant t ON t.id = f.tenant_id
+    JOIN facility_checkin c ON c.facility_id = f.id
+WHERE
+    c.entry_code = TRUE
+    AND c.flash_booking = TRUE
+    AND f.latitude IS NOT NULL
+    AND f.longitude IS NOT NULL
+    AND f.is_active = TRUE
+    AND t.is_active = TRUE;
+
 -- name: GetFacilityStaffConfirm :one
 -- Whether council staff can mark the entry from the calendar; off without settings.
 SELECT

@@ -94,6 +94,20 @@ for (const theme of ['light', 'dark'] as const) {
       await expectAccessible(page, { overlay: true })
     })
 
+    test('flash booking dialog, entry code tab', async ({ page, context }) => {
+      await context.grantPermissions(['geolocation'])
+      await context.setGeolocation({ latitude: 43.0097, longitude: -7.5568, accuracy: 10 })
+      await open(page, '/lugo', { theme })
+      await page.getByRole('button', { name: /Ana Pérez/ }).click()
+      await page.getByRole('menuitem', { name: /Reserva flash/ }).click()
+      await page.getByRole('tab', { name: 'Código' }).click()
+      await page.getByRole('button', { name: 'Buscar onde estou' }).click()
+      await expect(page.getByRole('radio', { name: /Pista de pádel 1/ })).toBeChecked()
+      await page.mouse.move(0, 0)
+      await page.waitForTimeout(300)
+      await expectAccessible(page, { overlay: true })
+    })
+
     // the dialogs on /reservas, each opened from the first upcoming booking
     for (const button of [/^Cancelar$/, /QR/, /^Convidar$/, /^Cambiar$/, /^Rexistrar entrada$/]) {
       test(`my bookings dialog ${button.source}`, async ({ page }) => {
@@ -246,6 +260,25 @@ test.describe('keyboard', () => {
     await page.keyboard.press('Space')
     await expect(nfc).toBeChecked()
     await expect(page.getByLabel('Tipo de etiqueta')).toBeVisible()
+  })
+
+  test('2.1.1 a flash booking with the entry code works with the keyboard alone', async ({ page, context }) => {
+    await context.grantPermissions(['geolocation'])
+    await context.setGeolocation({ latitude: 43.0097, longitude: -7.5568, accuracy: 10 })
+    await open(page, '/lugo')
+    await page.getByRole('button', { name: /Ana Pérez/ }).click()
+    await page.getByRole('menuitem', { name: /Reserva flash/ }).click()
+    const dialog = page.getByRole('dialog')
+    await dialog.getByRole('tab', { name: 'Lector QR' }).focus()
+    await page.keyboard.press('ArrowRight')
+    await expect(dialog.getByRole('tab', { name: 'Código' })).toHaveAttribute('aria-selected', 'true')
+    await dialog.getByRole('button', { name: 'Buscar onde estou' }).focus()
+    await page.keyboard.press('Enter')
+    await expect(dialog.getByRole('radio', { name: /Pista de pádel 1/ })).toBeChecked()
+    await dialog.getByLabel('Código de entrada').focus()
+    await page.keyboard.type('482915')
+    await page.keyboard.press('Enter')
+    await expect(dialog.getByRole('status')).toContainText('Non tes reserva para esta quenda')
   })
 
   test('2.1.1 a booking can be checked in from my bookings with the keyboard alone', async ({ page, context }) => {

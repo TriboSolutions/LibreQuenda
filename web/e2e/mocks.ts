@@ -175,8 +175,14 @@ function booking(id: string, hoursFromNow: number, extra: Partial<Booking> = {})
 
 const myBookings: MyBookings = {
   upcoming: [
-    // starts in 6 minutes: check-in open, with every way in the facility can take
-    booking('b0', 0.1, { can_cancel: false, can_change: false, checkin_ways: ['entry_code', 'printed_qr', 'reader', 'staff'] }),
+    // starts in 6 minutes from the real clock (not the hour at() rounds to): check-in open, with every way in
+    booking('b0', 0, {
+      starts_at: iso(new Date(now.getTime() + 6 * 60_000)),
+      ends_at: iso(new Date(now.getTime() + 66 * 60_000)),
+      can_cancel: false,
+      can_change: false,
+      checkin_ways: ['entry_code', 'printed_qr', 'reader', 'staff'],
+    }),
     booking('b1', 3),
     booking('b2', 26, { role: 'participant', owner_name: 'Uxía', can_cancel: false, can_change: false, can_leave: true }),
   ],
@@ -504,6 +510,13 @@ export async function mockApp(page: Page, { signedIn = true, theme = 'light', la
   await page.route('**/api/**', (route) => {
     const url = new URL(route.request().url())
     const path = url.pathname.replace(/^\/api/, '')
+    // flash booking with the entry code: the phone is at Lugo's padel court
+    if (route.request().method() === 'POST' && path === '/entrance/nearby') {
+      return fulfil(route, {
+        result: '',
+        facilities: [{ facility_name: 'Pista de pádel 1', facility_slug: 'padel-1', tenant_name: 'Concello de Lugo', tenant_slug: 'lugo' }],
+      })
+    }
     // the phone at the door without a booking: it is offered to book the free turn
     if (route.request().method() === 'POST' && /\/entrance$/.test(path)) {
       return fulfil(route, { granted: false, result: 'no_booking', can_book: true, booking: null })

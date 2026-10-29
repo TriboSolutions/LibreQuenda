@@ -71,3 +71,19 @@ func (h *entranceHandler) CheckIn(w http.ResponseWriter, r *http.Request) {
 	}
 	helpers.SendSuccessResponse(w, response)
 }
+
+// Nearby: the location goes in the body, so it stays out of the access logs.
+func (h *entranceHandler) Nearby(w http.ResponseWriter, r *http.Request) {
+	var body NearbyInput
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_request_body")
+		return
+	}
+	var response, err = GetEntranceService(h.db).Nearby(r.Context(), body)
+	if err != nil {
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
+		return
+	}
+	w.Header().Set("Cache-Control", "no-store")
+	helpers.SendSuccessResponse(w, response)
+}

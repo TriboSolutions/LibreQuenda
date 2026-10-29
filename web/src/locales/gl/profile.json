@@ -83,7 +83,6 @@
     "deletedBody": "Os teus datos persoais xa non están en {{app}}. Podes crear unha conta nova cando queiras."
   },
   "personalQr": {
-    "help": "Chegas a unha instalación con lector QR e está libre? Resérvaa no momento co teu QR.",
     "alt": "O teu código QR de reserva flash. Cambia cada minuto.",
     "private": "O código cambia cada minuto e só serve unha vez, así que unha captura de pantalla non funciona. Non o compartas.",
     "brightness": "Se o lector non o detecta, sube o brillo da pantalla.",
@@ -111,5 +110,30 @@
     "reset": "Novo enderezo",
     "resetHint": "O enderezo actual deixa de funcionar; terás que subscribirte de novo.",
     "turnOff": "Desactivar"
+  },
+  "flash": {
+    "help": "Chegas a unha instalación e hai unha quenda libre? Resérvaa no momento, da forma que admita a instalación.",
+    "ways": "Como entras",
+    "reader": {
+      "tab": "Lector QR",
+      "help": "Achega este QR ao lector da porta: se a quenda está libre, resérvase e entras."
+    },
+    "code": {
+      "tab": "Código",
+      "help": "Buscamos a instalación onde estás coa localización do móbil; despois escribe o código da porta. Compróbase e nunca se garda.",
+      "locate": "Buscar onde estou",
+      "locating": "Buscando…",
+      "again": "Buscar de novo",
+      "none": "Non estás preto de ningunha instalación que admita reservar co código.",
+      "facility": "Onde estás"
+    },
+    "door": {
+      "tab": "QR da porta",
+      "help": "Escanea coa cámara do móbil o QR impreso na porta. Abrirase a páxina de entrada, onde podes reservar no momento unha quenda libre."
+    },
+    "staff": {
+      "tab": "Persoal",
+      "help": "Pide no mostrador ou ao persoal que che reserven a quenda libre: poden facelo coa túa conta ou só co teu nome."
+    }
   }
 }
