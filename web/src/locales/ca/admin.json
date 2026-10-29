@@ -646,7 +646,9 @@
       "qrStep3": "La teva reserva d’aquest torn queda amb l’entrada registrada.",
       "qrStep3Flash": "La teva reserva d’aquest torn queda amb l’entrada registrada. Sense reserva, pots reservar al moment un torn lliure.",
       "codeTitle": "Codi d’entrada",
-      "codeStep1": "Obre {{url}} al mòbil i escriu aquest codi."
+      "codeStep1": "Obre {{url}} al mòbil i escriu aquest codi.",
+      "braille": "Afegir el codi en braille",
+      "brailleHelp": "El braille surt a mida real. Perquè es pugui llegir amb el tacte, imprimeix-lo en paper inflable (microcàpsula) o en una impressora braille: en una impressora normal els punts surten plans."
     }
   },
   "branding": {

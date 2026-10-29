@@ -646,7 +646,9 @@
       "qrStep3": "Tu reserva de este turno queda con la entrada registrada.",
       "qrStep3Flash": "Tu reserva de este turno queda con la entrada registrada. Sin reserva, puedes reservar en el momento un turno libre.",
       "codeTitle": "Código de entrada",
-      "codeStep1": "Abre {{url}} en el móvil y escribe este código."
+      "codeStep1": "Abre {{url}} en el móvil y escribe este código.",
+      "braille": "Añadir el código en braille",
+      "brailleHelp": "El braille sale a tamaño real. Para que se pueda leer con el tacto, imprímelo en papel termohinchable (microcápsula) o en una impresora braille: en una impresora normal los puntos salen planos."
     }
   },
   "branding": {
