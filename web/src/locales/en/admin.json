@@ -634,8 +634,8 @@
     "saved": "Saved.",
     "saveToPrint": "Turn it on and save to print it.",
     "flash": {
-      "label": "Book a free turn at the door",
-      "help": "Without a booking, a resident can book the turn under way or about to start on the spot, within the usual rules: with the personal QR at a reader, or from their phone at the door."
+      "label": "Allow flash booking",
+      "help": "Without a booking, a resident can book the turn under way or about to start on the spot, under the usual rules: with the personal QR at a reader, the entry code or the QR at the door. Those who already have a booking get in either way."
     },
     "print": {
       "back": "Back to the facility",
