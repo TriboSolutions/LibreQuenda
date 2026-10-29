@@ -55,7 +55,9 @@ type BookingDto struct {
 	CancelUntil  time.Time  `json:"cancel_until"`
 	CheckinCode  string     `json:"checkin_code"` // QR content, upcoming confirmed bookings only
 	CheckedInAt  *time.Time `json:"checked_in_at"`
-	Attendance   string     `json:"attendance"` // past confirmed bookings only: "attended", "no_show" or "unknown"; "" otherwise
+	// owner only: the ways in the facility offers ("reader", "printed_qr", "entry_code", "staff")
+	CheckinWays []string `json:"checkin_ways"`
+	Attendance  string   `json:"attendance"` // past confirmed bookings only: "attended", "no_show" or "unknown"; "" otherwise
 	// invites: the owner shares a link and others fill the facility's capacity
 	Role             string      `json:"role"`              // "owner" or "participant" (joined through an invite)
 	OwnerName        string      `json:"owner_name"`        // participant only
@@ -257,6 +259,26 @@ func mapBooking(row model.ListBookingsByUserRow, now time.Time) BookingDto {
 		CheckedInAt:  checkedInAt,
 		Attendance:   attendance(row.Status, row.EndsAt, row.CheckedInAt.Valid, row.ReaderAtStart, now),
 		Role:         RoleOwner,
+		CheckinWays:  checkinWays(row),
 		Facility:     FacilityDetails(row.Facility, row.FacilitySport),
 	}
+}
+
+// checkinWays: how the owner can check in at the facility, in the order the dialog shows them.
+func checkinWays(row model.ListBookingsByUserRow) []string {
+	var ways = []string{}
+	for _, way := range []struct {
+		on     bool
+		method model.CheckinMethod
+	}{
+		{row.EntryCode, model.CheckinMethodEntryCode},
+		{row.PrintedQr, model.CheckinMethodPrintedQr},
+		{row.HasReader, model.CheckinMethodReader},
+		{row.StaffConfirm, model.CheckinMethodStaff},
+	} {
+		if way.on {
+			ways = append(ways, string(way.method))
+		}
+	}
+	return ways
 }

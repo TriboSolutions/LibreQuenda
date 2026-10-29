@@ -97,5 +97,10 @@
     "license": "Llicència AGPL-3.0",
     "legal": "Legal",
     "copyright": "© {{year}} Tribo Solutions. LibreQuenda és programari lliure: el pots fer servir, estudiar, modificar i compartir sota la llicència GNU AGPL-3.0."
+  },
+  "duration": {
+    "days": "{{count}} d",
+    "hours": "{{count}} h",
+    "minutes": "{{count}} min"
   }
 }

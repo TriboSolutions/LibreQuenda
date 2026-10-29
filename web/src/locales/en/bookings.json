@@ -76,5 +76,36 @@
     "email": "It also comes in the confirmation and reminder emails.",
     "checkedIn": "Entry registered at {{time}}",
     "close": "Close"
+  },
+  "countdown": {
+    "startsIn": "Starts in {{time}}",
+    "open": "You can go in now",
+    "running": "Under way · ends in {{time}}",
+    "in": "You went in at {{time}}"
+  },
+  "checkin": {
+    "button": "Check in",
+    "from": "Check-in from {{time}}",
+    "title": "Check in",
+    "description": "{{facility}}, {{day}}, {{start}}–{{end}}",
+    "intro": "This facility takes these ways in. Use whichever is at hand.",
+    "done": "You are checked in since {{time}}.",
+    "close": "Close",
+    "entry_code": {
+      "title": "Entry code",
+      "help": "Type the code shown at the door or the desk. We will ask for your location: it is checked and never stored."
+    },
+    "printed_qr": {
+      "title": "QR at the door",
+      "help": "Scan the QR printed on the facility’s door with your phone’s camera."
+    },
+    "reader": {
+      "title": "Your booking’s QR",
+      "help": "Hold this QR up to the reader at the entrance."
+    },
+    "staff": {
+      "title": "Facility staff",
+      "help": "Tell the staff your name and they will mark you in."
+    }
   }
 }

@@ -1,4 +1,4 @@
-import { CalendarClock, ChevronDown, ExternalLink, MapPin, QrCode, UserPlus } from 'lucide-react'
+import { CalendarClock, ChevronDown, DoorOpen, ExternalLink, MapPin, QrCode, UserPlus } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
@@ -6,6 +6,7 @@ import { Link } from 'react-router'
 import { BookingOutcome } from '@/components/BookingOutcome'
 import { BookingQrDialog } from '@/components/BookingQrDialog'
 import { CancelDialog } from '@/components/CancelDialog'
+import { CheckinDialog } from '@/components/CheckinDialog'
 import { FacilityInfo } from '@/components/FacilityInfo'
 import { ChangeBookingDialog } from '@/components/ChangeBookingDialog'
 import { InviteDialog } from '@/components/InviteDialog'
@@ -19,14 +20,18 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useAsync } from '@/hooks/useAsync'
 import { useLogin } from '@/hooks/useLogin'
 import { useMe } from '@/hooks/useMe'
+import { useNow } from '@/hooks/useNow'
 import { api, type Booking } from '@/lib/api'
 import { directionsUrl } from '@/lib/maps'
-import { formatBookingDay, formatDateTime, formatTime, localDate } from '@/lib/time'
+import { formatBookingDay, formatDateTime, formatDuration, formatTime, localDate } from '@/lib/time'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { SiteFooter } from '@/components/SiteFooter'
 
 // Bookings can span councils; all of them are in Galicia today
 const TIME_ZONE = 'Europe/Madrid'
+
+// a booking can be checked in from this long before it starts until it ends, as at a reader
+const EARLY_WINDOW_MS = 15 * 60_000
 
 const pill = {
   neutral: 'shrink-0 rounded-full bg-pill-neutral-bg px-2 py-0.5 text-xs font-medium text-pill-neutral-ink',
@@ -52,6 +57,8 @@ export function MyBookingsPage() {
   const [toLeave, setToLeave] = useState<Booking | null>(null)
   const [toInvite, setToInvite] = useState<Booking | null>(null)
   const [showQr, setShowQr] = useState<Booking | null>(null)
+  const [toCheckIn, setToCheckIn] = useState<Booking | null>(null)
+  const ticking = useNow()
   const [notice, setNotice] = useState<string | null>(null)
 
   const confirmCancel = async (booking: Booking) => {
@@ -146,10 +153,12 @@ export function MyBookingsPage() {
           ) : (
             <ul className="mt-4 grid gap-4">
               {upcoming.map((booking) => (
-                <BookingRow key={booking.id} booking={booking} today={today}>
+                <BookingRow key={booking.id} booking={booking} today={today} now={ticking}>
                   {booking.role === 'owner' ? (
                     <>
-                      {booking.checkin_code && (
+                      {booking.checkin_ways?.length ? (
+                        <CheckinButton booking={booking} now={ticking} onOpen={() => setToCheckIn(booking)} />
+                      ) : booking.checkin_code && (
                         <Button variant="outline" size="sm" aria-label={t('bookings:qr.show')} onClick={() => setShowQr(booking)}>
                           <QrCode aria-hidden />
                         </Button>
@@ -233,6 +242,15 @@ export function MyBookingsPage() {
         onChanged={bookings.reload}
       />
       <BookingQrDialog booking={showQr} timeZone={TIME_ZONE} today={today} onClose={() => setShowQr(null)} />
+      <CheckinDialog
+        key={toCheckIn?.id ?? 'none'}
+        booking={toCheckIn}
+        token={token}
+        timeZone={TIME_ZONE}
+        today={today}
+        onClose={() => setToCheckIn(null)}
+        onCheckedIn={bookings.reload}
+      />
     </div>
   )
 }
@@ -240,7 +258,37 @@ export function MyBookingsPage() {
 type RowProps = {
   booking: Booking
   today: string
+  now: number
   children?: React.ReactNode // actions
+}
+
+/** Opens every way in the facility takes; usable from the early window until the turn ends. */
+function CheckinButton({ booking, now, onOpen }: { booking: Booking; now: number; onOpen: () => void }) {
+  const { t } = useTranslation('bookings')
+  const opensAt = Date.parse(booking.starts_at) - EARLY_WINDOW_MS
+  if (now < opensAt && !booking.checked_in_at) {
+    return <span className="num text-sm text-muted-foreground">{t('checkin.from', { time: formatTime(new Date(opensAt).toISOString(), TIME_ZONE) })}</span>
+  }
+  return (
+    <Button variant={booking.checked_in_at ? 'outline' : 'default'} size="sm" onClick={onOpen}>
+      <DoorOpen aria-hidden />
+      {t('checkin.button')}
+    </Button>
+  )
+}
+
+/** How long until the turn, or where it stands now; refreshed every minute without being read aloud. */
+function Countdown({ booking, now }: { booking: Booking; now: number }) {
+  const { t } = useTranslation('bookings')
+  const starts = Date.parse(booking.starts_at)
+  const ends = Date.parse(booking.ends_at)
+  let text
+  if (booking.checked_in_at) text = t('countdown.in', { time: formatTime(booking.checked_in_at, TIME_ZONE) })
+  else if (now >= starts) text = t('countdown.running', { time: formatDuration(ends - now) })
+  else if (now >= starts - EARLY_WINDOW_MS) text = t('countdown.open')
+  else text = t('countdown.startsIn', { time: formatDuration(starts - now) })
+  const live = booking.checked_in_at || now >= starts - EARLY_WINDOW_MS
+  return <span className={`num ${live ? pill.positive : pill.neutral}`}>{text}</span>
 }
 
 /** A past booking, in one line: what, when, and how it ended. */
@@ -261,7 +309,7 @@ function HistoryRow({ booking, today }: { booking: Booking; today: string }) {
 }
 
 /** An upcoming booking with its details in place: photo, where, when, who is coming, and the rules on demand. */
-function BookingRow({ booking, today, children }: RowProps) {
+function BookingRow({ booking, today, now, children }: RowProps) {
   const { t } = useTranslation(['invites', 'bookings', 'facility', 'common'])
   const [open, setOpen] = useState(false)
   const facility = booking.facility
@@ -306,6 +354,7 @@ function BookingRow({ booking, today, children }: RowProps) {
             </p>
           )}
           <p className="mt-1 flex flex-wrap items-center gap-2 text-sm">
+            <Countdown booking={booking} now={now} />
             <span className={booking.role === 'owner' ? pill.neutral : pill.positive}>
               {booking.role === 'owner' ? t('role.owner') : booking.owner_name ? t('role.invitedBy', { name: booking.owner_name }) : t('role.invited')}
             </span>

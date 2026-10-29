@@ -97,5 +97,10 @@
     "license": "AGPL-3.0 licence",
     "legal": "Legal",
     "copyright": "© {{year}} Tribo Solutions. LibreQuenda is free software: you can use, study, change and share it under the GNU AGPL-3.0 licence."
+  },
+  "duration": {
+    "days": "{{count}} d",
+    "hours": "{{count}} h",
+    "minutes": "{{count}} min"
   }
 }

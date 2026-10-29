@@ -14,27 +14,9 @@ import { useAsync } from '@/hooks/useAsync'
 import { useLogin } from '@/hooks/useLogin'
 import { useMe } from '@/hooks/useMe'
 import { usePageTitle } from '@/hooks/usePageTitle'
-import { api, type EntranceInput, type EntranceResult } from '@/lib/api'
+import { api, type EntranceResult } from '@/lib/api'
+import { GRANTED, locate, type Position } from '@/lib/entrance'
 import { formatTime } from '@/lib/time'
-
-type Position = Pick<EntranceInput, 'latitude' | 'longitude' | 'accuracy'>
-
-/** The phone's location, asked for each check-in and never kept. Rejects with a key of entrance:location. */
-function locate(): Promise<Position> {
-  return new Promise((resolve, reject) => {
-    if (!('geolocation' in navigator)) {
-      reject(new Error('unsupported'))
-      return
-    }
-    navigator.geolocation.getCurrentPosition(
-      ({ coords }) => resolve({ latitude: coords.latitude, longitude: coords.longitude, accuracy: coords.accuracy }),
-      (error) => reject(new Error(error.code === error.PERMISSION_DENIED ? 'denied' : error.code === error.TIMEOUT ? 'timeout' : 'unavailable')),
-      { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 },
-    )
-  })
-}
-
-const GRANTED = ['checked_in', 'already_checked_in', 'booked']
 
 /**
  * /:slug/:facility/entrada: check in from the resident's own phone at the door.

@@ -76,5 +76,36 @@
     "email": "Tamén che chega nos correos de confirmación e de lembrete.",
     "checkedIn": "Entrada rexistrada ás {{time}}",
     "close": "Pechar"
+  },
+  "countdown": {
+    "startsIn": "Empeza en {{time}}",
+    "open": "Xa podes entrar",
+    "running": "En curso · remata en {{time}}",
+    "in": "Entraches ás {{time}}"
+  },
+  "checkin": {
+    "button": "Rexistrar entrada",
+    "from": "Entrada desde as {{time}}",
+    "title": "Rexistrar a entrada",
+    "description": "{{facility}}, {{day}}, {{start}}–{{end}}",
+    "intro": "Esta instalación admite estas formas de entrar. Usa a que teñas á man.",
+    "done": "Xa tes a entrada rexistrada ás {{time}}.",
+    "close": "Pechar",
+    "entry_code": {
+      "title": "Código de entrada",
+      "help": "Escribe o código que está na porta ou no mostrador. Pedirémosche a localización: compróbase e nunca se garda."
+    },
+    "printed_qr": {
+      "title": "QR da porta",
+      "help": "Escanea coa cámara do móbil o QR impreso na porta da instalación."
+    },
+    "reader": {
+      "title": "QR da túa reserva",
+      "help": "Achega este QR ao lector da entrada."
+    },
+    "staff": {
+      "title": "Persoal da instalación",
+      "help": "Dille o teu nome ao persoal e eles marcan a túa entrada."
+    }
   }
 }

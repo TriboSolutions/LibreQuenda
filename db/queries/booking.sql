@@ -71,6 +71,11 @@ SELECT
     b.checkin_token,
     b.checked_in_at,
     EXISTS (SELECT 1 FROM checkin_device d WHERE d.facility_id = f.id AND d.created_at <= b.starts_at)::BOOLEAN AS reader_at_start,
+    -- the ways in the facility offers now, for the check-in button
+    EXISTS (SELECT 1 FROM checkin_device d WHERE d.facility_id = f.id)::BOOLEAN AS has_reader,
+    (COALESCE(c.printed_qr, FALSE) AND f.latitude IS NOT NULL)::BOOLEAN AS printed_qr,
+    (COALESCE(c.entry_code, FALSE) AND f.latitude IS NOT NULL)::BOOLEAN AS entry_code,
+    COALESCE(c.staff_confirm, FALSE)::BOOLEAN AS staff_confirm,
     f.id   AS facility_id,
     f.name AS facility_name,
     f.slug AS facility_slug,
@@ -83,6 +88,7 @@ FROM
     booking b
     JOIN facility f ON f.id = b.facility_id
     JOIN tenant   t ON t.id = f.tenant_id
+    LEFT JOIN facility_checkin c ON c.facility_id = f.id
 WHERE
     b.user_id = sqlc.arg('user_id')
 ORDER BY
