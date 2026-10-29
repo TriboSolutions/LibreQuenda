@@ -362,9 +362,13 @@ test.describe('keyboard', () => {
     await page.getByRole('button', { name: 'Rexistrar entrada' }).first().focus()
     await page.keyboard.press('Enter')
     const dialog = page.getByRole('dialog')
-    for (const way of ['Código de entrada', 'QR da porta', 'QR da túa reserva', 'Persoal da instalación']) {
-      await expect(dialog.getByRole('heading', { name: way })).toBeVisible()
+    for (const way of ['Lector QR', 'Código', 'QR da porta', 'Persoal']) {
+      await expect(dialog.getByRole('tab', { name: way })).toBeVisible()
     }
+    await expect(dialog.getByRole('tab', { name: 'Lector QR' })).toHaveAttribute('aria-selected', 'true')
+    await dialog.getByRole('tab', { name: 'Lector QR' }).focus()
+    await page.keyboard.press('ArrowRight')
+    await expect(dialog.getByRole('tab', { name: 'Código' })).toHaveAttribute('aria-selected', 'true')
     await dialog.getByLabel('Código de entrada').focus()
     await page.keyboard.type('482915')
     await page.keyboard.press('Enter')
@@ -379,6 +383,23 @@ test.describe('keyboard', () => {
     await page.keyboard.type('482913')
     await page.keyboard.press('Enter')
     await expect(page.getByRole('status')).toContainText('Non tes reserva para esta quenda')
+  })
+
+  test('signed in, the invite link joins the booking by itself, once', async ({ page }) => {
+    const joins: string[] = []
+    page.on('request', (r) => r.method() === 'POST' && r.url().includes('/join') && joins.push(r.url()))
+    await open(page, '/invitacion/tok123')
+    await expect(page.getByText(/^Xa estás dentro:/)).toBeVisible()
+    expect(joins).toHaveLength(1)
+    expect(joins[0]).toContain('/me/invites/tok123/join')
+  })
+
+  test('signed out, the invite link waits for a choice', async ({ page }) => {
+    const joins: string[] = []
+    page.on('request', (r) => r.method() === 'POST' && r.url().includes('/join') && joins.push(r.url()))
+    await open(page, '/invitacion/tok123', { signedIn: false })
+    await expect(page.getByRole('heading', { name: 'Unirme coa miña conta' })).toBeVisible()
+    expect(joins).toHaveLength(0)
   })
 
   test("the council page's bookings card shows no QR: check-in lives in My bookings", async ({ page }) => {

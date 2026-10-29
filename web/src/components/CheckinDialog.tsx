@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { CircleCheck, Hash, QrCode, ScanLine, UserCheck } from 'lucide-react'
+import { CircleCheck } from 'lucide-react'
 import { DoorQrScanner } from '@/components/DoorQrScanner'
 import { EntranceAnswer } from '@/components/EntranceAnswer'
 import { QrImage } from '@/components/QrImage'
@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { api, type Booking, type CheckinMethod, type EntranceResult } from '@/lib/api'
 import { GRANTED, locate } from '@/lib/entrance'
 import { formatBookingDay, formatTime } from '@/lib/time'
@@ -21,18 +22,20 @@ type Props = {
   onCheckedIn: () => void
 }
 
-const ICONS: Record<CheckinMethod, typeof QrCode> = { entry_code: Hash, printed_qr: QrCode, reader: ScanLine, staff: UserCheck }
+// the same order as the flash booking's tabs
+const ORDER: CheckinMethod[] = ['reader', 'entry_code', 'printed_qr', 'staff']
 
-/** Every way in the booking's facility takes, in one place: type its code here, or how to use the others. */
+/** Every way to check in the booking's facility takes, one tab each, like the flash booking. */
 export function CheckinDialog({ booking, token, timeZone, today, onClose, onCheckedIn }: Props) {
   const { t } = useTranslation(['bookings', 'entrance', 'reader'])
   const [code, setCode] = useState('')
   const [busy, setBusy] = useState(false)
   const [result, setResult] = useState<EntranceResult | null>(null)
   const [problem, setProblem] = useState<string | null>(null)
+  const ways = ORDER.filter((way) => booking?.checkin_ways?.includes(way))
+  const [way, setWay] = useState<CheckinMethod | undefined>(ways[0])
 
   if (!booking) return <Dialog open={false} />
-  const ways = booking.checkin_ways ?? []
 
   const submit = async (event: FormEvent) => {
     event.preventDefault()
@@ -61,6 +64,9 @@ export function CheckinDialog({ booking, token, timeZone, today, onClose, onChec
   const body: Record<CheckinMethod, React.ReactNode> = {
     entry_code: (
       <form onSubmit={(e) => void submit(e)} className="grid gap-3">
+        <p id="checkin-code-help" className="text-muted-foreground">
+          {t('checkin.entry_code.help')}
+        </p>
         <div className="grid gap-2 sm:max-w-xs">
           <Label htmlFor="checkin-code">{t('entrance:code')}</Label>
           <Input
@@ -76,9 +82,6 @@ export function CheckinDialog({ booking, token, timeZone, today, onClose, onChec
             className="num font-mono text-lg tracking-widest"
           />
         </div>
-        <p id="checkin-code-help" className="text-sm text-muted-foreground">
-          {t('checkin.entry_code.help')}
-        </p>
         <div>
           <Button type="submit" disabled={busy}>
             {busy ? t('entrance:checking') : t('checkin.button')}
@@ -88,15 +91,15 @@ export function CheckinDialog({ booking, token, timeZone, today, onClose, onChec
       </form>
     ),
     printed_qr: (
-      <div className="grid gap-3">
+      <div className="grid gap-4">
         <p className="text-muted-foreground">{t('checkin.printed_qr.help')}</p>
         <DoorQrScanner book={false} onCheckedIn={onCheckedIn} />
       </div>
     ),
     reader: (
-      <div className="grid gap-2">
+      <div className="grid gap-4">
         <p className="text-muted-foreground">{t('checkin.reader.help')}</p>
-        {booking.checkin_code && <QrImage code={booking.checkin_code} alt={t('qr.alt', { facility: booking.facility_name })} className="max-w-56" />}
+        {booking.checkin_code && <QrImage code={booking.checkin_code} alt={t('qr.alt', { facility: booking.facility_name })} className="max-w-64" />}
       </div>
     ),
     staff: <p className="text-muted-foreground">{t('checkin.staff.help')}</p>,
@@ -122,24 +125,23 @@ export function CheckinDialog({ booking, token, timeZone, today, onClose, onChec
             <CircleCheck className="size-4" aria-hidden />
             {t('checkin.done', { time: formatTime(booking.checked_in_at, timeZone) })}
           </p>
+        ) : ways.length === 1 ? (
+          body[ways[0]]
         ) : (
-          <>
-            <p>{t('checkin.intro')}</p>
-            <ul className="grid gap-3">
-              {ways.map((way) => {
-                const Icon = ICONS[way]
-                return (
-                  <li key={way} className="grid gap-3 rounded-lg border p-4">
-                    <h3 className="flex items-center gap-2 font-medium">
-                      <Icon className="size-4" aria-hidden />
-                      {t(`checkin.${way}.title`)}
-                    </h3>
-                    {body[way]}
-                  </li>
-                )
-              })}
-            </ul>
-          </>
+          <Tabs value={way} onValueChange={(value) => setWay(value as CheckinMethod)} className="gap-4">
+            <TabsList aria-label={t('checkin.ways')} className={`grid h-auto w-full ${ways.length > 2 ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-2'}`}>
+              {ways.map((key) => (
+                <TabsTrigger key={key} value={key}>
+                  {t(`checkin.${key}.tab`)}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+            {ways.map((key) => (
+              <TabsContent key={key} value={key}>
+                {body[key]}
+              </TabsContent>
+            ))}
+          </Tabs>
         )}
 
         <DialogFooter>
