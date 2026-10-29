@@ -145,7 +145,10 @@
     "smtp_password_unreadable": "The saved SMTP settings can't be read (the encryption key changed). Type them again and save.",
     "export_failed": "Could not prepare your data. Try again.",
     "council_export_failed": "We couldn't prepare the council's data. Please try again.",
-    "account_delete_failed": "Could not delete your account. Nothing was deleted; try again in a moment."
+    "account_delete_failed": "Could not delete your account. Nothing was deleted; try again in a moment.",
+    "checkin_settings_failed": "The check-in settings could not be saved. Try again.",
+    "invalid_checkin_radius": "The distance must be between 25 and 1000 metres.",
+    "checkin_needs_location": "Put the facility on the map first: the phone's location is checked against it."
   },
   "email": {
     "greeting": "Hello {{0}},",

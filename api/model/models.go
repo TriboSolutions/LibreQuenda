@@ -325,6 +325,17 @@ type Facility struct {
 	UpdatedAt                time.Time       `json:"updated_at"`
 }
 
+type FacilityCheckin struct {
+	FacilityID   uuid.UUID `json:"facility_id"`
+	PrintedQr    bool      `json:"printed_qr"`
+	QrToken      uuid.UUID `json:"qr_token"`
+	TurnCodes    bool      `json:"turn_codes"`
+	CodeSecret   []byte    `json:"code_secret"`
+	RadiusM      int32     `json:"radius_m"`
+	FlashBooking bool      `json:"flash_booking"`
+	UpdatedAt    time.Time `json:"updated_at"`
+}
+
 type FacilityTag struct {
 	FacilityID uuid.UUID `json:"facility_id"`
 	TagID      uuid.UUID `json:"tag_id"`

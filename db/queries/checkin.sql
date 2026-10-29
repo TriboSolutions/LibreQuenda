@@ -164,3 +164,94 @@ WHERE
 ORDER BY
     starts_at ASC
 LIMIT 1;
+
+-- name: EnsureFacilityCheckin :exec
+-- Row-level security: runs as the facility's council (db.WithTenant). Creates the
+-- facility's check-in settings with the defaults the first time they are needed.
+INSERT INTO facility_checkin (facility_id)
+SELECT
+    f.id
+FROM
+    facility f
+WHERE
+    f.id = sqlc.arg('facility_id')
+    AND f.tenant_id = sqlc.arg('tenant_id')
+ON CONFLICT (facility_id) DO NOTHING;
+
+-- name: GetFacilityCheckin :one
+SELECT
+    c.printed_qr,
+    c.qr_token,
+    c.turn_codes,
+    c.code_secret,
+    c.radius_m,
+    c.flash_booking
+FROM
+    facility_checkin c
+    JOIN facility f ON f.id = c.facility_id
+WHERE
+    c.facility_id = sqlc.arg('facility_id')
+    AND f.tenant_id = sqlc.arg('tenant_id');
+
+-- name: UpdateFacilityCheckin :one
+-- Row-level security: runs as the facility's council (db.WithTenant).
+UPDATE facility_checkin
+SET
+    printed_qr    = sqlc.arg('printed_qr'),
+    turn_codes    = sqlc.arg('turn_codes'),
+    radius_m      = sqlc.arg('radius_m'),
+    flash_booking = sqlc.arg('flash_booking'),
+    updated_at    = NOW()
+WHERE
+    facility_id = sqlc.arg('facility_id')
+RETURNING
+    printed_qr,
+    qr_token,
+    turn_codes,
+    code_secret,
+    radius_m,
+    flash_booking;
+
+-- name: RotateFacilityQrToken :one
+-- Row-level security: runs as the facility's council (db.WithTenant). The QRs
+-- already printed stop working.
+UPDATE facility_checkin
+SET
+    qr_token   = gen_random_uuid(),
+    updated_at = NOW()
+WHERE
+    facility_id = sqlc.arg('facility_id')
+RETURNING
+    qr_token;
+
+-- name: GetFacilityFlashBooking :one
+-- Whether a free turn can be booked on the spot at the entrance; on without settings.
+SELECT
+    COALESCE((SELECT c.flash_booking FROM facility_checkin c WHERE c.facility_id = sqlc.arg('facility_id')), TRUE)::BOOLEAN AS flash_booking;
+
+-- name: GetFacilityEntrance :one
+-- What a resident's phone needs to check in at /<council>/<facility>/entrada.
+SELECT
+    f.id,
+    f.name,
+    f.slug,
+    f.latitude,
+    f.longitude,
+    t.name     AS tenant_name,
+    t.slug     AS tenant_slug,
+    t.timezone,
+    COALESCE(c.printed_qr, FALSE)::BOOLEAN    AS printed_qr,
+    c.qr_token,
+    COALESCE(c.turn_codes, FALSE)::BOOLEAN    AS turn_codes,
+    c.code_secret,
+    COALESCE(c.radius_m, 100)::INT            AS radius_m,
+    COALESCE(c.flash_booking, TRUE)::BOOLEAN  AS flash_booking
+FROM
+    facility f
+    JOIN tenant t ON t.id = f.tenant_id
+    LEFT JOIN facility_checkin c ON c.facility_id = f.id
+WHERE
+    t.slug = sqlc.arg('tenant_slug')
+    AND f.slug = sqlc.arg('facility_slug')
+    AND f.is_active = TRUE
+    AND t.is_active = TRUE;

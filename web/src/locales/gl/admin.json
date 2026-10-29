@@ -528,7 +528,7 @@
   "checkin": {
     "title": "Como se rexistra a entrada",
     "help": "Escolle unha ou varias formas de rexistrar a entrada dos veciños. Todas rematan no mesmo rexistro da reserva, así que a asistencia e os indicadores non cambian. Escolle segundo o orzamento e o que importen as trampas aquí.",
-    "preview": "Vista previa: hoxe só funciona o lector QR e o que escollas nesta lapela aínda non se garda. Os lectores que aparecen debaixo si son reais.",
+    "preview": "Funcionan o lector QR, o QR impreso e o código nunha folla diaria. O NFC, o código rotativo e a confirmación do persoal son unha vista previa: o que escollas neles non se garda.",
     "built": "Funciona",
     "soon": "Proximamente",
     "door": "Na porta:",
@@ -539,18 +539,23 @@
       "how": "O veciño amosa o QR da súa reserva, ou o seu QR flash persoal, a un dispositivo con cámara na porta.",
       "door": "un móbil, tableta ou pequeno ordenador co lector",
       "cost": "un móbil ou tableta barato",
-      "cheat": "si, os códigos son por reserva ou cambian cada minuto",
-      "flash": "Aceptar o QR de reserva flash",
-      "flashHelp": "Ao ler o QR persoal resérvase no momento a quenda en curso, ou a seguinte, se está libre."
+      "cheat": "si, os códigos son por reserva ou cambian cada minuto"
     },
     "printedQr": {
       "name": "QR impreso na porta",
       "how": "O veciño escanea unha folla co QR da instalación e a app rexistra a súa reserva desta quenda.",
       "door": "unha folla de papel",
       "cost": "case de balde",
-      "cheat": "baixo; mellor cunha xanela de tempo e a localización do móbil",
-      "address": "O QR abriría {{url}}.",
-      "window": "A entrada ábrese estes minutos antes do comezo"
+      "cheat": "baixo por si só: sempre se comproba a localización do móbil",
+      "address": "O QR abre {{url}}.",
+      "qrAlt": "QR para rexistrar a entrada na instalación",
+      "print": "Imprimir o QR",
+      "newQr": "Novo QR",
+      "newTitle": "Crear un QR novo?",
+      "newBody": "Os QR xa impresos deixan de funcionar no momento. Imprime o novo e cambia as follas das portas.",
+      "newConfirm": "Crear un QR novo",
+      "keep": "Manter este QR",
+      "rotated": "QR novo listo. Imprímeo e cambia as follas antigas."
     },
     "nfc": {
       "name": "Etiqueta NFC",
@@ -582,7 +587,9 @@
       "door": "unha folla impresa, cambiada cada día",
       "cost": "case de balde",
       "cheat": "medio, alguén ten que cambiar a folla cada día",
-      "help": "A folla de cada día imprimiríase desde aquí, cun código por quenda."
+      "date": "Día da folla",
+      "print": "Imprimir a folla",
+      "help": "Imprime unha folla para cada día, cun código por quenda. Cada día ten códigos distintos e sempre se comproba a localización do móbil."
     },
     "staff": {
       "name": "Confirmación do persoal",
@@ -594,9 +601,34 @@
       "open": "Abrir as reservas desta instalación"
     },
     "location": {
-      "label": "Comprobar a localización do móbil",
-      "help": "O móbil ten que estar preto do punto da instalación no mapa. O veciño ten que permitilo e a localización nunca se garda.",
-      "radius": "Distancia ao punto, en metros"
+      "help": "O QR impreso e os códigos de quenda só funcionan co móbil a esta distancia do punto da instalación no mapa. O veciño ten que permitir a localización, que se comproba e nunca se garda.",
+      "radius": "Distancia ao punto, en metros",
+      "noPin": "Sitúa a instalación no mapa, na lapela Datos, para usar o QR impreso ou os códigos de quenda: a localización do móbil compárase con ese punto.",
+      "required": "Quen entre co QR impreso ou cun código de quenda ten que estar a menos de {{metres}} m da instalación."
+    },
+    "loadError": "Non se puido cargar a configuración de entrada.",
+    "save": "Gardar",
+    "saving": "Gardando…",
+    "saved": "Gardado.",
+    "saveToPrint": "Actívao e garda para imprimilo.",
+    "flash": {
+      "label": "Reservar unha quenda libre na porta",
+      "help": "Sen reserva, un veciño pode reservar no momento a quenda en curso ou a que está a piques de comezar, coas normas de sempre: co QR persoal nun lector ou desde o seu móbil na porta."
+    },
+    "print": {
+      "back": "Volver á instalación",
+      "print": "Imprimir",
+      "qrTitle": "Rexistra aquí a túa entrada",
+      "qrStep1": "Escanea este QR coa cámara do móbil.",
+      "qrStep2": "Inicia sesión se cho pide e permite a localización.",
+      "qrStep3": "A túa reserva desta quenda queda coa entrada rexistrada.",
+      "qrStep3Flash": "A túa reserva desta quenda queda coa entrada rexistrada. Sen reserva, podes reservar no momento unha quenda libre.",
+      "codesTitle": "Códigos de entrada",
+      "codesHelp": "En {{url}}, escribe o código da túa quenda coa localización do móbil activada.",
+      "colTurn": "Quenda",
+      "colCode": "Código",
+      "noTurns": "A instalación non ten quendas este día.",
+      "codesValid": "Estes códigos só serven este día."
     }
   },
   "branding": {

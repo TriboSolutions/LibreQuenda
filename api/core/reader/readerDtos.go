@@ -48,10 +48,13 @@ const (
 	ResultEnded            = "ended"
 )
 
+// ReasonFlashOff: not_booked because the council does not let a free turn be booked at the entrance.
+const ReasonFlashOff = "flash_off"
+
 type CheckinResultDto struct {
 	Granted bool               `json:"granted"`
 	Result  string             `json:"result"`
-	Reason  string             `json:"reason,omitempty"` // not_booked only: why, e.g. "no_turn_soon", "slot_booked", "use_booking_qr"
+	Reason  string             `json:"reason,omitempty"` // not_booked only: why, e.g. "no_turn_soon", "slot_booked", "use_booking_qr", "flash_off"
 	Booking *CheckinBookingDto `json:"booking"`          // nil for an unknown or cancelled booking
 }
 
