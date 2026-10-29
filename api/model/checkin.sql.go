@@ -263,7 +263,7 @@ const getFacilityCheckin = `-- name: GetFacilityCheckin :one
 SELECT
     c.printed_qr,
     c.qr_token,
-    c.turn_codes,
+    c.entry_code,
     c.code_secret,
     c.radius_m,
     c.flash_booking,
@@ -284,7 +284,7 @@ type GetFacilityCheckinParams struct {
 type GetFacilityCheckinRow struct {
 	PrintedQr    bool      `json:"printed_qr"`
 	QrToken      uuid.UUID `json:"qr_token"`
-	TurnCodes    bool      `json:"turn_codes"`
+	EntryCode    bool      `json:"entry_code"`
 	CodeSecret   []byte    `json:"code_secret"`
 	RadiusM      int32     `json:"radius_m"`
 	FlashBooking bool      `json:"flash_booking"`
@@ -297,7 +297,7 @@ func (q *Queries) GetFacilityCheckin(ctx context.Context, arg GetFacilityCheckin
 	err := row.Scan(
 		&i.PrintedQr,
 		&i.QrToken,
-		&i.TurnCodes,
+		&i.EntryCode,
 		&i.CodeSecret,
 		&i.RadiusM,
 		&i.FlashBooking,
@@ -318,7 +318,7 @@ SELECT
     t.timezone,
     COALESCE(c.printed_qr, FALSE)::BOOLEAN    AS printed_qr,
     c.qr_token,
-    COALESCE(c.turn_codes, FALSE)::BOOLEAN    AS turn_codes,
+    COALESCE(c.entry_code, FALSE)::BOOLEAN    AS entry_code,
     c.code_secret,
     COALESCE(c.radius_m, 100)::INT            AS radius_m,
     COALESCE(c.flash_booking, TRUE)::BOOLEAN  AS flash_booking
@@ -349,7 +349,7 @@ type GetFacilityEntranceRow struct {
 	Timezone     string          `json:"timezone"`
 	PrintedQr    bool            `json:"printed_qr"`
 	QrToken      uuid.NullUUID   `json:"qr_token"`
-	TurnCodes    bool            `json:"turn_codes"`
+	EntryCode    bool            `json:"entry_code"`
 	CodeSecret   []byte          `json:"code_secret"`
 	RadiusM      int32           `json:"radius_m"`
 	FlashBooking bool            `json:"flash_booking"`
@@ -370,7 +370,7 @@ func (q *Queries) GetFacilityEntrance(ctx context.Context, arg GetFacilityEntran
 		&i.Timezone,
 		&i.PrintedQr,
 		&i.QrToken,
-		&i.TurnCodes,
+		&i.EntryCode,
 		&i.CodeSecret,
 		&i.RadiusM,
 		&i.FlashBooking,
@@ -544,6 +544,26 @@ func (q *Queries) ReleaseUserQrToken(ctx context.Context, token uuid.UUID) error
 	return err
 }
 
+const rotateFacilityCodeSecret = `-- name: RotateFacilityCodeSecret :one
+UPDATE facility_checkin
+SET
+    code_secret = uuid_send(gen_random_uuid()) || uuid_send(gen_random_uuid()),
+    updated_at  = NOW()
+WHERE
+    facility_id = $1
+RETURNING
+    code_secret
+`
+
+// Row-level security: runs as the facility's council (db.WithTenant). The code
+// already printed stops working.
+func (q *Queries) RotateFacilityCodeSecret(ctx context.Context, facilityID uuid.UUID) ([]byte, error) {
+	row := q.db.QueryRowContext(ctx, rotateFacilityCodeSecret, facilityID)
+	var code_secret []byte
+	err := row.Scan(&code_secret)
+	return code_secret, err
+}
+
 const rotateFacilityQrToken = `-- name: RotateFacilityQrToken :one
 UPDATE facility_checkin
 SET
@@ -616,7 +636,7 @@ const updateFacilityCheckin = `-- name: UpdateFacilityCheckin :one
 UPDATE facility_checkin
 SET
     printed_qr    = $1,
-    turn_codes    = $2,
+    entry_code    = $2,
     radius_m      = $3,
     flash_booking = $4,
     staff_confirm = $5,
@@ -626,7 +646,7 @@ WHERE
 RETURNING
     printed_qr,
     qr_token,
-    turn_codes,
+    entry_code,
     code_secret,
     radius_m,
     flash_booking,
@@ -635,7 +655,7 @@ RETURNING
 
 type UpdateFacilityCheckinParams struct {
 	PrintedQr    bool      `json:"printed_qr"`
-	TurnCodes    bool      `json:"turn_codes"`
+	EntryCode    bool      `json:"entry_code"`
 	RadiusM      int32     `json:"radius_m"`
 	FlashBooking bool      `json:"flash_booking"`
 	StaffConfirm bool      `json:"staff_confirm"`
@@ -645,7 +665,7 @@ type UpdateFacilityCheckinParams struct {
 type UpdateFacilityCheckinRow struct {
 	PrintedQr    bool      `json:"printed_qr"`
 	QrToken      uuid.UUID `json:"qr_token"`
-	TurnCodes    bool      `json:"turn_codes"`
+	EntryCode    bool      `json:"entry_code"`
 	CodeSecret   []byte    `json:"code_secret"`
 	RadiusM      int32     `json:"radius_m"`
 	FlashBooking bool      `json:"flash_booking"`
@@ -656,7 +676,7 @@ type UpdateFacilityCheckinRow struct {
 func (q *Queries) UpdateFacilityCheckin(ctx context.Context, arg UpdateFacilityCheckinParams) (UpdateFacilityCheckinRow, error) {
 	row := q.db.QueryRowContext(ctx, updateFacilityCheckin,
 		arg.PrintedQr,
-		arg.TurnCodes,
+		arg.EntryCode,
 		arg.RadiusM,
 		arg.FlashBooking,
 		arg.StaffConfirm,
@@ -666,7 +686,7 @@ func (q *Queries) UpdateFacilityCheckin(ctx context.Context, arg UpdateFacilityC
 	err := row.Scan(
 		&i.PrintedQr,
 		&i.QrToken,
-		&i.TurnCodes,
+		&i.EntryCode,
 		&i.CodeSecret,
 		&i.RadiusM,
 		&i.FlashBooking,

@@ -544,7 +544,7 @@
   "checkin": {
     "title": "Como se rexistra a entrada",
     "help": "Escolle unha ou varias formas de rexistrar a entrada dos veciños. Todas rematan no mesmo rexistro da reserva, así que a asistencia e os indicadores non cambian. Escolle segundo o orzamento e o que importen as trampas aquí.",
-    "preview": "Funcionan o lector QR, o QR impreso, o código nunha folla diaria e a confirmación do persoal. O NFC e o código rotativo son unha vista previa: o que escollas neles non se garda.",
+    "preview": "Funcionan o lector QR, o QR impreso, o código de entrada e a confirmación do persoal. O NFC e o código rotativo son unha vista previa: o que escollas neles non se garda.",
     "built": "Funciona",
     "soon": "Proximamente",
     "door": "Na porta:",
@@ -597,15 +597,21 @@
       "digits": "Cifras do código",
       "help": "A pantalla ten un segredo propio, gardado coma as chaves dos lectores, e amosa códigos a partir del (TOTP)."
     },
-    "dailySheet": {
-      "name": "Código nunha folla diaria",
-      "how": "Unha folla no mostrador ou na porta ten un código por quenda; o veciño escribe o da súa quenda.",
-      "door": "unha folla impresa, cambiada cada día",
+    "entryCode": {
+      "name": "Código de entrada",
+      "how": "Na porta ou no mostrador hai un código fixo da instalación; o veciño escríbeo no móbil.",
+      "door": "unha folla co código",
       "cost": "case de balde",
-      "cheat": "medio, alguén ten que cambiar a folla cada día",
-      "date": "Día da folla",
-      "print": "Imprimir a folla",
-      "help": "Imprime unha folla para cada día, cun código por quenda. Cada día ten códigos distintos e sempre se comproba a localización do móbil."
+      "cheat": "baixo por si só: sempre se comproba a localización do móbil",
+      "help": "Un código de seis cifras que non cambia ata que fagas un novo. Sempre se comproba a localización do móbil.",
+      "codeLabel": "Código de entrada: {{code}}",
+      "print": "Imprimir o código",
+      "newCode": "Novo código",
+      "newTitle": "Crear un código novo?",
+      "newBody": "O código xa impreso deixa de funcionar no momento. Imprime o novo e cambia as follas.",
+      "newConfirm": "Crear un código novo",
+      "keep": "Manter este código",
+      "rotated": "Código novo listo. Imprímeo e cambia as follas antigas."
     },
     "staff": {
       "name": "Confirmación do persoal",
@@ -639,12 +645,8 @@
       "qrStep2": "Inicia sesión se cho pide e permite a localización.",
       "qrStep3": "A túa reserva desta quenda queda coa entrada rexistrada.",
       "qrStep3Flash": "A túa reserva desta quenda queda coa entrada rexistrada. Sen reserva, podes reservar no momento unha quenda libre.",
-      "codesTitle": "Códigos de entrada",
-      "codesHelp": "En {{url}}, escribe o código da túa quenda coa localización do móbil activada.",
-      "colTurn": "Quenda",
-      "colCode": "Código",
-      "noTurns": "A instalación non ten quendas este día.",
-      "codesValid": "Estes códigos só serven este día."
+      "codeTitle": "Código de entrada",
+      "codeStep1": "Abre {{url}} no móbil e escribe este código."
     }
   },
   "branding": {

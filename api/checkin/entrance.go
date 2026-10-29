@@ -6,13 +6,11 @@ import (
 	"crypto/subtle"
 	"encoding/binary"
 	"fmt"
-	"librequenda/schedule"
 	"math"
 	"strings"
-	"time"
 )
 
-// What the resident's phone proves at the door (printed QR or turn code): it
+// What the resident's phone proves at the door (printed QR or entry code): it
 // is within the facility's radius. The location is checked and dropped, never stored.
 
 // MaxAccuracyMetres: a location blurrier than this cannot place the phone at the door.
@@ -64,15 +62,14 @@ func validCoordinates(lat, lon float64) bool {
 	return !math.IsNaN(lat) && !math.IsNaN(lon) && lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180 && (lat != 0 || lon != 0)
 }
 
-// CodeDigits: how long a turn code is.
+// CodeDigits: how long the entry code is.
 const CodeDigits = 6
 
-// TurnCode is the code of the turn that starts at turnStart, from the facility's
-// secret: HMAC-SHA256 truncated like an HOTP. Nothing is stored per turn, and a
-// daily sheet tells nothing about other days.
-func TurnCode(secret []byte, turnStart time.Time) string {
+// EntryCode is the facility's fixed entry code, from its secret: HMAC-SHA256
+// truncated like an HOTP. A new secret gives a new code.
+func EntryCode(secret []byte) string {
 	var mac = hmac.New(sha256.New, secret)
-	mac.Write([]byte(turnStart.UTC().Format(time.RFC3339)))
+	mac.Write([]byte("entry-code"))
 	var sum = mac.Sum(nil)
 	var offset = sum[len(sum)-1] & 0x0f
 	var value = binary.BigEndian.Uint32(sum[offset:offset+4]) & 0x7fffffff
@@ -93,27 +90,8 @@ func NormalizeCode(input string) string {
 	return code
 }
 
-// CodeMatches: the typed code is that of one of the turns, compared in constant time.
-func CodeMatches(secret []byte, turnStarts []time.Time, typed string) bool {
+// CodeMatches: the typed code is the facility's entry code, compared in constant time.
+func CodeMatches(secret []byte, typed string) bool {
 	var code = NormalizeCode(typed)
-	if code == "" {
-		return false
-	}
-	var found = 0
-	for _, start := range turnStarts {
-		found |= subtle.ConstantTimeCompare([]byte(TurnCode(secret, start)), []byte(code))
-	}
-	return found == 1
-}
-
-// EntryTurns: the starts of the turns someone may check in for at `now`, from
-// the early window before they start until they end.
-func EntryTurns(turns []schedule.Slot, now time.Time) []time.Time {
-	var open []time.Time
-	for _, turn := range turns {
-		if !now.Before(turn.Start.Add(-EarlyWindow)) && now.Before(turn.End) {
-			open = append(open, turn.Start)
-		}
-	}
-	return open
+	return code != "" && subtle.ConstantTimeCompare([]byte(EntryCode(secret)), []byte(code)) == 1
 }

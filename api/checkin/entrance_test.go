@@ -1,10 +1,8 @@
 package checkin
 
 import (
-	"librequenda/schedule"
 	"math"
 	"testing"
-	"time"
 )
 
 func TestDistanceMetres(t *testing.T) {
@@ -50,26 +48,17 @@ func TestCheckLocation(t *testing.T) {
 	}
 }
 
-func TestTurnCode(t *testing.T) {
+func TestEntryCode(t *testing.T) {
 	var secret = []byte("a facility secret of 32 bytes...")
-	var start = time.Date(2026, 11, 3, 18, 0, 0, 0, time.UTC)
-	var code = TurnCode(secret, start)
+	var code = EntryCode(secret)
 	if len(code) != CodeDigits || NormalizeCode(code) != code {
 		t.Fatalf("code %q is not %d digits", code, CodeDigits)
 	}
-	if TurnCode(secret, start) != code {
-		t.Fatal("the same turn must give the same code")
+	if EntryCode(secret) != code {
+		t.Fatal("the code is fixed while the secret stays")
 	}
-	// the same instant in the council's zone is the same turn
-	var madrid, _ = time.LoadLocation("Europe/Madrid")
-	if TurnCode(secret, start.In(madrid)) != code {
-		t.Fatal("the code must not depend on the zone the time is in")
-	}
-	if TurnCode(secret, start.Add(time.Hour)) == code && TurnCode(secret, start.Add(2*time.Hour)) == code {
-		t.Fatal("every turn gets its own code")
-	}
-	if TurnCode([]byte("another facility's secret......."), start) == code {
-		t.Fatal("another facility gets another code")
+	if EntryCode([]byte("another facility's secret.......")) == code {
+		t.Fatal("another secret gives another code")
 	}
 }
 
@@ -92,43 +81,14 @@ func TestNormalizeCode(t *testing.T) {
 
 func TestCodeMatches(t *testing.T) {
 	var secret = []byte("a facility secret of 32 bytes...")
-	var six = time.Date(2026, 11, 3, 18, 0, 0, 0, time.UTC)
-	var seven = six.Add(time.Hour)
-	var code = TurnCode(secret, seven)
-	if !CodeMatches(secret, []time.Time{six, seven}, code[:3]+" "+code[3:]) {
-		t.Fatal("the code of an open turn, typed with a space, must match")
+	var code = EntryCode(secret)
+	if !CodeMatches(secret, code[:3]+" "+code[3:]) {
+		t.Fatal("the code, typed with a space, must match")
 	}
-	if CodeMatches(secret, []time.Time{six}, code) {
-		t.Fatal("the code of a turn that is not open must not match")
+	if CodeMatches([]byte("a new secret, after a new code..."), code) {
+		t.Fatal("the old code must not match after a new one")
 	}
-	if CodeMatches(secret, nil, code) {
-		t.Fatal("with no open turn, nothing matches")
-	}
-	if CodeMatches(secret, []time.Time{seven}, "") {
+	if CodeMatches(secret, "") {
 		t.Fatal("an empty code must not match")
-	}
-}
-
-func TestEntryTurns(t *testing.T) {
-	var six = time.Date(2026, 11, 3, 18, 0, 0, 0, time.UTC)
-	var turns = []schedule.Slot{
-		{Start: six, End: six.Add(time.Hour)},
-		{Start: six.Add(time.Hour), End: six.Add(2 * time.Hour)},
-	}
-	var cases = []struct {
-		name string
-		now  time.Time
-		want int
-	}{
-		{"before the early window", six.Add(-EarlyWindow - time.Minute), 0},
-		{"early window of the first", six.Add(-EarlyWindow), 1},
-		{"during the first", six.Add(30 * time.Minute), 1},
-		{"end of the first, early for the second", six.Add(50 * time.Minute), 2},
-		{"after both", six.Add(2 * time.Hour), 0},
-	}
-	for _, c := range cases {
-		if got := EntryTurns(turns, c.now); len(got) != c.want {
-			t.Errorf("%s: %d open turns, want %d", c.name, len(got), c.want)
-		}
 	}
 }

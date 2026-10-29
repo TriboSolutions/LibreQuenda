@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"librequenda/checkin"
-	"librequenda/core/bookings"
 	"librequenda/db"
 	"librequenda/model"
 	"librequenda/shared"
@@ -38,7 +37,8 @@ func mapCheckinSettings(row model.GetFacilityCheckinRow, hasLocation bool) *Chec
 	return &CheckinSettingsDto{
 		PrintedQr:    row.PrintedQr,
 		QrToken:      row.QrToken.String(),
-		TurnCodes:    row.TurnCodes,
+		EntryCode:    row.EntryCode,
+		Code:         checkin.EntryCode(row.CodeSecret),
 		RadiusM:      int(row.RadiusM),
 		FlashBooking: row.FlashBooking,
 		StaffConfirm: row.StaffConfirm,
@@ -58,7 +58,7 @@ func (s *counciladminService) GetCheckinSettings(ctx context.Context, tenantId u
 	return mapCheckinSettings(row, facility.Latitude != nil), nil
 }
 
-// SaveCheckinSettings: the printed QR and the turn codes need the facility's pin,
+// SaveCheckinSettings: the printed QR and the entry code need the facility's pin,
 // since the phone's location is checked against it.
 func (s *counciladminService) SaveCheckinSettings(ctx context.Context, tenantId uuid.UUID, facilityId uuid.UUID, input CheckinSettingsInput) (*CheckinSettingsDto, *shared.ErrorResponse) {
 	var facility, notFound = s.GetFacility(ctx, tenantId, facilityId)
@@ -77,7 +77,7 @@ func (s *counciladminService) SaveCheckinSettings(ctx context.Context, tenantId 
 		var updateErr error
 		row, updateErr = queries.UpdateFacilityCheckin(ctx, model.UpdateFacilityCheckinParams{
 			PrintedQr:    input.PrintedQr,
-			TurnCodes:    input.TurnCodes,
+			EntryCode:    input.EntryCode,
 			RadiusM:      int32(input.RadiusM),
 			FlashBooking: input.FlashBooking,
 			StaffConfirm: input.StaffConfirm,
@@ -112,26 +112,23 @@ func (s *counciladminService) RotateCheckinQr(ctx context.Context, tenantId uuid
 	return mapCheckinSettings(row, facility.Latitude != nil), nil
 }
 
-// TurnCodes: the daily sheet for `day` (YYYY-MM-DD in the council's zone).
-func (s *counciladminService) TurnCodes(ctx context.Context, tenantId uuid.UUID, facilityId uuid.UUID, day string) (*TurnCodesDto, *shared.ErrorResponse) {
-	if _, notFound := s.GetFacility(ctx, tenantId, facilityId); notFound != nil {
+// RotateCheckinCode: a new entry code; the one already printed stops working.
+func (s *counciladminService) RotateCheckinCode(ctx context.Context, tenantId uuid.UUID, facilityId uuid.UUID) (*CheckinSettingsDto, *shared.ErrorResponse) {
+	var facility, notFound = s.GetFacility(ctx, tenantId, facilityId)
+	if notFound != nil {
 		return nil, notFound
 	}
-	var row, err = s.checkinSettings(ctx, tenantId, facilityId)
+	var row, settingsErr = s.checkinSettings(ctx, tenantId, facilityId)
+	if settingsErr != nil {
+		return nil, settingsErr
+	}
+	var err = db.WithTenant(ctx, s.db, tenantId, func(queries *model.Queries) error {
+		var rotateErr error
+		row.CodeSecret, rotateErr = queries.RotateFacilityCodeSecret(ctx, facilityId)
+		return rotateErr
+	})
 	if err != nil {
-		return nil, err
+		return nil, failed("errors.checkin_settings_failed")
 	}
-	var turns, loc, turnsErr = bookings.GetBookingsService(s.db).DayTurns(ctx, facilityId, day)
-	if turnsErr != nil {
-		return nil, turnsErr
-	}
-	var response = &TurnCodesDto{Date: day, Timezone: loc.String(), Turns: make([]TurnCodeDto, 0, len(turns))}
-	for _, turn := range turns {
-		response.Turns = append(response.Turns, TurnCodeDto{
-			StartsAt: turn.Start,
-			EndsAt:   turn.End,
-			Code:     checkin.TurnCode(row.CodeSecret, turn.Start),
-		})
-	}
-	return response, nil
+	return mapCheckinSettings(row, facility.Latitude != nil), nil
 }

@@ -5,7 +5,6 @@ import (
 	"librequenda/checkin"
 	"librequenda/model"
 	"testing"
-	"time"
 
 	"github.com/google/uuid"
 )
@@ -13,13 +12,12 @@ import (
 func TestProve(t *testing.T) {
 	var secret = []byte("a facility secret of 32 bytes...")
 	var token = uuid.New()
-	var turn = time.Date(2026, 11, 3, 18, 0, 0, 0, time.UTC)
 	var facility = model.GetFacilityEntranceRow{
 		Latitude:   sql.NullFloat64{Float64: 42.66453, Valid: true},
 		Longitude:  sql.NullFloat64{Float64: -8.10815, Valid: true},
 		PrintedQr:  true,
 		QrToken:    uuid.NullUUID{UUID: token, Valid: true},
-		TurnCodes:  true,
+		EntryCode:  true,
 		CodeSecret: secret,
 		RadiusM:    100,
 	}
@@ -33,10 +31,9 @@ func TestProve(t *testing.T) {
 	var qrOff = facility
 	qrOff.PrintedQr = false
 	var codesOff = facility
-	codesOff.TurnCodes = false
+	codesOff.EntryCode = false
 	var noPin = facility
 	noPin.Latitude, noPin.Longitude = sql.NullFloat64{}, sql.NullFloat64{}
-	var open = []time.Time{turn}
 
 	var cases = []struct {
 		name     string
@@ -45,19 +42,19 @@ func TestProve(t *testing.T) {
 		want     string
 	}{
 		{"printed QR at the door", facility, with(func(i *CheckinInput) { i.QrToken = token.String() }), ""},
-		{"turn code at the door", facility, with(func(i *CheckinInput) { i.Code = checkin.TurnCode(secret, turn) }), ""},
+		{"entry code at the door", facility, with(func(i *CheckinInput) { i.Code = checkin.EntryCode(secret) }), ""},
 		{"no proof", facility, here, ResultMethodOff},
 		{"printed QR turned off", qrOff, with(func(i *CheckinInput) { i.QrToken = token.String() }), ResultMethodOff},
 		{"old print", facility, with(func(i *CheckinInput) { i.QrToken = uuid.NewString() }), ResultInvalidQr},
 		{"not a token", facility, with(func(i *CheckinInput) { i.QrToken = "door" }), ResultInvalidQr},
-		{"codes turned off", codesOff, with(func(i *CheckinInput) { i.Code = checkin.TurnCode(secret, turn) }), ResultMethodOff},
-		{"code of another turn", facility, with(func(i *CheckinInput) { i.Code = checkin.TurnCode(secret, turn.Add(time.Hour)) }), ResultWrongCode},
+		{"code turned off", codesOff, with(func(i *CheckinInput) { i.Code = checkin.EntryCode(secret) }), ResultMethodOff},
+		{"old code", facility, with(func(i *CheckinInput) { i.Code = checkin.EntryCode([]byte("the secret before a new code....")) }), ResultWrongCode},
 		{"facility without a pin", noPin, with(func(i *CheckinInput) { i.QrToken = token.String() }), ResultNoFacilityLocation},
 		{"no location", facility, CheckinInput{QrToken: token.String()}, checkin.LocationMissing},
 		{"far away", facility, with(func(i *CheckinInput) { i.QrToken = token.String(); i.Latitude = &far }), checkin.LocationTooFar},
 	}
 	for _, c := range cases {
-		if got := prove(c.facility, c.input, open); got != c.want {
+		if got := prove(c.facility, c.input); got != c.want {
 			t.Errorf("%s: got %q, want %q", c.name, got, c.want)
 		}
 	}

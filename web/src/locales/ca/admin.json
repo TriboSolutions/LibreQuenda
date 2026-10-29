@@ -544,7 +544,7 @@
   "checkin": {
     "title": "Com es registra l’entrada",
     "help": "Tria una o diverses maneres de registrar l’entrada dels veïns. Totes acaben en el mateix registre de la reserva, així que l’assistència i els indicadors no canvien. Tria segons el pressupost i el que importin les trampes aquí.",
-    "preview": "Funcionen el lector QR, el QR imprès, el codi en un full diari i la confirmació del personal. L’NFC i el codi rotatiu són una previsualització: el que triïs no es desa.",
+    "preview": "Funcionen el lector QR, el QR imprès, el codi d’entrada i la confirmació del personal. L’NFC i el codi rotatiu són una previsualització: el que triïs no es desa.",
     "built": "Funciona",
     "soon": "Aviat",
     "door": "A la porta:",
@@ -597,15 +597,21 @@
       "digits": "Xifres del codi",
       "help": "La pantalla té un secret propi, guardat com les claus dels lectors, i mostra codis a partir d’ell (TOTP)."
     },
-    "dailySheet": {
-      "name": "Codi en un full diari",
-      "how": "Un full al taulell o a la porta té un codi per torn; el veí escriu el del seu torn.",
-      "door": "un full imprès, canviat cada dia",
+    "entryCode": {
+      "name": "Codi d’entrada",
+      "how": "A la porta o al taulell hi ha un codi fix de la instal·lació; el veí l’escriu al mòbil.",
+      "door": "un full amb el codi",
       "cost": "gairebé gratuït",
-      "cheat": "mitjà, algú ha de canviar el full cada dia",
-      "date": "Dia del full",
-      "print": "Imprimir el full",
-      "help": "Imprimeix un full per a cada dia, amb un codi per torn. Cada dia té codis diferents i sempre es comprova la ubicació del mòbil."
+      "cheat": "baix per si sol: sempre es comprova la ubicació del mòbil",
+      "help": "Un codi de sis xifres que no canvia fins que en facis un de nou. Sempre es comprova la ubicació del mòbil.",
+      "codeLabel": "Codi d’entrada: {{code}}",
+      "print": "Imprimir el codi",
+      "newCode": "Codi nou",
+      "newTitle": "Crear un codi nou?",
+      "newBody": "El codi ja imprès deixa de funcionar al moment. Imprimeix el nou i canvia els fulls.",
+      "newConfirm": "Crear un codi nou",
+      "keep": "Mantenir aquest codi",
+      "rotated": "Codi nou a punt. Imprimeix-lo i canvia els fulls antics."
     },
     "staff": {
       "name": "Confirmació del personal",
@@ -639,12 +645,8 @@
       "qrStep2": "Inicia la sessió si t’ho demana i permet la ubicació.",
       "qrStep3": "La teva reserva d’aquest torn queda amb l’entrada registrada.",
       "qrStep3Flash": "La teva reserva d’aquest torn queda amb l’entrada registrada. Sense reserva, pots reservar al moment un torn lliure.",
-      "codesTitle": "Codis d’entrada",
-      "codesHelp": "A {{url}}, escriu el codi del teu torn amb la ubicació del mòbil activada.",
-      "colTurn": "Torn",
-      "colCode": "Codi",
-      "noTurns": "La instal·lació no té torns aquest dia.",
-      "codesValid": "Aquests codis només serveixen aquest dia."
+      "codeTitle": "Codi d’entrada",
+      "codeStep1": "Obre {{url}} al mòbil i escriu aquest codi."
     }
   },
   "branding": {

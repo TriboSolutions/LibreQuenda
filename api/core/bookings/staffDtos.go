@@ -81,7 +81,7 @@ type StaffBookingDto struct {
 	Email            string     `json:"email"`
 	Phone            string     `json:"phone"`
 	CheckedInAt      *time.Time `json:"checked_in_at"`
-	CheckedInMethod  string     `json:"checked_in_method"` // reader, printed_qr, turn_code or staff; "" before the entry
+	CheckedInMethod  string     `json:"checked_in_method"` // reader, printed_qr, entry_code or staff; "" before the entry
 	CheckedInBy      string     `json:"checked_in_by"`     // staff entry: who marked it
 	CheckinState     string     `json:"checkin_state"`     // staff entry on and not in yet: open, too_early or ended; "" otherwise
 	UndoUntil        *time.Time `json:"undo_until"`        // staff entry: until when it can be taken back

@@ -544,7 +544,7 @@
   "checkin": {
     "title": "How people check in",
     "help": "Choose one or several ways for residents to check in at the entrance. They all end in the same check-in on the booking, so attendance and the indicators stay the same. Pick by budget and by how much cheating matters here.",
-    "preview": "The QR reader, the printed QR, the code on a daily sheet and staff confirmation work. NFC and the rotating code are a preview: their choices are not saved.",
+    "preview": "The QR reader, the printed QR, the entry code and staff confirmation work. NFC and the rotating code are a preview: their choices are not saved.",
     "built": "Working",
     "soon": "Coming soon",
     "door": "At the door:",
@@ -597,15 +597,21 @@
       "digits": "Digits in the code",
       "help": "The display gets a secret of its own, kept like the reader keys, and shows codes from it (TOTP)."
     },
-    "dailySheet": {
-      "name": "Code on a daily sheet",
-      "how": "A sheet at the desk or on the door lists one code per turn; the resident types the code for their turn.",
-      "door": "a printed page, changed every day",
+    "entryCode": {
+      "name": "Entry code",
+      "how": "The door or the desk shows the facility’s fixed code; the resident types it on their phone.",
+      "door": "a sheet with the code",
       "cost": "nearly free",
-      "cheat": "medium, someone has to change the sheet every day",
-      "date": "Day of the sheet",
-      "print": "Print the sheet",
-      "help": "Print a sheet for each day, with one code per turn. Every day has different codes, and the phone’s location is always checked."
+      "cheat": "low on its own: the phone’s location is always checked",
+      "help": "A six-digit code that stays the same until you make a new one. The phone’s location is always checked.",
+      "codeLabel": "Entry code: {{code}}",
+      "print": "Print the code",
+      "newCode": "New code",
+      "newTitle": "Make a new code?",
+      "newBody": "The code already printed stops working at once. Print the new one and change the sheets.",
+      "newConfirm": "Make a new code",
+      "keep": "Keep this code",
+      "rotated": "New code ready. Print it and change the old sheets."
     },
     "staff": {
       "name": "Staff confirmation",
@@ -639,12 +645,8 @@
       "qrStep2": "Sign in if you are asked to, and allow your location.",
       "qrStep3": "Your booking for this turn is checked in.",
       "qrStep3Flash": "Your booking for this turn is checked in. Without a booking, you can book a free turn on the spot.",
-      "codesTitle": "Check-in codes",
-      "codesHelp": "At {{url}}, type the code of your turn, with your phone’s location on.",
-      "colTurn": "Turn",
-      "colCode": "Code",
-      "noTurns": "The facility has no turns on this day.",
-      "codesValid": "These codes only work on this day."
+      "codeTitle": "Entry code",
+      "codeStep1": "Open {{url}} on your phone and type this code."
     }
   },
   "branding": {

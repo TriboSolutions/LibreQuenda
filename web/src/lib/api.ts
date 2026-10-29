@@ -168,7 +168,7 @@ export type StaffBooking = {
 }
 
 /** How the person got in. */
-export type CheckinMethod = 'reader' | 'printed_qr' | 'turn_code' | 'staff'
+export type CheckinMethod = 'reader' | 'printed_qr' | 'entry_code' | 'staff'
 /** Whether staff can mark the entry now: from 15 minutes before the start until the turn ends. */
 export type StaffCheckinState = 'open' | 'too_early' | 'ended' | ''
 
@@ -257,15 +257,14 @@ export type CheckinResult = {
 export type CheckinSettings = {
   printed_qr: boolean
   qr_token: string // in the printed QR's address; a new one voids the prints
-  turn_codes: boolean
+  entry_code: boolean
+  code: string // the entry code to print; a new one voids the prints
   radius_m: number // how far from the pin the phone may be
   flash_booking: boolean // a free turn can be booked on the spot, also with the personal QR at the readers
   staff_confirm: boolean // staff mark the entry from the bookings calendar
   has_location: boolean
 }
-export type CheckinSettingsInput = Pick<CheckinSettings, 'printed_qr' | 'turn_codes' | 'radius_m' | 'flash_booking' | 'staff_confirm'>
-/** The daily sheet: one code per turn. */
-export type TurnCodes = { date: string; timezone: string; turns: { starts_at: string; ends_at: string; code: string }[] }
+export type CheckinSettingsInput = Pick<CheckinSettings, 'printed_qr' | 'entry_code' | 'radius_m' | 'flash_booking' | 'staff_confirm'>
 
 /** /<council>/<facility>/entrada: checking in from the resident's own phone. */
 export type Entrance = {
@@ -275,7 +274,7 @@ export type Entrance = {
   tenant_slug: string
   timezone: string
   printed_qr: boolean
-  turn_codes: boolean
+  entry_code: boolean
   radius_m: number
   flash_booking: boolean
   booking: { starts_at: string; ends_at: string; checked_in_at: string | null } | null // theirs, that can go in now
@@ -792,8 +791,8 @@ export const api = {
       request<CheckinSettings>(`/tenants/${encodeURIComponent(slug)}/admin/facilities/${facilityId}/checkin`, { token, method: 'PUT', body: input }),
     rotateCheckinQr: (token: string, slug: string, facilityId: string) =>
       request<CheckinSettings>(`/tenants/${encodeURIComponent(slug)}/admin/facilities/${facilityId}/checkin/qr`, { token, method: 'POST' }),
-    turnCodes: (token: string, slug: string, facilityId: string, date: string) =>
-      request<TurnCodes>(`/tenants/${encodeURIComponent(slug)}/admin/facilities/${facilityId}/checkin/codes?date=${date}`, { token }),
+    rotateCheckinCode: (token: string, slug: string, facilityId: string) =>
+      request<CheckinSettings>(`/tenants/${encodeURIComponent(slug)}/admin/facilities/${facilityId}/checkin/code`, { token, method: 'POST' }),
     staffDay: (token: string, slug: string, facilityId: string, date: string) =>
       request<StaffDay>(`/tenants/${encodeURIComponent(slug)}/admin/facilities/${facilityId}/bookings?date=${date}`, { token }),
     staffBook: (token: string, slug: string, input: StaffBookingInput) =>

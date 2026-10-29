@@ -38,8 +38,8 @@ const GRANTED = ['checked_in', 'already_checked_in', 'booked']
 
 /**
  * /:slug/:facility/entrada: check in from the resident's own phone at the door.
- * The printed QR opens it with ?c=<token>; otherwise the resident types the code
- * of their turn from the daily sheet. Either way the phone's location is checked.
+ * The printed QR opens it with ?c=<token>; otherwise the resident types the
+ * facility's entry code. Either way the phone's location is checked.
  */
 export function EntrancePage() {
   const { slug = '', facility: facilitySlug = '' } = useParams()
@@ -63,7 +63,7 @@ export function EntrancePage() {
 
   const data = entrance.data
   const byQr = qrToken !== '' && !!data?.printed_qr
-  const byCode = !byQr && !!data?.turn_codes
+  const byCode = !byQr && !!data?.entry_code
   const timeZone = data?.timezone ?? 'Europe/Madrid'
 
   const send = async (book: boolean) => {

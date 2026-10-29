@@ -544,7 +544,7 @@
   "checkin": {
     "title": "Cómo se registra la entrada",
     "help": "Elige una o varias formas de registrar la entrada de los vecinos. Todas acaban en el mismo registro de la reserva, así que la asistencia y los indicadores no cambian. Elige según el presupuesto y lo que importen las trampas aquí.",
-    "preview": "Funcionan el lector QR, el QR impreso, el código en una hoja diaria y la confirmación del personal. El NFC y el código rotativo son una vista previa: lo que elijas en ellos no se guarda.",
+    "preview": "Funcionan el lector QR, el QR impreso, el código de entrada y la confirmación del personal. El NFC y el código rotativo son una vista previa: lo que elijas en ellos no se guarda.",
     "built": "Funciona",
     "soon": "Próximamente",
     "door": "En la puerta:",
@@ -597,15 +597,21 @@
       "digits": "Cifras del código",
       "help": "La pantalla tiene un secreto propio, guardado como las claves de los lectores, y muestra códigos a partir de él (TOTP)."
     },
-    "dailySheet": {
-      "name": "Código en una hoja diaria",
-      "how": "Una hoja en el mostrador o en la puerta tiene un código por turno; el vecino escribe el de su turno.",
-      "door": "una hoja impresa, cambiada cada día",
+    "entryCode": {
+      "name": "Código de entrada",
+      "how": "En la puerta o en el mostrador hay un código fijo de la instalación; el vecino lo escribe en el móvil.",
+      "door": "una hoja con el código",
       "cost": "casi gratis",
-      "cheat": "medio, alguien tiene que cambiar la hoja cada día",
-      "date": "Día de la hoja",
-      "print": "Imprimir la hoja",
-      "help": "Imprime una hoja para cada día, con un código por turno. Cada día tiene códigos distintos y siempre se comprueba la ubicación del móvil."
+      "cheat": "bajo por sí solo: siempre se comprueba la ubicación del móvil",
+      "help": "Un código de seis cifras que no cambia hasta que hagas uno nuevo. Siempre se comprueba la ubicación del móvil.",
+      "codeLabel": "Código de entrada: {{code}}",
+      "print": "Imprimir el código",
+      "newCode": "Nuevo código",
+      "newTitle": "¿Crear un código nuevo?",
+      "newBody": "El código ya impreso deja de funcionar al momento. Imprime el nuevo y cambia las hojas.",
+      "newConfirm": "Crear un código nuevo",
+      "keep": "Mantener este código",
+      "rotated": "Código nuevo listo. Imprímelo y cambia las hojas antiguas."
     },
     "staff": {
       "name": "Confirmación del personal",
@@ -639,12 +645,8 @@
       "qrStep2": "Inicia sesión si te lo pide y permite la ubicación.",
       "qrStep3": "Tu reserva de este turno queda con la entrada registrada.",
       "qrStep3Flash": "Tu reserva de este turno queda con la entrada registrada. Sin reserva, puedes reservar en el momento un turno libre.",
-      "codesTitle": "Códigos de entrada",
-      "codesHelp": "En {{url}}, escribe el código de tu turno con la ubicación del móvil activada.",
-      "colTurn": "Turno",
-      "colCode": "Código",
-      "noTurns": "La instalación no tiene turnos este día.",
-      "codesValid": "Estos códigos solo sirven este día."
+      "codeTitle": "Código de entrada",
+      "codeStep1": "Abre {{url}} en el móvil y escribe este código."
     }
   },
   "branding": {

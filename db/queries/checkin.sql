@@ -185,7 +185,7 @@ ON CONFLICT (facility_id) DO NOTHING;
 SELECT
     c.printed_qr,
     c.qr_token,
-    c.turn_codes,
+    c.entry_code,
     c.code_secret,
     c.radius_m,
     c.flash_booking,
@@ -202,7 +202,7 @@ WHERE
 UPDATE facility_checkin
 SET
     printed_qr    = sqlc.arg('printed_qr'),
-    turn_codes    = sqlc.arg('turn_codes'),
+    entry_code    = sqlc.arg('entry_code'),
     radius_m      = sqlc.arg('radius_m'),
     flash_booking = sqlc.arg('flash_booking'),
     staff_confirm = sqlc.arg('staff_confirm'),
@@ -212,7 +212,7 @@ WHERE
 RETURNING
     printed_qr,
     qr_token,
-    turn_codes,
+    entry_code,
     code_secret,
     radius_m,
     flash_booking,
@@ -229,6 +229,18 @@ WHERE
     facility_id = sqlc.arg('facility_id')
 RETURNING
     qr_token;
+
+-- name: RotateFacilityCodeSecret :one
+-- Row-level security: runs as the facility's council (db.WithTenant). The code
+-- already printed stops working.
+UPDATE facility_checkin
+SET
+    code_secret = uuid_send(gen_random_uuid()) || uuid_send(gen_random_uuid()),
+    updated_at  = NOW()
+WHERE
+    facility_id = sqlc.arg('facility_id')
+RETURNING
+    code_secret;
 
 -- name: GetFacilityFlashBooking :one
 -- Whether a free turn can be booked on the spot at the entrance; on without settings.
@@ -248,7 +260,7 @@ SELECT
     t.timezone,
     COALESCE(c.printed_qr, FALSE)::BOOLEAN    AS printed_qr,
     c.qr_token,
-    COALESCE(c.turn_codes, FALSE)::BOOLEAN    AS turn_codes,
+    COALESCE(c.entry_code, FALSE)::BOOLEAN    AS entry_code,
     c.code_secret,
     COALESCE(c.radius_m, 100)::INT            AS radius_m,
     COALESCE(c.flash_booking, TRUE)::BOOLEAN  AS flash_booking

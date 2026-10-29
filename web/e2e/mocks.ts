@@ -431,16 +431,8 @@ const reader: Reader = {
   now: iso(now),
 }
 
-// check-in from the resident's phone: both ways on, so the tab shows the QR and the sheet
-const checkinSettings = { printed_qr: true, qr_token: '9a1f6c2e-3b4d-4e5f-8a7b-1c2d3e4f5a6b', turn_codes: true, radius_m: 100, flash_booking: true, staff_confirm: true, has_location: true }
-const turnCodes = {
-  date: '2026-11-03',
-  timezone: TZ,
-  turns: [
-    { starts_at: '2026-11-03T08:00:00Z', ends_at: '2026-11-03T09:00:00Z', code: '482913' },
-    { starts_at: '2026-11-03T09:00:00Z', ends_at: '2026-11-03T10:00:00Z', code: '075326' },
-  ],
-}
+// check-in from the resident's phone: both ways on, so the tab shows the QR and the code
+const checkinSettings = { printed_qr: true, qr_token: '9a1f6c2e-3b4d-4e5f-8a7b-1c2d3e4f5a6b', entry_code: true, code: '482915', radius_m: 100, flash_booking: true, staff_confirm: true, has_location: true }
 const entrance = {
   facility_name: 'Pista de pádel 1',
   facility_slug: 'padel-1',
@@ -448,7 +440,7 @@ const entrance = {
   tenant_slug: 'lugo',
   timezone: TZ,
   printed_qr: true,
-  turn_codes: true,
+  entry_code: true,
   radius_m: 100,
   flash_booking: true,
   booking: null,
@@ -465,7 +457,6 @@ const routes: [RegExp, () => unknown][] = [
   [/^\/tenants\/[^/]+\/admin\/facilities$/, () => ({ facilities: adminFacilities })],
   [/^\/tenants\/[^/]+\/admin\/facilities\/[^/]+\/bookings/, () => staffDay],
   [/^\/tenants\/[^/]+\/admin\/facilities\/[^/]+\/devices$/, () => ({ devices: [{ id: 'd1', name: 'Entrada principal', key_hint: 'ab12', last_seen_at: at(-1), created_at: at(-100) }] })],
-  [/^\/tenants\/[^/]+\/admin\/facilities\/[^/]+\/checkin\/codes/, () => turnCodes],
   [/^\/tenants\/[^/]+\/admin\/facilities\/[^/]+\/checkin$/, () => checkinSettings],
   [/^\/tenants\/[^/]+\/admin\/facilities\/[^/]+$/, () => adminFacility],
   [/^\/tenants\/[^/]+\/admin\/indicators/, indicators],
