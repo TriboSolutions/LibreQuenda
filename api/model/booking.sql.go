@@ -255,7 +255,8 @@ SELECT
     f.min_cancel_hours,
     t.slug AS tenant_slug,
     t.name AS tenant_name,
-    f.id, f.tenant_id, f.slug, f.name, f.description, f.sport, f.address, f.latitude, f.longitude, f.capacity, f.accessibility_info, f.image_ref, f.is_active, f.slot_minutes, f.max_advance_days, f.min_cancel_hours, f.max_active_bookings_per_user, f.min_age, f.usage_rules_text, f.created_at, f.updated_at -- what the booking details show: image, address, rules
+    facility_sport(f.id)::TEXT AS facility_sport,
+    f.id, f.tenant_id, f.slug, f.name, f.description, f.address, f.latitude, f.longitude, f.capacity, f.accessibility_info, f.contact_phone, f.contact_email, f.image_ref, f.is_active, f.slot_minutes, f.max_advance_days, f.min_cancel_hours, f.max_active_bookings_per_user, f.min_age, f.usage_rules_text, f.created_at, f.updated_at -- what the booking details show: image, address, rules
 FROM
     booking b
     JOIN facility f ON f.id = b.facility_id
@@ -280,6 +281,7 @@ type ListBookingsByUserRow struct {
 	MinCancelHours int32         `json:"min_cancel_hours"`
 	TenantSlug     string        `json:"tenant_slug"`
 	TenantName     string        `json:"tenant_name"`
+	FacilitySport  string        `json:"facility_sport"`
 	Facility       Facility      `json:"facility"`
 }
 
@@ -308,17 +310,19 @@ func (q *Queries) ListBookingsByUser(ctx context.Context, userID uuid.NullUUID) 
 			&i.MinCancelHours,
 			&i.TenantSlug,
 			&i.TenantName,
+			&i.FacilitySport,
 			&i.Facility.ID,
 			&i.Facility.TenantID,
 			&i.Facility.Slug,
 			&i.Facility.Name,
 			&i.Facility.Description,
-			&i.Facility.Sport,
 			&i.Facility.Address,
 			&i.Facility.Latitude,
 			&i.Facility.Longitude,
 			&i.Facility.Capacity,
 			&i.Facility.AccessibilityInfo,
+			&i.Facility.ContactPhone,
+			&i.Facility.ContactEmail,
 			&i.Facility.ImageRef,
 			&i.Facility.IsActive,
 			&i.Facility.SlotMinutes,

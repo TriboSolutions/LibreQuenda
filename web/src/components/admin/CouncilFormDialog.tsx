@@ -40,7 +40,6 @@ export function CouncilFormDialog({ council, canDeactivate = true, onClose, onSa
     admin_email: '',
   }))
   const [logo, setLogo] = useState<StoredImage | null>(council?.logo_ref ? { ref: council.logo_ref, url: council.logo_url } : null)
-  const [slugTouched, setSlugTouched] = useState(!creating)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -83,29 +82,15 @@ export function CouncilFormDialog({ council, canDeactivate = true, onClose, onSa
               maxLength={255}
               placeholder={t('form.namePlaceholder')}
               value={form.name}
+              aria-describedby="council-url"
               onChange={(e) => {
                 set('name', e.target.value)
-                if (!slugTouched) set('slug', slugify(e.target.value))
+                // the address comes from the name when the council is created, and then stays: links to it are out there
+                if (creating) set('slug', slugify(e.target.value))
               }}
             />
-          </div>
-
-          <div className="grid gap-2">
-            <Label htmlFor="council-slug">{t('form.slug')}</Label>
-            <Input
-              id="council-slug"
-              required
-              maxLength={64}
-              pattern="[a-z0-9]+(-[a-z0-9]+)*"
-              value={form.slug}
-              aria-describedby="council-slug-help"
-              onChange={(e) => {
-                setSlugTouched(true)
-                set('slug', e.target.value.toLowerCase())
-              }}
-            />
-            <p id="council-slug-help" className="text-xs text-muted-foreground">
-              {t('form.slugHelp', { url: `${window.location.host}/${form.slug || '…'}` })}
+            <p id="council-url" className="text-xs text-muted-foreground">
+              {t('form.pageUrl', { url: `${window.location.host}/${form.slug || '…'}` })}
             </p>
           </div>
 

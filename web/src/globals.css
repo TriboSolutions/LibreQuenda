@@ -189,6 +189,11 @@
     line-height: 1.25rem;
   }
 
+  /* The footer always starts below the fold: a short page fills the screen and the footer waits under it */
+  #main:has(~ footer) {
+    min-height: 100svh;
+  }
+
   /* A visible focus for every control, also those without their own ring: links, the map (WCAG 2.4.7) */
   :focus-visible {
     outline: 2px solid var(--ring);
@@ -252,4 +257,77 @@
 .leaflet-container {
   font: inherit;
   background: var(--muted);
+}
+
+/* Home map (HomeMap): the facility being pointed at in the list stands out */
+.lq-pin.is-active span {
+  background: var(--now);
+  transform: rotate(-45deg) scale(1.25);
+}
+.lq-pin.is-active {
+  z-index: 1000 !important;
+}
+
+/* a council, zoomed out: how many facilities it has, and its name */
+.lq-council {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: max-content;
+  padding: 4px 10px 4px 4px;
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--card-foreground);
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.25);
+  font-weight: 600;
+  white-space: nowrap;
+  transform: translate(-50%, -50%);
+}
+.lq-council b {
+  display: grid;
+  place-items: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+/* a facility's name beside its pin, when zoomed in close */
+.leaflet-tooltip.lq-label {
+  padding: 2px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--card);
+  color: var(--card-foreground);
+  font-size: 0.75rem;
+  font-weight: 600;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.2);
+}
+.leaflet-tooltip-top.lq-label::before {
+  border-top-color: var(--card);
+}
+
+/* where the resident is */
+.lq-me span {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #1a73e8;
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 6px rgb(26 115 232 / 0.25);
+}
+
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: var(--card);
+  color: var(--card-foreground);
+}
+.leaflet-popup-content {
+  margin: 12px 14px;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
 }

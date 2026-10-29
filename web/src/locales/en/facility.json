@@ -26,22 +26,5 @@
   "notFoundTitle": "Facility not found",
   "notFoundBody": "There is no facility at “{{path}}”.",
   "mapLabel": "Map with the facility's location",
-  "minAge": "Minimum age: {{count}} years.",
-  "suggest": {
-    "title": "Suggestions",
-    "quietTitle": "Quieter times",
-    "quietHint": "The free turns that are usually least busy, going by the bookings of the last 8 weeks.",
-    "level": {
-      "quiet": "Usually quiet",
-      "moderate": "Usually moderate",
-      "busy": "Usually busy"
-    },
-    "nearbyTitle": "Nearby",
-    "nearbyFull": "This facility is full on this day. Other places for {{sport}} with free turns:",
-    "nearbyHint": "Other places for {{sport}} with free turns on this day.",
-    "distance": "{{km}} km",
-    "nextDoor": "Next door",
-    "freeCount_one": "{{count}} free turn",
-    "freeCount_other": "{{count}} free turns"
-  }
+  "minAge": "Minimum age: {{count}} years."
 }

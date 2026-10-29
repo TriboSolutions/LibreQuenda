@@ -123,12 +123,13 @@ CREATE TABLE facility (
     slug                         VARCHAR(64)  NOT NULL,   -- its page: /<council>/<slug>
     name                         VARCHAR(255) NOT NULL,
     description                  TEXT         NULL,
-    sport                        VARCHAR(100) NULL,       -- e.g. 'padel', 'football', 'swimming'
     address                      TEXT         NULL,
     latitude                     DOUBLE PRECISION NULL CHECK (latitude BETWEEN -90 AND 90),     -- map pin
     longitude                    DOUBLE PRECISION NULL CHECK (longitude BETWEEN -180 AND 180),
     capacity                     INT          NULL CHECK (capacity > 0),
     accessibility_info           TEXT         NULL,
+    contact_phone                VARCHAR(50)  NULL,       -- its own; without one, residents see the council's
+    contact_email                VARCHAR(255) NULL,
     image_ref                    TEXT         NULL,       -- storage reference, never a URL
     is_active                    BOOLEAN      NOT NULL DEFAULT TRUE,
 
@@ -147,6 +148,42 @@ CREATE TABLE facility (
 );
 
 -- Weekly schedule ("horarios"). Several rows per weekday allowed (e.g. morning + afternoon).
+-- Facility tags: one catalogue for every council, kept by the superadministrators
+-- and grouped in categories ("Deportes", "Instalación"…), so residents can look
+-- for a sport across all councils. A facility carries as many as fit it.
+CREATE TABLE tag_category (
+    id         UUID        PRIMARY KEY DEFAULT uuidv7(),
+    name       VARCHAR(60) NOT NULL,
+    position   INT         NOT NULL DEFAULT 0,   -- order on screen
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE tag (
+    id          UUID        PRIMARY KEY DEFAULT uuidv7(),
+    category_id UUID        NOT NULL REFERENCES tag_category(id) ON DELETE CASCADE,
+    slug        VARCHAR(64) NOT NULL UNIQUE,     -- in addresses (?etiqueta=padel); kept when renamed
+    name        VARCHAR(40) NOT NULL,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE facility_tag (
+    facility_id UUID NOT NULL REFERENCES facility(id) ON DELETE CASCADE,
+    tag_id      UUID NOT NULL REFERENCES tag(id) ON DELETE CASCADE,
+    PRIMARY KEY (facility_id, tag_id)
+);
+
+-- A facility's sports as one line for lists ("Baloncesto, Fútbol sala"): the names of
+-- its tags in the first category (Deportes, unless the superadministrators reorder
+-- them). Worked out on reading, so renaming a tag shows everywhere at once.
+CREATE FUNCTION facility_sport(target UUID) RETURNS TEXT
+LANGUAGE sql STABLE AS $$
+    SELECT COALESCE(STRING_AGG(t.name, ', ' ORDER BY t.name), '')
+    FROM facility_tag ft
+    JOIN tag t ON t.id = ft.tag_id
+    WHERE ft.facility_id = target
+      AND t.category_id = (SELECT c.id FROM tag_category c ORDER BY c.position, c.name LIMIT 1)
+$$;
+
 CREATE TABLE opening_hours (
     id          UUID     PRIMARY KEY DEFAULT uuidv7(),
     facility_id UUID     NOT NULL REFERENCES facility(id) ON DELETE CASCADE,

@@ -38,9 +38,19 @@
   },
   "contact": {
     "title": "Contacte de l’ajuntament",
+    "facilityTitle": "Contacte de la instal·lació",
     "lead": "Dubtes amb una reserva o una instal·lació? Parla amb el servei d’esports.",
+    "facilityLead": "Dubtes amb una reserva o amb la instal·lació? Parla amb qui la gestiona.",
     "phone": "Telèfon",
     "email": "Correu electrònic",
     "none": "Aquest ajuntament encara no ha publicat les seves dades de contacte."
+  },
+  "tags": {
+    "label": "Filtra instal·lacions per etiqueta",
+    "clear": "Treu els filtres",
+    "noMatch": "Cap instal·lació no té totes aquestes etiquetes. Treu-ne alguna.",
+    "filterBy_one": "Filtra per {{category}}, {{count}} triada",
+    "filterBy_other": "Filtra per {{category}}, {{count}} triades",
+    "clearCategory": "Treu aquestes"
   }
 }

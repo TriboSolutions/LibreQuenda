@@ -16,7 +16,12 @@ WHERE
 
 -- name: ExportFacilities :many
 SELECT
-    *
+    sqlc.embed(facility),
+    facility_sport(facility.id)::TEXT AS sport,
+    ARRAY(
+        SELECT tg.slug FROM facility_tag ft JOIN tag tg ON tg.id = ft.tag_id
+        WHERE ft.facility_id = facility.id ORDER BY tg.slug
+    )::TEXT[] AS tags
 FROM
     facility
 WHERE

@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
-import { QrCode } from 'lucide-react'
 import { QrImage } from '@/components/QrImage'
-import { SettingsRow } from '@/components/SettingsRow'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -14,7 +12,7 @@ import { api, type PersonalQr as Qr } from '@/lib/api'
 const RETRY_MS = 10_000
 
 /*
-  Flash booking: the personal QR, opened from the account menu or /perfil. At a
+  Flash booking: the personal QR, opened from the account menu. At a
   facility's reader it books a free turn on the spot, from now until the turn
   under way ends or the one about to start (bookings.FlashTurn in the API); a
   booking already made goes in with its own QR, not this one. The code changes
@@ -142,31 +140,5 @@ function RotatingCode() {
     <div aria-live="polite" className="flex justify-center">
       {code}
     </div>
-  )
-}
-
-/** The QR section of /perfil: what the code does, and a button that shows it. */
-export function PersonalQr() {
-  const { t } = useTranslation('profile')
-  const [open, setOpen] = useState(false)
-
-  return (
-    <SettingsRow id="sec-qr" title={t('personalQr.title')} description={t('personalQr.help')}>
-      <div className="grid gap-4 rounded-lg border bg-card p-5">
-        <ul className="grid list-disc gap-2 pl-5">
-          <li>{t('personalQr.now')}</li>
-          <li>{t('personalQr.soon')}</li>
-        </ul>
-        <p className="text-muted-foreground">{t('personalQr.ownBooking')}</p>
-        <p className="text-muted-foreground">{t('personalQr.private')}</p>
-        <div>
-          <Button onClick={() => setOpen(true)}>
-            <QrCode />
-            {t('personalQr.show')}
-          </Button>
-        </div>
-      </div>
-      <PersonalQrDialog open={open} onOpenChange={setOpen} />
-    </SettingsRow>
   )
 }

@@ -264,3 +264,90 @@ func (h *platformHandler) RemoveSuperadmin(w http.ResponseWriter, r *http.Reques
 	}
 	send(w, r, nil, GetPlatformService(h.db).RemoveSuperadmin(r.Context(), userId))
 }
+
+// Tags: the catalogue is public; only a superadministrator changes it.
+
+func (h *platformHandler) TagCatalogue(w http.ResponseWriter, r *http.Request) {
+	var response, err = GetPlatformService(h.db).TagCatalogue(r.Context())
+	send(w, r, response, err)
+}
+
+func (h *platformHandler) CreateTagCategory(w http.ResponseWriter, r *http.Request) {
+	if _, ok := h.superadmin(w, r); !ok {
+		return
+	}
+	var input TagCategoryInput
+	if !decode(w, r, &input) {
+		return
+	}
+	var response, err = GetPlatformService(h.db).CreateTagCategory(r.Context(), input)
+	send(w, r, response, err)
+}
+
+func (h *platformHandler) UpdateTagCategory(w http.ResponseWriter, r *http.Request) {
+	if _, ok := h.superadmin(w, r); !ok {
+		return
+	}
+	var id, ok = pathUUID(w, r, "id")
+	if !ok {
+		return
+	}
+	var input TagCategoryInput
+	if !decode(w, r, &input) {
+		return
+	}
+	var response, err = GetPlatformService(h.db).UpdateTagCategory(r.Context(), id, input)
+	send(w, r, response, err)
+}
+
+func (h *platformHandler) DeleteTagCategory(w http.ResponseWriter, r *http.Request) {
+	if _, ok := h.superadmin(w, r); !ok {
+		return
+	}
+	var id, ok = pathUUID(w, r, "id")
+	if !ok {
+		return
+	}
+	var response, err = GetPlatformService(h.db).DeleteTagCategory(r.Context(), id)
+	send(w, r, response, err)
+}
+
+func (h *platformHandler) CreateTag(w http.ResponseWriter, r *http.Request) {
+	if _, ok := h.superadmin(w, r); !ok {
+		return
+	}
+	var input TagInput
+	if !decode(w, r, &input) {
+		return
+	}
+	var response, err = GetPlatformService(h.db).CreateTag(r.Context(), input)
+	send(w, r, response, err)
+}
+
+func (h *platformHandler) UpdateTag(w http.ResponseWriter, r *http.Request) {
+	if _, ok := h.superadmin(w, r); !ok {
+		return
+	}
+	var id, ok = pathUUID(w, r, "id")
+	if !ok {
+		return
+	}
+	var input TagInput
+	if !decode(w, r, &input) {
+		return
+	}
+	var response, err = GetPlatformService(h.db).UpdateTag(r.Context(), id, input)
+	send(w, r, response, err)
+}
+
+func (h *platformHandler) DeleteTag(w http.ResponseWriter, r *http.Request) {
+	if _, ok := h.superadmin(w, r); !ok {
+		return
+	}
+	var id, ok = pathUUID(w, r, "id")
+	if !ok {
+		return
+	}
+	var response, err = GetPlatformService(h.db).DeleteTag(r.Context(), id)
+	send(w, r, response, err)
+}

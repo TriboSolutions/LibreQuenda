@@ -72,6 +72,28 @@ func isUniqueViolation(err error) bool {
 	return errors.As(err, &pqErr) && pqErr.Code == "23505"
 }
 
+var errUnknownTag = errors.New("a tag is not in the catalogue")
+
+// setFacilityTags replaces the facility's tags, inside the council's transaction.
+// A slug the catalogue does not have (a superadministrator removed it meanwhile)
+// fails the whole save.
+func setFacilityTags(ctx context.Context, queries *model.Queries, facilityId uuid.UUID, slugs []string) error {
+	if err := queries.ClearFacilityTags(ctx, facilityId); err != nil {
+		return err
+	}
+	if len(slugs) == 0 {
+		return nil
+	}
+	var added, err = queries.AddFacilityTags(ctx, model.AddFacilityTagsParams{FacilityID: facilityId, Slugs: slugs})
+	if err != nil {
+		return err
+	}
+	if added != int64(len(slugs)) {
+		return errUnknownTag
+	}
+	return nil
+}
+
 func (s *counciladminService) ListFacilities(ctx context.Context, tenantId uuid.UUID) (*FacilitiesResponse, *shared.ErrorResponse) {
 	var rows, err = model.New(s.db).ListFacilitiesForAdmin(ctx, tenantId)
 	if err != nil {
@@ -83,7 +105,8 @@ func (s *counciladminService) ListFacilities(ctx context.Context, tenantId uuid.
 			Id:                   f.ID.String(),
 			Slug:                 f.Slug,
 			Name:                 f.Name,
-			Sport:                f.Sport.String,
+			Sport:                f.Sport,
+			Tags:                 append([]string{}, f.Tags...),
 			ImageUrl:             storage.URL(f.ImageRef.String),
 			IsActive:             f.IsActive,
 			OpeningWindowCount:   f.OpeningWindowCount,
@@ -127,17 +150,27 @@ func (s *counciladminService) GetFacility(ctx context.Context, tenantId uuid.UUI
 	if err != nil {
 		return nil, failed("errors.day_load_failed")
 	}
+	var tags []string
+	tags, err = queries.ListFacilityTagSlugs(ctx, f.ID)
+	if err != nil {
+		return nil, failed("errors.day_load_failed")
+	}
+	if tags == nil {
+		tags = []string{}
+	}
 	var detail = &FacilityDetailDto{
 		Id:                       f.ID.String(),
 		Slug:                     f.Slug,
 		Name:                     f.Name,
 		Description:              f.Description.String,
-		Sport:                    f.Sport.String,
+		Tags:                     tags,
 		Address:                  f.Address.String,
 		Latitude:                 floatPtr(f.Latitude),
 		Longitude:                floatPtr(f.Longitude),
 		Capacity:                 intPtr(f.Capacity),
 		AccessibilityInfo:        f.AccessibilityInfo.String,
+		ContactPhone:             f.ContactPhone.String,
+		ContactEmail:             f.ContactEmail.String,
 		ImageRef:                 f.ImageRef.String,
 		ImageUrl:                 storage.URL(f.ImageRef.String),
 		IsActive:                 f.IsActive,
@@ -167,6 +200,13 @@ func (s *counciladminService) CreateFacility(ctx context.Context, tenantId uuid.
 	if key := input.validate(); key != "" {
 		return nil, &shared.ErrorResponse{Code: http.StatusUnprocessableEntity, Message: key}
 	}
+	var windows []parsedWindow
+	if input.Schedule != nil {
+		var key string
+		if windows, key = input.Schedule.parse(); key != "" {
+			return nil, &shared.ErrorResponse{Code: http.StatusUnprocessableEntity, Message: key}
+		}
+	}
 	var id uuid.UUID
 	var err = db.WithTenant(ctx, s.db, tenantId, func(queries *model.Queries) error {
 		var createErr error
@@ -175,12 +215,13 @@ func (s *counciladminService) CreateFacility(ctx context.Context, tenantId uuid.
 			Slug:                     input.Slug,
 			Name:                     input.Name,
 			Description:              nullString(input.Description),
-			Sport:                    nullString(input.Sport),
 			Address:                  nullString(input.Address),
 			Latitude:                 nullFloat(input.Latitude),
 			Longitude:                nullFloat(input.Longitude),
 			Capacity:                 nullInt(input.Capacity),
 			AccessibilityInfo:        nullString(input.AccessibilityInfo),
+			ContactPhone:             nullString(input.ContactPhone),
+			ContactEmail:             nullString(input.ContactEmail),
 			ImageRef:                 nullString(input.ImageRef),
 			IsActive:                 input.IsActive,
 			SlotMinutes:              input.SlotMinutes,
@@ -190,8 +231,17 @@ func (s *counciladminService) CreateFacility(ctx context.Context, tenantId uuid.
 			MinAge:                   nullInt(input.MinAge),
 			UsageRulesText:           nullString(input.UsageRules),
 		})
-		return createErr
+		if createErr != nil {
+			return createErr
+		}
+		if err := insertWindows(ctx, queries, id, windows); err != nil {
+			return err
+		}
+		return setFacilityTags(ctx, queries, id, input.Tags)
 	})
+	if errors.Is(err, errUnknownTag) {
+		return nil, &shared.ErrorResponse{Code: http.StatusUnprocessableEntity, Message: "errors.invalid_tags"}
+	}
 	if isUniqueViolation(err) {
 		return nil, &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.facility_slug_taken"}
 	}
@@ -213,12 +263,13 @@ func (s *counciladminService) UpdateFacility(ctx context.Context, tenantId uuid.
 			Slug:                     input.Slug,
 			Name:                     input.Name,
 			Description:              nullString(input.Description),
-			Sport:                    nullString(input.Sport),
 			Address:                  nullString(input.Address),
 			Latitude:                 nullFloat(input.Latitude),
 			Longitude:                nullFloat(input.Longitude),
 			Capacity:                 nullInt(input.Capacity),
 			AccessibilityInfo:        nullString(input.AccessibilityInfo),
+			ContactPhone:             nullString(input.ContactPhone),
+			ContactEmail:             nullString(input.ContactEmail),
 			ImageRef:                 nullString(input.ImageRef),
 			IsActive:                 input.IsActive,
 			SlotMinutes:              input.SlotMinutes,
@@ -228,8 +279,14 @@ func (s *counciladminService) UpdateFacility(ctx context.Context, tenantId uuid.
 			MinAge:                   nullInt(input.MinAge),
 			UsageRulesText:           nullString(input.UsageRules),
 		})
-		return updateErr
+		if updateErr != nil {
+			return updateErr
+		}
+		return setFacilityTags(ctx, queries, id, input.Tags)
 	})
+	if errors.Is(err, errUnknownTag) {
+		return nil, &shared.ErrorResponse{Code: http.StatusUnprocessableEntity, Message: "errors.invalid_tags"}
+	}
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, &shared.ErrorResponse{Code: http.StatusNotFound, Message: "errors.facility_not_found"}
 	}
@@ -281,18 +338,22 @@ func (s *counciladminService) ReplaceSchedule(ctx context.Context, tenantId uuid
 		if err := queries.DeleteOpeningHoursByFacility(ctx, id); err != nil {
 			return err
 		}
-		for _, w := range windows {
-			err := queries.InsertOpeningHours(ctx, model.InsertOpeningHoursParams{FacilityID: id, Weekday: w.weekday, OpensAt: w.opens, ClosesAt: w.closes})
-			if err != nil {
-				return err
-			}
-		}
-		return nil
+		return insertWindows(ctx, queries, id, windows)
 	})
 	if err != nil {
 		return nil, failed("errors.schedule_save_failed")
 	}
 	return s.GetFacility(ctx, tenantId, id)
+}
+
+// insertWindows adds the weekly hours to a facility, inside the council's transaction.
+func insertWindows(ctx context.Context, queries *model.Queries, facilityId uuid.UUID, windows []parsedWindow) error {
+	for _, w := range windows {
+		if err := queries.InsertOpeningHours(ctx, model.InsertOpeningHoursParams{FacilityID: facilityId, Weekday: w.weekday, OpensAt: w.opens, ClosesAt: w.closes}); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func timePtr(value sql.NullTime) *time.Time {

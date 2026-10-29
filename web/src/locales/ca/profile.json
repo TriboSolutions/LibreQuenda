@@ -83,7 +83,6 @@
     "deletedBody": "Les teves dades personals ja no són a LibreQuenda. Pots crear un compte nou quan vulguis."
   },
   "personalQr": {
-    "title": "Reserva flash",
     "help": "Arribes a una instal·lació amb lector QR i està lliure? Reserva-la al moment amb el teu QR.",
     "alt": "El teu codi QR de reserva flash. Canvia cada minut.",
     "private": "El codi canvia cada minut i només serveix una vegada, així que una captura de pantalla no funciona. No el comparteixis.",
@@ -93,11 +92,7 @@
     "retry": "Torna-ho a provar",
     "incomplete": "Afegeix la teva data de naixement al teu perfil per reservar amb el teu QR.",
     "menuLink": "Reserva flash",
-    "show": "Mostra el meu QR",
-    "close": "Tanca",
-    "now": "Si el torn ja ha començat i ningú no l'ha reservat, te'l reserva des d'ara fins que acabi, encara que el següent estigui reservat. Per exemple, amb torns d'una hora, si arribes a les 16:15 tens la instal·lació fins a les 17:00.",
-    "soon": "Si falta poc per al torn següent i està lliure, reserva aquest torn sencer. S'apliquen els mateixos límits que en reservar aquí, i en escanejar-lo acceptes les normes d'ús d'aquella instal·lació.",
-    "ownBooking": "Si ja tens reserva, entra amb el QR d'aquella reserva a «Les meves reserves»: aquest no serveix per a això."
+    "close": "Tanca"
   },
   "calendar": {
     "title": "Calendari",

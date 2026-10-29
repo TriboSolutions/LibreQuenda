@@ -20,8 +20,12 @@ func TestCouncilExportZip(t *testing.T) {
 	var data = councilExport{
 		generatedAt: time.Date(2026, 10, 28, 10, 0, 0, 0, time.UTC),
 		tenant:      model.Tenant{ID: uuid.New(), Slug: "lalin", Name: "Concello de Lalín", Timezone: "Europe/Madrid"},
-		facilities:  []model.Facility{{ID: facility, Slug: "padel-1", Name: "Pádel 1, cuberta", SlotMinutes: 60, UsageRulesText: sql.NullString{String: "Calzado \"deportivo\"\nsempre", Valid: true}}},
-		hours:       []model.OpeningHour{{ID: uuid.New(), FacilityID: facility, Weekday: 1, OpensAt: time.Date(0, 1, 1, 9, 30, 0, 0, time.UTC), ClosesAt: time.Date(0, 1, 1, 21, 0, 0, 0, time.UTC)}},
+		facilities: []model.ExportFacilitiesRow{{
+			Facility: model.Facility{ID: facility, Slug: "padel-1", Name: "Pádel 1, cuberta", SlotMinutes: 60, UsageRulesText: sql.NullString{String: "Calzado \"deportivo\"\nsempre", Valid: true}},
+			Sport:    "Pádel",
+			Tags:     []string{"cuberta", "padel"},
+		}},
+		hours: []model.OpeningHour{{ID: uuid.New(), FacilityID: facility, Weekday: 1, OpensAt: time.Date(0, 1, 1, 9, 30, 0, 0, time.UTC), ClosesAt: time.Date(0, 1, 1, 21, 0, 0, 0, time.UTC)}},
 		bookings: []model.ExportBookingsRow{
 			{ID: uuid.New(), FacilityID: facility, UserID: uuid.NullUUID{UUID: owner, Valid: true}, Status: model.BookingStatusConfirmed},
 			{ID: uuid.New(), FacilityID: facility, Status: model.BookingStatusCancelled, CancelledBy: model.NullBookingCanceller{BookingCanceller: model.BookingCancellerCouncil, Valid: true}},

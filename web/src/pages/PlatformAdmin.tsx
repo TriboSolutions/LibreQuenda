@@ -3,6 +3,7 @@ import { useAuth } from 'react-oidc-context'
 import { Link } from 'react-router'
 import { CouncilsPanel } from '@/components/admin/CouncilsPanel'
 import { SuperadminsPanel } from '@/components/admin/SuperadminsPanel'
+import { TagsPanel } from '@/components/admin/TagsPanel'
 import { TopBar } from '@/components/TopBar'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -12,7 +13,7 @@ import { useMe } from '@/hooks/useMe'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { SiteFooter } from '@/components/SiteFooter'
 
-/** /admin: the superadministrator's area (councils and superadministrators). */
+/** /admin: the superadministrator's area (councils, superadministrators and the facility tag catalogue). */
 export function PlatformAdmin() {
   const { t } = useTranslation(['admin', 'common'])
   const auth = useAuth()
@@ -50,12 +51,16 @@ export function PlatformAdmin() {
         <TabsList>
           <TabsTrigger value="councils">{t('admin:tabs.councils')}</TabsTrigger>
           <TabsTrigger value="superadmins">{t('admin:tabs.superadmins')}</TabsTrigger>
+          <TabsTrigger value="tags">{t('admin:tabs.tags')}</TabsTrigger>
         </TabsList>
         <TabsContent value="councils">
           <CouncilsPanel />
         </TabsContent>
         <TabsContent value="superadmins">
           <SuperadminsPanel />
+        </TabsContent>
+        <TabsContent value="tags">
+          <TagsPanel />
         </TabsContent>
       </Tabs>
     )

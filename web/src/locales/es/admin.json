@@ -4,7 +4,8 @@
   "menuLink": "Administración de la plataforma",
   "tabs": {
     "councils": "Ayuntamientos",
-    "superadmins": "Superadministradores"
+    "superadmins": "Superadministradores",
+    "tags": "Etiquetas"
   },
   "guard": {
     "signIn": "Inicia sesión para entrar en la administración.",
@@ -34,8 +35,6 @@
     "createDescription": "Su página queda publicada al momento; su administrador añade las instalaciones.",
     "name": "Nombre",
     "namePlaceholder": "Concello de Lalín",
-    "slug": "Dirección",
-    "slugHelp": "Minúsculas, números y guiones. Página: {{url}}",
     "timezone": "Zona horaria",
     "tzMadrid": "Península y Baleares",
     "tzCanary": "Canarias",
@@ -50,7 +49,8 @@
     "save": "Guardar cambios",
     "saving": "Guardando…",
     "cancel": "Cancelar",
-    "logo": "Escudo o logotipo"
+    "logo": "Escudo o logotipo",
+    "pageUrl": "Su página: {{url}}"
   },
   "manage": {
     "details": "Datos",
@@ -110,14 +110,18 @@
     "details": "Datos",
     "name": "Nombre",
     "namePlaceholder": "Pista de pádel 1",
-    "slug": "Dirección",
     "slugHelp": "Página: {{url}}",
-    "sport": "Deporte o uso",
-    "sportPlaceholder": "Pádel",
+    "tags": "Etiquetas",
+    "tagsHelp": "Todos los deportes que se pueden practicar y cómo es la instalación. Los vecinos filtran por ellas.",
     "description": "Descripción",
     "image": "Foto",
     "capacity": "Aforo",
     "accessibility": "Accesibilidad",
+    "contact": "Contacto de la instalación",
+    "contactPhone": "Teléfono",
+    "contactEmail": "Correo electrónico",
+    "contactInherits": "Vacío: se muestra el del ayuntamiento, {{value}}.",
+    "contactNone": "Vacío: el ayuntamiento tampoco tiene uno, así que no se muestra ninguno.",
     "location": "Ubicación",
     "address": "Dirección postal",
     "search": "Buscar en el mapa",
@@ -139,7 +143,7 @@
     "saved": "Guardado.",
     "schedule": "Horario semanal",
     "scheduleHelp": "Los turnos se cortan dentro de estas franjas; un día puede tener varias (por ejemplo mañana y tarde).",
-    "scheduleAfterCreate": "Guarda primero la instalación para poner su horario.",
+    "scheduleWithCreate": "Los turnos se cortan dentro de estas franjas; un día puede tener varias (por ejemplo mañana y tarde). Se guarda con la instalación al crearla.",
     "addWindow": "Añadir franja",
     "removeWindow": "Quitar franja",
     "copyWeekdays": "Copiar el lunes de martes a viernes",
@@ -179,7 +183,10 @@
       "deactivatedKept_other": "Instalación desactivada. Se conservan sus {{count}} reservas próximas.",
       "deactivatedCancelled_one": "Instalación desactivada. Se canceló {{count}} reserva y se avisó a quien la hizo.",
       "deactivatedCancelled_other": "Instalación desactivada. Se cancelaron {{count}} reservas y se avisó a quien las hizo."
-    }
+    },
+    "tagsEmpty": "Aún no hay etiquetas: pídeselas a un superadministrador.",
+    "tagsNone": "Ninguna",
+    "tagsClear": "Quitar todas"
   },
   "readers": {
     "title": "Lectores QR de la entrada",
@@ -411,8 +418,7 @@
     "downloading": "Preparando…"
   },
   "staff": {
-    "open": "Reservas",
-    "back": "Instalaciones",
+    "tab": "Reserva manual",
     "title": "Reservas por teléfono o en ventanilla",
     "help": "Para quien llama o viene en persona: resérvale un turno libre, con su cuenta o solo con su nombre, y cancela cualquier reserva antes de que empiece.",
     "noFacilities": "No hay instalaciones activas que reservar.",
@@ -420,14 +426,17 @@
     "date": "Día",
     "previousDay": "Día anterior",
     "nextDay": "Día siguiente",
+    "previousWeek": "Semana anterior",
+    "nextWeek": "Semana siguiente",
     "today": "Hoy",
+    "viewLabel": "Vista",
+    "viewDay": "Día",
+    "viewWeek": "Semana",
+    "openDay": "Ver el {{date}}",
     "minAge": "Edad mínima {{age}}: compruébala a quien no tenga cuenta.",
     "closedDay": "La instalación no tiene turnos este día.",
     "caption": "Turnos y reservas del {{date}}",
-    "colTime": "Turno",
-    "colHolder": "Reservado por",
     "colContact": "Contacto",
-    "colActions": "Acciones",
     "status": {
       "free": "Libre",
       "booked": "Reservado",
@@ -436,6 +445,7 @@
       "too_far": "Aún no se puede reservar"
     },
     "noName": "Sin nombre (cuenta eliminada o borrado a los 30 días)",
+    "noNameShort": "Sin nombre",
     "withAccount": "Con cuenta",
     "withoutAccount": "Sin cuenta",
     "bookedByStaff": "Reservado por el personal",
@@ -477,5 +487,37 @@
     "keep": "Mantenerla",
     "cancelling": "Cancelando…",
     "confirmCancel": "Cancelar reserva"
+  },
+  "tags": {
+    "help": "El catálogo de etiquetas de todos los ayuntamientos, en categorías. Los ayuntamientos marcan con ellas sus instalaciones (una instalación puede tener varias) y los vecinos filtran por ellas en la portada y en la página de cada ayuntamiento.",
+    "newCategory": "Nueva categoría",
+    "newCategoryPlaceholder": "Por ejemplo: Público",
+    "addCategory": "Añadir categoría",
+    "moveUp": "Subir {{name}}",
+    "moveDown": "Bajar {{name}}",
+    "renameCategory": "Renombrar {{name}}",
+    "deleteCategory": "Eliminar {{name}}",
+    "noTags": "Aún no tiene etiquetas.",
+    "newTagIn": "Nueva etiqueta en {{category}}",
+    "newTagPlaceholder": "Nueva etiqueta",
+    "addTag": "Añadir",
+    "renameTitle": "Renombrar la categoría",
+    "categoryName": "Nombre de la categoría",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "deleteCategoryTitle": "¿Eliminar «{{name}}»?",
+    "deleteCategoryBody_one": "Se elimina con {{count}} etiqueta, que se quita de {{facilities}} instalaciones.",
+    "deleteCategoryBody_other": "Se elimina con sus {{count}} etiquetas, que se quitan de {{facilities}} instalaciones.",
+    "editTitle": "Editar la etiqueta",
+    "usedBy_one": "En {{count}} instalación.",
+    "usedBy_other": "En {{count}} instalaciones.",
+    "tagName": "Nombre",
+    "slugHelp": "En las direcciones sigue siendo «{{slug}}», aunque cambies el nombre.",
+    "category": "Categoría",
+    "deleteTagBody_one": "Se quita también de la instalación que la tiene. No se puede deshacer.",
+    "deleteTagBody_other": "Se quita también de las {{count}} instalaciones que la tienen. No se puede deshacer.",
+    "confirmDeleteTag": "Sí, eliminar",
+    "facilitiesUsing_one": "en {{count}} instalación",
+    "facilitiesUsing_other": "en {{count}} instalaciones"
   }
 }

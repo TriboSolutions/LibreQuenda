@@ -57,7 +57,15 @@ const listTenantStats = `-- name: ListTenantStats :many
 SELECT
     t.id,
     COUNT(DISTINCT f.id)::INT AS facilities,
-    COALESCE(STRING_AGG(DISTINCT f.sport, ',' ORDER BY f.sport), '')::TEXT AS sports,
+    (
+        SELECT COALESCE(STRING_AGG(DISTINCT tg.name, ',' ORDER BY tg.name), '')
+        FROM facility af
+        JOIN facility_tag ft ON ft.facility_id = af.id
+        JOIN tag tg ON tg.id = ft.tag_id
+        WHERE af.tenant_id = t.id
+          AND af.is_active = TRUE
+          AND tg.category_id = (SELECT c.id FROM tag_category c ORDER BY c.position, c.name LIMIT 1)
+    )::TEXT AS sports,
     COUNT(b.id)::INT AS bookings,
     COUNT(DISTINCT b.user_id)::INT AS residents
 FROM

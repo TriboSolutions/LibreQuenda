@@ -15,7 +15,7 @@ import (
 
 const getFacility = `-- name: GetFacility :one
 SELECT
-    id, tenant_id, slug, name, description, sport, address, latitude, longitude, capacity, accessibility_info, image_ref, is_active, slot_minutes, max_advance_days, min_cancel_hours, max_active_bookings_per_user, min_age, usage_rules_text, created_at, updated_at
+    id, tenant_id, slug, name, description, address, latitude, longitude, capacity, accessibility_info, contact_phone, contact_email, image_ref, is_active, slot_minutes, max_advance_days, min_cancel_hours, max_active_bookings_per_user, min_age, usage_rules_text, created_at, updated_at
 FROM
     facility
 WHERE
@@ -37,12 +37,13 @@ func (q *Queries) GetFacility(ctx context.Context, arg GetFacilityParams) (Facil
 		&i.Slug,
 		&i.Name,
 		&i.Description,
-		&i.Sport,
 		&i.Address,
 		&i.Latitude,
 		&i.Longitude,
 		&i.Capacity,
 		&i.AccessibilityInfo,
+		&i.ContactPhone,
+		&i.ContactEmail,
 		&i.ImageRef,
 		&i.IsActive,
 		&i.SlotMinutes,
@@ -62,7 +63,7 @@ SELECT
     id,
     name,
     description,
-    sport,
+    facility_sport(id)::TEXT AS sport,
     address,
     image_ref
 FROM
@@ -87,7 +88,7 @@ type ListFacilitiesByTenantRow struct {
 	ID          uuid.UUID      `json:"id"`
 	Name        string         `json:"name"`
 	Description sql.NullString `json:"description"`
-	Sport       sql.NullString `json:"sport"`
+	Sport       string         `json:"sport"`
 	Address     sql.NullString `json:"address"`
 	ImageRef    sql.NullString `json:"image_ref"`
 }

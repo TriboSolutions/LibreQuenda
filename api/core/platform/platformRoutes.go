@@ -44,10 +44,23 @@ func (r *platformRoutes) RegisterRoutes() {
 		{Path: "/admin/superadmins", Method: http.MethodGet, Handler: h.ListSuperadmins},
 		{Path: "/admin/superadmins", Method: http.MethodPost, Handler: h.AddSuperadmin},
 		{Path: "/admin/superadmins/{userId}", Method: http.MethodDelete, Handler: h.RemoveSuperadmin},
+		{Path: "/admin/tag-categories", Method: http.MethodPost, Handler: h.CreateTagCategory},
+		{Path: "/admin/tag-categories/{id}", Method: http.MethodPut, Handler: h.UpdateTagCategory},
+		{Path: "/admin/tag-categories/{id}", Method: http.MethodDelete, Handler: h.DeleteTagCategory},
+		{Path: "/admin/tags", Method: http.MethodPost, Handler: h.CreateTag},
+		{Path: "/admin/tags/{id}", Method: http.MethodPut, Handler: h.UpdateTag},
+		{Path: "/admin/tags/{id}", Method: http.MethodDelete, Handler: h.DeleteTag},
 	}
 	for _, route := range routes {
 		route.Handler = middlewares.AuthMiddleware(route.Handler)
 		route.AdditionalMethods = []router.HTTPMethod{router.OPTIONS}
 		r.router.NewRoute(route)
 	}
+	// the tag catalogue is public: the filters of every page use it
+	r.router.NewRoute(router.Route{
+		Path:              "/tags",
+		Method:            http.MethodGet,
+		AdditionalMethods: []router.HTTPMethod{router.HEAD, router.OPTIONS},
+		Handler:           middlewares.VersionMiddleware(h.TagCatalogue),
+	})
 }

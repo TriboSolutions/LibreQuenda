@@ -15,12 +15,14 @@ type FacilityInput struct {
 	Slug                     string   `json:"slug"`
 	Name                     string   `json:"name"`
 	Description              string   `json:"description"`
-	Sport                    string   `json:"sport"`
+	Tags                     []string `json:"tags"` // slugs from the platform's tag catalogue: its sports, kind of place…
 	Address                  string   `json:"address"`
 	Latitude                 *float64 `json:"latitude"`
 	Longitude                *float64 `json:"longitude"`
 	Capacity                 *int32   `json:"capacity"`
 	AccessibilityInfo        string   `json:"accessibility_info"`
+	ContactPhone             string   `json:"contact_phone"` // optional: without them, residents see the council's
+	ContactEmail             string   `json:"contact_email"`
 	ImageRef                 string   `json:"image_ref"` // a storage reference from POST /media, never a URL
 	IsActive                 bool     `json:"is_active"`
 	SlotMinutes              int32    `json:"slot_minutes"`
@@ -29,15 +31,19 @@ type FacilityInput struct {
 	MaxActiveBookingsPerUser int32    `json:"max_active_bookings_per_user"`
 	MinAge                   *int32   `json:"min_age"` // age control: null = none, else 1 to 80
 	UsageRules               string   `json:"usage_rules"`
+	// create only: the weekly hours, saved with it, so a new facility is set up in one go
+	Schedule *ScheduleInput `json:"schedule,omitempty"`
 }
 
 func (in *FacilityInput) normalise() {
 	in.Slug = strings.ToLower(strings.TrimSpace(in.Slug))
 	in.Name = strings.TrimSpace(in.Name)
 	in.Description = strings.TrimSpace(in.Description)
-	in.Sport = strings.TrimSpace(in.Sport)
+	in.Tags = uniqueTags(in.Tags)
 	in.Address = strings.TrimSpace(in.Address)
 	in.AccessibilityInfo = strings.TrimSpace(in.AccessibilityInfo)
+	in.ContactPhone = strings.TrimSpace(in.ContactPhone)
+	in.ContactEmail = strings.ToLower(strings.TrimSpace(in.ContactEmail))
 	in.ImageRef = strings.TrimSpace(in.ImageRef)
 	in.UsageRules = strings.TrimSpace(in.UsageRules)
 }
@@ -51,8 +57,14 @@ func (in *FacilityInput) validate() string {
 		return "errors.invalid_slug"
 	case reservedFacilitySlugs[in.Slug]:
 		return "errors.slug_reserved"
-	case len(in.Sport) > 100 || len(in.Address) > 500 || len(in.Description) > 5000 || len(in.UsageRules) > 5000 || len(in.AccessibilityInfo) > 2000:
+	case !validTags(in.Tags):
+		return "errors.invalid_tags"
+	case len(in.Address) > 500 || len(in.Description) > 5000 || len(in.UsageRules) > 5000 || len(in.AccessibilityInfo) > 2000:
 		return "errors.invalid_text_length"
+	case len(in.ContactPhone) > 50:
+		return "errors.invalid_phone"
+	case in.ContactEmail != "" && !validate.Email(in.ContactEmail):
+		return "errors.invalid_email"
 	case (in.Latitude == nil) != (in.Longitude == nil),
 		in.Latitude != nil && (*in.Latitude < -90 || *in.Latitude > 90 || *in.Longitude < -180 || *in.Longitude > 180):
 		return "errors.invalid_coordinates"
@@ -72,6 +84,35 @@ func (in *FacilityInput) validate() string {
 		return "errors.invalid_min_age"
 	}
 	return ""
+}
+
+const maxFacilityTags = 40
+
+// uniqueTags keeps each tag slug once, in the order given.
+func uniqueTags(tags []string) []string {
+	var out = []string{}
+	var seen = map[string]bool{}
+	for _, tag := range tags {
+		tag = strings.ToLower(strings.TrimSpace(tag))
+		if !seen[tag] {
+			seen[tag] = true
+			out = append(out, tag)
+		}
+	}
+	return out
+}
+
+// validTags checks the shape only; whether each tag is in the catalogue is known when it is saved.
+func validTags(tags []string) bool {
+	if len(tags) > maxFacilityTags {
+		return false
+	}
+	for _, tag := range tags {
+		if !validate.Slug(tag) {
+			return false
+		}
+	}
+	return true
 }
 
 type WindowInput struct {
@@ -127,14 +168,15 @@ type WindowDto struct {
 }
 
 type FacilitySummaryDto struct {
-	Id                   string `json:"id"`
-	Slug                 string `json:"slug"`
-	Name                 string `json:"name"`
-	Sport                string `json:"sport"`
-	ImageUrl             string `json:"image_url"`
-	IsActive             bool   `json:"is_active"`
-	OpeningWindowCount   int32  `json:"opening_window_count"`
-	UpcomingBookingCount int32  `json:"upcoming_booking_count"`
+	Id                   string   `json:"id"`
+	Slug                 string   `json:"slug"`
+	Name                 string   `json:"name"`
+	Sport                string   `json:"sport"`
+	Tags                 []string `json:"tags"`
+	ImageUrl             string   `json:"image_url"`
+	IsActive             bool     `json:"is_active"`
+	OpeningWindowCount   int32    `json:"opening_window_count"`
+	UpcomingBookingCount int32    `json:"upcoming_booking_count"`
 }
 
 type FacilitiesResponse struct {
@@ -146,12 +188,14 @@ type FacilityDetailDto struct {
 	Slug                     string       `json:"slug"`
 	Name                     string       `json:"name"`
 	Description              string       `json:"description"`
-	Sport                    string       `json:"sport"`
+	Tags                     []string     `json:"tags"`
 	Address                  string       `json:"address"`
 	Latitude                 *float64     `json:"latitude"`
 	Longitude                *float64     `json:"longitude"`
 	Capacity                 *int32       `json:"capacity"`
 	AccessibilityInfo        string       `json:"accessibility_info"`
+	ContactPhone             string       `json:"contact_phone"`
+	ContactEmail             string       `json:"contact_email"`
 	ImageRef                 string       `json:"image_ref"` // sent back unchanged when the form is saved
 	ImageUrl                 string       `json:"image_url"`
 	IsActive                 bool         `json:"is_active"`

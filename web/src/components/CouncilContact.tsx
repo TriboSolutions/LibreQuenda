@@ -1,31 +1,71 @@
 import { Mail, Phone, type LucideIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import type { Tenant } from '@/lib/api'
+import { Mark } from '@/components/Mark'
+import type { Facility, Tenant } from '@/lib/api'
 
 /** How to reach the council's sports service. Each facility's booking rules live on its own page. */
 export function CouncilContact({ tenant }: { tenant: Tenant }) {
   const { t } = useTranslation('home')
+  return (
+    <ContactCard
+      id="contact-council"
+      title={t('contact.title')}
+      name={tenant.name}
+      logo={tenant.logo_url ? <img src={tenant.logo_url} alt="" className="size-10 shrink-0 object-contain" /> : null}
+      lead={t('contact.lead')}
+      none={t('contact.none')}
+      phone={tenant.contact_phone}
+      email={tenant.contact_email}
+    />
+  )
+}
+
+/** The facility's own phone and email, when it has them; shown above the council's on its page. */
+export function FacilityContact({ facility }: { facility: Pick<Facility, 'name' | 'contact_phone' | 'contact_email'> }) {
+  const { t } = useTranslation('home')
+  return (
+    <ContactCard
+      id="contact-facility"
+      title={t('contact.facilityTitle')}
+      name={facility.name}
+      logo={
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-muted">
+          <Mark className="size-6" />
+        </span>
+      }
+      lead={t('contact.facilityLead')}
+      none=""
+      phone={facility.contact_phone}
+      email={facility.contact_email}
+    />
+  )
+}
+
+type CardProps = { id: string; title: string; name: string; logo: React.ReactNode; lead: string; none: string; phone: string; email: string }
+
+function ContactCard({ id, title, name, logo, lead, none, phone, email }: CardProps) {
+  const { t } = useTranslation('home')
   const ways: { icon: LucideIcon; label: string; value: string; href: string }[] = []
-  if (tenant.contact_phone) ways.push({ icon: Phone, label: t('contact.phone'), value: tenant.contact_phone, href: `tel:${tenant.contact_phone.replace(/\s+/g, '')}` })
-  if (tenant.contact_email) ways.push({ icon: Mail, label: t('contact.email'), value: tenant.contact_email, href: `mailto:${tenant.contact_email}` })
+  if (phone) ways.push({ icon: Phone, label: t('contact.phone'), value: phone, href: `tel:${phone.replace(/\s+/g, '')}` })
+  if (email) ways.push({ icon: Mail, label: t('contact.email'), value: email, href: `mailto:${email}` })
 
   return (
-    <section aria-labelledby="contact-title" className="rounded-lg border bg-card p-5">
+    <section aria-labelledby={id} className="rounded-lg border bg-card p-5">
       <div className="flex items-center gap-3">
-        {tenant.logo_url && <img src={tenant.logo_url} alt="" className="size-10 shrink-0 object-contain" />}
+        {logo}
         <div className="min-w-0">
-          <h2 id="contact-title" className="text-lg font-semibold">
-            {t('contact.title')}
+          <h2 id={id} className="text-lg font-semibold">
+            {title}
           </h2>
-          <p className="truncate text-sm text-muted-foreground">{tenant.name}</p>
+          <p className="truncate text-sm text-muted-foreground">{name}</p>
         </div>
       </div>
 
       {ways.length === 0 ? (
-        <p className="mt-4 text-muted-foreground">{t('contact.none')}</p>
+        <p className="mt-4 text-muted-foreground">{none}</p>
       ) : (
         <>
-          <p className="mt-3 text-muted-foreground">{t('contact.lead')}</p>
+          <p className="mt-3 text-muted-foreground">{lead}</p>
           <ul className="mt-3 grid gap-2">
             {ways.map(({ icon: Icon, label, value, href }) => (
               <li key={href}>

@@ -29,3 +29,9 @@ CREATE INDEX idx_notification_unread      ON notification (user_id) WHERE read_a
 CREATE UNIQUE INDEX uq_tenant_invitation_pending ON tenant_invitation (tenant_id, lower(email), role) WHERE accepted_at IS NULL;
 CREATE INDEX idx_tenant_invitation_email          ON tenant_invitation (lower(email)) WHERE accepted_at IS NULL;
 CREATE INDEX idx_app_user_email                   ON app_user (lower(email));
+
+-- a tag or category name once, whatever its case
+CREATE UNIQUE INDEX idx_tag_category_name ON tag_category (lower(name));
+CREATE UNIQUE INDEX idx_tag_name          ON tag (lower(name));
+CREATE INDEX idx_tag_category             ON tag (category_id);
+CREATE INDEX idx_facility_tag_tag         ON facility_tag (tag_id);

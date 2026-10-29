@@ -17,7 +17,6 @@ def generate(context: dict) -> list:
                     "slug": f["slug"],
                     "name": f["name"],
                     "description": f["description"],
-                    "sport": f["sport"],
                     "address": f["address"],
                     "image_ref": f["image_ref"],
                     "latitude": f["latitude"],

@@ -42,6 +42,11 @@ func isUniqueViolation(err error) bool {
 	return errors.As(err, &pqErr) && pqErr.Code == "23505"
 }
 
+func isForeignKeyViolation(err error) bool {
+	var pqErr *pq.Error
+	return errors.As(err, &pqErr) && pqErr.Code == "23503"
+}
+
 func (s *platformService) tenant(ctx context.Context, queries *model.Queries, slug string) (model.GetTenantForPlatformRow, *shared.ErrorResponse) {
 	var tenant, err = queries.GetTenantForPlatform(ctx, slug)
 	if errors.Is(err, sql.ErrNoRows) {
