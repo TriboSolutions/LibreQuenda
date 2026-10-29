@@ -83,7 +83,6 @@
     "deletedBody": "Les teves dades personals ja no són a {{app}}. Pots crear un compte nou quan vulguis."
   },
   "personalQr": {
-    "help": "Arribes a una instal·lació amb lector QR i està lliure? Reserva-la al moment amb el teu QR.",
     "alt": "El teu codi QR de reserva flash. Canvia cada minut.",
     "private": "El codi canvia cada minut i només serveix una vegada, així que una captura de pantalla no funciona. No el comparteixis.",
     "brightness": "Si el lector no el detecta, apuja la brillantor de la pantalla.",
@@ -111,5 +110,30 @@
     "reset": "Nova adreça",
     "resetHint": "L'adreça actual deixa de funcionar; t'hauràs de tornar a subscriure.",
     "turnOff": "Desactivar"
+  },
+  "flash": {
+    "help": "Arribes a una instal·lació i hi ha un torn lliure? Reserva’l al moment, de la manera que admeti la instal·lació.",
+    "ways": "Com entres",
+    "reader": {
+      "tab": "Lector QR",
+      "help": "Apropa aquest QR al lector de la porta: si el torn és lliure, es reserva i entres."
+    },
+    "code": {
+      "tab": "Codi",
+      "help": "Busquem la instal·lació on ets amb la ubicació del mòbil; després escriu el codi de la porta. Es comprova i mai no es desa.",
+      "locate": "Buscar on soc",
+      "locating": "Buscant…",
+      "again": "Tornar a buscar",
+      "none": "No ets a prop de cap instal·lació que admeti reservar amb el codi.",
+      "facility": "On ets"
+    },
+    "door": {
+      "tab": "QR de la porta",
+      "help": "Escaneja amb la càmera del mòbil el QR imprès a la porta. S’obrirà la pàgina d’entrada, on pots reservar al moment un torn lliure."
+    },
+    "staff": {
+      "tab": "Personal",
+      "help": "Demana al taulell o al personal que et reservin el torn lliure: ho poden fer amb el teu compte o només amb el teu nom."
+    }
   }
 }

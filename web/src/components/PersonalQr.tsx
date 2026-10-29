@@ -1,38 +1,46 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
+import { CheckCircle2, LocateFixed, XCircle } from 'lucide-react'
 import { QrImage } from '@/components/QrImage'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useMe } from '@/hooks/useMe'
-import { api, type PersonalQr as Qr } from '@/lib/api'
+import { api, type EntranceResult, type Nearby, type PersonalQr as Qr } from '@/lib/api'
+import { GRANTED, locate, type Position } from '@/lib/entrance'
 
 const RETRY_MS = 10_000
 
 /*
-  Flash booking: the personal QR, opened from the account menu. At a
-  facility's reader it books a free turn on the spot, from now until the turn
-  under way ends or the one about to start (bookings.FlashTurn in the API); a
-  booking already made goes in with its own QR, not this one. The code changes
-  every minute and works once, so a screenshot soon stops working. Codes are
-  only asked for while the dialog is open.
+  Flash booking, opened from the account menu: at a facility with a free turn,
+  book it on the spot from now until the turn under way ends or the one about
+  to start (bookings.FlashTurn in the API), whichever way in the facility takes.
+  - Reader: the personal QR. It changes every minute and works once, so a
+    screenshot soon stops working; codes are only asked for while its tab is open.
+  - Entry code: the phone's location finds the facility, then the code at the
+    door books and checks in at once.
+  - QR at the door and staff: how to go about it there.
+  A booking already made goes in from My bookings instead.
 */
-export function PersonalQrDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+type Way = 'reader' | 'code' | 'door' | 'staff'
+
+export function FlashBookingDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const { t } = useTranslation('profile')
   const { me } = useMe()
+  const [way, setWay] = useState<Way>('reader')
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-sm">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{t('personalQr.menuLink')}</DialogTitle>
-          <DialogDescription>{t('personalQr.help')}</DialogDescription>
+          <DialogDescription>{t('flash.help')}</DialogDescription>
         </DialogHeader>
-
-        {/* mounted only while the dialog is open, so it stops asking for codes once closed */}
-        <RotatingCode />
 
         {me && !me.profile_complete && (
           <Alert>
@@ -40,10 +48,33 @@ export function PersonalQrDialog({ open, onOpenChange }: { open: boolean; onOpen
           </Alert>
         )}
 
-        <div className="space-y-1.5 text-muted-foreground">
-          <p>{t('personalQr.private')}</p>
-          <p>{t('personalQr.brightness')}</p>
-        </div>
+        <Tabs value={way} onValueChange={(value) => setWay(value as Way)} className="gap-4">
+          <TabsList aria-label={t('flash.ways')} className="grid h-auto w-full grid-cols-2 sm:grid-cols-4">
+            {(['reader', 'code', 'door', 'staff'] as const).map((key) => (
+              <TabsTrigger key={key} value={key}>
+                {t(`flash.${key}.tab`)}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+          <TabsContent value="reader" className="grid gap-4">
+            <p className="text-muted-foreground">{t('flash.reader.help')}</p>
+            {/* mounted only while this tab is open, so it stops asking for codes once left */}
+            {open && way === 'reader' && <RotatingCode />}
+            <div className="space-y-1.5 text-muted-foreground">
+              <p>{t('personalQr.private')}</p>
+              <p>{t('personalQr.brightness')}</p>
+            </div>
+          </TabsContent>
+          <TabsContent value="code">
+            <CodeFlash />
+          </TabsContent>
+          <TabsContent value="door">
+            <p className="text-muted-foreground">{t('flash.door.help')}</p>
+          </TabsContent>
+          <TabsContent value="staff">
+            <p className="text-muted-foreground">{t('flash.staff.help')}</p>
+          </TabsContent>
+        </Tabs>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
@@ -52,6 +83,143 @@ export function PersonalQrDialog({ open, onOpenChange }: { open: boolean; onOpen
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  )
+}
+
+/** The entry code: find the facility by the phone's location, then book and check in with its code. */
+function CodeFlash() {
+  const { t } = useTranslation(['profile', 'entrance', 'reader'])
+  const auth = useAuth()
+  const token = auth.user?.access_token
+  const [busy, setBusy] = useState(false)
+  const [position, setPosition] = useState<Position | null>(null)
+  const [places, setPlaces] = useState<Nearby['facilities'] | null>(null)
+  const [chosen, setChosen] = useState('')
+  const [code, setCode] = useState('')
+  const [result, setResult] = useState<EntranceResult | null>(null)
+  const [problem, setProblem] = useState<string | null>(null)
+
+  const find = async () => {
+    if (!token) return
+    setBusy(true)
+    setProblem(null)
+    setResult(null)
+    try {
+      let where: Position
+      try {
+        where = await locate()
+      } catch (e) {
+        setProblem(t(`entrance:location.${e instanceof Error ? e.message : 'unavailable'}`))
+        return
+      }
+      const answer = await api.entrance.nearby(token, where)
+      if (answer.result) {
+        setProblem(t(`entrance:result.${answer.result}`))
+        return
+      }
+      setPosition(where)
+      setPlaces(answer.facilities)
+      setChosen(answer.facilities[0] ? `${answer.facilities[0].tenant_slug}/${answer.facilities[0].facility_slug}` : '')
+    } catch (e) {
+      setProblem(e instanceof Error ? e.message : String(e))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const submit = async (event: FormEvent) => {
+    event.preventDefault()
+    if (!token || !position || !chosen) return
+    const [tenant, facility] = chosen.split('/')
+    setBusy(true)
+    setProblem(null)
+    try {
+      setResult(await api.entrance.checkIn(token, tenant, facility, { code, ...position, book: true }))
+    } catch (e) {
+      setResult(null)
+      setProblem(e instanceof Error ? e.message : String(e))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const granted = result && GRANTED.includes(result.result)
+  return (
+    <div className="grid gap-4">
+      <p className="text-muted-foreground">{t('flash.code.help')}</p>
+      {places === null ? (
+        <div>
+          <Button type="button" disabled={busy} onClick={() => void find()}>
+            <LocateFixed aria-hidden />
+            {busy ? t('flash.code.locating') : t('flash.code.locate')}
+          </Button>
+        </div>
+      ) : places.length === 0 ? (
+        <div className="grid gap-3">
+          <p className="rounded-md border border-dashed px-3 py-2">{t('flash.code.none')}</p>
+          <div>
+            <Button type="button" variant="outline" disabled={busy} onClick={() => void find()}>
+              {t('flash.code.again')}
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <form onSubmit={(e) => void submit(e)} className="grid gap-4">
+          <fieldset className="grid gap-2">
+            <legend className="mb-2 font-medium">{t('flash.code.facility')}</legend>
+            {places.map((place) => {
+              const value = `${place.tenant_slug}/${place.facility_slug}`
+              return (
+                <label key={value} className="flex min-h-11 items-center gap-3 rounded-md border px-3 py-2 has-checked:border-primary">
+                  <input type="radio" name="flash-facility" value={value} checked={chosen === value} onChange={() => setChosen(value)} className="size-4 accent-primary" />
+                  <span>
+                    {place.facility_name} <span className="text-muted-foreground">· {place.tenant_name}</span>
+                  </span>
+                </label>
+              )
+            })}
+          </fieldset>
+          <div className="grid gap-2 sm:max-w-xs">
+            <Label htmlFor="flash-code">{t('entrance:code')}</Label>
+            <Input
+              id="flash-code"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              pattern="[0-9 \-]*"
+              maxLength={8}
+              required
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              aria-describedby="flash-code-help"
+              className="num font-mono text-lg tracking-widest"
+            />
+            <p id="flash-code-help" className="text-sm text-muted-foreground">
+              {t('entrance:codeHelp')}
+            </p>
+          </div>
+          <div>
+            <Button type="submit" disabled={busy}>
+              {busy ? t('entrance:checking') : t('entrance:bookAndCheckIn')}
+            </Button>
+          </div>
+        </form>
+      )}
+      <div role="status" aria-live="polite" className="empty:hidden">
+        {result && (
+          <p
+            className={`flex items-start gap-2 rounded-md px-3 py-2 ${granted ? 'bg-pill-positive-bg text-pill-positive-ink' : 'bg-pill-negative-bg text-pill-negative-ink'}`}
+          >
+            {granted ? <CheckCircle2 className="mt-0.5 size-4 shrink-0" aria-hidden /> : <XCircle className="mt-0.5 size-4 shrink-0" aria-hidden />}
+            <span>
+              {t(`entrance:result.${result.result}`, { defaultValue: t('entrance:result.refused') })}
+              {result.result === 'location_inaccurate' && ` ${t('entrance:inaccurateHelp')}`}
+              {result.result === 'not_booked' && result.reason && ` ${t(`reader:reason.${result.reason}`, { defaultValue: t('reader:reason.other') })}`}
+            </span>
+          </p>
+        )}
+        {problem && <p className="rounded-md bg-pill-negative-bg px-3 py-2 text-pill-negative-ink">{problem}</p>}
+      </div>
+    </div>
   )
 }
 

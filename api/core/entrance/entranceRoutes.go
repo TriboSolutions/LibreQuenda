@@ -36,11 +36,18 @@ func (r *entranceRoutes) RegisterRoutes() {
 		AdditionalMethods: []router.HTTPMethod{router.OPTIONS},
 		Handler:           middlewares.AuthMiddleware(h.Get),
 	})
-	// strict: a turn code is guessable only by trying many
+	// strict: the entry code is guessable only by trying many
 	r.router.NewRoute(router.Route{
 		Path:              "/tenants/{slug}/facilities/{facility}/entrance",
 		Method:            http.MethodPost,
 		AdditionalMethods: []router.HTTPMethod{router.OPTIONS},
 		Handler:           middlewares.AuthMiddleware(middlewares.WithStrictRateLimit(h.CheckIn)),
+	})
+	// flash booking with the entry code: which facility the phone is at
+	r.router.NewRoute(router.Route{
+		Path:              "/entrance/nearby",
+		Method:            http.MethodPost,
+		AdditionalMethods: []router.HTTPMethod{router.OPTIONS},
+		Handler:           middlewares.AuthMiddleware(h.Nearby),
 	})
 }

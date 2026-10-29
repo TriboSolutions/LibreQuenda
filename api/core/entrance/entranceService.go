@@ -10,7 +10,9 @@ import (
 	"librequenda/core/reader"
 	"librequenda/model"
 	"librequenda/shared"
+	"math"
 	"net/http"
+	"sort"
 	"sync"
 	"time"
 
@@ -167,4 +169,45 @@ func (s *entranceService) bookingToken(ctx context.Context, userId, facilityId u
 		return uuid.Nil, false, failed
 	}
 	return token, true, nil
+}
+
+// Nearby: for a flash booking with the entry code, the facilities that take it
+// and are within their radius of the phone, nearest first.
+func (s *entranceService) Nearby(ctx context.Context, input NearbyInput) (*NearbyDto, *shared.ErrorResponse) {
+	var response = &NearbyDto{Facilities: []NearbyFacilityDto{}}
+	var position *checkin.Position
+	if input.Latitude != nil && input.Longitude != nil && input.Accuracy != nil {
+		position = &checkin.Position{Latitude: *input.Latitude, Longitude: *input.Longitude, Accuracy: *input.Accuracy}
+	}
+	// a radius never gets in the way of telling a missing or blurry location
+	if problem := checkin.CheckLocation(position, 0, 0, math.MaxInt32); problem != "" {
+		response.Result = problem
+		return response, nil
+	}
+	var rows, err = model.New(s.db).ListFlashCodeFacilities(ctx)
+	if err != nil {
+		return nil, failed
+	}
+	response.Facilities = nearby(rows, *position)
+	return response, nil
+}
+
+// nearby keeps the facilities the position could be at, nearest first.
+func nearby(rows []model.ListFlashCodeFacilitiesRow, position checkin.Position) []NearbyFacilityDto {
+	type near struct {
+		row      model.ListFlashCodeFacilitiesRow
+		distance float64
+	}
+	var found []near
+	for _, row := range rows {
+		if checkin.CheckLocation(&position, row.Latitude, row.Longitude, int(row.RadiusM)) == "" {
+			found = append(found, near{row, checkin.DistanceMetres(position.Latitude, position.Longitude, row.Latitude, row.Longitude)})
+		}
+	}
+	sort.Slice(found, func(i, j int) bool { return found[i].distance < found[j].distance })
+	var facilities = make([]NearbyFacilityDto, 0, len(found))
+	for _, f := range found {
+		facilities = append(facilities, NearbyFacilityDto{FacilityName: f.row.Name, FacilitySlug: f.row.Slug, TenantName: f.row.TenantName, TenantSlug: f.row.TenantSlug})
+	}
+	return facilities
 }

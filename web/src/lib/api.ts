@@ -288,6 +288,12 @@ export type EntranceInput = {
   accuracy: number
   book?: boolean // without a booking: book a free turn and check in
 }
+type Position = Pick<EntranceInput, 'latitude' | 'longitude' | 'accuracy'>
+/** Flash booking with the entry code: where the phone is, nearest first; result is a location problem when it cannot tell. */
+export type Nearby = {
+  result: '' | 'location_required' | 'location_inaccurate'
+  facilities: { facility_name: string; facility_slug: string; tenant_name: string; tenant_slug: string }[]
+}
 export type EntranceResult = Omit<CheckinResult, 'result'> & {
   result:
     | CheckinResultCode
@@ -831,6 +837,8 @@ export const api = {
         method: 'POST',
         body: input,
       }),
+    // flash booking with the entry code: the facilities the phone is at (the location goes in the body, never stored)
+    nearby: (token: string, position: Position) => request<Nearby>('/entrance/nearby', { token, method: 'POST', body: position }),
   },
 
   // the device key goes where a user token would

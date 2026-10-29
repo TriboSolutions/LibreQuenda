@@ -50,3 +50,25 @@ type CheckinResultDto struct {
 	reader.CheckinResultDto
 	CanBook bool `json:"can_book"` // no_booking only: a free turn can be booked on the spot
 }
+
+// NearbyInput: where the phone is, to find the facilities it could book at the
+// door with their entry code. Checked, never stored.
+type NearbyInput struct {
+	Latitude  *float64 `json:"latitude"`
+	Longitude *float64 `json:"longitude"`
+	Accuracy  *float64 `json:"accuracy"` // metres
+}
+
+// NearbyDto: the facilities the phone is at, nearest first; Result is a location
+// problem (location_required, location_inaccurate) when it cannot tell.
+type NearbyDto struct {
+	Result     string              `json:"result"`
+	Facilities []NearbyFacilityDto `json:"facilities"`
+}
+
+type NearbyFacilityDto struct {
+	FacilityName string `json:"facility_name"`
+	FacilitySlug string `json:"facility_slug"`
+	TenantName   string `json:"tenant_name"`
+	TenantSlug   string `json:"tenant_slug"`
+}

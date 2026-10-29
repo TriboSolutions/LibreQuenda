@@ -83,7 +83,6 @@
     "deletedBody": "Tus datos personales ya no están en {{app}}. Puedes crear una cuenta nueva cuando quieras."
   },
   "personalQr": {
-    "help": "¿Llegas a una instalación con lector QR y está libre? Resérvala en el momento con tu QR.",
     "alt": "Tu código QR de reserva flash. Cambia cada minuto.",
     "private": "El código cambia cada minuto y solo sirve una vez, así que una captura de pantalla no funciona. No lo compartas.",
     "brightness": "Si el lector no lo detecta, sube el brillo de la pantalla.",
@@ -111,5 +110,30 @@
     "reset": "Nueva dirección",
     "resetHint": "La dirección actual deja de funcionar; tendrás que suscribirte de nuevo.",
     "turnOff": "Desactivar"
+  },
+  "flash": {
+    "help": "¿Llegas a una instalación y hay un turno libre? Resérvalo en el momento, de la forma que admita la instalación.",
+    "ways": "Cómo entras",
+    "reader": {
+      "tab": "Lector QR",
+      "help": "Acerca este QR al lector de la puerta: si el turno está libre, se reserva y entras."
+    },
+    "code": {
+      "tab": "Código",
+      "help": "Buscamos la instalación donde estás con la ubicación del móvil; después escribe el código de la puerta. Se comprueba y nunca se guarda.",
+      "locate": "Buscar dónde estoy",
+      "locating": "Buscando…",
+      "again": "Buscar de nuevo",
+      "none": "No estás cerca de ninguna instalación que admita reservar con el código.",
+      "facility": "Dónde estás"
+    },
+    "door": {
+      "tab": "QR de la puerta",
+      "help": "Escanea con la cámara del móvil el QR impreso en la puerta. Se abrirá la página de entrada, donde puedes reservar en el momento un turno libre."
+    },
+    "staff": {
+      "tab": "Personal",
+      "help": "Pide en el mostrador o al personal que te reserven el turno libre: pueden hacerlo con tu cuenta o solo con tu nombre."
+    }
   }
 }

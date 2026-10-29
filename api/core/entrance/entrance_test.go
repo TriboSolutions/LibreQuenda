@@ -59,3 +59,18 @@ func TestProve(t *testing.T) {
 		}
 	}
 }
+
+func TestNearby(t *testing.T) {
+	var rows = []model.ListFlashCodeFacilitiesRow{
+		{Name: "Far", Slug: "far", Latitude: 42.70, Longitude: -8.10, RadiusM: 100},
+		{Name: "Pavillón", Slug: "pavillon", Latitude: 42.66453, Longitude: -8.10815, RadiusM: 100},
+		{Name: "Next door", Slug: "next", Latitude: 42.66500, Longitude: -8.10815, RadiusM: 100},
+	}
+	var got = nearby(rows, checkin.Position{Latitude: 42.66453, Longitude: -8.10815, Accuracy: 10})
+	if len(got) != 2 || got[0].FacilitySlug != "pavillon" || got[1].FacilitySlug != "next" {
+		t.Fatalf("want the two within reach, nearest first: %+v", got)
+	}
+	if len(nearby(rows, checkin.Position{Latitude: 43.5, Longitude: -8.0, Accuracy: 10})) != 0 {
+		t.Fatal("far from all of them, none is near")
+	}
+}
