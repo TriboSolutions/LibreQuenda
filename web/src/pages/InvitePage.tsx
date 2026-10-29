@@ -1,5 +1,5 @@
 import { CalendarClock, CircleCheck, MapPin, Users } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import { Link, useParams } from 'react-router'
@@ -62,6 +62,8 @@ function InviteCard({ invite, inviteToken, onChanged }: { invite: PublicInvite; 
   const [joined, setJoined] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState<'account' | 'guest' | null>(null)
   const [error, setError] = useState<string | null>(null)
+  // a refusal of the automatic join (already in, own booking, full) is news, not a mistake
+  const [notice, setNotice] = useState<string | null>(null)
   const [name, setName] = useState('')
   const [age, setAge] = useState('')
 
@@ -72,9 +74,10 @@ function InviteCard({ invite, inviteToken, onChanged }: { invite: PublicInvite; 
   const facilityPath = `/${invite.tenant_slug}/${invite.facility_slug}`
   const facility = invite.facility
 
-  const join = async (kind: 'account' | 'guest') => {
+  const join = async (kind: 'account' | 'guest', automatic = false) => {
     setSubmitting(kind)
     setError(null)
+    setNotice(null)
     try {
       if (kind === 'account') {
         await api.invites.join(auth.user!.access_token, inviteToken)
@@ -87,12 +90,23 @@ function InviteCard({ invite, inviteToken, onChanged }: { invite: PublicInvite; 
       }
       onChanged()
     } catch (e) {
-      setError(e instanceof Error ? e.message : t('invites:page.error'))
+      const message = e instanceof Error ? e.message : t('invites:page.error')
+      if (automatic && e instanceof ApiError && e.status === 409) setNotice(message)
+      else setError(message)
       if (e instanceof ApiError && e.status === 409) onChanged() // full or closed meanwhile
     } finally {
       setSubmitting(null)
     }
   }
+
+  // signed in, the link joins straight away: once, also on coming back from signing in
+  const autoJoined = useRef(false)
+  useEffect(() => {
+    if (!auth.isAuthenticated || invite.state !== 'open' || autoJoined.current) return
+    autoJoined.current = true
+    void join('account', true)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once per page, when the session is there
+  }, [auth.isAuthenticated, invite.state])
 
   return (
     <div className="mt-6 grid max-w-[640px] gap-6">
@@ -153,6 +167,18 @@ function InviteCard({ invite, inviteToken, onChanged }: { invite: PublicInvite; 
                 )}
                 <Link to={facilityPath} className="font-medium underline underline-offset-4">
                   {t('invites:page.facilityPage')}
+                </Link>
+              </p>
+            </AlertDescription>
+          </Alert>
+        )}
+        {notice && (
+          <Alert>
+            <AlertDescription>
+              <p>{notice}</p>
+              <p className="mt-2">
+                <Link to="/reservas" className="font-medium underline underline-offset-4">
+                  {t('invites:page.seeMyBookings')}
                 </Link>
               </p>
             </AlertDescription>

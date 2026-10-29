@@ -88,24 +88,24 @@
     "from": "Check-in from {{time}}",
     "title": "Check in",
     "description": "{{facility}}, {{day}}, {{start}}–{{end}}",
-    "intro": "This facility takes these ways to check in. Use whichever is at hand.",
     "done": "You are checked in since {{time}}.",
     "close": "Close",
     "entry_code": {
-      "title": "Entry code",
-      "help": "Type the code shown at the door or the desk. We will ask for your location: it is checked and never stored."
+      "help": "Type the code shown at the door or the desk. We will ask for your location: it is checked and never stored.",
+      "tab": "Code"
     },
     "printed_qr": {
-      "title": "QR at the door",
-      "help": "Open the camera and point it at the QR printed on the door. First we ask for your location, which is checked and never stored."
+      "help": "Open the camera and point it at the QR printed on the door. First we ask for your location, which is checked and never stored.",
+      "tab": "QR at the door"
     },
     "reader": {
-      "title": "Your booking’s QR",
-      "help": "Hold this QR up to the reader at the entrance."
+      "help": "Hold this QR up to the reader at the entrance.",
+      "tab": "QR reader"
     },
     "staff": {
-      "title": "Facility staff",
-      "help": "Tell the staff your name and they will mark you in."
-    }
+      "help": "Tell the staff your name and they will mark you in.",
+      "tab": "Staff"
+    },
+    "ways": "How you check in"
   }
 }

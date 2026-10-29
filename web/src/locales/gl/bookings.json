@@ -88,24 +88,24 @@
     "from": "Entrada desde as {{time}}",
     "title": "Rexistrar a entrada",
     "description": "{{facility}}, {{day}}, {{start}}–{{end}}",
-    "intro": "Esta instalación admite estas formas de rexistrar a entrada. Usa a que teñas á man.",
     "done": "Xa tes a entrada rexistrada ás {{time}}.",
     "close": "Pechar",
     "entry_code": {
-      "title": "Código de entrada",
-      "help": "Escribe o código que está na porta ou no mostrador. Pedirémosche a localización: compróbase e nunca se garda."
+      "help": "Escribe o código que está na porta ou no mostrador. Pedirémosche a localización: compróbase e nunca se garda.",
+      "tab": "Código"
     },
     "printed_qr": {
-      "title": "QR da porta",
-      "help": "Abre a cámara e apunta ao QR impreso na porta. Antes pedirémosche a localización, que se comproba e nunca se garda."
+      "help": "Abre a cámara e apunta ao QR impreso na porta. Antes pedirémosche a localización, que se comproba e nunca se garda.",
+      "tab": "QR da porta"
     },
     "reader": {
-      "title": "QR da túa reserva",
-      "help": "Achega este QR ao lector da entrada."
+      "help": "Achega este QR ao lector da entrada.",
+      "tab": "Lector QR"
     },
     "staff": {
-      "title": "Persoal da instalación",
-      "help": "Dille o teu nome ao persoal e eles marcan a túa entrada."
-    }
+      "help": "Dille o teu nome ao persoal e eles marcan a túa entrada.",
+      "tab": "Persoal"
+    },
+    "ways": "Como rexistras a entrada"
   }
 }

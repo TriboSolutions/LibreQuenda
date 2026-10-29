@@ -88,24 +88,24 @@
     "from": "Entrada des de les {{time}}",
     "title": "Registrar l’entrada",
     "description": "{{facility}}, {{day}}, {{start}}–{{end}}",
-    "intro": "Aquesta instal·lació admet aquestes maneres de registrar l’entrada. Fes servir la que tinguis a mà.",
     "done": "Ja tens l’entrada registrada a les {{time}}.",
     "close": "Tancar",
     "entry_code": {
-      "title": "Codi d’entrada",
-      "help": "Escriu el codi que hi ha a la porta o al taulell. Et demanarem la ubicació: es comprova i mai no es desa."
+      "help": "Escriu el codi que hi ha a la porta o al taulell. Et demanarem la ubicació: es comprova i mai no es desa.",
+      "tab": "Codi"
     },
     "printed_qr": {
-      "title": "QR de la porta",
-      "help": "Obre la càmera i apunta al QR imprès a la porta. Abans et demanarem la ubicació, que es comprova i mai no es desa."
+      "help": "Obre la càmera i apunta al QR imprès a la porta. Abans et demanarem la ubicació, que es comprova i mai no es desa.",
+      "tab": "QR de la porta"
     },
     "reader": {
-      "title": "QR de la teva reserva",
-      "help": "Apropa aquest QR al lector de l’entrada."
+      "help": "Apropa aquest QR al lector de l’entrada.",
+      "tab": "Lector QR"
     },
     "staff": {
-      "title": "Personal de la instal·lació",
-      "help": "Digues el teu nom al personal i ells marquen la teva entrada."
-    }
+      "help": "Digues el teu nom al personal i ells marquen la teva entrada.",
+      "tab": "Personal"
+    },
+    "ways": "Com registres l’entrada"
   }
 }
