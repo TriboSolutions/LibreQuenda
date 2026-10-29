@@ -113,14 +113,18 @@ func (s *entranceService) CheckIn(ctx context.Context, session auth.Session, ten
 	if err != nil {
 		return nil, err
 	}
+	var entry = reader.Entry{Method: model.CheckinMethodTurnCode}
+	if input.QrToken != "" {
+		entry.Method = model.CheckinMethodPrintedQr
+	}
 	var result *reader.CheckinResultDto
 	switch {
 	case found:
-		result, err = readers.CheckInBooking(ctx, facility.ID, uuid.NullUUID{}, token)
+		result, err = readers.CheckInBooking(ctx, facility.ID, entry, token)
 	case !input.Book:
 		return &CheckinResultDto{CheckinResultDto: reader.CheckinResultDto{Result: ResultNoBooking}, CanBook: facility.FlashBooking}, nil
 	default:
-		result, err = readers.FlashCheckIn(ctx, userId, "", facility.ID, uuid.NullUUID{})
+		result, err = readers.FlashCheckIn(ctx, userId, "", facility.ID, entry)
 	}
 	if err != nil {
 		return nil, err

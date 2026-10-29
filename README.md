@@ -96,6 +96,10 @@ The resident can also check in from their own phone, reading the facility instea
 
 Either way the phone's location is required: within the facility's distance (100 m unless the council changes it, between 25 and 1000 m) of its pin, with an accuracy of 150 m or better. The browser asks the resident; the API checks the location and drops it, it is never stored. A location can be faked by someone determined, so these two are the cheap options, not the strict ones. Then the check-in is the reader's own: the person's booking for this turn goes in. Without one, the page offers **Book and check in**, a flash booking of the free turn under the usual rules. The council can turn flash booking off for the facility in the same tab, which also turns it off for the personal QR at the readers.
 
+**Staff confirmation** is the third way the tab switches on, and needs no pin. In the "Reserva manual" calendar, staff open a booking and press **Mark as in**, from 15 minutes before the start until the turn ends, as at a reader. It works for bookings by name too, and the booking shows who marked it. A staff entry can be undone for 5 minutes, in case they picked the wrong booking; entries from a reader or a phone cannot.
+
+Every entry records how it happened (`reader`, `printed_qr`, `turn_code` or `staff`), and the council's data export includes it.
+
 **Other ways it could work (not built yet).** The options below let a council choose by budget and by how much it cares about cheating. They would all end in the same check-in on the booking, so the indicators stay the same.
 
 | Way | At the door | How the resident checks in | Cost | Hard to cheat? |
@@ -105,7 +109,7 @@ Either way the phone's location is required: within the facility's distance (100
 | Code on a printed page (built) | A daily sheet at the desk or on the door, with one code per turn | Types the code for their turn | Nearly free | Medium: someone has to change the sheet every day; the phone's location is always checked |
 | NFC tag | A sticker on the door | Taps it with their phone, which opens the check-in page | A few euros per door | Low with a plain tag (it can be copied). High with a tag that signs every tap (e.g. NTAG 424 DNA "SUN" messages), which the API checks |
 | Rotating code on a display | A small screen (e-ink, ESP32 or an old tablet) showing a code or QR that changes every few minutes, like a TOTP from a secret shared with the API | Types the code in the app or scans it | Tens of euros per door | High: the code is only good for a few minutes, and only at that door |
-| Staff confirmation | Nobody, or the desk | Staff tick them as arrived on the "Reserva manual" calendar | Staff time | As good as the staff |
+| Staff confirmation (built) | Nobody, or the desk | Staff mark them as in from the booking on the "Reserva manual" calendar | Staff time | As good as the staff |
 
 What the ones not built yet would need:
 

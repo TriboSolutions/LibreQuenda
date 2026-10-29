@@ -94,10 +94,13 @@ WHERE
 
 -- name: MarkBookingCheckedIn :one
 -- The first scan wins; no row when the booking was already checked in.
+-- checked_in_by: the staff member, only when method is 'staff'.
 UPDATE booking
 SET
     checked_in_at        = NOW(),
     checked_in_device_id = sqlc.arg('device_id'),
+    checked_in_method    = sqlc.arg('method'),
+    checked_in_by        = sqlc.arg('checked_in_by'),
     updated_at           = NOW()
 WHERE
     id = sqlc.arg('id')
@@ -185,7 +188,8 @@ SELECT
     c.turn_codes,
     c.code_secret,
     c.radius_m,
-    c.flash_booking
+    c.flash_booking,
+    c.staff_confirm
 FROM
     facility_checkin c
     JOIN facility f ON f.id = c.facility_id
@@ -201,6 +205,7 @@ SET
     turn_codes    = sqlc.arg('turn_codes'),
     radius_m      = sqlc.arg('radius_m'),
     flash_booking = sqlc.arg('flash_booking'),
+    staff_confirm = sqlc.arg('staff_confirm'),
     updated_at    = NOW()
 WHERE
     facility_id = sqlc.arg('facility_id')
@@ -210,7 +215,8 @@ RETURNING
     turn_codes,
     code_secret,
     radius_m,
-    flash_booking;
+    flash_booking,
+    staff_confirm;
 
 -- name: RotateFacilityQrToken :one
 -- Row-level security: runs as the facility's council (db.WithTenant). The QRs
@@ -255,3 +261,27 @@ WHERE
     AND f.slug = sqlc.arg('facility_slug')
     AND f.is_active = TRUE
     AND t.is_active = TRUE;
+
+-- name: GetFacilityStaffConfirm :one
+-- Whether council staff can mark the entry from the calendar; off without settings.
+SELECT
+    COALESCE((SELECT c.staff_confirm FROM facility_checkin c WHERE c.facility_id = sqlc.arg('facility_id')), FALSE)::BOOLEAN AS staff_confirm;
+
+-- name: UndoStaffCheckIn :execrows
+-- Takes back an entry staff marked by mistake, only within the undo window
+-- (marked after since). No row when it was not a staff entry or it is too late.
+UPDATE booking b
+SET
+    checked_in_at        = NULL,
+    checked_in_device_id = NULL,
+    checked_in_method    = NULL,
+    checked_in_by        = NULL,
+    updated_at           = NOW()
+FROM
+    facility f
+WHERE
+    b.id = sqlc.arg('id')
+    AND f.id = b.facility_id
+    AND f.tenant_id = sqlc.arg('tenant_id')
+    AND b.checked_in_method = 'staff'
+    AND b.checked_in_at > sqlc.arg('since')::TIMESTAMPTZ;

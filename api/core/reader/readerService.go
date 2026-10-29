@@ -57,13 +57,34 @@ func (s *readerService) CheckIn(ctx context.Context, device model.GetCheckinDevi
 	if !ok {
 		return &CheckinResultDto{Result: ResultNotABooking}, nil
 	}
-	return s.CheckInBooking(ctx, device.FacilityID, uuid.NullUUID{UUID: device.ID, Valid: true}, token)
+	return s.CheckInBooking(ctx, device.FacilityID, ReaderEntry(device.ID), token)
+}
+
+// Entry: how the person got in, recorded on the booking for the indicators.
+type Entry struct {
+	Method   model.CheckinMethod
+	DeviceID uuid.NullUUID // the reader that scanned the QR
+	StaffID  uuid.NullUUID // the staff member who confirmed it
+}
+
+// ReaderEntry: a QR scanned by a reader at the door.
+func ReaderEntry(deviceId uuid.UUID) Entry {
+	return Entry{Method: model.CheckinMethodReader, DeviceID: uuid.NullUUID{UUID: deviceId, Valid: true}}
+}
+
+func (e Entry) params(bookingId uuid.UUID) model.MarkBookingCheckedInParams {
+	return model.MarkBookingCheckedInParams{
+		ID:          bookingId,
+		DeviceID:    e.DeviceID,
+		Method:      model.NullCheckinMethod{CheckinMethod: e.Method, Valid: true},
+		CheckedInBy: e.StaffID,
+	}
 }
 
 // CheckInBooking records the first entry of the booking with that check-in token
-// at the facility: from a reader (deviceId) or from the resident's own phone at
-// the door (no device). Every way in ends here, so the indicators stay the same.
-func (s *readerService) CheckInBooking(ctx context.Context, facilityId uuid.UUID, deviceId uuid.NullUUID, token uuid.UUID) (*CheckinResultDto, *shared.ErrorResponse) {
+// at the facility: from a reader, from the resident's own phone at the door, or
+// confirmed by staff. Every way in ends here, so the indicators stay the same.
+func (s *readerService) CheckInBooking(ctx context.Context, facilityId uuid.UUID, entry Entry, token uuid.UUID) (*CheckinResultDto, *shared.ErrorResponse) {
 	var queries = model.New(s.db)
 	var booking, err = queries.GetBookingByCheckinToken(ctx, token)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -76,10 +97,7 @@ func (s *readerService) CheckInBooking(ctx context.Context, facilityId uuid.UUID
 	var result = decide(booking, facilityId, time.Now())
 	if result == ResultCheckedIn {
 		var checkedInAt sql.NullTime
-		checkedInAt, err = queries.MarkBookingCheckedIn(ctx, model.MarkBookingCheckedInParams{
-			ID:       booking.ID,
-			DeviceID: deviceId,
-		})
+		checkedInAt, err = queries.MarkBookingCheckedIn(ctx, entry.params(booking.ID))
 		switch {
 		case errors.Is(err, sql.ErrNoRows): // another reader got there first
 			result = ResultAlreadyCheckedIn
@@ -140,7 +158,7 @@ func (s *readerService) personalCheckIn(ctx context.Context, device model.GetChe
 		return nil, failed
 	}
 
-	var response, flashErr = s.FlashCheckIn(ctx, owner.UserID, owner.FullName.String, device.FacilityID, uuid.NullUUID{UUID: device.ID, Valid: true})
+	var response, flashErr = s.FlashCheckIn(ctx, owner.UserID, owner.FullName.String, device.FacilityID, ReaderEntry(device.ID))
 	if flashErr != nil || !response.Granted {
 		s.release(ctx, queries, qrToken)
 	}
@@ -150,7 +168,7 @@ func (s *readerService) personalCheckIn(ctx context.Context, device model.GetChe
 // FlashCheckIn books the turn under way or about to start for the person
 // (bookings.QuickBook), within the usual rules, and records the entry, so the
 // turn never shows as a no-show. Refused when the council turned flash booking off.
-func (s *readerService) FlashCheckIn(ctx context.Context, userId uuid.UUID, fullName string, facilityId uuid.UUID, deviceId uuid.NullUUID) (*CheckinResultDto, *shared.ErrorResponse) {
+func (s *readerService) FlashCheckIn(ctx context.Context, userId uuid.UUID, fullName string, facilityId uuid.UUID, entry Entry) (*CheckinResultDto, *shared.ErrorResponse) {
 	var failed = &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.checkin_failed"}
 	var queries = model.New(s.db)
 	var allowed, err = queries.GetFacilityFlashBooking(ctx, facilityId)
@@ -170,10 +188,7 @@ func (s *readerService) FlashCheckIn(ctx context.Context, userId uuid.UUID, full
 	}
 
 	var checkedInAt sql.NullTime
-	checkedInAt, err = queries.MarkBookingCheckedIn(ctx, model.MarkBookingCheckedInParams{
-		ID:       uuid.MustParse(booking.Id),
-		DeviceID: deviceId,
-	})
+	checkedInAt, err = queries.MarkBookingCheckedIn(ctx, entry.params(uuid.MustParse(booking.Id)))
 	if err != nil {
 		shared.Logger.Error("failed to check in quick booking %s: %v", booking.Id, err)
 		checkedInAt = sql.NullTime{Time: time.Now(), Valid: true}
