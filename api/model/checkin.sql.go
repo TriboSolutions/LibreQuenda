@@ -141,6 +141,30 @@ func (q *Queries) DeleteExpiredUserQrTokens(ctx context.Context, userID uuid.UUI
 	return err
 }
 
+const ensureFacilityCheckin = `-- name: EnsureFacilityCheckin :exec
+INSERT INTO facility_checkin (facility_id)
+SELECT
+    f.id
+FROM
+    facility f
+WHERE
+    f.id = $1
+    AND f.tenant_id = $2
+ON CONFLICT (facility_id) DO NOTHING
+`
+
+type EnsureFacilityCheckinParams struct {
+	FacilityID uuid.UUID `json:"facility_id"`
+	TenantID   uuid.UUID `json:"tenant_id"`
+}
+
+// Row-level security: runs as the facility's council (db.WithTenant). Creates the
+// facility's check-in settings with the defaults the first time they are needed.
+func (q *Queries) EnsureFacilityCheckin(ctx context.Context, arg EnsureFacilityCheckinParams) error {
+	_, err := q.db.ExecContext(ctx, ensureFacilityCheckin, arg.FacilityID, arg.TenantID)
+	return err
+}
+
 const getBookingByCheckinToken = `-- name: GetBookingByCheckinToken :one
 SELECT
     b.id,
@@ -233,6 +257,135 @@ func (q *Queries) GetCheckinDeviceByKey(ctx context.Context, keyHash []byte) (Ge
 		&i.Timezone,
 	)
 	return i, err
+}
+
+const getFacilityCheckin = `-- name: GetFacilityCheckin :one
+SELECT
+    c.printed_qr,
+    c.qr_token,
+    c.turn_codes,
+    c.code_secret,
+    c.radius_m,
+    c.flash_booking
+FROM
+    facility_checkin c
+    JOIN facility f ON f.id = c.facility_id
+WHERE
+    c.facility_id = $1
+    AND f.tenant_id = $2
+`
+
+type GetFacilityCheckinParams struct {
+	FacilityID uuid.UUID `json:"facility_id"`
+	TenantID   uuid.UUID `json:"tenant_id"`
+}
+
+type GetFacilityCheckinRow struct {
+	PrintedQr    bool      `json:"printed_qr"`
+	QrToken      uuid.UUID `json:"qr_token"`
+	TurnCodes    bool      `json:"turn_codes"`
+	CodeSecret   []byte    `json:"code_secret"`
+	RadiusM      int32     `json:"radius_m"`
+	FlashBooking bool      `json:"flash_booking"`
+}
+
+func (q *Queries) GetFacilityCheckin(ctx context.Context, arg GetFacilityCheckinParams) (GetFacilityCheckinRow, error) {
+	row := q.db.QueryRowContext(ctx, getFacilityCheckin, arg.FacilityID, arg.TenantID)
+	var i GetFacilityCheckinRow
+	err := row.Scan(
+		&i.PrintedQr,
+		&i.QrToken,
+		&i.TurnCodes,
+		&i.CodeSecret,
+		&i.RadiusM,
+		&i.FlashBooking,
+	)
+	return i, err
+}
+
+const getFacilityEntrance = `-- name: GetFacilityEntrance :one
+SELECT
+    f.id,
+    f.name,
+    f.slug,
+    f.latitude,
+    f.longitude,
+    t.name     AS tenant_name,
+    t.slug     AS tenant_slug,
+    t.timezone,
+    COALESCE(c.printed_qr, FALSE)::BOOLEAN    AS printed_qr,
+    c.qr_token,
+    COALESCE(c.turn_codes, FALSE)::BOOLEAN    AS turn_codes,
+    c.code_secret,
+    COALESCE(c.radius_m, 100)::INT            AS radius_m,
+    COALESCE(c.flash_booking, TRUE)::BOOLEAN  AS flash_booking
+FROM
+    facility f
+    JOIN tenant t ON t.id = f.tenant_id
+    LEFT JOIN facility_checkin c ON c.facility_id = f.id
+WHERE
+    t.slug = $1
+    AND f.slug = $2
+    AND f.is_active = TRUE
+    AND t.is_active = TRUE
+`
+
+type GetFacilityEntranceParams struct {
+	TenantSlug   string `json:"tenant_slug"`
+	FacilitySlug string `json:"facility_slug"`
+}
+
+type GetFacilityEntranceRow struct {
+	ID           uuid.UUID       `json:"id"`
+	Name         string          `json:"name"`
+	Slug         string          `json:"slug"`
+	Latitude     sql.NullFloat64 `json:"latitude"`
+	Longitude    sql.NullFloat64 `json:"longitude"`
+	TenantName   string          `json:"tenant_name"`
+	TenantSlug   string          `json:"tenant_slug"`
+	Timezone     string          `json:"timezone"`
+	PrintedQr    bool            `json:"printed_qr"`
+	QrToken      uuid.NullUUID   `json:"qr_token"`
+	TurnCodes    bool            `json:"turn_codes"`
+	CodeSecret   []byte          `json:"code_secret"`
+	RadiusM      int32           `json:"radius_m"`
+	FlashBooking bool            `json:"flash_booking"`
+}
+
+// What a resident's phone needs to check in at /<council>/<facility>/entrada.
+func (q *Queries) GetFacilityEntrance(ctx context.Context, arg GetFacilityEntranceParams) (GetFacilityEntranceRow, error) {
+	row := q.db.QueryRowContext(ctx, getFacilityEntrance, arg.TenantSlug, arg.FacilitySlug)
+	var i GetFacilityEntranceRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Slug,
+		&i.Latitude,
+		&i.Longitude,
+		&i.TenantName,
+		&i.TenantSlug,
+		&i.Timezone,
+		&i.PrintedQr,
+		&i.QrToken,
+		&i.TurnCodes,
+		&i.CodeSecret,
+		&i.RadiusM,
+		&i.FlashBooking,
+	)
+	return i, err
+}
+
+const getFacilityFlashBooking = `-- name: GetFacilityFlashBooking :one
+SELECT
+    COALESCE((SELECT c.flash_booking FROM facility_checkin c WHERE c.facility_id = $1), TRUE)::BOOLEAN AS flash_booking
+`
+
+// Whether a free turn can be booked on the spot at the entrance; on without settings.
+func (q *Queries) GetFacilityFlashBooking(ctx context.Context, facilityID uuid.UUID) (bool, error) {
+	row := q.db.QueryRowContext(ctx, getFacilityFlashBooking, facilityID)
+	var flash_booking bool
+	err := row.Scan(&flash_booking)
+	return flash_booking, err
 }
 
 const getUserCheckinTokenAtFacility = `-- name: GetUserCheckinTokenAtFacility :one
@@ -365,6 +518,26 @@ func (q *Queries) ReleaseUserQrToken(ctx context.Context, token uuid.UUID) error
 	return err
 }
 
+const rotateFacilityQrToken = `-- name: RotateFacilityQrToken :one
+UPDATE facility_checkin
+SET
+    qr_token   = gen_random_uuid(),
+    updated_at = NOW()
+WHERE
+    facility_id = $1
+RETURNING
+    qr_token
+`
+
+// Row-level security: runs as the facility's council (db.WithTenant). The QRs
+// already printed stop working.
+func (q *Queries) RotateFacilityQrToken(ctx context.Context, facilityID uuid.UUID) (uuid.UUID, error) {
+	row := q.db.QueryRowContext(ctx, rotateFacilityQrToken, facilityID)
+	var qr_token uuid.UUID
+	err := row.Scan(&qr_token)
+	return qr_token, err
+}
+
 const touchCheckinDevice = `-- name: TouchCheckinDevice :exec
 UPDATE checkin_device
 SET
@@ -377,6 +550,63 @@ WHERE
 func (q *Queries) TouchCheckinDevice(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.ExecContext(ctx, touchCheckinDevice, id)
 	return err
+}
+
+const updateFacilityCheckin = `-- name: UpdateFacilityCheckin :one
+UPDATE facility_checkin
+SET
+    printed_qr    = $1,
+    turn_codes    = $2,
+    radius_m      = $3,
+    flash_booking = $4,
+    updated_at    = NOW()
+WHERE
+    facility_id = $5
+RETURNING
+    printed_qr,
+    qr_token,
+    turn_codes,
+    code_secret,
+    radius_m,
+    flash_booking
+`
+
+type UpdateFacilityCheckinParams struct {
+	PrintedQr    bool      `json:"printed_qr"`
+	TurnCodes    bool      `json:"turn_codes"`
+	RadiusM      int32     `json:"radius_m"`
+	FlashBooking bool      `json:"flash_booking"`
+	FacilityID   uuid.UUID `json:"facility_id"`
+}
+
+type UpdateFacilityCheckinRow struct {
+	PrintedQr    bool      `json:"printed_qr"`
+	QrToken      uuid.UUID `json:"qr_token"`
+	TurnCodes    bool      `json:"turn_codes"`
+	CodeSecret   []byte    `json:"code_secret"`
+	RadiusM      int32     `json:"radius_m"`
+	FlashBooking bool      `json:"flash_booking"`
+}
+
+// Row-level security: runs as the facility's council (db.WithTenant).
+func (q *Queries) UpdateFacilityCheckin(ctx context.Context, arg UpdateFacilityCheckinParams) (UpdateFacilityCheckinRow, error) {
+	row := q.db.QueryRowContext(ctx, updateFacilityCheckin,
+		arg.PrintedQr,
+		arg.TurnCodes,
+		arg.RadiusM,
+		arg.FlashBooking,
+		arg.FacilityID,
+	)
+	var i UpdateFacilityCheckinRow
+	err := row.Scan(
+		&i.PrintedQr,
+		&i.QrToken,
+		&i.TurnCodes,
+		&i.CodeSecret,
+		&i.RadiusM,
+		&i.FlashBooking,
+	)
+	return i, err
 }
 
 const useUserQrToken = `-- name: UseUserQrToken :one

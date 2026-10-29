@@ -231,6 +231,23 @@ CREATE TABLE checkin_device (
     created_at   TIMESTAMPTZ  NOT NULL DEFAULT NOW()
 );
 
+-- Check-in by reading the facility, from the resident's own phone: a QR printed
+-- on the door (its address carries qr_token), or a code per turn on a daily
+-- sheet (derived from code_secret, nothing stored per turn). Both need the
+-- phone's location within radius_m of the facility's pin; the location is never
+-- stored. flash_booking also covers the personal QR at the readers. No row: the
+-- defaults, with both ways off.
+CREATE TABLE facility_checkin (
+    facility_id   UUID         PRIMARY KEY REFERENCES facility(id) ON DELETE CASCADE,
+    printed_qr    BOOLEAN      NOT NULL DEFAULT FALSE,
+    qr_token      UUID         NOT NULL DEFAULT gen_random_uuid(),  -- a new one voids the printed QRs
+    turn_codes    BOOLEAN      NOT NULL DEFAULT FALSE,
+    code_secret   BYTEA        NOT NULL DEFAULT (uuid_send(gen_random_uuid()) || uuid_send(gen_random_uuid())),
+    radius_m      INT          NOT NULL DEFAULT 100 CHECK (radius_m BETWEEN 25 AND 1000),
+    flash_booking BOOLEAN      NOT NULL DEFAULT TRUE,
+    updated_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+);
+
 -- The personal QR on /perfil: a random token that lasts about a minute, so a
 -- screenshot is soon useless. At a reader it checks the person in, or books the
 -- turn about to start. The QR carries only the token, no personal data; a token

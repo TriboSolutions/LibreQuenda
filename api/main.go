@@ -10,6 +10,7 @@ import (
 	"librequenda/core/bookings"
 	"librequenda/core/calendar"
 	"librequenda/core/counciladmin"
+	"librequenda/core/entrance"
 	"librequenda/core/health"
 	"librequenda/core/invites"
 	"librequenda/core/me"
@@ -58,5 +59,6 @@ func main() {
 	media.MediaRoutes(dbConexion, router).RegisterRoutes()
 	counciladmin.CounciladminRoutes(dbConexion, router).RegisterRoutes()
 	reader.ReaderRoutes(dbConexion, router).RegisterRoutes()
+	entrance.EntranceRoutes(dbConexion, router).RegisterRoutes()
 	router.StartServer(":8000")
 }

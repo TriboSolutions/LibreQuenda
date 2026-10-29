@@ -528,7 +528,7 @@
   "checkin": {
     "title": "Cómo se registra la entrada",
     "help": "Elige una o varias formas de registrar la entrada de los vecinos. Todas acaban en el mismo registro de la reserva, así que la asistencia y los indicadores no cambian. Elige según el presupuesto y lo que importen las trampas aquí.",
-    "preview": "Vista previa: hoy solo funciona el lector QR y lo que elijas en esta pestaña aún no se guarda. Los lectores que aparecen debajo sí son reales.",
+    "preview": "Funcionan el lector QR, el QR impreso y el código en una hoja diaria. El NFC, el código rotativo y la confirmación del personal son una vista previa: lo que elijas en ellos no se guarda.",
     "built": "Funciona",
     "soon": "Próximamente",
     "door": "En la puerta:",
@@ -539,18 +539,23 @@
       "how": "El vecino enseña el QR de su reserva, o su QR flash personal, a un dispositivo con cámara en la puerta.",
       "door": "un móvil, tableta o pequeño ordenador con el lector",
       "cost": "un móvil o tableta barato",
-      "cheat": "sí, los códigos son por reserva o cambian cada minuto",
-      "flash": "Aceptar el QR de reserva flash",
-      "flashHelp": "Al leer el QR personal se reserva al momento el turno en curso, o el siguiente, si está libre."
+      "cheat": "sí, los códigos son por reserva o cambian cada minuto"
     },
     "printedQr": {
       "name": "QR impreso en la puerta",
       "how": "El vecino escanea una hoja con el QR de la instalación y la app registra su reserva de este turno.",
       "door": "una hoja de papel",
       "cost": "casi gratis",
-      "cheat": "bajo; mejor con una ventana de tiempo y la ubicación del móvil",
-      "address": "El QR abriría {{url}}.",
-      "window": "La entrada se abre estos minutos antes del inicio"
+      "cheat": "bajo por sí solo: siempre se comprueba la ubicación del móvil",
+      "address": "El QR abre {{url}}.",
+      "qrAlt": "QR para registrar la entrada en la instalación",
+      "print": "Imprimir el QR",
+      "newQr": "Nuevo QR",
+      "newTitle": "¿Crear un QR nuevo?",
+      "newBody": "Los QR ya impresos dejan de funcionar al momento. Imprime el nuevo y cambia las hojas de las puertas.",
+      "newConfirm": "Crear un QR nuevo",
+      "keep": "Mantener este QR",
+      "rotated": "QR nuevo listo. Imprímelo y cambia las hojas antiguas."
     },
     "nfc": {
       "name": "Etiqueta NFC",
@@ -582,7 +587,9 @@
       "door": "una hoja impresa, cambiada cada día",
       "cost": "casi gratis",
       "cheat": "medio, alguien tiene que cambiar la hoja cada día",
-      "help": "La hoja de cada día se imprimiría desde aquí, con un código por turno."
+      "date": "Día de la hoja",
+      "print": "Imprimir la hoja",
+      "help": "Imprime una hoja para cada día, con un código por turno. Cada día tiene códigos distintos y siempre se comprueba la ubicación del móvil."
     },
     "staff": {
       "name": "Confirmación del personal",
@@ -594,9 +601,34 @@
       "open": "Abrir las reservas de esta instalación"
     },
     "location": {
-      "label": "Comprobar la ubicación del móvil",
-      "help": "El móvil tiene que estar cerca del punto de la instalación en el mapa. El vecino tiene que permitirlo y la ubicación nunca se guarda.",
-      "radius": "Distancia al punto, en metros"
+      "help": "El QR impreso y los códigos de turno solo funcionan con el móvil a esta distancia del punto de la instalación en el mapa. El vecino tiene que permitir la ubicación, que se comprueba y nunca se guarda.",
+      "radius": "Distancia al punto, en metros",
+      "noPin": "Sitúa la instalación en el mapa, en la pestaña Datos, para usar el QR impreso o los códigos de turno: la ubicación del móvil se compara con ese punto.",
+      "required": "Quien entre con el QR impreso o un código de turno tiene que estar a menos de {{metres}} m de la instalación."
+    },
+    "loadError": "No se pudo cargar la configuración de entrada.",
+    "save": "Guardar",
+    "saving": "Guardando…",
+    "saved": "Guardado.",
+    "saveToPrint": "Actívalo y guarda para imprimirlo.",
+    "flash": {
+      "label": "Reservar un turno libre en la puerta",
+      "help": "Sin reserva, un vecino puede reservar en el momento el turno en curso o el que está a punto de empezar, con las normas de siempre: con el QR personal en un lector o desde su móvil en la puerta."
+    },
+    "print": {
+      "back": "Volver a la instalación",
+      "print": "Imprimir",
+      "qrTitle": "Registra aquí tu entrada",
+      "qrStep1": "Escanea este QR con la cámara del móvil.",
+      "qrStep2": "Inicia sesión si te lo pide y permite la ubicación.",
+      "qrStep3": "Tu reserva de este turno queda con la entrada registrada.",
+      "qrStep3Flash": "Tu reserva de este turno queda con la entrada registrada. Sin reserva, puedes reservar en el momento un turno libre.",
+      "codesTitle": "Códigos de entrada",
+      "codesHelp": "En {{url}}, escribe el código de tu turno con la ubicación del móvil activada.",
+      "colTurn": "Turno",
+      "colCode": "Código",
+      "noTurns": "La instalación no tiene turnos este día.",
+      "codesValid": "Estos códigos solo sirven este día."
     }
   },
   "branding": {

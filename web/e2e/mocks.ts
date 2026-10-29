@@ -399,16 +399,42 @@ const reader: Reader = {
   now: iso(now),
 }
 
+// check-in from the resident's phone: both ways on, so the tab shows the QR and the sheet
+const checkinSettings = { printed_qr: true, qr_token: '9a1f6c2e-3b4d-4e5f-8a7b-1c2d3e4f5a6b', turn_codes: true, radius_m: 100, flash_booking: true, has_location: true }
+const turnCodes = {
+  date: '2026-11-03',
+  timezone: TZ,
+  turns: [
+    { starts_at: '2026-11-03T08:00:00Z', ends_at: '2026-11-03T09:00:00Z', code: '482913' },
+    { starts_at: '2026-11-03T09:00:00Z', ends_at: '2026-11-03T10:00:00Z', code: '075326' },
+  ],
+}
+const entrance = {
+  facility_name: 'Pista de pádel 1',
+  facility_slug: 'padel-1',
+  tenant_name: 'Concello de Lugo',
+  tenant_slug: 'lugo',
+  timezone: TZ,
+  printed_qr: true,
+  turn_codes: true,
+  radius_m: 100,
+  flash_booking: true,
+  booking: null,
+}
+
 /** GET handlers by path (without /api), first match wins. */
 const routes: [RegExp, () => unknown][] = [
   [/^\/tenants$/, () => ({ tenants })],
   [/^\/tags$/, () => tagCatalogue],
   [/^\/facilities$/, () => ({ facilities: facilityCards })],
   [/^\/tenants\/[^/]+\/day/, () => day],
+  [/^\/tenants\/[^/]+\/facilities\/[^/]+\/entrance$/, () => entrance],
   [/^\/tenants\/[^/]+\/facilities\/[^/?]+/, () => facilityPage],
   [/^\/tenants\/[^/]+\/admin\/facilities$/, () => ({ facilities: adminFacilities })],
   [/^\/tenants\/[^/]+\/admin\/facilities\/[^/]+\/bookings/, () => staffDay],
   [/^\/tenants\/[^/]+\/admin\/facilities\/[^/]+\/devices$/, () => ({ devices: [{ id: 'd1', name: 'Entrada principal', key_hint: 'ab12', last_seen_at: at(-1), created_at: at(-100) }] })],
+  [/^\/tenants\/[^/]+\/admin\/facilities\/[^/]+\/checkin\/codes/, () => turnCodes],
+  [/^\/tenants\/[^/]+\/admin\/facilities\/[^/]+\/checkin$/, () => checkinSettings],
   [/^\/tenants\/[^/]+\/admin\/facilities\/[^/]+$/, () => adminFacility],
   [/^\/tenants\/[^/]+\/admin\/indicators/, indicators],
   [/^\/tenants\/[^/]+\/admin\/smtp$/, () => smtp],
@@ -453,6 +479,10 @@ export async function mockApp(page: Page, { signedIn = true, theme = 'light', la
   await page.route('**/api/**', (route) => {
     const url = new URL(route.request().url())
     const path = url.pathname.replace(/^\/api/, '')
+    // the phone at the door without a booking: it is offered to book the free turn
+    if (route.request().method() === 'POST' && /\/entrance$/.test(path)) {
+      return fulfil(route, { granted: false, result: 'no_booking', can_book: true, booking: null })
+    }
     if (route.request().method() !== 'GET') return route.fulfill({ status: 204 })
     if (path === '/branding') return fulfil(route, branding)
     const handler = routes.find(([pattern]) => pattern.test(path))

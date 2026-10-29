@@ -528,7 +528,7 @@
   "checkin": {
     "title": "Com es registra l’entrada",
     "help": "Tria una o diverses maneres de registrar l’entrada dels veïns. Totes acaben en el mateix registre de la reserva, així que l’assistència i els indicadors no canvien. Tria segons el pressupost i el que importin les trampes aquí.",
-    "preview": "Previsualització: avui només funciona el lector QR i el que triïs en aquesta pestanya encara no es desa. Els lectors que apareixen a sota sí que són reals.",
+    "preview": "Funcionen el lector QR, el QR imprès i el codi en un full diari. L’NFC, el codi rotatiu i la confirmació del personal són una previsualització: el que triïs no es desa.",
     "built": "Funciona",
     "soon": "Aviat",
     "door": "A la porta:",
@@ -539,18 +539,23 @@
       "how": "El veí mostra el QR de la seva reserva, o el seu QR flaix personal, a un dispositiu amb càmera a la porta.",
       "door": "un mòbil, tauleta o petit ordinador amb el lector",
       "cost": "un mòbil o tauleta barat",
-      "cheat": "sí, els codis són per reserva o canvien cada minut",
-      "flash": "Acceptar el QR de reserva flaix",
-      "flashHelp": "En llegir el QR personal es reserva a l’instant el torn en curs, o el següent, si és lliure."
+      "cheat": "sí, els codis són per reserva o canvien cada minut"
     },
     "printedQr": {
       "name": "QR imprès a la porta",
       "how": "El veí escaneja un full amb el QR de la instal·lació i l’app registra la seva reserva d’aquest torn.",
       "door": "un full de paper",
       "cost": "gairebé gratuït",
-      "cheat": "baix; millor amb una finestra de temps i la ubicació del mòbil",
-      "address": "El QR obriria {{url}}.",
-      "window": "L’entrada s’obre aquests minuts abans de l’inici"
+      "cheat": "baix per si sol: sempre es comprova la ubicació del mòbil",
+      "address": "El QR obre {{url}}.",
+      "qrAlt": "QR per registrar l’entrada a la instal·lació",
+      "print": "Imprimir el QR",
+      "newQr": "Nou QR",
+      "newTitle": "Crear un QR nou?",
+      "newBody": "Els QR ja impresos deixen de funcionar al moment. Imprimeix el nou i canvia els fulls de les portes.",
+      "newConfirm": "Crear un QR nou",
+      "keep": "Mantenir aquest QR",
+      "rotated": "QR nou a punt. Imprimeix-lo i canvia els fulls antics."
     },
     "nfc": {
       "name": "Etiqueta NFC",
@@ -582,7 +587,9 @@
       "door": "un full imprès, canviat cada dia",
       "cost": "gairebé gratuït",
       "cheat": "mitjà, algú ha de canviar el full cada dia",
-      "help": "El full de cada dia s’imprimiria des d’aquí, amb un codi per torn."
+      "date": "Dia del full",
+      "print": "Imprimir el full",
+      "help": "Imprimeix un full per a cada dia, amb un codi per torn. Cada dia té codis diferents i sempre es comprova la ubicació del mòbil."
     },
     "staff": {
       "name": "Confirmació del personal",
@@ -594,9 +601,34 @@
       "open": "Obrir les reserves d’aquesta instal·lació"
     },
     "location": {
-      "label": "Comprovar la ubicació del mòbil",
-      "help": "El mòbil ha de ser a prop del punt de la instal·lació al mapa. El veí ho ha de permetre i la ubicació no es desa mai.",
-      "radius": "Distància al punt, en metres"
+      "help": "El QR imprès i els codis de torn només funcionen amb el mòbil a aquesta distància del punt de la instal·lació al mapa. El veí ha de permetre la ubicació, que es comprova i no es desa mai.",
+      "radius": "Distància al punt, en metres",
+      "noPin": "Situa la instal·lació al mapa, a la pestanya Dades, per fer servir el QR imprès o els codis de torn: la ubicació del mòbil es compara amb aquest punt.",
+      "required": "Qui entri amb el QR imprès o un codi de torn ha de ser a menys de {{metres}} m de la instal·lació."
+    },
+    "loadError": "No s’ha pogut carregar la configuració d’entrada.",
+    "save": "Desar",
+    "saving": "Desant…",
+    "saved": "Desat.",
+    "saveToPrint": "Activa-ho i desa per imprimir-ho.",
+    "flash": {
+      "label": "Reservar un torn lliure a la porta",
+      "help": "Sense reserva, un veí pot reservar al moment el torn en curs o el que està a punt de començar, amb les normes de sempre: amb el QR personal en un lector o des del seu mòbil a la porta."
+    },
+    "print": {
+      "back": "Tornar a la instal·lació",
+      "print": "Imprimir",
+      "qrTitle": "Registra aquí la teva entrada",
+      "qrStep1": "Escaneja aquest QR amb la càmera del mòbil.",
+      "qrStep2": "Inicia la sessió si t’ho demana i permet la ubicació.",
+      "qrStep3": "La teva reserva d’aquest torn queda amb l’entrada registrada.",
+      "qrStep3Flash": "La teva reserva d’aquest torn queda amb l’entrada registrada. Sense reserva, pots reservar al moment un torn lliure.",
+      "codesTitle": "Codis d’entrada",
+      "codesHelp": "A {{url}}, escriu el codi del teu torn amb la ubicació del mòbil activada.",
+      "colTurn": "Torn",
+      "colCode": "Codi",
+      "noTurns": "La instal·lació no té torns aquest dia.",
+      "codesValid": "Aquests codis només serveixen aquest dia."
     }
   },
   "branding": {

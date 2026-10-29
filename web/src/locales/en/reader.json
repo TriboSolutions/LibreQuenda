@@ -56,6 +56,7 @@
     "booking_overlaps": "You already have another booking at that time.",
     "facility_not_found": "This facility cannot be booked right now.",
     "other": "Book in the app, or ask the staff.",
-    "use_booking_qr": "You have a booking here: go in with that booking's QR."
+    "use_booking_qr": "You have a booking here: go in with that booking's QR.",
+    "flash_off": "The council does not let a free turn be booked at the door here. Book in the app."
   }
 }

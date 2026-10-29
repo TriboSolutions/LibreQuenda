@@ -54,6 +54,12 @@ CREATE POLICY checkin_device_insert ON checkin_device FOR INSERT WITH CHECK (app
 CREATE POLICY checkin_device_update ON checkin_device FOR UPDATE USING (app_owns_facility(facility_id)) WITH CHECK (app_owns_facility(facility_id));
 CREATE POLICY checkin_device_delete ON checkin_device FOR DELETE USING (app_owns_facility(facility_id));
 
+-- facility_checkin: read when a resident checks in, written by the council
+ALTER TABLE facility_checkin ENABLE ROW LEVEL SECURITY;
+CREATE POLICY facility_checkin_read   ON facility_checkin FOR SELECT USING (TRUE);
+CREATE POLICY facility_checkin_insert ON facility_checkin FOR INSERT WITH CHECK (app_owns_facility(facility_id));
+CREATE POLICY facility_checkin_update ON facility_checkin FOR UPDATE USING (app_owns_facility(facility_id)) WITH CHECK (app_owns_facility(facility_id));
+
 -- facility_tag: the catalogue (tag, tag_category) belongs to the platform; which tags a facility carries, to its council
 ALTER TABLE facility_tag ENABLE ROW LEVEL SECURITY;
 CREATE POLICY facility_tag_read   ON facility_tag FOR SELECT USING (TRUE);

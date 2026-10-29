@@ -243,6 +243,55 @@ export type CheckinResult = {
   } | null
 }
 
+/** How residents check in from their own phone at the facility (Entrada tab): both ways need its pin. */
+export type CheckinSettings = {
+  printed_qr: boolean
+  qr_token: string // in the printed QR's address; a new one voids the prints
+  turn_codes: boolean
+  radius_m: number // how far from the pin the phone may be
+  flash_booking: boolean // a free turn can be booked on the spot, also with the personal QR at the readers
+  has_location: boolean
+}
+export type CheckinSettingsInput = Pick<CheckinSettings, 'printed_qr' | 'turn_codes' | 'radius_m' | 'flash_booking'>
+/** The daily sheet: one code per turn. */
+export type TurnCodes = { date: string; timezone: string; turns: { starts_at: string; ends_at: string; code: string }[] }
+
+/** /<council>/<facility>/entrada: checking in from the resident's own phone. */
+export type Entrance = {
+  facility_name: string
+  facility_slug: string
+  tenant_name: string
+  tenant_slug: string
+  timezone: string
+  printed_qr: boolean
+  turn_codes: boolean
+  radius_m: number
+  flash_booking: boolean
+  booking: { starts_at: string; ends_at: string; checked_in_at: string | null } | null // theirs, that can go in now
+}
+/** The proof of being at the door, and where the phone is (checked, never stored). */
+export type EntranceInput = {
+  qr_token?: string
+  code?: string
+  latitude: number
+  longitude: number
+  accuracy: number
+  book?: boolean // without a booking: book a free turn and check in
+}
+export type EntranceResult = Omit<CheckinResult, 'result'> & {
+  result:
+    | CheckinResultCode
+    | 'method_off'
+    | 'invalid_qr' // an old print
+    | 'wrong_code'
+    | 'no_facility_location'
+    | 'location_required'
+    | 'location_inaccurate'
+    | 'too_far'
+    | 'no_booking' // see can_book
+  can_book: boolean
+}
+
 export type Booking = {
   id: string
   starts_at: string
@@ -726,6 +775,14 @@ export const api = {
       }),
     deleteDevice: (token: string, slug: string, facilityId: string, deviceId: string) =>
       request<void>(`/tenants/${encodeURIComponent(slug)}/admin/facilities/${facilityId}/devices/${deviceId}`, { token, method: 'DELETE' }),
+    checkinSettings: (token: string, slug: string, facilityId: string) =>
+      request<CheckinSettings>(`/tenants/${encodeURIComponent(slug)}/admin/facilities/${facilityId}/checkin`, { token }),
+    saveCheckinSettings: (token: string, slug: string, facilityId: string, input: CheckinSettingsInput) =>
+      request<CheckinSettings>(`/tenants/${encodeURIComponent(slug)}/admin/facilities/${facilityId}/checkin`, { token, method: 'PUT', body: input }),
+    rotateCheckinQr: (token: string, slug: string, facilityId: string) =>
+      request<CheckinSettings>(`/tenants/${encodeURIComponent(slug)}/admin/facilities/${facilityId}/checkin/qr`, { token, method: 'POST' }),
+    turnCodes: (token: string, slug: string, facilityId: string, date: string) =>
+      request<TurnCodes>(`/tenants/${encodeURIComponent(slug)}/admin/facilities/${facilityId}/checkin/codes?date=${date}`, { token }),
     staffDay: (token: string, slug: string, facilityId: string, date: string) =>
       request<StaffDay>(`/tenants/${encodeURIComponent(slug)}/admin/facilities/${facilityId}/bookings?date=${date}`, { token }),
     staffBook: (token: string, slug: string, input: StaffBookingInput) =>
@@ -746,6 +803,18 @@ export const api = {
       request<{ to: string; via: 'council' | 'environment' }>(`/tenants/${encodeURIComponent(slug)}/admin/smtp/test`, { token, method: 'POST' }),
     geocode: (token: string, query: string) =>
       request<{ results: GeocodeResult[] }>(`/geocode?q=${encodeURIComponent(query)}`, { token }),
+  },
+
+  // the resident's own phone at the door
+  entrance: {
+    get: (token: string, slug: string, facility: string) =>
+      request<Entrance>(`/tenants/${encodeURIComponent(slug)}/facilities/${encodeURIComponent(facility)}/entrance`, { token }),
+    checkIn: (token: string, slug: string, facility: string, input: EntranceInput) =>
+      request<EntranceResult>(`/tenants/${encodeURIComponent(slug)}/facilities/${encodeURIComponent(facility)}/entrance`, {
+        token,
+        method: 'POST',
+        body: input,
+      }),
   },
 
   // the device key goes where a user token would

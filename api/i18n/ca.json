@@ -145,7 +145,10 @@
     "smtp_password_unreadable": "No es pot llegir la configuració SMTP desada (ha canviat la clau de xifratge). Torna-la a escriure i desa.",
     "export_failed": "No s'han pogut preparar les teves dades. Torna-ho a provar.",
     "council_export_failed": "No hem pogut preparar les dades de l'ajuntament. Torna-ho a provar.",
-    "account_delete_failed": "No s'ha pogut eliminar el teu compte. No s'ha esborrat res; torna-ho a provar d'aquí a un moment."
+    "account_delete_failed": "No s'ha pogut eliminar el teu compte. No s'ha esborrat res; torna-ho a provar d'aquí a un moment.",
+    "checkin_settings_failed": "No s'ha pogut desar la configuració d'entrada. Torna-ho a provar.",
+    "invalid_checkin_radius": "La distància ha de ser entre 25 i 1000 metres.",
+    "checkin_needs_location": "Situa primer la instal·lació al mapa: la ubicació del mòbil es compara amb ella."
   },
   "email": {
     "greeting": "Hola {{0}},",
