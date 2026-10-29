@@ -5,6 +5,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
+import { useBranding } from '@/hooks/useBranding'
 import { api } from '@/lib/api'
 
 type Props = { slug: string; token: string }
@@ -12,6 +13,7 @@ type Props = { slug: string; token: string }
 /** Download everything the council keeps here, in open formats, to take it elsewhere. */
 export function CouncilExport({ slug, token }: Props) {
   const { t } = useTranslation(['admin'])
+  const { branding } = useBranding()
   const [busy, setBusy] = useState(false)
   const [personal, setPersonal] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -33,7 +35,7 @@ export function CouncilExport({ slug, token }: Props) {
       <h3 id="sheet-export" className="font-semibold">
         {t('admin:councilExport.title')}
       </h3>
-      <p className="max-w-[70ch] text-muted-foreground">{t('admin:councilExport.help')}</p>
+      <p className="max-w-[70ch] text-muted-foreground">{t('admin:councilExport.help', { app: branding.name })}</p>
       <p className="max-w-[70ch] text-xs text-muted-foreground">{t('admin:councilExport.privacy')}</p>
       <div className="flex items-start gap-2">
         <Checkbox id="export-personal" checked={personal} onCheckedChange={(checked) => setPersonal(checked === true)} aria-describedby="export-personal-help" className="mt-0.5" />

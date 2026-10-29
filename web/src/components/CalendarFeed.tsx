@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAsync } from '@/hooks/useAsync'
+import { useBranding } from '@/hooks/useBranding'
 import { api, type CalendarFeed as Feed } from '@/lib/api'
 
 /*
@@ -35,6 +36,7 @@ function subscribeLinks(url: string, name: string) {
 
 export function CalendarFeed() {
   const { t } = useTranslation('profile')
+  const { branding } = useBranding()
   const auth = useAuth()
   const token = auth.user?.access_token
   const loaded = useAsync(token ? () => api.calendarFeed.get(token) : null, `calendar:${token ?? ''}`)
@@ -87,7 +89,7 @@ export function CalendarFeed() {
       </div>
     )
   } else {
-    const links = subscribeLinks(url, 'LibreQuenda')
+    const links = subscribeLinks(url, branding.name)
     const web = { target: '_blank', rel: 'noopener noreferrer' }
     body = (
       <>

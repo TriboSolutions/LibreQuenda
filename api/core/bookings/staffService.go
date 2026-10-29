@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"librequenda/branding"
 	"librequenda/model"
 	"librequenda/shared"
 	"net/http"
@@ -93,7 +94,7 @@ func (s *bookingsService) StaffBook(ctx context.Context, tenantId uuid.UUID, sta
 	if input.Email != "" {
 		var user, err = queries.GetUserByEmailForStaff(ctx, input.Email)
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, &shared.ErrorResponse{Code: http.StatusNotFound, Message: "errors.person_not_found"}
+			return nil, &shared.ErrorResponse{Code: http.StatusNotFound, Message: "errors.person_not_found", Args: []any{branding.Name(ctx, s.db)}}
 		}
 		if err != nil {
 			return nil, failed

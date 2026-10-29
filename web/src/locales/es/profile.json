@@ -25,7 +25,7 @@
   "birthDateRequired": "Indica tu fecha de nacimiento: es obligatoria para reservar.",
   "accountSettings": {
     "title": "Cuenta de acceso",
-    "help": "El nombre, el correo y la contraseña con los que inicias sesión. Si los cambias aquí, cambian en todo LibreQuenda.",
+    "help": "El nombre, el correo y la contraseña con los que inicias sesión. Si los cambias aquí, cambian en todo {{app}}.",
     "name": "Nombre",
     "givenName": "Nombre",
     "familyName": "Apellidos",
@@ -62,7 +62,7 @@
   "signInToVerify": "Inicia sesión para terminar de verificar tu correo. Volverás aquí y quedará verificado.",
   "privacy": {
     "title": "Tus datos",
-    "help": "Según el RGPD puedes llevarte una copia de todo lo que LibreQuenda guarda sobre ti, o eliminar tu cuenta.",
+    "help": "Según el RGPD puedes llevarte una copia de todo lo que {{app}} guarda sobre ti, o eliminar tu cuenta.",
     "exportTitle": "Descargar tus datos",
     "exportHelp": "Tu perfil, roles, reservas, las reservas a las que te uniste y tus avisos. JSON sirve para otras aplicaciones; CSV se abre en una hoja de cálculo.",
     "exportJson": "Descargar JSON",
@@ -80,7 +80,7 @@
     "deleteConfirm": "Eliminar para siempre",
     "deleting": "Eliminando…",
     "deletedTitle": "Tu cuenta se ha eliminado.",
-    "deletedBody": "Tus datos personales ya no están en LibreQuenda. Puedes crear una cuenta nueva cuando quieras."
+    "deletedBody": "Tus datos personales ya no están en {{app}}. Puedes crear una cuenta nueva cuando quieras."
   },
   "personalQr": {
     "help": "¿Llegas a una instalación con lector QR y está libre? Resérvala en el momento con tu QR.",

@@ -1,7 +1,7 @@
 {
   "footerLink": "Accessibility statement",
   "title": "Accessibility statement",
-  "intro": "The councils that offer their sports facilities on LibreQuenda are committed to making this website accessible, in accordance with Royal Decree 1112/2018 of 7 September on the accessibility of public sector websites and mobile applications. This statement applies to {{host}}.",
+  "intro": "The councils that offer their sports facilities on {{app}} are committed to making this website accessible, in accordance with Royal Decree 1112/2018 of 7 September on the accessibility of public sector websites and mobile applications. This statement applies to {{host}}.",
   "status": {
     "title": "Compliance status",
     "body": "This website is partially compliant with Royal Decree 1112/2018 due to the exemptions and the points listed below."

@@ -1,7 +1,7 @@
 {
   "footerLink": "Declaración de accesibilidade",
   "title": "Declaración de accesibilidade",
-  "intro": "Os concellos que ofrecen as súas instalacións deportivas en LibreQuenda comprométense a facer accesible este sitio web, de acordo co Real Decreto 1112/2018, do 7 de setembro, sobre accesibilidade dos sitios web e aplicacións para dispositivos móbiles do sector público. Esta declaración aplícase a {{host}}.",
+  "intro": "Os concellos que ofrecen as súas instalacións deportivas en {{app}} comprométense a facer accesible este sitio web, de acordo co Real Decreto 1112/2018, do 7 de setembro, sobre accesibilidade dos sitios web e aplicacións para dispositivos móbiles do sector público. Esta declaración aplícase a {{host}}.",
   "status": {
     "title": "Situación de cumprimento",
     "body": "Este sitio web é parcialmente conforme co Real Decreto 1112/2018 polas excepcións e os aspectos que se indican a continuación."

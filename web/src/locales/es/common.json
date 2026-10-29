@@ -1,7 +1,7 @@
 {
   "council": "Ayuntamiento",
   "chooseCouncil": "Elige tu ayuntamiento",
-  "home": "LibreQuenda, inicio",
+  "home": "{{app}}, inicio",
   "signIn": "Iniciar sesión",
   "signOut": "Cerrar sesión",
   "account": "Cuenta de {{name}}",

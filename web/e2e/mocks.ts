@@ -4,6 +4,7 @@ import type {
   AdminFacility,
   AdminFacilitySummary,
   Booking,
+  Branding,
   CouncilDetail,
   CouncilSmtp,
   CouncilSummary,
@@ -430,10 +431,12 @@ function fulfil(route: Route, body: unknown, status = 200) {
   return route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(body) })
 }
 
-export type MockOptions = { signedIn?: boolean; theme?: 'light' | 'dark'; lang?: string }
+export const defaultBranding: Branding = { name: 'LibreQuenda', custom_name: '', logo_ref: '', logo_url: '' }
+
+export type MockOptions = { signedIn?: boolean; theme?: 'light' | 'dark'; lang?: string; branding?: Branding }
 
 /** Mocks /config.json, the OIDC provider and /api, and seeds the session in localStorage. */
-export async function mockApp(page: Page, { signedIn = true, theme = 'light', lang = 'gl' }: MockOptions = {}) {
+export async function mockApp(page: Page, { signedIn = true, theme = 'light', lang = 'gl', branding = defaultBranding }: MockOptions = {}) {
   await page.route('**/config.json', (route) =>
     fulfil(route, { authority: AUTHORITY, clientId: CLIENT_ID, projectId: 'p1', scope: 'openid profile email' }),
   )
@@ -451,6 +454,7 @@ export async function mockApp(page: Page, { signedIn = true, theme = 'light', la
     const url = new URL(route.request().url())
     const path = url.pathname.replace(/^\/api/, '')
     if (route.request().method() !== 'GET') return route.fulfill({ status: 204 })
+    if (path === '/branding') return fulfil(route, branding)
     const handler = routes.find(([pattern]) => pattern.test(path))
     return handler ? fulfil(route, handler[1]()) : fulfil(route, { error: 'not found' }, 404)
   })

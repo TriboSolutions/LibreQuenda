@@ -1,7 +1,7 @@
 {
   "footerLink": "Declaració d’accessibilitat",
   "title": "Declaració d’accessibilitat",
-  "intro": "Els ajuntaments que ofereixen les seves instal·lacions esportives a LibreQuenda es comprometen a fer accessible aquest lloc web, d’acord amb el Reial decret 1112/2018, de 7 de setembre, sobre accessibilitat dels llocs web i aplicacions per a dispositius mòbils del sector públic. Aquesta declaració s’aplica a {{host}}.",
+  "intro": "Els ajuntaments que ofereixen les seves instal·lacions esportives a {{app}} es comprometen a fer accessible aquest lloc web, d’acord amb el Reial decret 1112/2018, de 7 de setembre, sobre accessibilitat dels llocs web i aplicacions per a dispositius mòbils del sector públic. Aquesta declaració s’aplica a {{host}}.",
   "status": {
     "title": "Situació de compliment",
     "body": "Aquest lloc web és parcialment conforme amb el Reial decret 1112/2018 per les excepcions i els aspectes que s’indiquen a continuació."

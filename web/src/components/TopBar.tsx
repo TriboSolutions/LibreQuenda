@@ -3,12 +3,12 @@ import { Building2, CalendarDays, LogOut, QrCode, ShieldCheck, UserRound } from 
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import { Link, useNavigate } from 'react-router'
+import { BrandLogo, BrandName } from '@/components/Brand'
 import { InvitationReminder } from '@/components/InvitationReminder'
 import { LanguageMenu } from '@/components/LanguageMenu'
 import { NotificationBell } from '@/components/NotificationBell'
 import { PersonalQrDialog } from '@/components/PersonalQr'
 import { ProfileReminder } from '@/components/ProfileReminder'
-import { Mark, Wordmark } from '@/components/Mark'
 import { ThemeMenu } from '@/components/ThemeMenu'
 import { Button } from '@/components/ui/button'
 import {
@@ -19,6 +19,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useBranding } from '@/hooks/useBranding'
 import { useCouncilAdmin } from '@/hooks/useCouncilAdmin'
 import { useLogin } from '@/hooks/useLogin'
 import { useMe } from '@/hooks/useMe'
@@ -42,6 +43,7 @@ export function TopBar({ tenants, tenantSlug }: Props) {
   const { t } = useTranslation(['common', 'admin', 'profile', 'invites'])
   const auth = useAuth()
   const { me } = useMe()
+  const { branding } = useBranding()
   const managesCouncil = useCouncilAdmin(tenantSlug)
   const navigate = useNavigate()
   const { login, register } = useLogin()
@@ -61,9 +63,9 @@ export function TopBar({ tenants, tenantSlug }: Props) {
     </a>
     <header className="border-b bg-card">
       <div className="mx-auto flex h-14 max-w-[1152px] items-center gap-3 px-4 sm:px-6">
-        <Link to="/" className="flex shrink-0 items-center gap-2 rounded-md font-semibold" aria-label={t('common:home')}>
-          <Mark className="size-7" />
-          <Wordmark className="hidden text-[17px] tracking-tight sm:inline" />
+        <Link to="/" className="flex shrink-0 items-center gap-2 rounded-md font-semibold" aria-label={t('common:home', { app: branding.name })}>
+          <BrandLogo className="size-7" />
+          <BrandName className="hidden max-w-60 truncate text-[17px] tracking-tight sm:inline" />
         </Link>
 
         <div className="ml-auto flex shrink-0 items-center gap-1">

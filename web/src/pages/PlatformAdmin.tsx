@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import { Link } from 'react-router'
+import { BrandingPanel } from '@/components/admin/BrandingPanel'
 import { CouncilsPanel } from '@/components/admin/CouncilsPanel'
 import { SuperadminsPanel } from '@/components/admin/SuperadminsPanel'
 import { TagsPanel } from '@/components/admin/TagsPanel'
@@ -13,7 +14,7 @@ import { useMe } from '@/hooks/useMe'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { SiteFooter } from '@/components/SiteFooter'
 
-/** /admin: the superadministrator's area (councils, superadministrators and the facility tag catalogue). */
+/** /admin: the superadministrator's area (councils, superadministrators, the facility tag catalogue and the app's name and logo). */
 export function PlatformAdmin() {
   const { t } = useTranslation(['admin', 'common'])
   const auth = useAuth()
@@ -52,6 +53,7 @@ export function PlatformAdmin() {
           <TabsTrigger value="councils">{t('admin:tabs.councils')}</TabsTrigger>
           <TabsTrigger value="superadmins">{t('admin:tabs.superadmins')}</TabsTrigger>
           <TabsTrigger value="tags">{t('admin:tabs.tags')}</TabsTrigger>
+          <TabsTrigger value="branding">{t('admin:tabs.branding')}</TabsTrigger>
         </TabsList>
         <TabsContent value="councils">
           <CouncilsPanel />
@@ -61,6 +63,9 @@ export function PlatformAdmin() {
         </TabsContent>
         <TabsContent value="tags">
           <TagsPanel />
+        </TabsContent>
+        <TabsContent value="branding">
+          <BrandingPanel />
         </TabsContent>
       </Tabs>
     )

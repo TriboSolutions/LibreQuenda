@@ -53,6 +53,9 @@
     "upload_type_not_allowed": "Només s'admeten imatges JPG, PNG o WebP.",
     "upload_failed": "No s'ha pogut desar la imatge. Torna-ho a provar.",
     "invalid_image": "La imatge no és vàlida: torna-la a pujar.",
+    "invalid_app_name": "El nom de l'aplicació pot tenir fins a 60 caràcters.",
+    "branding_load_failed": "No s'ha pogut carregar el nom i el logotip de l'aplicació.",
+    "branding_save_failed": "No s'ha pogut desar el nom i el logotip de l'aplicació.",
     "invalid_facility_name": "Escriu el nom de la instal·lació.",
     "facility_slug_taken": "Aquest ajuntament ja té una instal·lació amb aquesta adreça.",
     "invalid_text_length": "Algun text és massa llarg.",
@@ -113,7 +116,7 @@
     "booking_overlaps": "Ja tens una reserva a aquesta hora.",
     "staff_booking_holder": "Indica el correu del compte de la persona o el seu nom.",
     "staff_booking_holder_too_long": "El nom pot tenir fins a 80 caràcters i el telèfon fins a 30.",
-    "person_not_found": "Cap compte de LibreQuenda no fa servir aquest correu. Reserva al seu nom.",
+    "person_not_found": "Cap compte de {{0}} no fa servir aquest correu. Reserva al seu nom.",
     "person_overlaps": "Aquesta persona ja té una reserva a aquella hora.",
     "booking_started": "Aquesta reserva ja ha començat i no es pot cancel·lar.",
     "notifications_load_failed": "No s'han pogut carregar els teus avisos.",
@@ -150,7 +153,7 @@
     "qr": "Mostra aquest codi QR al lector de l'entrada. Funciona des de 15 minuts abans de l'inici fins al final de la reserva.",
     "address": "Adreça: {{0}}",
     "manage": "Veure les teves reserves",
-    "footer": "Aquest és un missatge automàtic de LibreQuenda sobre la teva reserva.",
+    "footer": "Aquest és un missatge automàtic de {{0}} sobre la teva reserva.",
     "footer_reminders": "Reps aquest recordatori perquè tens els recordatoris activats. Pots desactivar-los al teu perfil: {{0}}",
     "booking_confirmed": {
       "subject": "Reserva confirmada: {{0}}, {{1}} a les {{2}}",
@@ -177,13 +180,13 @@
     "reason": "Motiu: {{0}}",
     "council_admin": {
       "subject": "Ja ets administrador o administradora de {{0}}",
-      "intro": "T'han fet administrador o administradora de {{0}} a LibreQuenda. Inicia la sessió amb aquesta adreça ({{1}}) per gestionar-ne les instal·lacions, els horaris i els tancaments. Si encara no tens compte, crea'l amb aquesta mateixa adreça.",
+      "intro": "T'han fet administrador o administradora de {{0}} a {{2}}. Inicia la sessió amb aquesta adreça ({{1}}) per gestionar-ne les instal·lacions, els horaris i els tancaments. Si encara no tens compte, crea'l amb aquesta mateixa adreça.",
       "manage": "Obrir l'administració",
       "footer": "Reps aquest correu perquè una persona administradora de la plataforma ha afegit aquesta adreça. Si creus que és un error, pots ignorar-lo."
     },
     "smtp_test": {
-      "subject": "Correu de prova de LibreQuenda ({{0}})",
-      "body": "Aquest és un correu de prova de {{0}}, enviat a través de {{1}}. Si el llegeixes, LibreQuenda pot enviar els correus de reserves de l'ajuntament."
+      "subject": "Correu de prova de {{1}} ({{0}})",
+      "body": "Aquest és un correu de prova de {{0}}, enviat a través de {{1}}. Si el llegeixes, {{2}} pot enviar els correus de reserves de l'ajuntament."
     }
   }
 }

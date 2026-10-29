@@ -71,22 +71,26 @@ func TestNotificationEmailTexts(t *testing.T) {
 		model.NotificationTypeBookingCancelled, model.NotificationTypeBookingCancelledByCouncil,
 	} {
 		row.Type = kind
-		var message, err = notificationEmail(row, now)
+		var message, err = notificationEmail(row, "Reservas Lalín", now)
 		if err != nil {
 			t.Fatalf("%s: %v", kind, err)
 		}
 		if strings.Contains(message.Subject, "email.") || strings.Contains(message.Text, "email.") || !strings.Contains(message.Subject, "Pista de tenis") {
 			t.Errorf("%s: missing translation: %q / %q", kind, message.Subject, message.Text)
 		}
+		// the footer names the installation, not LibreQuenda (branding)
+		if kind != model.NotificationTypeBookingReminder && (!strings.Contains(message.Text, "from Reservas Lalín") || strings.Contains(message.HTML, "LibreQuenda")) {
+			t.Errorf("%s: footer does not name the app: %q", kind, message.Text)
+		}
 	}
 	row.Type = model.NotificationTypeBookingCancelledByCouncil
-	var message, _ = notificationEmail(row, now)
+	var message, _ = notificationEmail(row, "Reservas Lalín", now)
 	if !strings.Contains(message.Text, "sorry") || len(message.Inline) != 0 {
 		t.Errorf("council cancellation: %q, %d images", message.Text, len(message.Inline))
 	}
 
 	row.Payload = []byte(`{"reason":"Roof works","closed_from":"2026-11-15T00:00:00+01:00","closed_until":"2026-11-30T23:59:00+01:00"}`)
-	message, _ = notificationEmail(row, now)
+	message, _ = notificationEmail(row, "Reservas Lalín", now)
 	if !strings.Contains(message.Text, "from 15/11/2026 00:00 to 30/11/2026 23:59") || !strings.Contains(message.Text, "Reason: Roof works") {
 		t.Errorf("closure email lacks dates or reason: %q", message.Text)
 	}
@@ -95,9 +99,10 @@ func TestNotificationEmailTexts(t *testing.T) {
 func TestInvitationEmail(t *testing.T) {
 	helpers.GetI18nInstance(helpers.SetDefaultLocale("gl"), helpers.SetDirectory("../i18n"))
 	var row = model.ListPendingInvitationEmailsRow{Email: "nova@example.com", TenantName: "Concello de Lalín", TenantSlug: "lalin"}
-	var message = invitationEmail(row) // no account yet: Galician, no name
+	var message = invitationEmail(row, "Reservas Lalín") // no account yet: Galician, no name
 	if !strings.Contains(message.Subject, "Concello de Lalín") || !strings.Contains(message.Text, "nova@example.com") ||
-		!strings.Contains(message.Text, "/lalin/admin") || !strings.HasPrefix(message.Text, "Ola,") || strings.Contains(message.Text, "email.") {
+		!strings.Contains(message.Text, "/lalin/admin") || !strings.HasPrefix(message.Text, "Ola,") || strings.Contains(message.Text, "email.") ||
+		!strings.Contains(message.Text, "en Reservas Lalín") {
 		t.Errorf("invitation email: %q / %q", message.Subject, message.Text)
 	}
 }

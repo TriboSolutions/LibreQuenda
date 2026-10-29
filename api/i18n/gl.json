@@ -53,6 +53,9 @@
     "upload_type_not_allowed": "Só se admiten imaxes JPG, PNG ou WebP.",
     "upload_failed": "Non foi posible gardar a imaxe. Téntao de novo.",
     "invalid_image": "A imaxe non é válida: súbea de novo.",
+    "invalid_app_name": "O nome da aplicación pode ter ata 60 caracteres.",
+    "branding_load_failed": "Non se puido cargar o nome e o logotipo da aplicación.",
+    "branding_save_failed": "Non se puido gardar o nome e o logotipo da aplicación.",
     "invalid_facility_name": "Escribe o nome da instalación.",
     "facility_slug_taken": "Xa hai unha instalación con ese enderezo neste concello.",
     "invalid_text_length": "Algún texto é demasiado longo.",
@@ -113,7 +116,7 @@
     "booking_overlaps": "Xa tes unha reserva a esa hora.",
     "staff_booking_holder": "Indica o correo da conta da persoa ou o seu nome.",
     "staff_booking_holder_too_long": "O nome pode ter ata 80 caracteres e o teléfono ata 30.",
-    "person_not_found": "Ningunha conta de LibreQuenda usa ese correo. Reserva no seu nome.",
+    "person_not_found": "Ningunha conta de {{0}} usa ese correo. Reserva no seu nome.",
     "person_overlaps": "Esa persoa xa ten unha reserva a esa hora.",
     "booking_started": "Esta reserva xa comezou e non se pode cancelar.",
     "notifications_load_failed": "Non se puideron cargar os teus avisos.",
@@ -150,7 +153,7 @@
     "qr": "Amosa este código QR no lector da entrada. Funciona desde 15 minutos antes do comezo ata o final da reserva.",
     "address": "Enderezo: {{0}}",
     "manage": "Ver as túas reservas",
-    "footer": "Esta é unha mensaxe automática de LibreQuenda sobre a túa reserva.",
+    "footer": "Esta é unha mensaxe automática de {{0}} sobre a túa reserva.",
     "footer_reminders": "Recibes este recordatorio porque tes os recordatorios activados. Podes desactivalos no teu perfil: {{0}}",
     "booking_confirmed": {
       "subject": "Reserva confirmada: {{0}}, {{1}} ás {{2}}",
@@ -177,13 +180,13 @@
     "reason": "Motivo: {{0}}",
     "council_admin": {
       "subject": "Xa es administrador ou administradora de {{0}}",
-      "intro": "Fixéronte administrador ou administradora de {{0}} en LibreQuenda. Inicia sesión con este enderezo ({{1}}) para xestionar as súas instalacións, horarios e peches. Se aínda non tes conta, créaa con este mesmo enderezo.",
+      "intro": "Fixéronte administrador ou administradora de {{0}} en {{2}}. Inicia sesión con este enderezo ({{1}}) para xestionar as súas instalacións, horarios e peches. Se aínda non tes conta, créaa con este mesmo enderezo.",
       "manage": "Abrir a administración",
       "footer": "Recibes este correo porque unha persoa administradora da plataforma engadiu este enderezo. Se cres que é un erro, podes ignoralo."
     },
     "smtp_test": {
-      "subject": "Correo de proba de LibreQuenda ({{0}})",
-      "body": "Este é un correo de proba de {{0}}, enviado a través de {{1}}. Se o estás a ler, LibreQuenda pode enviar os correos de reservas do concello."
+      "subject": "Correo de proba de {{1}} ({{0}})",
+      "body": "Este é un correo de proba de {{0}}, enviado a través de {{1}}. Se o estás a ler, {{2}} pode enviar os correos de reservas do concello."
     }
   }
 }
