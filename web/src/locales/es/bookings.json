@@ -76,5 +76,36 @@
     "email": "También te llega en los correos de confirmación y de recordatorio.",
     "checkedIn": "Entrada registrada a las {{time}}",
     "close": "Cerrar"
+  },
+  "countdown": {
+    "startsIn": "Empieza en {{time}}",
+    "open": "Ya puedes entrar",
+    "running": "En curso · termina en {{time}}",
+    "in": "Entraste a las {{time}}"
+  },
+  "checkin": {
+    "button": "Registrar entrada",
+    "from": "Entrada desde las {{time}}",
+    "title": "Registrar la entrada",
+    "description": "{{facility}}, {{day}}, {{start}}–{{end}}",
+    "intro": "Esta instalación admite estas formas de entrar. Usa la que tengas a mano.",
+    "done": "Ya tienes la entrada registrada a las {{time}}.",
+    "close": "Cerrar",
+    "entry_code": {
+      "title": "Código de entrada",
+      "help": "Escribe el código que está en la puerta o en el mostrador. Te pediremos la ubicación: se comprueba y nunca se guarda."
+    },
+    "printed_qr": {
+      "title": "QR de la puerta",
+      "help": "Escanea con la cámara del móvil el QR impreso en la puerta de la instalación."
+    },
+    "reader": {
+      "title": "QR de tu reserva",
+      "help": "Acerca este QR al lector de la entrada."
+    },
+    "staff": {
+      "title": "Personal de la instalación",
+      "help": "Dile tu nombre al personal y ellos marcan tu entrada."
+    }
   }
 }

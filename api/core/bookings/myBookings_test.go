@@ -3,6 +3,7 @@ package bookings
 import (
 	"database/sql"
 	"librequenda/model"
+	"strings"
 	"testing"
 	"time"
 
@@ -96,5 +97,17 @@ func TestAttendance(t *testing.T) {
 		if got := attendance(c.status, c.endsAt, c.checkedIn, c.readerAtStart, now); got != c.want {
 			t.Errorf("%s: attendance = %q, want %q", c.name, got, c.want)
 		}
+	}
+}
+
+func TestCheckinWays(t *testing.T) {
+	var none = checkinWays(model.ListBookingsByUserRow{})
+	if none == nil || len(none) != 0 {
+		t.Fatalf("no way in must be an empty list, not null: %#v", none)
+	}
+	var all = checkinWays(model.ListBookingsByUserRow{HasReader: true, PrintedQr: true, EntryCode: true, StaffConfirm: true})
+	var want = []string{"entry_code", "printed_qr", "reader", "staff"}
+	if strings.Join(all, ",") != strings.Join(want, ",") {
+		t.Fatalf("got %v, want %v", all, want)
 	}
 }

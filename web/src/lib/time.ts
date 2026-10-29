@@ -116,3 +116,14 @@ export function formatBookingDay(iso: string, timeZone: string, today: string) {
 export function formatDateTime(iso: string, timeZone: string) {
   return i18n.t('common:date.dateTime', { date: shortDateMonth(localDate(iso, timeZone)), time: formatTime(iso, timeZone) })
 }
+
+/** A span of time for countdowns, rounded up to the minute: "2 d 3 h", "2 h 15 min", "12 min". */
+export function formatDuration(ms: number) {
+  const minutes = Math.max(1, Math.ceil(ms / 60_000))
+  const days = Math.floor(minutes / 1440)
+  const hours = Math.floor((minutes % 1440) / 60)
+  const rest = minutes % 60
+  if (days > 0) return [i18n.t('common:duration.days', { count: days }), hours > 0 && i18n.t('common:duration.hours', { count: hours })].filter(Boolean).join(' ')
+  if (hours > 0) return [i18n.t('common:duration.hours', { count: hours }), rest > 0 && i18n.t('common:duration.minutes', { count: rest })].filter(Boolean).join(' ')
+  return i18n.t('common:duration.minutes', { count: rest })
+}

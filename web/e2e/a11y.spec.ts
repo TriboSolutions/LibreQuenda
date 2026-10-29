@@ -95,7 +95,7 @@ for (const theme of ['light', 'dark'] as const) {
     })
 
     // the dialogs on /reservas, each opened from the first upcoming booking
-    for (const button of [/^Cancelar$/, /QR/, /^Convidar$/, /^Cambiar$/]) {
+    for (const button of [/^Cancelar$/, /QR/, /^Convidar$/, /^Cambiar$/, /^Rexistrar entrada$/]) {
       test(`my bookings dialog ${button.source}`, async ({ page }) => {
         await open(page, '/reservas', { theme })
         await page.getByRole('button', { name: button }).first().click()
@@ -246,6 +246,24 @@ test.describe('keyboard', () => {
     await page.keyboard.press('Space')
     await expect(nfc).toBeChecked()
     await expect(page.getByLabel('Tipo de etiqueta')).toBeVisible()
+  })
+
+  test('2.1.1 a booking can be checked in from my bookings with the keyboard alone', async ({ page, context }) => {
+    await context.grantPermissions(['geolocation'])
+    await context.setGeolocation({ latitude: 43.0097, longitude: -7.5568, accuracy: 10 })
+    await open(page, '/reservas')
+    await expect(page.getByText('Xa podes entrar')).toBeVisible()
+    await expect(page.getByText(/^Empeza en \d h/)).toBeVisible()
+    await page.getByRole('button', { name: 'Rexistrar entrada' }).first().focus()
+    await page.keyboard.press('Enter')
+    const dialog = page.getByRole('dialog')
+    for (const way of ['Código de entrada', 'QR da porta', 'QR da túa reserva', 'Persoal da instalación']) {
+      await expect(dialog.getByRole('heading', { name: way })).toBeVisible()
+    }
+    await dialog.getByLabel('Código de entrada').focus()
+    await page.keyboard.type('482915')
+    await page.keyboard.press('Enter')
+    await expect(dialog.getByRole('status')).toContainText('Non tes reserva para esta quenda')
   })
 
   test('2.1.1 the entry code can be typed and sent with the keyboard alone', async ({ page, context }) => {

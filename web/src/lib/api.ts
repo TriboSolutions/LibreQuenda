@@ -317,6 +317,7 @@ export type Booking = {
   cancel_until: string
   checkin_code: string // QR content; "" unless the booking is upcoming and confirmed
   checked_in_at: string | null
+  checkin_ways?: CheckinMethod[] | null // owner only: the ways in the facility takes, for the check-in button
   // past confirmed bookings only, from the QR readers: unknown = no reader when it began, so nobody could check in
   attendance: '' | 'attended' | 'no_show' | 'unknown'
   // invites: the owner shares a link and others fill the facility's capacity

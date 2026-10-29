@@ -76,5 +76,36 @@
     "email": "També t'arriba als correus de confirmació i de recordatori.",
     "checkedIn": "Entrada registrada a les {{time}}",
     "close": "Tancar"
+  },
+  "countdown": {
+    "startsIn": "Comença d’aquí a {{time}}",
+    "open": "Ja pots entrar",
+    "running": "En curs · acaba d’aquí a {{time}}",
+    "in": "Vas entrar a les {{time}}"
+  },
+  "checkin": {
+    "button": "Registrar l’entrada",
+    "from": "Entrada des de les {{time}}",
+    "title": "Registrar l’entrada",
+    "description": "{{facility}}, {{day}}, {{start}}–{{end}}",
+    "intro": "Aquesta instal·lació admet aquestes maneres d’entrar. Fes servir la que tinguis a mà.",
+    "done": "Ja tens l’entrada registrada a les {{time}}.",
+    "close": "Tancar",
+    "entry_code": {
+      "title": "Codi d’entrada",
+      "help": "Escriu el codi que hi ha a la porta o al taulell. Et demanarem la ubicació: es comprova i mai no es desa."
+    },
+    "printed_qr": {
+      "title": "QR de la porta",
+      "help": "Escaneja amb la càmera del mòbil el QR imprès a la porta de la instal·lació."
+    },
+    "reader": {
+      "title": "QR de la teva reserva",
+      "help": "Apropa aquest QR al lector de l’entrada."
+    },
+    "staff": {
+      "title": "Personal de la instal·lació",
+      "help": "Digues el teu nom al personal i ells marquen la teva entrada."
+    }
   }
 }

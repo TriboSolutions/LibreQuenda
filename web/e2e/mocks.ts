@@ -175,6 +175,8 @@ function booking(id: string, hoursFromNow: number, extra: Partial<Booking> = {})
 
 const myBookings: MyBookings = {
   upcoming: [
+    // starts in 6 minutes: check-in open, with every way in the facility can take
+    booking('b0', 0.1, { can_cancel: false, can_change: false, checkin_ways: ['entry_code', 'printed_qr', 'reader', 'staff'] }),
     booking('b1', 3),
     booking('b2', 26, { role: 'participant', owner_name: 'Uxía', can_cancel: false, can_change: false, can_leave: true }),
   ],
