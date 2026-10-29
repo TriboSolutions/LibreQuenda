@@ -19,6 +19,10 @@ const payloadPrefix = "lq1:"
 // EarlyWindow: a reader accepts a booking from this long before it starts until it ends.
 const EarlyWindow = 15 * time.Minute
 
+// StaffUndoWindow: council staff can take back an entry they marked for this long,
+// in case they picked the wrong booking.
+const StaffUndoWindow = 5 * time.Minute
+
 // Payload is the text inside a booking QR. It carries no personal data.
 func Payload(token uuid.UUID) string {
 	return payloadPrefix + token.String()

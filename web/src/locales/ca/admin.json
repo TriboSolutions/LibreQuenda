@@ -491,7 +491,23 @@
     "reason": "Motiu per a la persona",
     "keep": "Mantenir-la",
     "cancelling": "Cancel·lant…",
-    "confirmCancel": "Cancel·lar la reserva"
+    "confirmCancel": "Cancel·lar la reserva",
+    "markCheckin": "Marcar l'entrada",
+    "marking": "Marcant…",
+    "undoCheckin": "Desfer l'entrada",
+    "undoing": "Desfent…",
+    "checkinMarked": "Entrada marcada a les {{time}}.",
+    "checkinUndone": "Entrada desfeta.",
+    "checkedInBy": "Marcada pel personal: {{name}}.",
+    "undoUntil": "Es pot desfer fins a les {{time}}.",
+    "checkedInMethod": {
+      "reader": "Va entrar amb el lector QR.",
+      "printed_qr": "Va entrar amb el QR imprès.",
+      "turn_code": "Va entrar amb el codi del torn.",
+      "staff": "Marcada pel personal."
+    },
+    "checkinTooEarly": "L'entrada es pot marcar des de les {{time}}.",
+    "checkinEnded": "El torn va acabar sense entrada marcada."
   },
   "tags": {
     "help": "El catàleg d'etiquetes de tots els ajuntaments, en categories. Els ajuntaments hi marquen les seves instal·lacions (una instal·lació en pot tenir diverses) i els veïns hi filtren a la portada i a la pàgina de cada ajuntament.",
@@ -528,7 +544,7 @@
   "checkin": {
     "title": "Com es registra l’entrada",
     "help": "Tria una o diverses maneres de registrar l’entrada dels veïns. Totes acaben en el mateix registre de la reserva, així que l’assistència i els indicadors no canvien. Tria segons el pressupost i el que importin les trampes aquí.",
-    "preview": "Funcionen el lector QR, el QR imprès i el codi en un full diari. L’NFC, el codi rotatiu i la confirmació del personal són una previsualització: el que triïs no es desa.",
+    "preview": "Funcionen el lector QR, el QR imprès, el codi en un full diari i la confirmació del personal. L’NFC i el codi rotatiu són una previsualització: el que triïs no es desa.",
     "built": "Funciona",
     "soon": "Aviat",
     "door": "A la porta:",
@@ -593,11 +609,11 @@
     },
     "staff": {
       "name": "Confirmació del personal",
-      "how": "El personal marca les persones com a arribades al calendari de reserva manual.",
+      "how": "El personal marca l'entrada des de la reserva al calendari de reserva manual.",
       "door": "ningú, o el taulell",
       "cost": "temps del personal",
       "cheat": "tant com el personal",
-      "help": "El personal marca les arribades a la pestanya de reserva manual.",
+      "help": "Obre una reserva a la pestanya de reserva manual i prem «Marcar l'entrada», des de 15 minuts abans del començament fins que acaba el torn. Si t'equivoques de reserva, ho pots desfer durant 5 minuts.",
       "open": "Obrir les reserves d’aquesta instal·lació"
     },
     "location": {

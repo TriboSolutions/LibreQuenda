@@ -62,7 +62,7 @@ UPDATE seed_history SET demand =
 -- counts as a no-show if a reader was there to check it in
 UPDATE checkin_device SET created_at = ({LOCAL_DAY} - {HISTORY_DAYS} - 1)::TIMESTAMP AT TIME ZONE '{TIMEZONE}';
 
-INSERT INTO booking (id, facility_id, user_id, starts_at, ends_at, status, cancelled_by, cancelled_at, created_at, rules_accepted_at, checked_in_at, checked_in_device_id)
+INSERT INTO booking (id, facility_id, user_id, starts_at, ends_at, status, cancelled_by, cancelled_at, created_at, rules_accepted_at, checked_in_at, checked_in_device_id, checked_in_method)
 SELECT
     h.booking_id,
     h.facility_id,
@@ -77,7 +77,9 @@ SELECT
     CASE WHEN NOT closed AND h.cancel_roll >= 0.07 AND reader.id IS NOT NULL AND h.checkin_roll < 0.88
          THEN h.starts_at - make_interval(mins => (h.checkin_roll * 10)::INT) END,
     CASE WHEN NOT closed AND h.cancel_roll >= 0.07 AND reader.id IS NOT NULL AND h.checkin_roll < 0.88
-         THEN reader.id END
+         THEN reader.id END,
+    CASE WHEN NOT closed AND h.cancel_roll >= 0.07 AND reader.id IS NOT NULL AND h.checkin_roll < 0.88
+         THEN 'reader' END::checkin_method
 FROM
     seed_history h
     LEFT JOIN LATERAL (SELECT d.id FROM checkin_device d WHERE d.facility_id = h.facility_id LIMIT 1) reader ON TRUE

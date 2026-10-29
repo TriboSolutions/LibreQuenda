@@ -57,7 +57,7 @@ INSERT INTO booking (
     $7
 )
 RETURNING
-    id, facility_id, user_id, starts_at, ends_at, status, rules_accepted_at, channel, booked_by, holder_name, holder_phone, cancelled_at, cancelled_by, created_at, updated_at, checkin_token, checked_in_at, checked_in_device_id, invite_token
+    id, facility_id, user_id, starts_at, ends_at, status, rules_accepted_at, channel, booked_by, holder_name, holder_phone, cancelled_at, cancelled_by, created_at, updated_at, checkin_token, checked_in_at, checked_in_device_id, checked_in_method, checked_in_by, invite_token
 `
 
 type CreateStaffBookingParams struct {
@@ -102,6 +102,8 @@ func (q *Queries) CreateStaffBooking(ctx context.Context, arg CreateStaffBooking
 		&i.CheckinToken,
 		&i.CheckedInAt,
 		&i.CheckedInDeviceID,
+		&i.CheckedInMethod,
+		&i.CheckedInBy,
 		&i.InviteToken,
 	)
 	return i, err
@@ -134,6 +136,7 @@ SELECT
     b.starts_at,
     b.ends_at,
     b.user_id,
+    b.checkin_token,
     f.id   AS facility_id,
     f.name AS facility_name,
     t.slug AS tenant_slug,
@@ -158,6 +161,7 @@ type GetBookingForCouncilRow struct {
 	StartsAt     time.Time     `json:"starts_at"`
 	EndsAt       time.Time     `json:"ends_at"`
 	UserID       uuid.NullUUID `json:"user_id"`
+	CheckinToken uuid.UUID     `json:"checkin_token"`
 	FacilityID   uuid.UUID     `json:"facility_id"`
 	FacilityName string        `json:"facility_name"`
 	TenantSlug   string        `json:"tenant_slug"`
@@ -173,6 +177,7 @@ func (q *Queries) GetBookingForCouncil(ctx context.Context, arg GetBookingForCou
 		&i.StartsAt,
 		&i.EndsAt,
 		&i.UserID,
+		&i.CheckinToken,
 		&i.FacilityID,
 		&i.FacilityName,
 		&i.TenantSlug,
@@ -220,6 +225,8 @@ SELECT
     b.ends_at,
     b.channel,
     b.checked_in_at,
+    b.checked_in_method,
+    COALESCE(NULLIF(marker.full_name, ''), marker.email, '')::TEXT AS checked_in_by_name, -- staff entry: who marked it
     b.checkin_token,
     b.user_id,
     u.full_name,
@@ -232,6 +239,7 @@ FROM
     booking b
     JOIN facility f ON f.id = b.facility_id
     LEFT JOIN app_user u ON u.id = b.user_id
+    LEFT JOIN app_user marker ON marker.id = b.checked_in_by
 WHERE
     b.facility_id = $1
     AND f.tenant_id = $2
@@ -250,19 +258,21 @@ type ListFacilityBookingsForStaffParams struct {
 }
 
 type ListFacilityBookingsForStaffRow struct {
-	ID               uuid.UUID      `json:"id"`
-	StartsAt         time.Time      `json:"starts_at"`
-	EndsAt           time.Time      `json:"ends_at"`
-	Channel          BookingChannel `json:"channel"`
-	CheckedInAt      sql.NullTime   `json:"checked_in_at"`
-	CheckinToken     uuid.UUID      `json:"checkin_token"`
-	UserID           uuid.NullUUID  `json:"user_id"`
-	FullName         sql.NullString `json:"full_name"`
-	Email            sql.NullString `json:"email"`
-	Phone            sql.NullString `json:"phone"`
-	HolderName       sql.NullString `json:"holder_name"`
-	HolderPhone      sql.NullString `json:"holder_phone"`
-	ParticipantCount int64          `json:"participant_count"`
+	ID               uuid.UUID         `json:"id"`
+	StartsAt         time.Time         `json:"starts_at"`
+	EndsAt           time.Time         `json:"ends_at"`
+	Channel          BookingChannel    `json:"channel"`
+	CheckedInAt      sql.NullTime      `json:"checked_in_at"`
+	CheckedInMethod  NullCheckinMethod `json:"checked_in_method"`
+	CheckedInByName  string            `json:"checked_in_by_name"`
+	CheckinToken     uuid.UUID         `json:"checkin_token"`
+	UserID           uuid.NullUUID     `json:"user_id"`
+	FullName         sql.NullString    `json:"full_name"`
+	Email            sql.NullString    `json:"email"`
+	Phone            sql.NullString    `json:"phone"`
+	HolderName       sql.NullString    `json:"holder_name"`
+	HolderPhone      sql.NullString    `json:"holder_phone"`
+	ParticipantCount int64             `json:"participant_count"`
 }
 
 // The confirmed bookings of one facility of the council in a range, with who
@@ -287,6 +297,8 @@ func (q *Queries) ListFacilityBookingsForStaff(ctx context.Context, arg ListFaci
 			&i.EndsAt,
 			&i.Channel,
 			&i.CheckedInAt,
+			&i.CheckedInMethod,
+			&i.CheckedInByName,
 			&i.CheckinToken,
 			&i.UserID,
 			&i.FullName,

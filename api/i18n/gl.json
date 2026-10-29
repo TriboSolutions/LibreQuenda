@@ -148,7 +148,12 @@
     "account_delete_failed": "Non foi posible eliminar a túa conta. Non se borrou nada; téntao de novo nun momento.",
     "checkin_settings_failed": "Non se puido gardar a configuración de entrada. Téntao de novo.",
     "invalid_checkin_radius": "A distancia debe estar entre 25 e 1000 metros.",
-    "checkin_needs_location": "Sitúa primeiro a instalación no mapa: a localización do móbil compárase con ela."
+    "checkin_needs_location": "Sitúa primeiro a instalación no mapa: a localización do móbil compárase con ela.",
+    "already_checked_in": "Esta reserva xa ten a entrada marcada.",
+    "staff_checkin_off": "Esta instalación non permite marcar a entrada desde o calendario. Actívao na pestana Entrada.",
+    "staff_checkin_too_early": "Aínda é cedo: a entrada pódese marcar desde 15 minutos antes do comezo.",
+    "staff_checkin_ended": "A quenda xa rematou e a entrada xa non se pode marcar.",
+    "staff_checkin_undo_expired": "Xa non se pode desfacer: só se pode durante 5 minutos despois de marcala, e só se a marcou o persoal."
   },
   "email": {
     "greeting": "Ola {{0}},",

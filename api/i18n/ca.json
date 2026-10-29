@@ -148,7 +148,12 @@
     "account_delete_failed": "No s'ha pogut eliminar el teu compte. No s'ha esborrat res; torna-ho a provar d'aquí a un moment.",
     "checkin_settings_failed": "No s'ha pogut desar la configuració d'entrada. Torna-ho a provar.",
     "invalid_checkin_radius": "La distància ha de ser entre 25 i 1000 metres.",
-    "checkin_needs_location": "Situa primer la instal·lació al mapa: la ubicació del mòbil es compara amb ella."
+    "checkin_needs_location": "Situa primer la instal·lació al mapa: la ubicació del mòbil es compara amb ella.",
+    "already_checked_in": "Aquesta reserva ja té l'entrada marcada.",
+    "staff_checkin_off": "Aquesta instal·lació no permet marcar l'entrada des del calendari. Activa-ho a la pestanya Entrada.",
+    "staff_checkin_too_early": "Encara és d'hora: l'entrada es pot marcar des de 15 minuts abans del començament.",
+    "staff_checkin_ended": "El torn ja ha acabat i l'entrada ja no es pot marcar.",
+    "staff_checkin_undo_expired": "Ja no es pot desfer: només es pot durant 5 minuts després de marcar-la, i només si la va marcar el personal."
   },
   "email": {
     "greeting": "Hola {{0}},",

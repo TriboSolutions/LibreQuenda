@@ -140,6 +140,50 @@ func (ns NullBookingStatus) Value() (driver.Value, error) {
 	return string(ns.BookingStatus), nil
 }
 
+type CheckinMethod string
+
+const (
+	CheckinMethodReader    CheckinMethod = "reader"
+	CheckinMethodPrintedQr CheckinMethod = "printed_qr"
+	CheckinMethodTurnCode  CheckinMethod = "turn_code"
+	CheckinMethodStaff     CheckinMethod = "staff"
+)
+
+func (e *CheckinMethod) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = CheckinMethod(s)
+	case string:
+		*e = CheckinMethod(s)
+	default:
+		return fmt.Errorf("unsupported scan type for CheckinMethod: %T", src)
+	}
+	return nil
+}
+
+type NullCheckinMethod struct {
+	CheckinMethod CheckinMethod `json:"checkin_method"`
+	Valid         bool          `json:"valid"` // Valid is true if CheckinMethod is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullCheckinMethod) Scan(value interface{}) error {
+	if value == nil {
+		ns.CheckinMethod, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.CheckinMethod.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullCheckinMethod) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.CheckinMethod), nil
+}
+
 type NotificationType string
 
 const (
@@ -269,6 +313,8 @@ type Booking struct {
 	CheckinToken      uuid.UUID            `json:"checkin_token"`
 	CheckedInAt       sql.NullTime         `json:"checked_in_at"`
 	CheckedInDeviceID uuid.NullUUID        `json:"checked_in_device_id"`
+	CheckedInMethod   NullCheckinMethod    `json:"checked_in_method"`
+	CheckedInBy       uuid.NullUUID        `json:"checked_in_by"`
 	InviteToken       uuid.NullUUID        `json:"invite_token"`
 }
 
@@ -333,6 +379,7 @@ type FacilityCheckin struct {
 	CodeSecret   []byte    `json:"code_secret"`
 	RadiusM      int32     `json:"radius_m"`
 	FlashBooking bool      `json:"flash_booking"`
+	StaffConfirm bool      `json:"staff_confirm"`
 	UpdatedAt    time.Time `json:"updated_at"`
 }
 

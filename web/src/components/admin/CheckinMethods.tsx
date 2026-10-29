@@ -22,16 +22,21 @@ type Props = { slug: string; facilityId: string; facilitySlug: string; token: st
 
 type Method = 'reader' | 'printedQr' | 'nfc' | 'rotating' | 'dailySheet' | 'staff'
 
+type SavedKey = 'printed_qr' | 'turn_codes' | 'staff_confirm'
+
 // the ways in from the README's "Check-in at the entrance". saved: switched on
 // and off with the facility's settings; the reader is always there; the rest is a preview
-const METHODS: { key: Method; icon: typeof QrCode; built?: boolean; saved?: 'printed_qr' | 'turn_codes' }[] = [
+const METHODS: { key: Method; icon: typeof QrCode; built?: boolean; saved?: SavedKey }[] = [
   { key: 'reader', icon: ScanLine, built: true },
   { key: 'printedQr', icon: QrCode, built: true, saved: 'printed_qr' },
   { key: 'dailySheet', icon: Hash, built: true, saved: 'turn_codes' },
   { key: 'nfc', icon: Nfc },
   { key: 'rotating', icon: MonitorSmartphone },
-  { key: 'staff', icon: UserCheck },
+  { key: 'staff', icon: UserCheck, built: true, saved: 'staff_confirm' },
 ]
+
+// the ways that check the phone's location against the facility's map pin
+const needsPin = (key?: SavedKey) => key === 'printed_qr' || key === 'turn_codes'
 
 function toInput(settings: CheckinSettings): CheckinSettingsInput {
   return {
@@ -39,6 +44,7 @@ function toInput(settings: CheckinSettings): CheckinSettingsInput {
     turn_codes: settings.turn_codes,
     radius_m: settings.radius_m,
     flash_booking: settings.flash_booking,
+    staff_confirm: settings.staff_confirm,
   }
 }
 
@@ -84,7 +90,7 @@ function Methods({ slug, facilityId, facilitySlug, token, timeZone, initial }: P
   const [sheetDate, setSheetDate] = useState(() => localDate(new Date().toISOString(), timeZone))
 
   // the ways that are only a preview: switched locally, never saved
-  const [preview, setPreview] = useState<Record<'nfc' | 'rotating' | 'staff', boolean>>({ nfc: false, rotating: false, staff: false })
+  const [preview, setPreview] = useState<Record<'nfc' | 'rotating', boolean>>({ nfc: false, rotating: false })
   const [tagType, setTagType] = useState('signed')
   const [codeMinutes, setCodeMinutes] = useState('2')
   const [codeDigits, setCodeDigits] = useState('6')
@@ -125,9 +131,9 @@ function Methods({ slug, facilityId, facilitySlug, token, timeZone, initial }: P
   }
 
   const printBase = `/${slug}/admin/facilities/${facilityId}/imprimir`
-  const isOn = (key: Method, saved?: 'printed_qr' | 'turn_codes') =>
+  const isOn = (key: Method, saved?: SavedKey) =>
     key === 'reader' ? true : saved ? draft[saved] : preview[key as keyof typeof preview]
-  const toggle = (key: Method, on: boolean, savedKey?: 'printed_qr' | 'turn_codes') =>
+  const toggle = (key: Method, on: boolean, savedKey?: SavedKey) =>
     savedKey ? set(savedKey, on) : setPreview((p) => ({ ...p, [key]: on }))
 
   const settings: Record<Method, ReactNode> = {
@@ -336,7 +342,7 @@ function Methods({ slug, facilityId, facilitySlug, token, timeZone, initial }: P
                   <Switch
                     id={`ci-${key}`}
                     checked={on}
-                    disabled={savedKey !== undefined && !saved.has_location && !on}
+                    disabled={needsPin(savedKey) && !saved.has_location && !on}
                     aria-describedby={`ci-${key}-help`}
                     onCheckedChange={(checked) => toggle(key, checked, savedKey)}
                   />

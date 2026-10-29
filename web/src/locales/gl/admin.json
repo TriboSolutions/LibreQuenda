@@ -491,7 +491,23 @@
     "reason": "Motivo para a persoa",
     "keep": "Mantela",
     "cancelling": "Cancelando…",
-    "confirmCancel": "Cancelar reserva"
+    "confirmCancel": "Cancelar reserva",
+    "markCheckin": "Marcar entrada",
+    "marking": "Marcando…",
+    "undoCheckin": "Desfacer a entrada",
+    "undoing": "Desfacendo…",
+    "checkinMarked": "Entrada marcada ás {{time}}.",
+    "checkinUndone": "Entrada desfeita.",
+    "checkedInBy": "Marcada polo persoal: {{name}}.",
+    "undoUntil": "Pódese desfacer ata as {{time}}.",
+    "checkedInMethod": {
+      "reader": "Entrou co lector QR.",
+      "printed_qr": "Entrou co QR impreso.",
+      "turn_code": "Entrou co código da quenda.",
+      "staff": "Marcada polo persoal."
+    },
+    "checkinTooEarly": "A entrada pódese marcar desde as {{time}}.",
+    "checkinEnded": "A quenda rematou sen entrada marcada."
   },
   "tags": {
     "help": "O catálogo de etiquetas de todos os concellos, en categorías. Os concellos marcan con elas as súas instalacións (unha instalación pode ter varias) e os veciños filtran por elas na portada e na páxina de cada concello.",
@@ -528,7 +544,7 @@
   "checkin": {
     "title": "Como se rexistra a entrada",
     "help": "Escolle unha ou varias formas de rexistrar a entrada dos veciños. Todas rematan no mesmo rexistro da reserva, así que a asistencia e os indicadores non cambian. Escolle segundo o orzamento e o que importen as trampas aquí.",
-    "preview": "Funcionan o lector QR, o QR impreso e o código nunha folla diaria. O NFC, o código rotativo e a confirmación do persoal son unha vista previa: o que escollas neles non se garda.",
+    "preview": "Funcionan o lector QR, o QR impreso, o código nunha folla diaria e a confirmación do persoal. O NFC e o código rotativo son unha vista previa: o que escollas neles non se garda.",
     "built": "Funciona",
     "soon": "Proximamente",
     "door": "Na porta:",
@@ -593,11 +609,11 @@
     },
     "staff": {
       "name": "Confirmación do persoal",
-      "how": "O persoal marca as persoas como chegadas no calendario de reserva manual.",
+      "how": "O persoal marca a entrada desde a reserva no calendario de reserva manual.",
       "door": "ninguén, ou o mostrador",
       "cost": "tempo do persoal",
       "cheat": "tanto coma o persoal",
-      "help": "O persoal marca as chegadas na lapela de reserva manual.",
+      "help": "Abre unha reserva na lapela de reserva manual e preme «Marcar entrada», desde 15 minutos antes do comezo ata que remata a quenda. Se te equivocas de reserva, podes desfacelo durante 5 minutos.",
       "open": "Abrir as reservas desta instalación"
     },
     "location": {

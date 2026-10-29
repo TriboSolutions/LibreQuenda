@@ -11,7 +11,8 @@ type CheckinSettingsDto struct {
 	TurnCodes    bool   `json:"turn_codes"`
 	RadiusM      int    `json:"radius_m"`
 	FlashBooking bool   `json:"flash_booking"`
-	HasLocation  bool   `json:"has_location"` // both ways need the facility's pin
+	StaffConfirm bool   `json:"staff_confirm"` // staff mark the entry from the bookings calendar
+	HasLocation  bool   `json:"has_location"`  // both ways need the facility's pin
 }
 
 type CheckinSettingsInput struct {
@@ -19,6 +20,7 @@ type CheckinSettingsInput struct {
 	TurnCodes    bool `json:"turn_codes"`
 	RadiusM      int  `json:"radius_m"`
 	FlashBooking bool `json:"flash_booking"`
+	StaffConfirm bool `json:"staff_confirm"`
 }
 
 const (

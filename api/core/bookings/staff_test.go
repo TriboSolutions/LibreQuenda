@@ -52,7 +52,7 @@ func TestMapStaffBooking(t *testing.T) {
 		Channel: model.BookingChannelStaff, CheckinToken: uuid.New(),
 		HolderName: sql.NullString{String: "Carmen", Valid: true}, HolderPhone: sql.NullString{String: "600", Valid: true},
 	}
-	var got = mapStaffBooking(walkIn, now)
+	var got = mapStaffBooking(walkIn, now, false)
 	if got.HasAccount || got.Name != "Carmen" || got.Phone != "600" || !got.BookedByStaff || !got.CanCancel || got.CheckinCode == "" {
 		t.Errorf("walk-in booking mapped as %+v", got)
 	}
@@ -62,9 +62,68 @@ func TestMapStaffBooking(t *testing.T) {
 		Channel: model.BookingChannelOnline, CheckinToken: uuid.New(),
 		UserID: uuid.NullUUID{UUID: uuid.New(), Valid: true}, Email: sql.NullString{String: "ana@example.org", Valid: true},
 	}
-	got = mapStaffBooking(online, now)
+	got = mapStaffBooking(online, now, false)
 	if !got.HasAccount || got.Name != "ana@example.org" || got.CanCancel || got.CheckinCode != "" {
 		t.Errorf("online booking mapped as %+v", got)
+	}
+	if got.CheckinState != "" {
+		t.Errorf("staff entry off, but checkin_state = %q", got.CheckinState)
+	}
+	if got = mapStaffBooking(online, now, true); got.CheckinState != StaffCheckinOpen {
+		t.Errorf("staff entry on, turn under way: checkin_state = %q, want open", got.CheckinState)
+	}
+}
+
+func TestStaffCheckinState(t *testing.T) {
+	var start = time.Date(2026, 11, 3, 17, 0, 0, 0, time.UTC)
+	var end = start.Add(time.Hour)
+	var cases = []struct {
+		name string
+		now  time.Time
+		want string
+	}{
+		{"an hour before", start.Add(-time.Hour), StaffCheckinTooEarly},
+		{"just before the early window", start.Add(-16 * time.Minute), StaffCheckinTooEarly},
+		{"early window opens", start.Add(-15 * time.Minute), StaffCheckinOpen},
+		{"under way", start.Add(30 * time.Minute), StaffCheckinOpen},
+		{"last minute", end.Add(-time.Minute), StaffCheckinOpen},
+		{"ended", end, StaffCheckinEnded},
+	}
+	for _, c := range cases {
+		if got := staffCheckinState(start, end, c.now); got != c.want {
+			t.Errorf("%s: staffCheckinState = %q, want %q", c.name, got, c.want)
+		}
+	}
+}
+
+func TestMapStaffBookingCheckedIn(t *testing.T) {
+	var now = time.Date(2026, 11, 3, 17, 10, 0, 0, time.UTC)
+	var row = model.ListFacilityBookingsForStaffRow{
+		ID: uuid.New(), StartsAt: now.Add(-10 * time.Minute), EndsAt: now.Add(50 * time.Minute),
+		Channel: model.BookingChannelOnline, CheckinToken: uuid.New(),
+		UserID:          uuid.NullUUID{UUID: uuid.New(), Valid: true},
+		CheckedInAt:     sql.NullTime{Time: now.Add(-2 * time.Minute), Valid: true},
+		CheckedInMethod: model.NullCheckinMethod{CheckinMethod: model.CheckinMethodStaff, Valid: true},
+		CheckedInByName: "Xoán Conserxe",
+	}
+	var got = mapStaffBooking(row, now, true)
+	if got.CheckedInMethod != "staff" || got.CheckedInBy != "Xoán Conserxe" || got.CheckinState != "" {
+		t.Errorf("staff entry mapped as %+v", got)
+	}
+	if got.UndoUntil == nil || !got.UndoUntil.Equal(now.Add(3*time.Minute)) {
+		t.Errorf("undo_until = %v, want 3 minutes from now", got.UndoUntil)
+	}
+
+	row.CheckedInAt.Time = now.Add(-6 * time.Minute) // past the undo window
+	if got = mapStaffBooking(row, now, true); got.UndoUntil != nil {
+		t.Errorf("undo still offered after the window: %v", got.UndoUntil)
+	}
+
+	row.CheckedInMethod.CheckinMethod = model.CheckinMethodReader // a reader's entry: nobody to name, nothing to undo
+	row.CheckedInAt.Time = now.Add(-time.Minute)
+	row.CheckedInByName = ""
+	if got = mapStaffBooking(row, now, true); got.CheckedInMethod != "reader" || got.CheckedInBy != "" || got.UndoUntil != nil {
+		t.Errorf("reader entry mapped as %+v", got)
 	}
 }
 

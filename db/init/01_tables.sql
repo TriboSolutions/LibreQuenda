@@ -21,6 +21,13 @@ CREATE TYPE booking_channel AS ENUM (
     'staff'     -- council staff, for someone who phoned or came to the desk
 );
 
+CREATE TYPE checkin_method AS ENUM (
+    'reader',       -- a QR reader at the door read the booking or the personal QR
+    'printed_qr',   -- the resident's phone read the QR printed on the door
+    'turn_code',    -- the resident typed the turn's code from the daily sheet
+    'staff'         -- council staff confirmed it from the calendar
+);
+
 CREATE TYPE notification_type AS ENUM (
     'booking_confirmed',
     'booking_changed',
@@ -235,8 +242,9 @@ CREATE TABLE checkin_device (
 -- on the door (its address carries qr_token), or a code per turn on a daily
 -- sheet (derived from code_secret, nothing stored per turn). Both need the
 -- phone's location within radius_m of the facility's pin; the location is never
--- stored. flash_booking also covers the personal QR at the readers. No row: the
--- defaults, with both ways off.
+-- stored. flash_booking also covers the personal QR at the readers. staff_confirm
+-- lets council staff mark the entry from the bookings calendar. No row: the
+-- defaults, with every way off.
 CREATE TABLE facility_checkin (
     facility_id   UUID         PRIMARY KEY REFERENCES facility(id) ON DELETE CASCADE,
     printed_qr    BOOLEAN      NOT NULL DEFAULT FALSE,
@@ -245,6 +253,7 @@ CREATE TABLE facility_checkin (
     code_secret   BYTEA        NOT NULL DEFAULT (uuid_send(gen_random_uuid()) || uuid_send(gen_random_uuid())),
     radius_m      INT          NOT NULL DEFAULT 100 CHECK (radius_m BETWEEN 25 AND 1000),
     flash_booking BOOLEAN      NOT NULL DEFAULT TRUE,
+    staff_confirm BOOLEAN      NOT NULL DEFAULT FALSE,              -- staff mark the entry from the calendar
     updated_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW()
 );
 
@@ -286,12 +295,16 @@ CREATE TABLE booking (
     checkin_token        UUID        NOT NULL DEFAULT gen_random_uuid(),
     checked_in_at        TIMESTAMPTZ NULL,
     checked_in_device_id UUID        NULL REFERENCES checkin_device(id) ON DELETE SET NULL,
+    checked_in_method    checkin_method NULL,               -- how the person got in, for the indicators
+    checked_in_by        UUID        NULL REFERENCES app_user(id) ON DELETE SET NULL, -- the staff member who confirmed it
     -- invite link: others fill the facility's capacity; a new token revokes the old link
     invite_token         UUID        NULL,
     CHECK (ends_at > starts_at),
     CHECK ((status = 'cancelled') = (cancelled_by IS NOT NULL)),
     CHECK (holder_name IS NULL OR (user_id IS NULL AND channel = 'staff')),
     CHECK (holder_phone IS NULL OR holder_name IS NOT NULL),
+    CHECK ((checked_in_at IS NULL) = (checked_in_method IS NULL)),
+    CHECK (checked_in_by IS NULL OR checked_in_method = 'staff'),
 
     -- no two confirmed bookings may overlap on the same facility
     EXCLUDE USING gist (

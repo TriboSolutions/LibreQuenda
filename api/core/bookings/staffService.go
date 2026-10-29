@@ -37,7 +37,12 @@ func (s *bookingsService) StaffDay(ctx context.Context, tenantId uuid.UUID, faci
 	if slotsErr != nil {
 		return nil, slotsErr
 	}
-	var rows, err = queries.ListFacilityBookingsForStaff(ctx, model.ListFacilityBookingsForStaffParams{
+	var staffCheckin, err = queries.GetFacilityStaffConfirm(ctx, facility.ID)
+	if err != nil {
+		return nil, failed
+	}
+	var rows []model.ListFacilityBookingsForStaffRow
+	rows, err = queries.ListFacilityBookingsForStaff(ctx, model.ListFacilityBookingsForStaffParams{
 		FacilityID: facility.ID, TenantID: tenantId, RangeStart: day, RangeEnd: dayEnd,
 	})
 	if err != nil {
@@ -45,16 +50,17 @@ func (s *bookingsService) StaffDay(ctx context.Context, tenantId uuid.UUID, faci
 	}
 	var bookings = make([]StaffBookingDto, 0, len(rows))
 	for _, row := range rows {
-		bookings = append(bookings, mapStaffBooking(row, now))
+		bookings = append(bookings, mapStaffBooking(row, now, staffCheckin))
 	}
 
 	var dto = &StaffDayDto{
-		Date:        day.Format(time.DateOnly),
-		Timezone:    facility.Timezone,
-		FacilityId:  facility.ID.String(),
-		SlotMinutes: facility.SlotMinutes,
-		Slots:       staffSlots(slots, bookings),
-		Bookings:    bookings,
+		Date:         day.Format(time.DateOnly),
+		Timezone:     facility.Timezone,
+		FacilityId:   facility.ID.String(),
+		SlotMinutes:  facility.SlotMinutes,
+		Slots:        staffSlots(slots, bookings),
+		Bookings:     bookings,
+		StaffCheckin: staffCheckin,
 	}
 	if facility.MinAge.Valid {
 		dto.MinAge = &facility.MinAge.Int32
@@ -136,8 +142,42 @@ func (s *bookingsService) StaffBook(ctx context.Context, tenantId uuid.UUID, sta
 		HolderName:   booking.HolderName,
 		HolderPhone:  booking.HolderPhone,
 	}
-	var dto = mapStaffBooking(row, time.Now())
+	var staffCheckin, _ = queries.GetFacilityStaffConfirm(ctx, facility.ID) // only hides the button until the next load
+	var dto = mapStaffBooking(row, time.Now(), staffCheckin)
 	return &dto, nil
+}
+
+// StaffBooking: one confirmed booking of the council as the calendar shows it,
+// for example after staff marked the entry.
+func (s *bookingsService) StaffBooking(ctx context.Context, tenantId uuid.UUID, bookingId uuid.UUID) (*StaffBookingDto, *shared.ErrorResponse) {
+	var failed = &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.day_load_failed"}
+	var notFound = &shared.ErrorResponse{Code: http.StatusNotFound, Message: "errors.booking_not_found"}
+	var queries = model.New(s.db)
+	var booking, err = queries.GetBookingForCouncil(ctx, model.GetBookingForCouncilParams{ID: bookingId, TenantID: tenantId})
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, notFound
+	}
+	if err != nil {
+		return nil, failed
+	}
+	var staffCheckin bool
+	if staffCheckin, err = queries.GetFacilityStaffConfirm(ctx, booking.FacilityID); err != nil {
+		return nil, failed
+	}
+	var rows []model.ListFacilityBookingsForStaffRow
+	rows, err = queries.ListFacilityBookingsForStaff(ctx, model.ListFacilityBookingsForStaffParams{
+		FacilityID: booking.FacilityID, TenantID: tenantId, RangeStart: booking.StartsAt, RangeEnd: booking.EndsAt,
+	})
+	if err != nil {
+		return nil, failed
+	}
+	for _, row := range rows {
+		if row.ID == bookingId {
+			var dto = mapStaffBooking(row, time.Now(), staffCheckin)
+			return &dto, nil
+		}
+	}
+	return nil, notFound // cancelled
 }
 
 // insertStaffBooking: for an account, only if the person is not somewhere else then (see insertBooking).

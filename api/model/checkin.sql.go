@@ -266,7 +266,8 @@ SELECT
     c.turn_codes,
     c.code_secret,
     c.radius_m,
-    c.flash_booking
+    c.flash_booking,
+    c.staff_confirm
 FROM
     facility_checkin c
     JOIN facility f ON f.id = c.facility_id
@@ -287,6 +288,7 @@ type GetFacilityCheckinRow struct {
 	CodeSecret   []byte    `json:"code_secret"`
 	RadiusM      int32     `json:"radius_m"`
 	FlashBooking bool      `json:"flash_booking"`
+	StaffConfirm bool      `json:"staff_confirm"`
 }
 
 func (q *Queries) GetFacilityCheckin(ctx context.Context, arg GetFacilityCheckinParams) (GetFacilityCheckinRow, error) {
@@ -299,6 +301,7 @@ func (q *Queries) GetFacilityCheckin(ctx context.Context, arg GetFacilityCheckin
 		&i.CodeSecret,
 		&i.RadiusM,
 		&i.FlashBooking,
+		&i.StaffConfirm,
 	)
 	return i, err
 }
@@ -386,6 +389,19 @@ func (q *Queries) GetFacilityFlashBooking(ctx context.Context, facilityID uuid.U
 	var flash_booking bool
 	err := row.Scan(&flash_booking)
 	return flash_booking, err
+}
+
+const getFacilityStaffConfirm = `-- name: GetFacilityStaffConfirm :one
+SELECT
+    COALESCE((SELECT c.staff_confirm FROM facility_checkin c WHERE c.facility_id = $1), FALSE)::BOOLEAN AS staff_confirm
+`
+
+// Whether council staff can mark the entry from the calendar; off without settings.
+func (q *Queries) GetFacilityStaffConfirm(ctx context.Context, facilityID uuid.UUID) (bool, error) {
+	row := q.db.QueryRowContext(ctx, getFacilityStaffConfirm, facilityID)
+	var staff_confirm bool
+	err := row.Scan(&staff_confirm)
+	return staff_confirm, err
 }
 
 const getUserCheckinTokenAtFacility = `-- name: GetUserCheckinTokenAtFacility :one
@@ -483,22 +499,32 @@ UPDATE booking
 SET
     checked_in_at        = NOW(),
     checked_in_device_id = $1,
+    checked_in_method    = $2,
+    checked_in_by        = $3,
     updated_at           = NOW()
 WHERE
-    id = $2
+    id = $4
     AND checked_in_at IS NULL
 RETURNING
     checked_in_at
 `
 
 type MarkBookingCheckedInParams struct {
-	DeviceID uuid.NullUUID `json:"device_id"`
-	ID       uuid.UUID     `json:"id"`
+	DeviceID    uuid.NullUUID     `json:"device_id"`
+	Method      NullCheckinMethod `json:"method"`
+	CheckedInBy uuid.NullUUID     `json:"checked_in_by"`
+	ID          uuid.UUID         `json:"id"`
 }
 
 // The first scan wins; no row when the booking was already checked in.
+// checked_in_by: the staff member, only when method is 'staff'.
 func (q *Queries) MarkBookingCheckedIn(ctx context.Context, arg MarkBookingCheckedInParams) (sql.NullTime, error) {
-	row := q.db.QueryRowContext(ctx, markBookingCheckedIn, arg.DeviceID, arg.ID)
+	row := q.db.QueryRowContext(ctx, markBookingCheckedIn,
+		arg.DeviceID,
+		arg.Method,
+		arg.CheckedInBy,
+		arg.ID,
+	)
 	var checked_in_at sql.NullTime
 	err := row.Scan(&checked_in_at)
 	return checked_in_at, err
@@ -552,6 +578,40 @@ func (q *Queries) TouchCheckinDevice(ctx context.Context, id uuid.UUID) error {
 	return err
 }
 
+const undoStaffCheckIn = `-- name: UndoStaffCheckIn :execrows
+UPDATE booking b
+SET
+    checked_in_at        = NULL,
+    checked_in_device_id = NULL,
+    checked_in_method    = NULL,
+    checked_in_by        = NULL,
+    updated_at           = NOW()
+FROM
+    facility f
+WHERE
+    b.id = $1
+    AND f.id = b.facility_id
+    AND f.tenant_id = $2
+    AND b.checked_in_method = 'staff'
+    AND b.checked_in_at > $3::TIMESTAMPTZ
+`
+
+type UndoStaffCheckInParams struct {
+	ID       uuid.UUID `json:"id"`
+	TenantID uuid.UUID `json:"tenant_id"`
+	Since    time.Time `json:"since"`
+}
+
+// Takes back an entry staff marked by mistake, only within the undo window
+// (marked after since). No row when it was not a staff entry or it is too late.
+func (q *Queries) UndoStaffCheckIn(ctx context.Context, arg UndoStaffCheckInParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, undoStaffCheckIn, arg.ID, arg.TenantID, arg.Since)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
 const updateFacilityCheckin = `-- name: UpdateFacilityCheckin :one
 UPDATE facility_checkin
 SET
@@ -559,16 +619,18 @@ SET
     turn_codes    = $2,
     radius_m      = $3,
     flash_booking = $4,
+    staff_confirm = $5,
     updated_at    = NOW()
 WHERE
-    facility_id = $5
+    facility_id = $6
 RETURNING
     printed_qr,
     qr_token,
     turn_codes,
     code_secret,
     radius_m,
-    flash_booking
+    flash_booking,
+    staff_confirm
 `
 
 type UpdateFacilityCheckinParams struct {
@@ -576,6 +638,7 @@ type UpdateFacilityCheckinParams struct {
 	TurnCodes    bool      `json:"turn_codes"`
 	RadiusM      int32     `json:"radius_m"`
 	FlashBooking bool      `json:"flash_booking"`
+	StaffConfirm bool      `json:"staff_confirm"`
 	FacilityID   uuid.UUID `json:"facility_id"`
 }
 
@@ -586,6 +649,7 @@ type UpdateFacilityCheckinRow struct {
 	CodeSecret   []byte    `json:"code_secret"`
 	RadiusM      int32     `json:"radius_m"`
 	FlashBooking bool      `json:"flash_booking"`
+	StaffConfirm bool      `json:"staff_confirm"`
 }
 
 // Row-level security: runs as the facility's council (db.WithTenant).
@@ -595,6 +659,7 @@ func (q *Queries) UpdateFacilityCheckin(ctx context.Context, arg UpdateFacilityC
 		arg.TurnCodes,
 		arg.RadiusM,
 		arg.FlashBooking,
+		arg.StaffConfirm,
 		arg.FacilityID,
 	)
 	var i UpdateFacilityCheckinRow
@@ -605,6 +670,7 @@ func (q *Queries) UpdateFacilityCheckin(ctx context.Context, arg UpdateFacilityC
 		&i.CodeSecret,
 		&i.RadiusM,
 		&i.FlashBooking,
+		&i.StaffConfirm,
 	)
 	return i, err
 }
