@@ -1,4 +1,4 @@
-import { CalendarPlus, Check, Copy, RefreshCw } from 'lucide-react'
+import { CalendarPlus, Check, Copy, ExternalLink, RefreshCw } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
@@ -16,6 +16,23 @@ import { api, type CalendarFeed as Feed } from '@/lib/api'
   The address carries a secret token, since calendar apps cannot sign in: a new
   address revokes the old one.
 */
+/*
+  One-click subscribe links. Google and Outlook fetch the feed from their own
+  servers, so they only work once the address is public over https (not on
+  localhost). Personal and work Microsoft accounts live on different hosts.
+*/
+function subscribeLinks(url: string, name: string) {
+  const webcal = url.replace(/^https?:/, 'webcal:')
+  const outlook = (host: string) => `https://${host}/calendar/0/addfromweb?url=${encodeURIComponent(url)}&name=${encodeURIComponent(name)}`
+  return {
+    google: `https://calendar.google.com/calendar/render?cid=${encodeURIComponent(webcal)}`,
+    outlook: outlook('outlook.live.com'),
+    outlookWork: outlook('outlook.office.com'),
+    // webcal:// opens the subscription in the system's calendar app
+    apple: webcal,
+  }
+}
+
 export function CalendarFeed() {
   const { t } = useTranslation('profile')
   const auth = useAuth()
@@ -70,8 +87,40 @@ export function CalendarFeed() {
       </div>
     )
   } else {
+    const links = subscribeLinks(url, 'LibreQuenda')
+    const web = { target: '_blank', rel: 'noopener noreferrer' }
     body = (
       <>
+        <div className="grid gap-2">
+          {/* stacked on phones, where the longer labels need to wrap */}
+          <div className="grid gap-2 sm:flex sm:flex-wrap">
+            <Button asChild className="h-auto min-h-11 whitespace-normal">
+              <a href={links.google} {...web}>
+                <ExternalLink aria-hidden />
+                {t('calendar.google')}
+              </a>
+            </Button>
+            <Button asChild className="h-auto min-h-11 whitespace-normal">
+              <a href={links.outlook} {...web}>
+                <ExternalLink aria-hidden />
+                {t('calendar.outlook')}
+              </a>
+            </Button>
+            <Button asChild className="h-auto min-h-11 whitespace-normal">
+              <a href={links.outlookWork} {...web}>
+                <ExternalLink aria-hidden />
+                {t('calendar.outlookWork')}
+              </a>
+            </Button>
+            <Button asChild className="h-auto min-h-11 whitespace-normal">
+              <a href={links.apple}>
+                <CalendarPlus aria-hidden />
+                {t('calendar.apple')}
+              </a>
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">{t('calendar.googleSlow')}</p>
+        </div>
         <div className="grid gap-2">
           <Label htmlFor="calendar-url">{t('calendar.address')}</Label>
           <div className="flex gap-2">
@@ -84,13 +133,6 @@ export function CalendarFeed() {
           <p className="text-xs text-muted-foreground">{t('calendar.private')}</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          {/* webcal:// opens the subscription in the system's calendar app */}
-          <Button asChild>
-            <a href={url.replace(/^https?:/, 'webcal:')}>
-              <CalendarPlus aria-hidden />
-              {t('calendar.subscribe')}
-            </a>
-          </Button>
           <Button variant="outline" onClick={() => void reset()} disabled={busy} title={t('calendar.resetHint')}>
             <RefreshCw aria-hidden />
             {t('calendar.reset')}
