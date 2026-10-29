@@ -39,6 +39,12 @@ func (s *meService) SyncCurrentUser(ctx context.Context, session auth.Session) (
 	}
 
 	var queries = model.New(s.db)
+	if info.EmailVerified {
+		// local testing: the seed's tester, waiting with a booking, becomes this account
+		if err = queries.AdoptSeedTester(ctx, model.AdoptSeedTesterParams{IdpSubject: session.Subject, Email: info.Email}); err != nil {
+			shared.Logger.Error("failed to adopt the seed tester for %s: %v", session.Subject, err)
+		}
+	}
 	var user model.UpsertUserBySubjectRow
 	user, err = queries.UpsertUserBySubject(ctx, model.UpsertUserBySubjectParams{
 		IdpSubject:    session.Subject,
