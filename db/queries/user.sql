@@ -1,3 +1,16 @@
+-- name: AdoptSeedTester :exec
+-- Local testing only: the seed's tester (db/init/generate_data/tester.sql)
+-- becomes the account that signs in with its verified email, the first time.
+-- A database without seed data has no such row, so this changes nothing there.
+UPDATE app_user
+SET
+    idp_subject = sqlc.arg('idp_subject'),
+    updated_at  = NOW()
+WHERE
+    idp_subject = 'seed-tester'
+    AND lower(email) = lower(sqlc.arg('email'))
+    AND NOT EXISTS (SELECT 1 FROM app_user a WHERE a.idp_subject = sqlc.arg('idp_subject'));
+
 -- name: UpsertUserBySubject :one
 -- Called on every login with the claims of the verified JWT.
 INSERT INTO app_user (

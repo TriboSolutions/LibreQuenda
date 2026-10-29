@@ -12,6 +12,30 @@ import (
 	"github.com/google/uuid"
 )
 
+const adoptSeedTester = `-- name: AdoptSeedTester :exec
+UPDATE app_user
+SET
+    idp_subject = $1,
+    updated_at  = NOW()
+WHERE
+    idp_subject = 'seed-tester'
+    AND lower(email) = lower($2)
+    AND NOT EXISTS (SELECT 1 FROM app_user a WHERE a.idp_subject = $1)
+`
+
+type AdoptSeedTesterParams struct {
+	IdpSubject string `json:"idp_subject"`
+	Email      string `json:"email"`
+}
+
+// Local testing only: the seed's tester (db/init/generate_data/tester.sql)
+// becomes the account that signs in with its verified email, the first time.
+// A database without seed data has no such row, so this changes nothing there.
+func (q *Queries) AdoptSeedTester(ctx context.Context, arg AdoptSeedTesterParams) error {
+	_, err := q.db.ExecContext(ctx, adoptSeedTester, arg.IdpSubject, arg.Email)
+	return err
+}
+
 const clearCalendarToken = `-- name: ClearCalendarToken :exec
 UPDATE app_user SET calendar_token = NULL WHERE id = $1
 `
