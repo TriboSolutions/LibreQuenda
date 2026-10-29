@@ -408,7 +408,7 @@ func (data *councilExport) tables(media map[string]string) []exportTable {
 			{"cancelled_by", "string", "user (the person) or council (a closure or the facility deactivated)"},
 			{"checked_in_at", "datetime", "When the QR was scanned at the entrance"},
 			{"checked_in_device_id", "string", "Reader that scanned it"},
-			{"checked_in_method", "string", "How the person got in: reader, printed_qr, turn_code or staff"},
+			{"checked_in_method", "string", "How the person got in: reader, printed_qr, entry_code or staff"},
 			{"created_at", "datetime", "Booked"},
 			{"updated_at", "datetime", "Last changed"},
 		},

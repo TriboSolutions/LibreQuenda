@@ -50,9 +50,9 @@ const pages: { name: string; path: string; signedIn?: boolean }[] = [
   { name: 'facility editor', path: '/lugo/admin/facilities/f1' },
   { name: 'facility editor, check-in', path: '/lugo/admin/facilities/f1?vista=entrada' },
   { name: 'check-in QR to print', path: '/lugo/admin/facilities/f1/imprimir?que=qr' },
-  { name: 'turn codes to print', path: '/lugo/admin/facilities/f1/imprimir?que=codigos&data=2026-11-03' },
+  { name: 'entry code to print', path: '/lugo/admin/facilities/f1/imprimir?que=codigo' },
   { name: 'check-in at the door, printed QR', path: '/lugo/padel-1/entrada?c=9a1f6c2e-3b4d-4e5f-8a7b-1c2d3e4f5a6b' },
-  { name: 'check-in at the door, turn code', path: '/lugo/padel-1/entrada' },
+  { name: 'check-in at the door, entry code', path: '/lugo/padel-1/entrada' },
   { name: 'check-in at the door, signed out', path: '/lugo/padel-1/entrada', signedIn: false },
   { name: 'platform admin', path: '/admin' },
   { name: 'entrance reader', path: '/lector' },
@@ -156,7 +156,7 @@ for (const theme of ['light', 'dark'] as const) {
       await context.grantPermissions(['geolocation'])
       await context.setGeolocation({ latitude: 43.0097, longitude: -7.5568, accuracy: 10 })
       await open(page, '/lugo/padel-1/entrada', { theme })
-      await page.getByLabel('Código da túa quenda').fill('482 913')
+      await page.getByLabel('Código de entrada').fill('482 913')
       await page.getByRole('button', { name: 'Rexistrar entrada' }).click()
       await expect(page.getByRole('status')).toContainText('Non tes reserva para esta quenda')
       await expect(page.getByRole('button', { name: 'Reservar e entrar' })).toBeVisible()
@@ -248,11 +248,11 @@ test.describe('keyboard', () => {
     await expect(page.getByLabel('Tipo de etiqueta')).toBeVisible()
   })
 
-  test('2.1.1 a turn code can be typed and sent with the keyboard alone', async ({ page, context }) => {
+  test('2.1.1 the entry code can be typed and sent with the keyboard alone', async ({ page, context }) => {
     await context.grantPermissions(['geolocation'])
     await context.setGeolocation({ latitude: 43.0097, longitude: -7.5568, accuracy: 10 })
     await open(page, '/lugo/padel-1/entrada')
-    await page.getByLabel('Código da túa quenda').focus()
+    await page.getByLabel('Código de entrada').focus()
     await page.keyboard.type('482913')
     await page.keyboard.press('Enter')
     await expect(page.getByRole('status')).toContainText('Non tes reserva para esta quenda')
@@ -268,6 +268,11 @@ test.describe('keyboard', () => {
     await page.getByRole('button', { name: 'Novo QR' }).click()
     await expect(page.getByRole('dialog')).toContainText('deixan de funcionar')
     await page.getByRole('button', { name: 'Manter este QR' }).click()
+    await expect(page.getByRole('dialog')).toBeHidden()
+    await expect(page.getByLabel('Código de entrada: 4 8 2 9 1 5')).toBeVisible()
+    await page.getByRole('button', { name: 'Novo código' }).click()
+    await expect(page.getByRole('dialog')).toContainText('deixa de funcionar')
+    await page.getByRole('button', { name: 'Manter este código' }).click()
     await expect(page.getByRole('dialog')).toBeHidden()
   })
 

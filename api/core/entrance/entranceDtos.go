@@ -13,7 +13,7 @@ type EntranceDto struct {
 	TenantSlug   string `json:"tenant_slug"`
 	Timezone     string `json:"timezone"`
 	PrintedQr    bool   `json:"printed_qr"` // the QR on the door works
-	TurnCodes    bool   `json:"turn_codes"` // a code from the daily sheet works
+	EntryCode    bool   `json:"entry_code"` // the facility's entry code works
 	RadiusM      int    `json:"radius_m"`
 	FlashBooking bool   `json:"flash_booking"` // a free turn can be booked on the spot
 	// the person's own booking here that can go in now, if any
@@ -26,8 +26,8 @@ type EntranceBookingDto struct {
 	CheckedInAt *time.Time `json:"checked_in_at"`
 }
 
-// CheckinInput: the proof of being at the door (the printed QR's token or a
-// turn code) and where the phone is. The location is checked, never stored.
+// CheckinInput: the proof of being at the door (the printed QR's token or the
+// entry code) and where the phone is. The location is checked, never stored.
 type CheckinInput struct {
 	QrToken   string   `json:"qr_token"`
 	Code      string   `json:"code"`

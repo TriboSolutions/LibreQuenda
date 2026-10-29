@@ -16,32 +16,31 @@ import { Switch } from '@/components/ui/switch'
 import { useAsync } from '@/hooks/useAsync'
 import { api, type CheckinSettings, type CheckinSettingsInput } from '@/lib/api'
 import { entranceUrl } from '@/lib/entrance'
-import { localDate } from '@/lib/time'
 
-type Props = { slug: string; facilityId: string; facilitySlug: string; token: string; timeZone: string }
+type Props = { slug: string; facilityId: string; facilitySlug: string; token: string }
 
-type Method = 'reader' | 'printedQr' | 'nfc' | 'rotating' | 'dailySheet' | 'staff'
+type Method = 'reader' | 'printedQr' | 'nfc' | 'rotating' | 'entryCode' | 'staff'
 
-type SavedKey = 'printed_qr' | 'turn_codes' | 'staff_confirm'
+type SavedKey = 'printed_qr' | 'entry_code' | 'staff_confirm'
 
 // the ways in from the README's "Check-in at the entrance". saved: switched on
 // and off with the facility's settings; the reader is always there; the rest is a preview
 const METHODS: { key: Method; icon: typeof QrCode; built?: boolean; saved?: SavedKey }[] = [
   { key: 'reader', icon: ScanLine, built: true },
   { key: 'printedQr', icon: QrCode, built: true, saved: 'printed_qr' },
-  { key: 'dailySheet', icon: Hash, built: true, saved: 'turn_codes' },
+  { key: 'entryCode', icon: Hash, built: true, saved: 'entry_code' },
   { key: 'nfc', icon: Nfc },
   { key: 'rotating', icon: MonitorSmartphone },
   { key: 'staff', icon: UserCheck, built: true, saved: 'staff_confirm' },
 ]
 
 // the ways that check the phone's location against the facility's map pin
-const needsPin = (key?: SavedKey) => key === 'printed_qr' || key === 'turn_codes'
+const needsPin = (key?: SavedKey) => key === 'printed_qr' || key === 'entry_code'
 
 function toInput(settings: CheckinSettings): CheckinSettingsInput {
   return {
     printed_qr: settings.printed_qr,
-    turn_codes: settings.turn_codes,
+    entry_code: settings.entry_code,
     radius_m: settings.radius_m,
     flash_booking: settings.flash_booking,
     staff_confirm: settings.staff_confirm,
@@ -78,16 +77,16 @@ export function CheckinMethods(props: Props) {
   )
 }
 
-function Methods({ slug, facilityId, facilitySlug, token, timeZone, initial }: Props & { initial: CheckinSettings }) {
+function Methods({ slug, facilityId, facilitySlug, token, initial }: Props & { initial: CheckinSettings }) {
   const { t } = useTranslation(['admin', 'common'])
   const [saved, setSaved] = useState(initial)
   const [draft, setDraft] = useState<CheckinSettingsInput>(() => toInput(initial))
   const [saving, setSaving] = useState(false)
   const [status, setStatus] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [rotateOpen, setRotateOpen] = useState(false)
+  // which print gets a new token or code: the ones already printed stop working
+  const [rotateOpen, setRotateOpen] = useState<'printedQr' | 'entryCode' | null>(null)
   const [rotating, setRotating] = useState(false)
-  const [sheetDate, setSheetDate] = useState(() => localDate(new Date().toISOString(), timeZone))
 
   // the ways that are only a preview: switched locally, never saved
   const [preview, setPreview] = useState<Record<'nfc' | 'rotating', boolean>>({ nfc: false, rotating: false })
@@ -96,7 +95,7 @@ function Methods({ slug, facilityId, facilitySlug, token, timeZone, initial }: P
   const [codeDigits, setCodeDigits] = useState('6')
 
   const dirty = JSON.stringify(draft) !== JSON.stringify(toInput(saved))
-  const needsLocation = draft.printed_qr || draft.turn_codes
+  const needsLocation = draft.printed_qr || draft.entry_code
 
   const set = <K extends keyof CheckinSettingsInput>(key: K, value: CheckinSettingsInput[K]) => setDraft((d) => ({ ...d, [key]: value }))
 
@@ -115,18 +114,21 @@ function Methods({ slug, facilityId, facilitySlug, token, timeZone, initial }: P
     }
   }
 
-  const rotate = async () => {
+  const rotate = async (which: 'printedQr' | 'entryCode') => {
     setRotating(true)
     setError(null)
     try {
-      const updated = await api.council.rotateCheckinQr(token, slug, facilityId)
+      const updated =
+        which === 'printedQr'
+          ? await api.council.rotateCheckinQr(token, slug, facilityId)
+          : await api.council.rotateCheckinCode(token, slug, facilityId)
       setSaved(updated)
-      setStatus(t('admin:checkin.printedQr.rotated'))
+      setStatus(t(`admin:checkin.${which}.rotated`))
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
     } finally {
       setRotating(false)
-      setRotateOpen(false)
+      setRotateOpen(null)
     }
   }
 
@@ -157,7 +159,7 @@ function Methods({ slug, facilityId, facilitySlug, token, timeZone, initial }: P
                   {t('admin:checkin.printedQr.print')}
                 </Link>
               </Button>
-              <Button type="button" variant="ghost" onClick={() => setRotateOpen(true)}>
+              <Button type="button" variant="ghost" onClick={() => setRotateOpen('printedQr')}>
                 <RefreshCw aria-hidden />
                 {t('admin:checkin.printedQr.newQr')}
               </Button>
@@ -168,27 +170,26 @@ function Methods({ slug, facilityId, facilitySlug, token, timeZone, initial }: P
         )}
       </>
     ),
-    dailySheet: (
+    entryCode: (
       <>
-        <p className="text-sm text-muted-foreground">{t('admin:checkin.dailySheet.help')}</p>
-        {saved.turn_codes ? (
-          <div className="flex flex-wrap items-end gap-3">
-            <div className="grid gap-2">
-              <Label htmlFor="ci-sheet-date">{t('admin:checkin.dailySheet.date')}</Label>
-              <Input
-                id="ci-sheet-date"
-                type="date"
-                value={sheetDate}
-                onChange={(e) => setSheetDate(e.target.value)}
-                className="num w-auto"
-              />
+        <p className="text-sm text-muted-foreground">{t('admin:checkin.entryCode.help')}</p>
+        {saved.entry_code ? (
+          <div className="flex flex-wrap items-center gap-4">
+            <p className="num font-mono text-3xl font-bold tracking-widest" aria-label={t('admin:checkin.entryCode.codeLabel', { code: saved.code.split('').join(' ') })}>
+              {saved.code.slice(0, 3)} {saved.code.slice(3)}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Button asChild variant="outline">
+                <Link to={`${printBase}?que=codigo`} target="_blank">
+                  <Printer aria-hidden />
+                  {t('admin:checkin.entryCode.print')}
+                </Link>
+              </Button>
+              <Button type="button" variant="ghost" onClick={() => setRotateOpen('entryCode')}>
+                <RefreshCw aria-hidden />
+                {t('admin:checkin.entryCode.newCode')}
+              </Button>
             </div>
-            <Button asChild variant="outline">
-              <Link to={`${printBase}?que=codigos&data=${sheetDate}`} target="_blank">
-                <Printer aria-hidden />
-                {t('admin:checkin.dailySheet.print')}
-              </Link>
-            </Button>
           </div>
         ) : (
           <p className="text-sm text-muted-foreground">{t('admin:checkin.saveToPrint')}</p>
@@ -371,18 +372,18 @@ function Methods({ slug, facilityId, facilitySlug, token, timeZone, initial }: P
         </Button>
       </div>
 
-      <Dialog open={rotateOpen} onOpenChange={setRotateOpen}>
+      <Dialog open={rotateOpen !== null} onOpenChange={(open) => !open && setRotateOpen(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t('admin:checkin.printedQr.newTitle')}</DialogTitle>
-            <DialogDescription>{t('admin:checkin.printedQr.newBody')}</DialogDescription>
+            <DialogTitle>{t(`admin:checkin.${rotateOpen ?? 'printedQr'}.newTitle`)}</DialogTitle>
+            <DialogDescription>{t(`admin:checkin.${rotateOpen ?? 'printedQr'}.newBody`)}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setRotateOpen(false)}>
-              {t('admin:checkin.printedQr.keep')}
+            <Button type="button" variant="outline" onClick={() => setRotateOpen(null)}>
+              {t(`admin:checkin.${rotateOpen ?? 'printedQr'}.keep`)}
             </Button>
-            <Button type="button" variant="destructive" disabled={rotating} onClick={() => void rotate()}>
-              {t('admin:checkin.printedQr.newConfirm')}
+            <Button type="button" variant="destructive" disabled={rotating} onClick={() => rotateOpen && void rotate(rotateOpen)}>
+              {t(`admin:checkin.${rotateOpen ?? 'printedQr'}.newConfirm`)}
             </Button>
           </DialogFooter>
         </DialogContent>

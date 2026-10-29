@@ -24,7 +24,7 @@ CREATE TYPE booking_channel AS ENUM (
 CREATE TYPE checkin_method AS ENUM (
     'reader',       -- a QR reader at the door read the booking or the personal QR
     'printed_qr',   -- the resident's phone read the QR printed on the door
-    'turn_code',    -- the resident typed the turn's code from the daily sheet
+    'entry_code',   -- the resident typed the facility's entry code
     'staff'         -- council staff confirmed it from the calendar
 );
 
@@ -239,8 +239,8 @@ CREATE TABLE checkin_device (
 );
 
 -- Check-in by reading the facility, from the resident's own phone: a QR printed
--- on the door (its address carries qr_token), or a code per turn on a daily
--- sheet (derived from code_secret, nothing stored per turn). Both need the
+-- on the door (its address carries qr_token), or the facility's fixed entry
+-- code (derived from code_secret; a new secret gives a new code). Both need the
 -- phone's location within radius_m of the facility's pin; the location is never
 -- stored. flash_booking also covers the personal QR at the readers. staff_confirm
 -- lets council staff mark the entry from the bookings calendar. No row: the
@@ -249,8 +249,8 @@ CREATE TABLE facility_checkin (
     facility_id   UUID         PRIMARY KEY REFERENCES facility(id) ON DELETE CASCADE,
     printed_qr    BOOLEAN      NOT NULL DEFAULT FALSE,
     qr_token      UUID         NOT NULL DEFAULT gen_random_uuid(),  -- a new one voids the printed QRs
-    turn_codes    BOOLEAN      NOT NULL DEFAULT FALSE,
-    code_secret   BYTEA        NOT NULL DEFAULT (uuid_send(gen_random_uuid()) || uuid_send(gen_random_uuid())),
+    entry_code    BOOLEAN      NOT NULL DEFAULT FALSE,
+    code_secret   BYTEA        NOT NULL DEFAULT (uuid_send(gen_random_uuid()) || uuid_send(gen_random_uuid())),  -- a new one voids the printed code
     radius_m      INT          NOT NULL DEFAULT 100 CHECK (radius_m BETWEEN 25 AND 1000),
     flash_booking BOOLEAN      NOT NULL DEFAULT TRUE,
     staff_confirm BOOLEAN      NOT NULL DEFAULT FALSE,              -- staff mark the entry from the calendar

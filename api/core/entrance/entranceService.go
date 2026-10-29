@@ -6,7 +6,6 @@ import (
 	"errors"
 	"librequenda/auth"
 	"librequenda/checkin"
-	"librequenda/core/bookings"
 	"librequenda/core/me"
 	"librequenda/core/reader"
 	"librequenda/model"
@@ -62,7 +61,7 @@ func (s *entranceService) Get(ctx context.Context, session auth.Session, tenantS
 		TenantSlug:   facility.TenantSlug,
 		Timezone:     facility.Timezone,
 		PrintedQr:    facility.PrintedQr && facility.Latitude.Valid,
-		TurnCodes:    facility.TurnCodes && facility.Latitude.Valid,
+		EntryCode:    facility.EntryCode && facility.Latitude.Valid,
 		RadiusM:      int(facility.RadiusM),
 		FlashBooking: facility.FlashBooking,
 	}
@@ -83,7 +82,7 @@ func (s *entranceService) Get(ctx context.Context, session auth.Session, tenantS
 	return response, nil
 }
 
-// CheckIn: the phone proves it is at the door (printed QR or turn code, and its
+// CheckIn: the phone proves it is at the door (printed QR or entry code, and its
 // location); then the person's booking goes in, or, when asked, a free turn is
 // booked on the spot. Both through the reader's own check-in.
 func (s *entranceService) CheckIn(ctx context.Context, session auth.Session, tenantSlug, facilitySlug string, input CheckinInput) (*CheckinResultDto, *shared.ErrorResponse) {
@@ -95,16 +94,7 @@ func (s *entranceService) CheckIn(ctx context.Context, session auth.Session, ten
 	if userErr != nil {
 		return nil, userErr
 	}
-	var now = time.Now()
-	var openTurns []time.Time
-	if input.QrToken == "" && input.Code != "" && facility.TurnCodes {
-		var turns, turnsErr = bookings.GetBookingsService(s.db).EntranceTurns(ctx, facility.ID, now)
-		if turnsErr != nil {
-			return nil, turnsErr
-		}
-		openTurns = checkin.EntryTurns(turns, now)
-	}
-	if refused := prove(facility, input, openTurns); refused != "" {
+	if refused := prove(facility, input); refused != "" {
 		return &CheckinResultDto{CheckinResultDto: reader.CheckinResultDto{Result: refused}}, nil
 	}
 
@@ -113,7 +103,7 @@ func (s *entranceService) CheckIn(ctx context.Context, session auth.Session, ten
 	if err != nil {
 		return nil, err
 	}
-	var entry = reader.Entry{Method: model.CheckinMethodTurnCode}
+	var entry = reader.Entry{Method: model.CheckinMethodEntryCode}
 	if input.QrToken != "" {
 		entry.Method = model.CheckinMethodPrintedQr
 	}
@@ -133,8 +123,7 @@ func (s *entranceService) CheckIn(ctx context.Context, session auth.Session, ten
 }
 
 // prove checks the proof of being at the door; "" when it holds, else the result to answer.
-// openTurns: the starts of the turns open for entry now (only needed for a code).
-func prove(facility model.GetFacilityEntranceRow, input CheckinInput, openTurns []time.Time) string {
+func prove(facility model.GetFacilityEntranceRow, input CheckinInput) string {
 	switch {
 	case input.QrToken != "":
 		if !facility.PrintedQr {
@@ -145,10 +134,10 @@ func prove(facility model.GetFacilityEntranceRow, input CheckinInput, openTurns 
 			return ResultInvalidQr
 		}
 	case input.Code != "":
-		if !facility.TurnCodes {
+		if !facility.EntryCode {
 			return ResultMethodOff
 		}
-		if !checkin.CodeMatches(facility.CodeSecret, openTurns, input.Code) {
+		if !checkin.CodeMatches(facility.CodeSecret, input.Code) {
 			return ResultWrongCode
 		}
 	default:

@@ -51,8 +51,7 @@ func (h *counciladminHandler) RotateCheckinQr(w http.ResponseWriter, r *http.Req
 	send(w, r, response, err)
 }
 
-// TurnCodes: ?date=YYYY-MM-DD, the day of the sheet.
-func (h *counciladminHandler) TurnCodes(w http.ResponseWriter, r *http.Request) {
+func (h *counciladminHandler) RotateCheckinCode(w http.ResponseWriter, r *http.Request) {
 	var tenantId, ok = h.councilAdmin(w, r)
 	if !ok {
 		return
@@ -61,7 +60,6 @@ func (h *counciladminHandler) TurnCodes(w http.ResponseWriter, r *http.Request) 
 	if id, ok = facilityId(w, r); !ok {
 		return
 	}
-	w.Header().Set("Cache-Control", "no-store")
-	var response, err = GetCounciladminService(h.db).TurnCodes(r.Context(), tenantId, id, r.URL.Query().Get("date"))
+	var response, err = GetCounciladminService(h.db).RotateCheckinCode(r.Context(), tenantId, id)
 	send(w, r, response, err)
 }

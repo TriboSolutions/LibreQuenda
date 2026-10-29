@@ -145,7 +145,7 @@ type CheckinMethod string
 const (
 	CheckinMethodReader    CheckinMethod = "reader"
 	CheckinMethodPrintedQr CheckinMethod = "printed_qr"
-	CheckinMethodTurnCode  CheckinMethod = "turn_code"
+	CheckinMethodEntryCode CheckinMethod = "entry_code"
 	CheckinMethodStaff     CheckinMethod = "staff"
 )
 
@@ -375,7 +375,7 @@ type FacilityCheckin struct {
 	FacilityID   uuid.UUID `json:"facility_id"`
 	PrintedQr    bool      `json:"printed_qr"`
 	QrToken      uuid.UUID `json:"qr_token"`
-	TurnCodes    bool      `json:"turn_codes"`
+	EntryCode    bool      `json:"entry_code"`
 	CodeSecret   []byte    `json:"code_secret"`
 	RadiusM      int32     `json:"radius_m"`
 	FlashBooking bool      `json:"flash_booking"`

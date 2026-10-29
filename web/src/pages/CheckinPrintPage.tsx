@@ -10,31 +10,25 @@ import { useCouncilAdmin } from '@/hooks/useCouncilAdmin'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { api } from '@/lib/api'
 import { entranceUrl } from '@/lib/entrance'
-import { formatDateWithYear, formatTime } from '@/lib/time'
 
 /**
  * /:slug/admin/facilities/:id/imprimir: a page made to print, for the door.
- * ?que=qr the facility's check-in QR; ?que=codigos&data=YYYY-MM-DD the day's turn codes.
+ * ?que=qr the facility's check-in QR; ?que=codigo its entry code.
  */
 export function CheckinPrintPage() {
   const { slug = '', id = '' } = useParams()
   const [params] = useSearchParams()
-  const what = params.get('que') === 'codigos' ? 'codes' : 'qr'
-  const date = params.get('data') ?? ''
+  const what = params.get('que') === 'codigo' ? 'code' : 'qr'
   const { t } = useTranslation(['admin', 'common'])
   const auth = useAuth()
   const token = auth.user?.access_token ?? ''
   const allowed = useCouncilAdmin(slug)
   const facility = useAsync(allowed ? () => api.council.facility(token, slug, id) : null, `print-facility:${slug}:${id}:${allowed}`)
-  const settings = useAsync(allowed && what === 'qr' ? () => api.council.checkinSettings(token, slug, id) : null, `print-qr:${slug}:${id}:${allowed}`)
-  const codes = useAsync(
-    allowed && what === 'codes' ? () => api.council.turnCodes(token, slug, id, date) : null,
-    `print-codes:${slug}:${id}:${date}:${allowed}`,
-  )
-  usePageTitle(what === 'qr' ? t('admin:checkin.print.qrTitle') : t('admin:checkin.print.codesTitle'), facility.data?.name)
+  const settings = useAsync(allowed ? () => api.council.checkinSettings(token, slug, id) : null, `print-checkin:${slug}:${id}:${allowed}`)
+  usePageTitle(what === 'qr' ? t('admin:checkin.print.qrTitle') : t('admin:checkin.print.codeTitle'), facility.data?.name)
 
-  const error = facility.error ?? settings.error ?? codes.error
-  const ready = facility.data && (what === 'qr' ? settings.data : codes.data)
+  const error = facility.error ?? settings.error
+  const ready = facility.data && settings.data
   const entrance = `${window.location.host}/${slug}/${facility.data?.slug ?? ''}/entrada`
 
   return (
@@ -75,42 +69,17 @@ export function CheckinPrintPage() {
           </ol>
         </article>
       ) : (
-        <article className="grid gap-4">
-          <h1 className="text-3xl font-bold">{t('admin:checkin.print.codesTitle')}</h1>
-          <p className="text-xl">
-            {facility.data!.name} · {formatDateWithYear(codes.data!.date)}
+        <article className="grid justify-items-center gap-6 text-center">
+          <h1 className="text-4xl font-bold">{t('admin:checkin.print.codeTitle')}</h1>
+          <p className="text-2xl">{facility.data!.name}</p>
+          <p className="num font-mono text-7xl font-bold tracking-widest">
+            {settings.data!.code.slice(0, 3)} {settings.data!.code.slice(3)}
           </p>
-          <p>{t('admin:checkin.print.codesHelp', { url: entrance })}</p>
-          {codes.data!.turns.length === 0 ? (
-            <p className="rounded-md border border-dashed border-neutral-400 px-4 py-3">{t('admin:checkin.print.noTurns')}</p>
-          ) : (
-            <table className="w-full border-collapse text-lg">
-              <caption className="sr-only">{t('admin:checkin.print.codesTitle')}</caption>
-              <thead>
-                <tr className="border-b-2 border-black text-left">
-                  <th scope="col" className="py-2 pr-4">
-                    {t('admin:checkin.print.colTurn')}
-                  </th>
-                  <th scope="col" className="py-2">
-                    {t('admin:checkin.print.colCode')}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {codes.data!.turns.map((turn) => (
-                  <tr key={turn.starts_at} className="border-b border-neutral-400 break-inside-avoid">
-                    <td className="num py-2 pr-4">
-                      {formatTime(turn.starts_at, codes.data!.timezone)}–{formatTime(turn.ends_at, codes.data!.timezone)}
-                    </td>
-                    <td className="num py-2 font-mono text-2xl font-bold tracking-widest">
-                      {turn.code.slice(0, 3)} {turn.code.slice(3)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-          <p className="text-sm">{t('admin:checkin.print.codesValid')}</p>
+          <ol className="grid max-w-[46ch] list-decimal gap-2 pl-6 text-left text-lg">
+            <li>{t('admin:checkin.print.codeStep1', { url: entrance })}</li>
+            <li>{t('admin:checkin.print.qrStep2')}</li>
+            <li>{settings.data!.flash_booking ? t('admin:checkin.print.qrStep3Flash') : t('admin:checkin.print.qrStep3')}</li>
+          </ol>
         </article>
       )}
     </main>
