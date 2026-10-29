@@ -11,7 +11,8 @@ import { useAsync } from '@/hooks/useAsync'
 import { api, type CheckinDevice, type CreatedCheckinDevice } from '@/lib/api'
 import { formatDateTime } from '@/lib/time'
 
-type Props = { slug: string; facilityId: string; token: string }
+// nested: inside another section (the check-in tab), so a sub-heading and no card of its own
+type Props = { slug: string; facilityId: string; token: string; nested?: boolean }
 
 // last-seen times in the administrator's own zone
 const localZone = Intl.DateTimeFormat().resolvedOptions().timeZone
@@ -38,7 +39,7 @@ function CopyButton({ value, label }: { value: string; label: string }) {
 }
 
 /** QR readers at the facility entrance: each one signs in with its own key. */
-export function CheckinDevices({ slug, facilityId, token }: Props) {
+export function CheckinDevices({ slug, facilityId, token, nested = false }: Props) {
   const { t } = useTranslation(['admin', 'common'])
   const devices = useAsync(() => api.council.devices(token, slug, facilityId), `${slug}/${facilityId}`)
   const [name, setName] = useState('')
@@ -81,11 +82,17 @@ export function CheckinDevices({ slug, facilityId, token }: Props) {
   const list = devices.data?.devices ?? []
 
   return (
-    <section aria-labelledby="sec-readers" className="grid gap-4 rounded-lg border bg-card p-5">
+    <section aria-labelledby="sec-readers" className={nested ? 'grid gap-4' : 'grid gap-4 rounded-lg border bg-card p-5'}>
       <div>
-        <h2 id="sec-readers" className="text-lg font-semibold">
-          {t('admin:readers.title')}
-        </h2>
+        {nested ? (
+          <h3 id="sec-readers" className="font-semibold">
+            {t('admin:readers.title')}
+          </h3>
+        ) : (
+          <h2 id="sec-readers" className="text-lg font-semibold">
+            {t('admin:readers.title')}
+          </h2>
+        )}
         <p className="mt-1 max-w-[70ch] text-muted-foreground">{t('admin:readers.help')}</p>
       </div>
 

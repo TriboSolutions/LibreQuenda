@@ -186,7 +186,9 @@
     },
     "tagsEmpty": "Aún no hay etiquetas: pídeselas a un superadministrador.",
     "tagsNone": "Ninguna",
-    "tagsClear": "Quitar todas"
+    "tagsClear": "Quitar todas",
+    "tabDetails": "Datos",
+    "tabCheckin": "Entrada"
   },
   "readers": {
     "title": "Lectores QR de la entrada",
@@ -521,5 +523,79 @@
     "confirmDeleteTag": "Sí, eliminar",
     "facilitiesUsing_one": "en {{count}} instalación",
     "facilitiesUsing_other": "en {{count}} instalaciones"
+  },
+  "checkin": {
+    "title": "Cómo se registra la entrada",
+    "help": "Elige una o varias formas de registrar la entrada de los vecinos. Todas acaban en el mismo registro de la reserva, así que la asistencia y los indicadores no cambian. Elige según el presupuesto y lo que importen las trampas aquí.",
+    "preview": "Vista previa: hoy solo funciona el lector QR y lo que elijas en esta pestaña aún no se guarda. Los lectores que aparecen debajo sí son reales.",
+    "built": "Funciona",
+    "soon": "Próximamente",
+    "door": "En la puerta:",
+    "cost": "Coste:",
+    "cheat": "Difícil de engañar:",
+    "reader": {
+      "name": "QR de reserva o flash en un lector",
+      "how": "El vecino enseña el QR de su reserva, o su QR flash personal, a un dispositivo con cámara en la puerta.",
+      "door": "un móvil, tableta o pequeño ordenador con el lector",
+      "cost": "un móvil o tableta barato",
+      "cheat": "sí, los códigos son por reserva o cambian cada minuto",
+      "flash": "Aceptar el QR de reserva flash",
+      "flashHelp": "Al leer el QR personal se reserva al momento el turno en curso, o el siguiente, si está libre."
+    },
+    "printedQr": {
+      "name": "QR impreso en la puerta",
+      "how": "El vecino escanea una hoja con el QR de la instalación y la app registra su reserva de este turno.",
+      "door": "una hoja de papel",
+      "cost": "casi gratis",
+      "cheat": "bajo; mejor con una ventana de tiempo y la ubicación del móvil",
+      "address": "El QR abriría {{url}}.",
+      "window": "La entrada se abre estos minutos antes del inicio"
+    },
+    "nfc": {
+      "name": "Etiqueta NFC",
+      "how": "El vecino acerca el móvil a una pegatina en la puerta, que abre la página de entrada.",
+      "door": "una pegatina NFC",
+      "cost": "unos euros por puerta",
+      "cheat": "bajo con una etiqueta simple, alto con una firmada",
+      "tag": "Tipo de etiqueta",
+      "signed": "Firma cada lectura (NTAG 424 DNA)",
+      "plain": "Etiqueta simple",
+      "signedHelp": "Cada lectura lleva una firma y un contador que comprueba el servidor, así que una lectura copiada o grabada no sirve.",
+      "plainHelp": "Una etiqueta simple solo guarda la dirección y se puede copiar: añade la comprobación de ubicación."
+    },
+    "rotating": {
+      "name": "Código cambiante en una pantalla",
+      "how": "Una pequeña pantalla en la puerta muestra un código o QR que cambia cada pocos minutos; el vecino lo escribe o lo escanea en la app.",
+      "door": "una pantalla de tinta electrónica, un ESP32 o una tableta vieja",
+      "cost": "decenas de euros por puerta",
+      "cheat": "alto, el código solo vale unos minutos y solo en esta puerta",
+      "every": "Código nuevo cada",
+      "minutes_one": "{{count}} minuto",
+      "minutes_other": "{{count}} minutos",
+      "digits": "Cifras del código",
+      "help": "La pantalla tiene un secreto propio, guardado como las claves de los lectores, y muestra códigos a partir de él (TOTP)."
+    },
+    "dailySheet": {
+      "name": "Código en una hoja diaria",
+      "how": "Una hoja en el mostrador o en la puerta tiene un código por turno; el vecino escribe el de su turno.",
+      "door": "una hoja impresa, cambiada cada día",
+      "cost": "casi gratis",
+      "cheat": "medio, alguien tiene que cambiar la hoja cada día",
+      "help": "La hoja de cada día se imprimiría desde aquí, con un código por turno."
+    },
+    "staff": {
+      "name": "Confirmación del personal",
+      "how": "El personal marca a las personas como llegadas en el calendario de reserva manual.",
+      "door": "nadie, o el mostrador",
+      "cost": "tiempo del personal",
+      "cheat": "tanto como el personal",
+      "help": "El personal marca las llegadas en la pestaña de reserva manual.",
+      "open": "Abrir las reservas de esta instalación"
+    },
+    "location": {
+      "label": "Comprobar la ubicación del móvil",
+      "help": "El móvil tiene que estar cerca del punto de la instalación en el mapa. El vecino tiene que permitirlo y la ubicación nunca se guarda.",
+      "radius": "Distancia al punto, en metros"
+    }
   }
 }

@@ -186,7 +186,9 @@
     },
     "tagsEmpty": "Aínda non hai etiquetas: pídellas a un superadministrador.",
     "tagsNone": "Ningunha",
-    "tagsClear": "Quitar todas"
+    "tagsClear": "Quitar todas",
+    "tabDetails": "Datos",
+    "tabCheckin": "Entrada"
   },
   "readers": {
     "title": "Lectores QR da entrada",
@@ -521,5 +523,79 @@
     "confirmDeleteTag": "Si, eliminar",
     "facilitiesUsing_one": "en {{count}} instalación",
     "facilitiesUsing_other": "en {{count}} instalacións"
+  },
+  "checkin": {
+    "title": "Como se rexistra a entrada",
+    "help": "Escolle unha ou varias formas de rexistrar a entrada dos veciños. Todas rematan no mesmo rexistro da reserva, así que a asistencia e os indicadores non cambian. Escolle segundo o orzamento e o que importen as trampas aquí.",
+    "preview": "Vista previa: hoxe só funciona o lector QR e o que escollas nesta lapela aínda non se garda. Os lectores que aparecen debaixo si son reais.",
+    "built": "Funciona",
+    "soon": "Proximamente",
+    "door": "Na porta:",
+    "cost": "Custo:",
+    "cheat": "Difícil de enganar:",
+    "reader": {
+      "name": "QR de reserva ou flash nun lector",
+      "how": "O veciño amosa o QR da súa reserva, ou o seu QR flash persoal, a un dispositivo con cámara na porta.",
+      "door": "un móbil, tableta ou pequeno ordenador co lector",
+      "cost": "un móbil ou tableta barato",
+      "cheat": "si, os códigos son por reserva ou cambian cada minuto",
+      "flash": "Aceptar o QR de reserva flash",
+      "flashHelp": "Ao ler o QR persoal resérvase no momento a quenda en curso, ou a seguinte, se está libre."
+    },
+    "printedQr": {
+      "name": "QR impreso na porta",
+      "how": "O veciño escanea unha folla co QR da instalación e a app rexistra a súa reserva desta quenda.",
+      "door": "unha folla de papel",
+      "cost": "case de balde",
+      "cheat": "baixo; mellor cunha xanela de tempo e a localización do móbil",
+      "address": "O QR abriría {{url}}.",
+      "window": "A entrada ábrese estes minutos antes do comezo"
+    },
+    "nfc": {
+      "name": "Etiqueta NFC",
+      "how": "O veciño achega o móbil a un adhesivo na porta, que abre a páxina de entrada.",
+      "door": "un adhesivo NFC",
+      "cost": "uns euros por porta",
+      "cheat": "baixo cunha etiqueta simple, alto cunha asinada",
+      "tag": "Tipo de etiqueta",
+      "signed": "Asina cada lectura (NTAG 424 DNA)",
+      "plain": "Etiqueta simple",
+      "signedHelp": "Cada lectura leva unha sinatura e un contador que comproba o servidor, así que unha lectura copiada ou gravada non serve.",
+      "plainHelp": "Unha etiqueta simple só garda o enderezo e pódese copiar: engade a comprobación de localización."
+    },
+    "rotating": {
+      "name": "Código cambiante nunha pantalla",
+      "how": "Unha pequena pantalla na porta amosa un código ou QR que cambia cada poucos minutos; o veciño escríbeo ou escanéao na app.",
+      "door": "unha pantalla de tinta electrónica, un ESP32 ou unha tableta vella",
+      "cost": "decenas de euros por porta",
+      "cheat": "alto, o código só vale uns minutos e só nesta porta",
+      "every": "Código novo cada",
+      "minutes_one": "{{count}} minuto",
+      "minutes_other": "{{count}} minutos",
+      "digits": "Cifras do código",
+      "help": "A pantalla ten un segredo propio, gardado coma as chaves dos lectores, e amosa códigos a partir del (TOTP)."
+    },
+    "dailySheet": {
+      "name": "Código nunha folla diaria",
+      "how": "Unha folla no mostrador ou na porta ten un código por quenda; o veciño escribe o da súa quenda.",
+      "door": "unha folla impresa, cambiada cada día",
+      "cost": "case de balde",
+      "cheat": "medio, alguén ten que cambiar a folla cada día",
+      "help": "A folla de cada día imprimiríase desde aquí, cun código por quenda."
+    },
+    "staff": {
+      "name": "Confirmación do persoal",
+      "how": "O persoal marca as persoas como chegadas no calendario de reserva manual.",
+      "door": "ninguén, ou o mostrador",
+      "cost": "tempo do persoal",
+      "cheat": "tanto coma o persoal",
+      "help": "O persoal marca as chegadas na lapela de reserva manual.",
+      "open": "Abrir as reservas desta instalación"
+    },
+    "location": {
+      "label": "Comprobar a localización do móbil",
+      "help": "O móbil ten que estar preto do punto da instalación no mapa. O veciño ten que permitilo e a localización nunca se garda.",
+      "radius": "Distancia ao punto, en metros"
+    }
   }
 }

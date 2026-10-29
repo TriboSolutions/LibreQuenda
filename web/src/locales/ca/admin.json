@@ -186,7 +186,9 @@
     },
     "tagsEmpty": "Encara no hi ha etiquetes: demana-les a un superadministrador.",
     "tagsNone": "Cap",
-    "tagsClear": "Treu-les totes"
+    "tagsClear": "Treu-les totes",
+    "tabDetails": "Dades",
+    "tabCheckin": "Entrada"
   },
   "readers": {
     "title": "Lectors QR de l'entrada",
@@ -521,5 +523,79 @@
     "confirmDeleteTag": "Sí, elimina",
     "facilitiesUsing_one": "a {{count}} instal·lació",
     "facilitiesUsing_other": "a {{count}} instal·lacions"
+  },
+  "checkin": {
+    "title": "Com es registra l’entrada",
+    "help": "Tria una o diverses maneres de registrar l’entrada dels veïns. Totes acaben en el mateix registre de la reserva, així que l’assistència i els indicadors no canvien. Tria segons el pressupost i el que importin les trampes aquí.",
+    "preview": "Previsualització: avui només funciona el lector QR i el que triïs en aquesta pestanya encara no es desa. Els lectors que apareixen a sota sí que són reals.",
+    "built": "Funciona",
+    "soon": "Aviat",
+    "door": "A la porta:",
+    "cost": "Cost:",
+    "cheat": "Difícil d’enganyar:",
+    "reader": {
+      "name": "QR de reserva o flaix en un lector",
+      "how": "El veí mostra el QR de la seva reserva, o el seu QR flaix personal, a un dispositiu amb càmera a la porta.",
+      "door": "un mòbil, tauleta o petit ordinador amb el lector",
+      "cost": "un mòbil o tauleta barat",
+      "cheat": "sí, els codis són per reserva o canvien cada minut",
+      "flash": "Acceptar el QR de reserva flaix",
+      "flashHelp": "En llegir el QR personal es reserva a l’instant el torn en curs, o el següent, si és lliure."
+    },
+    "printedQr": {
+      "name": "QR imprès a la porta",
+      "how": "El veí escaneja un full amb el QR de la instal·lació i l’app registra la seva reserva d’aquest torn.",
+      "door": "un full de paper",
+      "cost": "gairebé gratuït",
+      "cheat": "baix; millor amb una finestra de temps i la ubicació del mòbil",
+      "address": "El QR obriria {{url}}.",
+      "window": "L’entrada s’obre aquests minuts abans de l’inici"
+    },
+    "nfc": {
+      "name": "Etiqueta NFC",
+      "how": "El veí acosta el mòbil a un adhesiu a la porta, que obre la pàgina d’entrada.",
+      "door": "un adhesiu NFC",
+      "cost": "uns euros per porta",
+      "cheat": "baix amb una etiqueta simple, alt amb una signada",
+      "tag": "Tipus d’etiqueta",
+      "signed": "Signa cada lectura (NTAG 424 DNA)",
+      "plain": "Etiqueta simple",
+      "signedHelp": "Cada lectura porta una signatura i un comptador que comprova el servidor, així que una lectura copiada o enregistrada no serveix.",
+      "plainHelp": "Una etiqueta simple només guarda l’adreça i es pot copiar: afegeix la comprovació d’ubicació."
+    },
+    "rotating": {
+      "name": "Codi canviant en una pantalla",
+      "how": "Una petita pantalla a la porta mostra un codi o QR que canvia cada pocs minuts; el veí l’escriu o l’escaneja a l’app.",
+      "door": "una pantalla de tinta electrònica, un ESP32 o una tauleta vella",
+      "cost": "desenes d’euros per porta",
+      "cheat": "alt, el codi només val uns minuts i només en aquesta porta",
+      "every": "Codi nou cada",
+      "minutes_one": "{{count}} minut",
+      "minutes_other": "{{count}} minuts",
+      "digits": "Xifres del codi",
+      "help": "La pantalla té un secret propi, guardat com les claus dels lectors, i mostra codis a partir d’ell (TOTP)."
+    },
+    "dailySheet": {
+      "name": "Codi en un full diari",
+      "how": "Un full al taulell o a la porta té un codi per torn; el veí escriu el del seu torn.",
+      "door": "un full imprès, canviat cada dia",
+      "cost": "gairebé gratuït",
+      "cheat": "mitjà, algú ha de canviar el full cada dia",
+      "help": "El full de cada dia s’imprimiria des d’aquí, amb un codi per torn."
+    },
+    "staff": {
+      "name": "Confirmació del personal",
+      "how": "El personal marca les persones com a arribades al calendari de reserva manual.",
+      "door": "ningú, o el taulell",
+      "cost": "temps del personal",
+      "cheat": "tant com el personal",
+      "help": "El personal marca les arribades a la pestanya de reserva manual.",
+      "open": "Obrir les reserves d’aquesta instal·lació"
+    },
+    "location": {
+      "label": "Comprovar la ubicació del mòbil",
+      "help": "El mòbil ha de ser a prop del punt de la instal·lació al mapa. El veí ho ha de permetre i la ubicació no es desa mai.",
+      "radius": "Distància al punt, en metres"
+    }
   }
 }
