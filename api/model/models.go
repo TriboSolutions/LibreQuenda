@@ -227,6 +227,13 @@ func (ns NullTenantRole) Value() (driver.Value, error) {
 	return string(ns.TenantRole), nil
 }
 
+type AppSetting struct {
+	ID        bool           `json:"id"`
+	AppName   sql.NullString `json:"app_name"`
+	LogoRef   sql.NullString `json:"logo_ref"`
+	UpdatedAt time.Time      `json:"updated_at"`
+}
+
 type AppUser struct {
 	ID                uuid.UUID      `json:"id"`
 	IdpSubject        string         `json:"idp_subject"`

@@ -5,7 +5,8 @@
   "tabs": {
     "councils": "Ajuntaments",
     "superadmins": "Superadministradors",
-    "tags": "Etiquetes"
+    "tags": "Etiquetes",
+    "branding": "Personalitzar l'aplicació"
   },
   "guard": {
     "signIn": "Inicia la sessió per entrar a l'administració.",
@@ -383,7 +384,7 @@
   },
   "smtp": {
     "title": "Servidor de correu (SMTP)",
-    "help": "LibreQuenda envia les confirmacions de reserva, els recordatoris, les cancel·lacions i les invitacions d'administració d'aquest ajuntament. Configura el servidor propi de l'ajuntament per enviar-los des de la seva adreça; si no, surten pel servidor de la plataforma.",
+    "help": "{{app}} envia les confirmacions de reserva, els recordatoris, les cancel·lacions i les invitacions d'administració d'aquest ajuntament. Configura el servidor propi de l'ajuntament per enviar-los des de la seva adreça; si no, surten pel servidor de la plataforma.",
     "statusCouncil": "Servidor de l'ajuntament",
     "statusPlatform": "Servidor de la plataforma",
     "statusNone": "Sense servidor",
@@ -414,7 +415,7 @@
   },
   "councilExport": {
     "title": "Exportar les dades de l'ajuntament",
-    "help": "Un ZIP amb tot el que l'ajuntament desa a LibreQuenda, per portar-ho a un altre sistema: instal·lacions i normes d'ús, horaris, tancaments, lectors QR i totes les reserves, en CSV, amb les imatges originals i un datapackage.json (Frictionless Data) que descriu cada columna.",
+    "help": "Un ZIP amb tot el que l'ajuntament desa a {{app}}, per portar-ho a un altre sistema: instal·lacions i normes d'ús, horaris, tancaments, lectors QR i totes les reserves, en CSV, amb les imatges originals i un datapackage.json (Frictionless Data) que descriu cada columna.",
     "privacy": "No inclou contrasenyes ni claus. Sense les dades personals, cada veí hi apareix només amb l'identificador del seu compte.",
     "download": "Descarregar ZIP",
     "downloading": "S'està preparant…",
@@ -597,5 +598,17 @@
       "help": "El mòbil ha de ser a prop del punt de la instal·lació al mapa. El veí ho ha de permetre i la ubicació no es desa mai.",
       "radius": "Distància al punt, en metres"
     }
+  },
+  "branding": {
+    "title": "Nom i logotip de l'aplicació",
+    "help": "Per publicar el servei amb la vostra pròpia imatge: el nom i el logotip apareixen a la barra superior, al títol de les pestanyes, a la icona del navegador, a les pantalles dels lectors QR i als correus. El peu de pàgina continua indicant que funciona amb LibreQuenda, programari lliure.",
+    "name": "Nom de l'aplicació",
+    "nameHelp": "Fins a 60 caràcters. Buit: {{app}}.",
+    "logo": "Logotip",
+    "logoHelp": "Millor quadrat i amb fons transparent (PNG o WebP). Sense logotip: el de {{app}}.",
+    "preview": "Previsualització de la barra superior",
+    "useDefault": "Tornar al de {{app}}",
+    "save": "Desa",
+    "saving": "Desant…"
   }
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"librequenda/branding"
 	"librequenda/db"
 	"librequenda/mailer"
 	"librequenda/model"
@@ -129,10 +130,11 @@ func (s *counciladminService) TestSmtp(ctx context.Context, tenantId uuid.UUID, 
 	var t = func(key string, args ...any) string {
 		return helpers.GetI18nInstance().TranslateWithLanguageWithVars("email.smtp_test."+key, language, args...)
 	}
-	var body = t("body", councilName, relay.Host)
+	var appName = branding.Name(ctx, s.db)
+	var body = t("body", councilName, relay.Host, appName)
 	err = mailer.Send(relay, mailer.Message{
 		To:      profile.Email,
-		Subject: t("subject", councilName),
+		Subject: t("subject", councilName, appName),
 		Text:    body,
 		HTML:    "<p>" + htmlEscape(body) + "</p>",
 	})

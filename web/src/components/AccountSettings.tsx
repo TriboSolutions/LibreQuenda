@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { SettingsRow } from '@/components/SettingsRow'
 import { useAsync } from '@/hooks/useAsync'
+import { useBranding } from '@/hooks/useBranding'
 import { useMe } from '@/hooks/useMe'
 import { api, type Account } from '@/lib/api'
 
@@ -72,12 +73,13 @@ function Card({ id, title, children }: { id: string; title: string; children: Re
  */
 export function AccountSettings() {
   const { t } = useTranslation(['profile', 'common'])
+  const { branding } = useBranding()
   const auth = useAuth()
   const token = auth.user?.access_token ?? ''
   const account = useAsync(token ? () => api.account.get(token) : null, `account:${auth.user?.profile.sub}`)
 
   return (
-    <SettingsRow id="sec-sign-in" title={t('accountSettings.title')} description={t('accountSettings.help')}>
+    <SettingsRow id="sec-sign-in" title={t('accountSettings.title')} description={t('accountSettings.help', { app: branding.name })}>
       {account.error ? (
         <div className="flex items-center justify-between gap-4 rounded-md bg-pill-negative-bg px-4 py-3 text-pill-negative-ink">
           <p>{account.error.message}</p>

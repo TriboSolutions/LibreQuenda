@@ -351,3 +351,22 @@ func (h *platformHandler) DeleteTag(w http.ResponseWriter, r *http.Request) {
 	var response, err = GetPlatformService(h.db).DeleteTag(r.Context(), id)
 	send(w, r, response, err)
 }
+
+// Branding: the installation's name and logo are public; only a superadministrator changes them.
+
+func (h *platformHandler) Branding(w http.ResponseWriter, r *http.Request) {
+	var response, err = GetPlatformService(h.db).Branding(r.Context())
+	send(w, r, response, err)
+}
+
+func (h *platformHandler) UpdateBranding(w http.ResponseWriter, r *http.Request) {
+	if _, ok := h.superadmin(w, r); !ok {
+		return
+	}
+	var input BrandingInput
+	if !decode(w, r, &input) {
+		return
+	}
+	var response, err = GetPlatformService(h.db).UpdateBranding(r.Context(), input)
+	send(w, r, response, err)
+}

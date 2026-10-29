@@ -17,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton'
 import { SettingsRow } from '@/components/SettingsRow'
 import { useAsync } from '@/hooks/useAsync'
+import { useBranding } from '@/hooks/useBranding'
 import { useLogin } from '@/hooks/useLogin'
 import { useMe } from '@/hooks/useMe'
 import { languages } from '@/i18n'
@@ -29,6 +30,7 @@ const SAME_AS_WEBSITE = 'auto' // Select items cannot have an empty value
 /** /perfil: what LibreQuenda keeps about the user. Name, email and password belong to the sign-in service. */
 export function ProfilePage() {
   const { t } = useTranslation(['profile', 'common'])
+  const { branding } = useBranding()
   const auth = useAuth()
   const { me } = useMe()
   const { login } = useLogin()
@@ -44,7 +46,7 @@ export function ProfilePage() {
     body = (
       <div className="grid max-w-[760px] gap-2 rounded-lg border bg-card p-5">
         <p className="font-semibold">{t('profile:privacy.deletedTitle')}</p>
-        <p className="text-muted-foreground">{t('profile:privacy.deletedBody')}</p>
+        <p className="text-muted-foreground">{t('profile:privacy.deletedBody', { app: branding.name })}</p>
       </div>
     )
   } else if (!auth.isAuthenticated || !me) {

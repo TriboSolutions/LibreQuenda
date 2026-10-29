@@ -13,9 +13,9 @@ import (
 // Times go out in UTC, so no VTIMEZONE is needed.
 const icsTime = "20060102T150405Z"
 
-// writeICS writes the bookings as a VCALENDAR. link is where the event points
-// to (the bookings page); now stamps the file.
-func writeICS(w io.Writer, rows []model.ListCalendarBookingsRow, link string, now time.Time) error {
+// writeICS writes the bookings as a VCALENDAR named after the app. link is where
+// the event points to (the bookings page); now stamps the file.
+func writeICS(w io.Writer, rows []model.ListCalendarBookingsRow, name string, link string, now time.Time) error {
 	var b strings.Builder
 	var line = func(name, value string) { b.WriteString(fold(name + ":" + value)) }
 
@@ -24,7 +24,7 @@ func writeICS(w io.Writer, rows []model.ListCalendarBookingsRow, link string, no
 	line("PRODID", "-//LibreQuenda//Reservas//GL")
 	line("CALSCALE", "GREGORIAN")
 	line("METHOD", "PUBLISH")
-	line("X-WR-CALNAME", "LibreQuenda")
+	line("X-WR-CALNAME", text(name))
 	// how often apps should fetch it again (Apple, Outlook)
 	line("REFRESH-INTERVAL;VALUE=DURATION", "PT1H")
 	line("X-PUBLISHED-TTL", "PT1H")

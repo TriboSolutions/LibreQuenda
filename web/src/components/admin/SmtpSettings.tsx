@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAsync } from '@/hooks/useAsync'
+import { useBranding } from '@/hooks/useBranding'
 import { api, type CouncilSmtp, type CouncilSmtpInput } from '@/lib/api'
 
 type Props = { slug: string; token: string }
@@ -34,6 +35,7 @@ function toInput(smtp: CouncilSmtp): CouncilSmtpInput {
 /** The council's own SMTP relay, in the council sheet. Without one, its emails go through the platform's; with neither, they wait. */
 export function SmtpSettings({ slug, token }: Props) {
   const { t } = useTranslation(['admin', 'common'])
+  const { branding } = useBranding()
   const smtp = useAsync(() => api.council.smtp(token, slug), `smtp:${slug}`)
   const [form, setForm] = useState<CouncilSmtpInput>(empty)
   const [busy, setBusy] = useState<'save' | 'test' | 'remove' | null>(null)
@@ -115,7 +117,7 @@ export function SmtpSettings({ slug, token }: Props) {
           </h3>
           {status}
         </div>
-        <p className="mt-1 max-w-[70ch] text-muted-foreground">{t('admin:smtp.help')}</p>
+        <p className="mt-1 max-w-[70ch] text-muted-foreground">{t('admin:smtp.help', { app: branding.name })}</p>
       </div>
 
       {data && !data.configured && !data.env_relay && (
