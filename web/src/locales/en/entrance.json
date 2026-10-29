@@ -49,6 +49,7 @@
     "again": "Scan again",
     "aim": "Point it at the QR printed on the door.",
     "notOurs": "That QR is not a facility’s entrance. Point it at the one on the door.",
-    "cancel": "Close the camera"
+    "cancel": "Close the camera",
+    "locating": "Checking where you are…"
   }
 }

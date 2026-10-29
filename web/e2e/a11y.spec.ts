@@ -96,7 +96,9 @@ for (const theme of ['light', 'dark'] as const) {
       await expectAccessible(page, { overlay: true })
     })
 
-    test('flash booking dialog, door QR tab with the camera off', async ({ page }) => {
+    test('flash booking dialog, door QR tab with the camera off', async ({ page, context }) => {
+      await context.grantPermissions(['geolocation'])
+      await context.setGeolocation({ latitude: 43.0097, longitude: -7.5568, accuracy: 10 })
       await open(page, '/lugo', { theme })
       await page.getByRole('button', { name: /Ana Pérez/ }).click()
       await page.getByRole('menuitem', { name: /Reserva flash/ }).click()
@@ -293,6 +295,26 @@ test.describe('keyboard', () => {
     await page.keyboard.type('482915')
     await page.keyboard.press('Enter')
     await expect(dialog.getByRole('status')).toContainText('Non tes reserva para esta quenda')
+  })
+
+  test('the door QR asks for the location first: without it the camera stays closed', async ({ page }) => {
+    let cameraAsked = false
+    await page.exposeFunction('cameraAsked', () => (cameraAsked = true))
+    await page.addInitScript(() => {
+      navigator.mediaDevices.getUserMedia = async () => {
+        await (window as unknown as { cameraAsked: () => Promise<void> }).cameraAsked()
+        throw new DOMException('no', 'NotAllowedError')
+      }
+    })
+    await open(page, '/lugo') // no geolocation permission granted
+    await page.getByRole('button', { name: /Ana Pérez/ }).click()
+    await page.getByRole('menuitem', { name: /Reserva flash/ }).click()
+    const dialog = page.getByRole('dialog')
+    await dialog.getByRole('tab', { name: 'QR da porta' }).click()
+    await dialog.getByRole('button', { name: 'Abrir a cámara' }).click()
+    await expect(dialog.getByRole('status')).toContainText('localización')
+    await expect(dialog.getByRole('button', { name: 'Pechar a cámara' })).toBeHidden()
+    expect(cameraAsked).toBe(false)
   })
 
   test('a flash booking reads the QR on the door with the phone camera', async ({ page, context }) => {

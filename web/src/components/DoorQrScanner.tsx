@@ -7,7 +7,7 @@ import { EntranceAnswer } from '@/components/EntranceAnswer'
 import { Button } from '@/components/ui/button'
 import { useQrCamera } from '@/hooks/useQrCamera'
 import { api, type EntranceResult } from '@/lib/api'
-import { GRANTED, locate, parseEntranceUrl } from '@/lib/entrance'
+import { GRANTED, locate, parseEntranceUrl, type Position } from '@/lib/entrance'
 
 type Props = {
   book: boolean // without a booking: book the free turn and check in (flash booking)
@@ -15,12 +15,14 @@ type Props = {
 }
 
 /**
- * The QR printed on the door, read with the phone's own camera from the app:
- * then the phone's location is checked, as the QR never changes.
+ * The QR printed on the door, read with the phone's own camera from the app.
+ * The QR never changes, so the phone's location is asked for first: no
+ * location, no camera. It is checked with the QR and never stored.
  */
 export function DoorQrScanner({ book, onCheckedIn }: Props) {
   const { t } = useTranslation('entrance')
   const [scanning, setScanning] = useState(false)
+  const [position, setPosition] = useState<Position | null>(null)
   const [busy, setBusy] = useState(false)
   const [result, setResult] = useState<EntranceResult | null>(null)
   const [problem, setProblem] = useState<string | null>(null)
@@ -31,22 +33,30 @@ export function DoorQrScanner({ book, onCheckedIn }: Props) {
     if (next && GRANTED.includes(next.result)) onCheckedIn?.()
   }
 
-  const start = () => {
+  const start = async () => {
     setResult(null)
     setProblem(null)
-    setScanning(true)
+    setBusy(true)
+    try {
+      setPosition(await locate())
+      setScanning(true)
+    } catch (e) {
+      setProblem(t(`location.${e instanceof Error ? e.message : 'unavailable'}`))
+    } finally {
+      setBusy(false)
+    }
   }
 
   return (
     <div className="grid gap-3">
-      {scanning ? (
+      {scanning && position ? (
         // mounted only while scanning, so the camera turns off as soon as a door QR is read
-        <DoorCamera book={book} onDoor={() => setScanning(false)} onCancel={() => setScanning(false)} onAnswer={answer} setBusy={setBusy} />
+        <DoorCamera book={book} position={position} onDoor={() => setScanning(false)} onCancel={() => setScanning(false)} onAnswer={answer} setBusy={setBusy} />
       ) : (
         <div>
-          <Button type="button" disabled={busy} onClick={start}>
+          <Button type="button" disabled={busy} onClick={() => void start()}>
             <Camera aria-hidden />
-            {busy ? t('checking') : result || problem ? t('scan.again') : t('scan.open')}
+            {busy ? t('scan.locating') : result || problem ? t('scan.again') : t('scan.open')}
           </Button>
         </div>
       )}
@@ -57,13 +67,14 @@ export function DoorQrScanner({ book, onCheckedIn }: Props) {
 
 type CameraProps = {
   book: boolean
+  position: Position // asked for before the camera opened
   onDoor: () => void
   onCancel: () => void
   onAnswer: (result: EntranceResult | null, problem: string | null) => void
   setBusy: (busy: boolean) => void
 }
 
-function DoorCamera({ book, onDoor, onCancel, onAnswer, setBusy }: CameraProps) {
+function DoorCamera({ book, position, onDoor, onCancel, onAnswer, setBusy }: CameraProps) {
   const { t } = useTranslation('entrance')
   const auth = useAuth()
   const token = auth.user?.access_token
@@ -81,14 +92,7 @@ function DoorCamera({ book, onDoor, onCancel, onAnswer, setBusy }: CameraProps) 
     onDoor()
     setBusy(true)
     try {
-      let where
-      try {
-        where = await locate()
-      } catch (e) {
-        onAnswer(null, t(`location.${e instanceof Error ? e.message : 'unavailable'}`))
-        return
-      }
-      onAnswer(await api.entrance.checkIn(token, door.slug, door.facility, { qr_token: door.qrToken, ...where, book }), null)
+      onAnswer(await api.entrance.checkIn(token, door.slug, door.facility, { qr_token: door.qrToken, ...position, book }), null)
     } catch (e) {
       onAnswer(null, e instanceof Error ? e.message : String(e))
     } finally {

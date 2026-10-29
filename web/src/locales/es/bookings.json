@@ -97,7 +97,7 @@
     },
     "printed_qr": {
       "title": "QR de la puerta",
-      "help": "Abre la cámara y apunta al QR impreso en la puerta. Después te pediremos la ubicación, que se comprueba y nunca se guarda."
+      "help": "Abre la cámara y apunta al QR impreso en la puerta. Antes te pediremos la ubicación, que se comprueba y nunca se guarda."
     },
     "reader": {
       "title": "QR de tu reserva",
