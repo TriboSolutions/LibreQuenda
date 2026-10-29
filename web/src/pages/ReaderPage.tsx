@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import jsQR from 'jsqr'
 import { CameraOff, CircleCheck, CircleX, Clock, WifiOff } from 'lucide-react'
-import { Mark } from '@/components/Mark'
+import { BrandLogo } from '@/components/Brand'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -84,7 +84,7 @@ function Splash({ error, onRetry }: { error: Error | null; onRetry: () => void }
           <Button onClick={onRetry}>{t('retry')}</Button>
         </div>
       ) : (
-        <Mark className="size-12 animate-pulse" />
+        <BrandLogo className="size-12 animate-pulse" />
       )}
     </div>
   )
@@ -101,7 +101,7 @@ function KeyForm({ rejected, onSubmit }: { rejected: boolean; onSubmit: (key: st
     <main id="main" className="grid min-h-dvh place-items-center bg-background p-4">
       <form onSubmit={submit} className="grid w-full max-w-md gap-4 rounded-lg border bg-card p-6">
         <div className="flex items-center gap-3">
-          <Mark className="size-8" />
+          <BrandLogo className="size-8" />
           <h1 className="text-xl font-semibold">{t('signIn.title')}</h1>
         </div>
         <p className="text-muted-foreground">{t('signIn.help')}</p>
@@ -261,7 +261,7 @@ function Scanner({ deviceKey, reader, onSignOut }: { deviceKey: string; reader: 
     <div className="flex min-h-dvh flex-col bg-background">
       <header className="flex items-center justify-between gap-4 border-b bg-card px-4 py-3 sm:px-6">
         <div className="flex min-w-0 items-center gap-3">
-          <Mark className="size-9 shrink-0" />
+          <BrandLogo className="size-9 shrink-0" />
           <div className="min-w-0">
             <h1 className="truncate text-lg font-semibold sm:text-xl">{reader.facility_name}</h1>
             <p className="truncate text-muted-foreground">{reader.tenant_name}</p>

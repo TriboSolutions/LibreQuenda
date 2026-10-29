@@ -142,6 +142,13 @@ for (const theme of ['light', 'dark'] as const) {
       await expect(page.getByRole('heading', { name: 'Deportes' })).toBeVisible()
       await expectAccessible(page)
     })
+
+    test('platform admin, app name and logo tab', async ({ page }) => {
+      await open(page, '/admin', { theme })
+      await page.getByRole('tab', { name: 'Personalizar a aplicación' }).click()
+      await expect(page.getByLabel('Nome da aplicación')).toBeVisible()
+      await expectAccessible(page)
+    })
   })
 }
 
@@ -238,6 +245,14 @@ test.describe('structure', () => {
     await page.goto('/reservas')
     await expect(page.locator('main h1')).toBeVisible()
     await expect(page).not.toHaveTitle(/^LibreQuenda$/)
+  })
+
+  test("an installation's own name replaces LibreQuenda's in the bar and the title, not in the footer", async ({ page }) => {
+    const name = 'Reservas de Lugo'
+    await open(page, '/lugo/padel-1', { branding: { name, custom_name: name, logo_ref: '', logo_url: '' } })
+    await expect(page).toHaveTitle(`Pista de pádel 1 · Concello de Lugo · ${name}`)
+    await expect(page.getByRole('link', { name: `${name}, inicio` })).toBeVisible()
+    await expect(page.locator('footer')).toContainText('LibreQuenda é software libre')
   })
 
   test('3.1.1 the page language follows the chosen language', async ({ page }) => {

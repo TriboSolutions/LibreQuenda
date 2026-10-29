@@ -69,7 +69,16 @@ export type TagCatalogue = { categories: TagCategory[] }
 
 /** An uploaded image: forms save the ref (storage reference); screens only show the url. */
 export type StoredImage = { ref: string; url: string }
-export type MediaFolder = 'councils' | 'facilities' | 'users'
+export type MediaFolder = 'branding' | 'councils' | 'facilities' | 'users'
+
+/** How this installation presents itself, set by a superadministrator: name and logo. */
+export type Branding = {
+  name: string // what to show: the custom name, or LibreQuenda
+  custom_name: string // "" = LibreQuenda
+  logo_ref: string // "" = the LibreQuenda logo
+  logo_url: string
+}
+export type BrandingInput = { name: string; logo_ref: string } // "" = back to LibreQuenda's
 
 export type Day = {
   tenant: Tenant
@@ -606,6 +615,7 @@ export const api = {
   uploadImage,
   tenants: () => request<{ tenants: TenantCard[] }>('/tenants'),
   tags: () => request<TagCatalogue>('/tags'),
+  branding: () => request<Branding>('/branding'),
   facilities: () => request<{ facilities: FacilityCard[] }>('/facilities'),
   day: (slug: string, date?: string) =>
     request<Day>(`/tenants/${encodeURIComponent(slug)}/day${date ? `?date=${date}` : ''}`),
@@ -776,5 +786,7 @@ export const api = {
     updateTag: (token: string, id: string, input: { category_id: string; name: string }) =>
       request<TagCatalogue>(`/admin/tags/${id}`, { token, method: 'PUT', body: input }),
     deleteTag: (token: string, id: string) => request<TagCatalogue>(`/admin/tags/${id}`, { token, method: 'DELETE' }),
+    updateBranding: (token: string, input: BrandingInput) =>
+      request<Branding>('/admin/branding', { token, method: 'PUT', body: input }),
   },
 }

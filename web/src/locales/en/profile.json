@@ -25,7 +25,7 @@
   "birthDateRequired": "Fill in your date of birth: it is required to book.",
   "accountSettings": {
     "title": "Sign-in account",
-    "help": "The name, email and password you sign in with. Changing them here changes them everywhere in LibreQuenda.",
+    "help": "The name, email and password you sign in with. Changing them here changes them everywhere in {{app}}.",
     "name": "Name",
     "givenName": "First name",
     "familyName": "Surname",
@@ -62,7 +62,7 @@
   "signInToVerify": "Sign in to finish verifying your email. You will come back here and it will be verified.",
   "privacy": {
     "title": "Your data",
-    "help": "Under the GDPR you can take a copy of everything LibreQuenda keeps about you, or delete your account.",
+    "help": "Under the GDPR you can take a copy of everything {{app}} keeps about you, or delete your account.",
     "exportTitle": "Download your data",
     "exportHelp": "Your profile, roles, bookings, the bookings you joined and your notices. JSON is for other apps; CSV opens in a spreadsheet.",
     "exportJson": "Download JSON",
@@ -80,7 +80,7 @@
     "deleteConfirm": "Delete for good",
     "deleting": "Deleting…",
     "deletedTitle": "Your account has been deleted.",
-    "deletedBody": "Your personal details are gone from LibreQuenda. You can create a new account whenever you like."
+    "deletedBody": "Your personal details are gone from {{app}}. You can create a new account whenever you like."
   },
   "personalQr": {
     "help": "At a facility with a QR reader, and it's free? Book it on the spot with your QR.",

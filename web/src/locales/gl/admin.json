@@ -5,7 +5,8 @@
   "tabs": {
     "councils": "Concellos",
     "superadmins": "Superadministradores",
-    "tags": "Etiquetas"
+    "tags": "Etiquetas",
+    "branding": "Personalizar a aplicación"
   },
   "guard": {
     "signIn": "Inicia sesión para entrar na administración.",
@@ -383,7 +384,7 @@
   },
   "smtp": {
     "title": "Servidor de correo (SMTP)",
-    "help": "LibreQuenda envía as confirmacións de reserva, os recordatorios, as cancelacións e os convites de administración deste concello. Configura o servidor propio do concello para envialos desde o seu enderezo; se non, saen polo servidor da plataforma.",
+    "help": "{{app}} envía as confirmacións de reserva, os recordatorios, as cancelacións e os convites de administración deste concello. Configura o servidor propio do concello para envialos desde o seu enderezo; se non, saen polo servidor da plataforma.",
     "statusCouncil": "Servidor do concello",
     "statusPlatform": "Servidor da plataforma",
     "statusNone": "Sen servidor",
@@ -414,7 +415,7 @@
   },
   "councilExport": {
     "title": "Exportar os datos do concello",
-    "help": "Un ZIP con todo o que o concello garda en LibreQuenda, para levalo a outro sistema: instalacións e normas de uso, horarios, peches, lectores QR e todas as reservas, en CSV, coas imaxes orixinais e un datapackage.json (Frictionless Data) que describe cada columna.",
+    "help": "Un ZIP con todo o que o concello garda en {{app}}, para levalo a outro sistema: instalacións e normas de uso, horarios, peches, lectores QR e todas as reservas, en CSV, coas imaxes orixinais e un datapackage.json (Frictionless Data) que describe cada columna.",
     "privacy": "Non leva contrasinais nin claves. Sen os datos persoais, cada veciño aparece só co identificador da súa conta.",
     "download": "Descargar ZIP",
     "downloading": "Preparando…",
@@ -597,5 +598,17 @@
       "help": "O móbil ten que estar preto do punto da instalación no mapa. O veciño ten que permitilo e a localización nunca se garda.",
       "radius": "Distancia ao punto, en metros"
     }
+  },
+  "branding": {
+    "title": "Nome e logotipo da aplicación",
+    "help": "Para publicar o servizo coa vosa propia imaxe: o nome e o logotipo aparecen na barra superior, no título das pestanas, na icona do navegador, nas pantallas dos lectores QR e nos correos. O pé de páxina segue a indicar que funciona con LibreQuenda, software libre.",
+    "name": "Nome da aplicación",
+    "nameHelp": "Ata 60 caracteres. Baleiro: {{app}}.",
+    "logo": "Logotipo",
+    "logoHelp": "Mellor cadrado e con fondo transparente (PNG ou WebP). Sen logotipo: o de {{app}}.",
+    "preview": "Vista previa da barra superior",
+    "useDefault": "Volver ao de {{app}}",
+    "save": "Gardar",
+    "saving": "Gardando…"
   }
 }

@@ -5,7 +5,8 @@
   "tabs": {
     "councils": "Ayuntamientos",
     "superadmins": "Superadministradores",
-    "tags": "Etiquetas"
+    "tags": "Etiquetas",
+    "branding": "Personalizar la aplicación"
   },
   "guard": {
     "signIn": "Inicia sesión para entrar en la administración.",
@@ -383,7 +384,7 @@
   },
   "smtp": {
     "title": "Servidor de correo (SMTP)",
-    "help": "LibreQuenda envía las confirmaciones de reserva, los recordatorios, las cancelaciones y las invitaciones de administración de este concello. Configura el servidor propio del concello para enviarlos desde su dirección; si no, salen por el servidor de la plataforma.",
+    "help": "{{app}} envía las confirmaciones de reserva, los recordatorios, las cancelaciones y las invitaciones de administración de este concello. Configura el servidor propio del concello para enviarlos desde su dirección; si no, salen por el servidor de la plataforma.",
     "statusCouncil": "Servidor del concello",
     "statusPlatform": "Servidor de la plataforma",
     "statusNone": "Sin servidor",
@@ -414,7 +415,7 @@
   },
   "councilExport": {
     "title": "Exportar los datos del ayuntamiento",
-    "help": "Un ZIP con todo lo que el ayuntamiento guarda en LibreQuenda, para llevarlo a otro sistema: instalaciones y normas de uso, horarios, cierres, lectores QR y todas las reservas, en CSV, con las imágenes originales y un datapackage.json (Frictionless Data) que describe cada columna.",
+    "help": "Un ZIP con todo lo que el ayuntamiento guarda en {{app}}, para llevarlo a otro sistema: instalaciones y normas de uso, horarios, cierres, lectores QR y todas las reservas, en CSV, con las imágenes originales y un datapackage.json (Frictionless Data) que describe cada columna.",
     "privacy": "No incluye contraseñas ni claves. Sin los datos personales, cada vecino aparece solo con el identificador de su cuenta.",
     "download": "Descargar ZIP",
     "downloading": "Preparando…",
@@ -597,5 +598,17 @@
       "help": "El móvil tiene que estar cerca del punto de la instalación en el mapa. El vecino tiene que permitirlo y la ubicación nunca se guarda.",
       "radius": "Distancia al punto, en metros"
     }
+  },
+  "branding": {
+    "title": "Nombre y logotipo de la aplicación",
+    "help": "Para publicar el servicio con vuestra propia imagen: el nombre y el logotipo aparecen en la barra superior, en el título de las pestañas, en el icono del navegador, en las pantallas de los lectores QR y en los correos. El pie de página sigue indicando que funciona con LibreQuenda, software libre.",
+    "name": "Nombre de la aplicación",
+    "nameHelp": "Hasta 60 caracteres. Vacío: {{app}}.",
+    "logo": "Logotipo",
+    "logoHelp": "Mejor cuadrado y con fondo transparente (PNG o WebP). Sin logotipo: el de {{app}}.",
+    "preview": "Vista previa de la barra superior",
+    "useDefault": "Volver al de {{app}}",
+    "save": "Guardar",
+    "saving": "Guardando…"
   }
 }

@@ -28,13 +28,14 @@ func TestWriteICS(t *testing.T) {
 		},
 	}
 	var out bytes.Buffer
-	if err := writeICS(&out, rows, "https://reservas.example.org/reservas", start); err != nil {
+	if err := writeICS(&out, rows, "Reservas, Lalín", "https://reservas.example.org/reservas", start); err != nil {
 		t.Fatal(err)
 	}
 	var ics = out.String()
 
 	for _, want := range []string{
 		"BEGIN:VCALENDAR\r\nVERSION:2.0\r\n",
+		`X-WR-CALNAME:Reservas\, Lalín` + "\r\n", // the installation's name (branding), escaped
 		"UID:0192f5a0-0000-7000-8000-000000000001@librequenda\r\n",
 		"DTSTART:20261103T170000Z\r\n", // in UTC
 		"DTEND:20261103T180000Z\r\n",

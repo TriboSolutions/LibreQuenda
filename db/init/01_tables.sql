@@ -88,6 +88,16 @@ CREATE TABLE platform_admin (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- How this installation presents itself (name and logo in the header, page
+-- titles and emails). One row at most, edited by a superadministrator at /admin;
+-- without it, or with NULLs, the app is called LibreQuenda and shows its own logo.
+CREATE TABLE app_settings (
+    id         BOOLEAN     PRIMARY KEY DEFAULT TRUE CHECK (id),   -- a single row
+    app_name   VARCHAR(60) NULL,
+    logo_ref   TEXT        NULL,                                  -- storage reference, never a URL
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 -- Roles per council. Residents have no row: any logged-in user can book.
 CREATE TABLE tenant_membership (
     user_id    UUID        NOT NULL REFERENCES app_user(id) ON DELETE CASCADE,

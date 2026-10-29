@@ -25,7 +25,7 @@
   "birthDateRequired": "Indica la teva data de naixement: és obligatòria per reservar.",
   "accountSettings": {
     "title": "Compte d'accés",
-    "help": "El nom, el correu i la contrasenya amb què inicies la sessió. Si els canvies aquí, canvien a tot LibreQuenda.",
+    "help": "El nom, el correu i la contrasenya amb què inicies la sessió. Si els canvies aquí, canvien a tot {{app}}.",
     "name": "Nom",
     "givenName": "Nom",
     "familyName": "Cognoms",
@@ -62,7 +62,7 @@
   "signInToVerify": "Inicia la sessió per acabar de verificar el teu correu. Tornaràs aquí i quedarà verificat.",
   "privacy": {
     "title": "Les teves dades",
-    "help": "D'acord amb el RGPD pots endur-te una còpia de tot el que LibreQuenda guarda sobre tu, o eliminar el teu compte.",
+    "help": "D'acord amb el RGPD pots endur-te una còpia de tot el que {{app}} guarda sobre tu, o eliminar el teu compte.",
     "exportTitle": "Descarregar les teves dades",
     "exportHelp": "El teu perfil, rols, reserves, les reserves a què et vas unir i els teus avisos. JSON serveix per a altres aplicacions; CSV s'obre en un full de càlcul.",
     "exportJson": "Descarregar JSON",
@@ -80,7 +80,7 @@
     "deleteConfirm": "Eliminar per sempre",
     "deleting": "Eliminant…",
     "deletedTitle": "El teu compte s'ha eliminat.",
-    "deletedBody": "Les teves dades personals ja no són a LibreQuenda. Pots crear un compte nou quan vulguis."
+    "deletedBody": "Les teves dades personals ja no són a {{app}}. Pots crear un compte nou quan vulguis."
   },
   "personalQr": {
     "help": "Arribes a una instal·lació amb lector QR i està lliure? Reserva-la al moment amb el teu QR.",

@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router'
 import { AuthWithRouter } from '@/components/AuthWithRouter'
+import { BrandingProvider } from '@/components/BrandingProvider'
 import { MeProvider } from '@/components/MeProvider'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import './globals.css'
@@ -40,11 +41,13 @@ loadConfig()
       <StrictMode>
         <BrowserRouter>
           <AuthWithRouter config={config}>
-            <MeProvider>
-              <TooltipProvider delayDuration={150}>
-                <App />
-              </TooltipProvider>
-            </MeProvider>
+            <BrandingProvider>
+              <MeProvider>
+                <TooltipProvider delayDuration={150}>
+                  <App />
+                </TooltipProvider>
+              </MeProvider>
+            </BrandingProvider>
           </AuthWithRouter>
         </BrowserRouter>
       </StrictMode>,

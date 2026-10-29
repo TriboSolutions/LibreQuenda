@@ -1,7 +1,7 @@
 {
   "council": "Ajuntament",
   "chooseCouncil": "Tria el teu ajuntament",
-  "home": "LibreQuenda, inici",
+  "home": "{{app}}, inici",
   "signIn": "Inicia la sessió",
   "signOut": "Tanca la sessió",
   "account": "Compte de {{name}}",

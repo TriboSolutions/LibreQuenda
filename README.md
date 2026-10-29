@@ -62,6 +62,8 @@ The first Zitadel admin (`ZITADEL_ADMIN_*`), Zitadel's email settings and the `Z
 
 **LibreQuenda starts empty.** The superadministrator (`SUPERADMIN_EMAIL`, by default the Zitadel admin) signs in and opens `/admin` to create councils, invite each council's administrator by email address and manage other superadministrators. The invited person gets an email at once; the role is granted when they sign in with that email verified (sign-in asks for the emailed code), with a notice in the bell.
 
+**Your own name and logo:** in `/admin`, the "Personalizar a aplicación" tab sets the app's name and logo for the whole installation: the top bar, tab titles and browser icon, the QR reader screens, the calendar feed and the emails use them. Leave them empty to go back to LibreQuenda's. The footer keeps naming LibreQuenda as the free software it runs on (AGPL-3.0). The sign-in screens are Zitadel's and keep the branding from `zitadel/setup.sh`.
+
 **Council administration:** a council's administrators (and superadministrators) open `/<council>/admin` to create facilities with photo, description, address, map pin, booking rules, weekly opening hours and closures. Each facility has its own page at `/<council>/<facility>`.
 
 **Residents** never see Zitadel's own screens beyond signing in: name, email and password are changed from `/perfil`. Zitadel is branded as LibreQuenda by `zitadel/setup.sh`.

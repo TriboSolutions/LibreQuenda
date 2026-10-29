@@ -53,6 +53,9 @@
     "upload_type_not_allowed": "Solo se admiten imágenes JPG, PNG o WebP.",
     "upload_failed": "No se pudo guardar la imagen. Inténtalo de nuevo.",
     "invalid_image": "La imagen no es válida: súbela de nuevo.",
+    "invalid_app_name": "El nombre de la aplicación puede tener hasta 60 caracteres.",
+    "branding_load_failed": "No se pudo cargar el nombre y el logotipo de la aplicación.",
+    "branding_save_failed": "No se pudo guardar el nombre y el logotipo de la aplicación.",
     "invalid_facility_name": "Escribe el nombre de la instalación.",
     "facility_slug_taken": "Ya hay una instalación con esa dirección en este ayuntamiento.",
     "invalid_text_length": "Algún texto es demasiado largo.",
@@ -113,7 +116,7 @@
     "booking_overlaps": "Ya tienes una reserva a esa hora.",
     "staff_booking_holder": "Indica el correo de la cuenta de la persona o su nombre.",
     "staff_booking_holder_too_long": "El nombre puede tener hasta 80 caracteres y el teléfono hasta 30.",
-    "person_not_found": "Ninguna cuenta de LibreQuenda usa ese correo. Reserva a su nombre.",
+    "person_not_found": "Ninguna cuenta de {{0}} usa ese correo. Reserva a su nombre.",
     "person_overlaps": "Esa persona ya tiene una reserva a esa hora.",
     "booking_started": "Esta reserva ya ha empezado y no se puede cancelar.",
     "notifications_load_failed": "No se pudieron cargar tus avisos.",
@@ -150,7 +153,7 @@
     "qr": "Muestra este código QR en el lector de la entrada. Funciona desde 15 minutos antes del inicio hasta el final de la reserva.",
     "address": "Dirección: {{0}}",
     "manage": "Ver tus reservas",
-    "footer": "Este es un mensaje automático de LibreQuenda sobre tu reserva.",
+    "footer": "Este es un mensaje automático de {{0}} sobre tu reserva.",
     "footer_reminders": "Recibes este recordatorio porque tienes los recordatorios activados. Puedes desactivarlos en tu perfil: {{0}}",
     "booking_confirmed": {
       "subject": "Reserva confirmada: {{0}}, {{1}} a las {{2}}",
@@ -177,13 +180,13 @@
     "reason": "Motivo: {{0}}",
     "council_admin": {
       "subject": "Ya eres administrador o administradora de {{0}}",
-      "intro": "Te han hecho administrador o administradora de {{0}} en LibreQuenda. Inicia sesión con esta dirección ({{1}}) para gestionar sus instalaciones, horarios y cierres. Si aún no tienes cuenta, créala con esta misma dirección.",
+      "intro": "Te han hecho administrador o administradora de {{0}} en {{2}}. Inicia sesión con esta dirección ({{1}}) para gestionar sus instalaciones, horarios y cierres. Si aún no tienes cuenta, créala con esta misma dirección.",
       "manage": "Abrir la administración",
       "footer": "Recibes este correo porque una persona administradora de la plataforma añadió esta dirección. Si crees que es un error, puedes ignorarlo."
     },
     "smtp_test": {
-      "subject": "Correo de prueba de LibreQuenda ({{0}})",
-      "body": "Este es un correo de prueba de {{0}}, enviado a través de {{1}}. Si lo estás leyendo, LibreQuenda puede enviar los correos de reservas del concello."
+      "subject": "Correo de prueba de {{1}} ({{0}})",
+      "body": "Este es un correo de prueba de {{0}}, enviado a través de {{1}}. Si lo estás leyendo, {{2}} puede enviar los correos de reservas del concello."
     }
   }
 }

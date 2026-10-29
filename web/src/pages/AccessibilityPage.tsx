@@ -4,6 +4,7 @@ import { SiteFooter } from '@/components/SiteFooter'
 import { TopBar } from '@/components/TopBar'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAsync } from '@/hooks/useAsync'
+import { useBranding } from '@/hooks/useBranding'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { api } from '@/lib/api'
 import { formatDateWithYear } from '@/lib/time'
@@ -24,6 +25,7 @@ const section = 'grid gap-3 rounded-lg border bg-card p-5'
  */
 export function AccessibilityPage() {
   const { t } = useTranslation(['accessibility', 'common'])
+  const { branding } = useBranding()
   usePageTitle(t('title'))
   const tenants = useAsync(() => api.tenants(), 'tenants')
   const councils = tenants.data?.tenants ?? []
@@ -37,7 +39,7 @@ export function AccessibilityPage() {
         <h1 className="text-[28px] leading-9 font-bold tracking-[-0.02em] sm:text-[32px] sm:leading-10">{t('title')}</h1>
         {/* long reading: lines under 80 characters and roomy leading (WCAG 1.4.8) */}
         <div className="mt-6 grid max-w-[68ch] gap-6 text-base leading-relaxed">
-          <p>{t('intro', { host: window.location.host })}</p>
+          <p>{t('intro', { host: window.location.host, app: branding.name })}</p>
 
           <section aria-labelledby="a11y-status" className={section}>
             <h2 id="a11y-status" className="text-lg font-semibold">

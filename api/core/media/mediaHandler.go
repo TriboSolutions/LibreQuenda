@@ -46,7 +46,8 @@ type UploadResponse struct {
 }
 
 // canUpload: anyone signed in may upload their own photo (users/); council and facility
-// images (councils/, facilities/) need a superadministrator or a council administrator.
+// images (councils/, facilities/) need a superadministrator or a council administrator,
+// and the installation's logo (branding/) a superadministrator.
 func (h *mediaHandler) canUpload(r *http.Request, folder string) (bool, error) {
 	if folder == "users" {
 		return true, nil
@@ -58,7 +59,7 @@ func (h *mediaHandler) canUpload(r *http.Request, folder string) (bool, error) {
 	}
 	var queries = model.New(h.db)
 	var isSuperadmin, err = queries.IsPlatformAdmin(r.Context(), userId)
-	if err != nil || isSuperadmin {
+	if err != nil || isSuperadmin || folder == "branding" {
 		return isSuperadmin, err
 	}
 	var roles []model.GetUserTenantRolesRow

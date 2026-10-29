@@ -1,7 +1,7 @@
 {
   "council": "Council",
   "chooseCouncil": "Choose your council",
-  "home": "LibreQuenda, home",
+  "home": "{{app}}, home",
   "signIn": "Sign in",
   "signOut": "Sign out",
   "account": "{{name}}'s account",

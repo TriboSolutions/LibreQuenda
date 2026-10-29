@@ -50,6 +50,7 @@ func (r *platformRoutes) RegisterRoutes() {
 		{Path: "/admin/tags", Method: http.MethodPost, Handler: h.CreateTag},
 		{Path: "/admin/tags/{id}", Method: http.MethodPut, Handler: h.UpdateTag},
 		{Path: "/admin/tags/{id}", Method: http.MethodDelete, Handler: h.DeleteTag},
+		{Path: "/admin/branding", Method: http.MethodPut, Handler: h.UpdateBranding},
 	}
 	for _, route := range routes {
 		route.Handler = middlewares.AuthMiddleware(route.Handler)
@@ -62,5 +63,12 @@ func (r *platformRoutes) RegisterRoutes() {
 		Method:            http.MethodGet,
 		AdditionalMethods: []router.HTTPMethod{router.HEAD, router.OPTIONS},
 		Handler:           middlewares.VersionMiddleware(h.TagCatalogue),
+	})
+	// so is the installation's name and logo: every page shows them
+	r.router.NewRoute(router.Route{
+		Path:              "/branding",
+		Method:            http.MethodGet,
+		AdditionalMethods: []router.HTTPMethod{router.HEAD, router.OPTIONS},
+		Handler:           middlewares.VersionMiddleware(h.Branding),
 	})
 }

@@ -5,7 +5,8 @@
   "tabs": {
     "councils": "Councils",
     "superadmins": "Superadministrators",
-    "tags": "Tags"
+    "tags": "Tags",
+    "branding": "Customise the app"
   },
   "guard": {
     "signIn": "Sign in to open the administration.",
@@ -383,7 +384,7 @@
   },
   "smtp": {
     "title": "Email server (SMTP)",
-    "help": "LibreQuenda sends booking confirmations, reminders, cancellations and administrator invitations for this council. Set up the council's own server to send them from its address; otherwise they go through the platform's server.",
+    "help": "{{app}} sends booking confirmations, reminders, cancellations and administrator invitations for this council. Set up the council's own server to send them from its address; otherwise they go through the platform's server.",
     "statusCouncil": "Council's server",
     "statusPlatform": "Platform's server",
     "statusNone": "No server",
@@ -414,7 +415,7 @@
   },
   "councilExport": {
     "title": "Export the council's data",
-    "help": "A ZIP with everything the council keeps in LibreQuenda, to take it to another system: facilities and usage rules, opening hours, closures, QR readers and every booking, as CSV, with the original images and a datapackage.json (Frictionless Data) describing each column.",
+    "help": "A ZIP with everything the council keeps in {{app}}, to take it to another system: facilities and usage rules, opening hours, closures, QR readers and every booking, as CSV, with the original images and a datapackage.json (Frictionless Data) describing each column.",
     "privacy": "It holds no passwords or keys. Without the personal data, each resident appears only as their account id.",
     "download": "Download ZIP",
     "downloading": "Preparing…",
@@ -597,5 +598,17 @@
       "help": "The phone has to be near the facility’s map pin. The resident has to allow it, and the location is never stored.",
       "radius": "Distance from the pin, in metres"
     }
+  },
+  "branding": {
+    "title": "App name and logo",
+    "help": "To offer the service under your own brand: the name and logo appear in the top bar, the tab titles, the browser icon, the QR reader screens and the emails. The footer still says it runs on LibreQuenda, free software.",
+    "name": "App name",
+    "nameHelp": "Up to 60 characters. Empty: {{app}}.",
+    "logo": "Logo",
+    "logoHelp": "Best square, with a transparent background (PNG or WebP). No logo: {{app}}'s.",
+    "preview": "Top bar preview",
+    "useDefault": "Back to {{app}}'s",
+    "save": "Save",
+    "saving": "Saving…"
   }
 }

@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"html/template"
+	"librequenda/branding"
 	"librequenda/checkin"
 	"librequenda/mailer"
 	"librequenda/model"
@@ -90,9 +91,10 @@ func SendNotificationEmails(ctx context.Context, db *sql.DB) (int, error) {
 	}
 	var sent int
 	var now = time.Now()
+	var appName = branding.Name(ctx, db)
 	for _, row := range rows {
 		if shouldEmail(row, now) {
-			var message, buildErr = notificationEmail(row, now)
+			var message, buildErr = notificationEmail(row, appName, now)
 			if buildErr == nil {
 				var council, councilErr = mailer.OpenRelay(row.SmtpConfig, row.TenantID)
 				buildErr = send(council, councilErr, message)
@@ -159,7 +161,8 @@ var emailTemplate = template.Must(template.New("notification").Parse(`<!doctype 
 <p style="max-width:480px;margin:16px auto 0;color:#5b6573;font-size:12px;line-height:18px">{{.Footer}}</p>
 </body></html>`))
 
-func notificationEmail(row model.ListPendingEmailsRow, now time.Time) (mailer.Message, error) {
+// appName signs the footer: the installation's own name (branding).
+func notificationEmail(row model.ListPendingEmailsRow, appName string, now time.Time) (mailer.Message, error) {
 	var i18n = helpers.GetI18nInstance()
 	var language = row.PreferredLanguage.String // "" = the default (gl)
 	var t = func(key string, args ...any) string {
@@ -180,7 +183,7 @@ func notificationEmail(row model.ListPendingEmailsRow, now time.Time) (mailer.Me
 		Intro:     t(kind+".intro", row.FacilityName, row.TenantName, date, start, end),
 		Manage:    t("manage"),
 		ManageURL: shared.PUBLIC_URL + "/reservas",
-		Footer:    t("footer"),
+		Footer:    t("footer", appName),
 		HasQR:     withQR(row, now),
 	}
 	if row.Type == model.NotificationTypeBookingReminder {
@@ -254,9 +257,10 @@ func SendInvitationEmails(ctx context.Context, db *sql.DB) (int, error) {
 		return 0, err
 	}
 	var sent int
+	var appName = branding.Name(ctx, db)
 	for _, row := range rows {
 		var council, councilErr = mailer.OpenRelay(row.SmtpConfig, row.TenantID)
-		if err = send(council, councilErr, invitationEmail(row)); err != nil {
+		if err = send(council, councilErr, invitationEmail(row, appName)); err != nil {
 			log.Printf("invitation email %s: %v", row.ID, err)
 			continue
 		}
@@ -268,7 +272,7 @@ func SendInvitationEmails(ctx context.Context, db *sql.DB) (int, error) {
 	return sent, nil
 }
 
-func invitationEmail(row model.ListPendingInvitationEmailsRow) mailer.Message {
+func invitationEmail(row model.ListPendingInvitationEmailsRow, appName string) mailer.Message {
 	var i18n = helpers.GetI18nInstance()
 	var language = row.PreferredLanguage.String // "" = the default (gl): they may have no account yet
 	var t = func(key string, args ...any) string {
@@ -276,7 +280,7 @@ func invitationEmail(row model.ListPendingInvitationEmailsRow) mailer.Message {
 	}
 	var view = emailView{
 		Greeting:  t("greeting_anonymous"),
-		Intro:     t("council_admin.intro", row.TenantName, row.Email),
+		Intro:     t("council_admin.intro", row.TenantName, row.Email, appName),
 		Manage:    t("council_admin.manage"),
 		ManageURL: shared.PUBLIC_URL + "/" + row.TenantSlug + "/admin",
 		Footer:    t("council_admin.footer"),

@@ -9,15 +9,17 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { SettingsRow } from '@/components/SettingsRow'
+import { useBranding } from '@/hooks/useBranding'
 import { api, type Me } from '@/lib/api'
 
 /** RXPD / GDPR: download what LibreQuenda keeps about the user, or erase the account. */
 export function PrivacySettings({ me }: { me: Me }) {
   const { t } = useTranslation('profile')
+  const { branding } = useBranding()
   const [deleting, setDeleting] = useState(false)
 
   return (
-    <SettingsRow id="sec-privacy" title={t('privacy.title')} description={t('privacy.help')}>
+    <SettingsRow id="sec-privacy" title={t('privacy.title')} description={t('privacy.help', { app: branding.name })}>
       <div className="rounded-lg border bg-card">
         <ExportCard />
         <section aria-labelledby="privacy-delete" className="grid content-start gap-4 border-t p-5">

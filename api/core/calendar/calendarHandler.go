@@ -3,6 +3,7 @@ package calendar
 import (
 	"database/sql"
 	"librequenda/auth"
+	"librequenda/branding"
 	"librequenda/core/me"
 	"librequenda/shared"
 	"net/http"
@@ -101,7 +102,7 @@ func (h *calendarHandler) Ics(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodHead {
 		return
 	}
-	if writeErr := writeICS(w, rows, shared.PUBLIC_URL+"/reservas", time.Now()); writeErr != nil {
+	if writeErr := writeICS(w, rows, branding.Name(r.Context(), h.db), shared.PUBLIC_URL+"/reservas", time.Now()); writeErr != nil {
 		shared.Logger.Error("calendar feed write failed: %v", writeErr)
 	}
 }
