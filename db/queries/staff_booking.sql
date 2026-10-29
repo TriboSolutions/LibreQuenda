@@ -52,6 +52,8 @@ SELECT
     b.ends_at,
     b.channel,
     b.checked_in_at,
+    b.checked_in_method,
+    COALESCE(NULLIF(marker.full_name, ''), marker.email, '')::TEXT AS checked_in_by_name, -- staff entry: who marked it
     b.checkin_token,
     b.user_id,
     u.full_name,
@@ -64,6 +66,7 @@ FROM
     booking b
     JOIN facility f ON f.id = b.facility_id
     LEFT JOIN app_user u ON u.id = b.user_id
+    LEFT JOIN app_user marker ON marker.id = b.checked_in_by
 WHERE
     b.facility_id = sqlc.arg('facility_id')
     AND f.tenant_id = sqlc.arg('tenant_id')
@@ -80,6 +83,7 @@ SELECT
     b.starts_at,
     b.ends_at,
     b.user_id,
+    b.checkin_token,
     f.id   AS facility_id,
     f.name AS facility_name,
     t.slug AS tenant_slug,

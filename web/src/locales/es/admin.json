@@ -491,7 +491,23 @@
     "reason": "Motivo para la persona",
     "keep": "Mantenerla",
     "cancelling": "Cancelando…",
-    "confirmCancel": "Cancelar reserva"
+    "confirmCancel": "Cancelar reserva",
+    "markCheckin": "Marcar entrada",
+    "marking": "Marcando…",
+    "undoCheckin": "Deshacer la entrada",
+    "undoing": "Deshaciendo…",
+    "checkinMarked": "Entrada marcada a las {{time}}.",
+    "checkinUndone": "Entrada deshecha.",
+    "checkedInBy": "Marcada por el personal: {{name}}.",
+    "undoUntil": "Se puede deshacer hasta las {{time}}.",
+    "checkedInMethod": {
+      "reader": "Entró con el lector QR.",
+      "printed_qr": "Entró con el QR impreso.",
+      "turn_code": "Entró con el código del turno.",
+      "staff": "Marcada por el personal."
+    },
+    "checkinTooEarly": "La entrada se puede marcar desde las {{time}}.",
+    "checkinEnded": "El turno terminó sin entrada marcada."
   },
   "tags": {
     "help": "El catálogo de etiquetas de todos los ayuntamientos, en categorías. Los ayuntamientos marcan con ellas sus instalaciones (una instalación puede tener varias) y los vecinos filtran por ellas en la portada y en la página de cada ayuntamiento.",
@@ -528,7 +544,7 @@
   "checkin": {
     "title": "Cómo se registra la entrada",
     "help": "Elige una o varias formas de registrar la entrada de los vecinos. Todas acaban en el mismo registro de la reserva, así que la asistencia y los indicadores no cambian. Elige según el presupuesto y lo que importen las trampas aquí.",
-    "preview": "Funcionan el lector QR, el QR impreso y el código en una hoja diaria. El NFC, el código rotativo y la confirmación del personal son una vista previa: lo que elijas en ellos no se guarda.",
+    "preview": "Funcionan el lector QR, el QR impreso, el código en una hoja diaria y la confirmación del personal. El NFC y el código rotativo son una vista previa: lo que elijas en ellos no se guarda.",
     "built": "Funciona",
     "soon": "Próximamente",
     "door": "En la puerta:",
@@ -593,11 +609,11 @@
     },
     "staff": {
       "name": "Confirmación del personal",
-      "how": "El personal marca a las personas como llegadas en el calendario de reserva manual.",
+      "how": "El personal marca la entrada desde la reserva en el calendario de reserva manual.",
       "door": "nadie, o el mostrador",
       "cost": "tiempo del personal",
       "cheat": "tanto como el personal",
-      "help": "El personal marca las llegadas en la pestaña de reserva manual.",
+      "help": "Abre una reserva en la pestaña de reserva manual y pulsa «Marcar entrada», desde 15 minutos antes del comienzo hasta que termina el turno. Si te equivocas de reserva, puedes deshacerlo durante 5 minutos.",
       "open": "Abrir las reservas de esta instalación"
     },
     "location": {

@@ -107,7 +107,7 @@ for (const theme of ['light', 'dark'] as const) {
     }
 
     // the bookings calendar (a facility row's Reservas button): book a free turn for someone, open someone's booking
-    for (const button of [/^Reservar:/, /^Ana/]) {
+    for (const button of [/^Reservar:/, /^Ana/, /^Carmen/, /^Lucía/]) {
       test(`staff booking dialog ${button.source}`, async ({ page }) => {
         await open(page, '/lugo/admin?vista=reservas', { theme })
         await page.getByRole('button', { name: button }).first().click()
@@ -116,6 +116,23 @@ for (const theme of ['light', 'dark'] as const) {
         await expectAccessible(page, { overlay: true })
       })
     }
+
+    // staff mark Lucía as in: the undo takes the mark button's place, with the focus and a spoken result
+    test('staff booking dialog, entry marked', async ({ page }) => {
+      await open(page, '/lugo/admin?vista=reservas', { theme })
+      await page.getByRole('button', { name: /^Lucía/ }).first().click()
+      const dialog = page.getByRole('dialog')
+      await dialog.getByRole('button', { name: 'Marcar entrada' }).click()
+      await expect(dialog.getByRole('button', { name: 'Desfacer a entrada' })).toBeFocused()
+      await expect(dialog.getByText(/^Entrada marcada ás/)).toBeVisible()
+      await expect(dialog.getByText('Marcada polo persoal: Xoán Conserxe.')).toBeVisible()
+      await page.waitForTimeout(300)
+      await expectAccessible(page, { overlay: true })
+
+      await page.keyboard.press('Enter')
+      await expect(dialog.getByRole('button', { name: 'Marcar entrada' })).toBeFocused()
+      await expect(dialog.getByText('Entrada desfeita.')).toBeVisible()
+    })
 
     test('council settings sheet', async ({ page }) => {
       await open(page, '/lugo/admin', { theme })

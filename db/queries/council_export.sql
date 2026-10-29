@@ -93,6 +93,7 @@ SELECT
     b.cancelled_by,
     b.checked_in_at,
     b.checked_in_device_id,
+    b.checked_in_method,
     b.created_at,
     b.updated_at
 FROM

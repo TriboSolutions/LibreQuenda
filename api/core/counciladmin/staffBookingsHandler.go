@@ -52,3 +52,31 @@ func (h *counciladminHandler) CancelStaffBooking(w http.ResponseWriter, r *http.
 	}
 	send(w, r, nil, bookings.GetBookingsService(h.db).StaffCancel(r.Context(), tenantId, bookingId, input))
 }
+
+func (h *counciladminHandler) StaffCheckIn(w http.ResponseWriter, r *http.Request) {
+	var tenantId, staffId, ok = h.councilAdminUser(w, r)
+	if !ok {
+		return
+	}
+	var bookingId, err = helpers.GetUUidPathValue("bookingId", r)
+	if err != nil {
+		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_query_params")
+		return
+	}
+	var response, checkinErr = GetCounciladminService(h.db).StaffCheckIn(r.Context(), tenantId, staffId, bookingId)
+	send(w, r, response, checkinErr)
+}
+
+func (h *counciladminHandler) UndoStaffCheckIn(w http.ResponseWriter, r *http.Request) {
+	var tenantId, ok = h.councilAdmin(w, r)
+	if !ok {
+		return
+	}
+	var bookingId, err = helpers.GetUUidPathValue("bookingId", r)
+	if err != nil {
+		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_query_params")
+		return
+	}
+	var response, undoErr = GetCounciladminService(h.db).UndoStaffCheckIn(r.Context(), tenantId, bookingId)
+	send(w, r, response, undoErr)
+}

@@ -148,7 +148,12 @@
     "account_delete_failed": "Could not delete your account. Nothing was deleted; try again in a moment.",
     "checkin_settings_failed": "The check-in settings could not be saved. Try again.",
     "invalid_checkin_radius": "The distance must be between 25 and 1000 metres.",
-    "checkin_needs_location": "Put the facility on the map first: the phone's location is checked against it."
+    "checkin_needs_location": "Put the facility on the map first: the phone's location is checked against it.",
+    "already_checked_in": "This booking is already marked as in.",
+    "staff_checkin_off": "This facility does not let staff mark the entry from the calendar. Turn it on in the Check-in tab.",
+    "staff_checkin_too_early": "It is too early: the entry can be marked from 15 minutes before the start.",
+    "staff_checkin_ended": "The turn has ended, so the entry can no longer be marked.",
+    "staff_checkin_undo_expired": "This can no longer be undone: only for 5 minutes after marking it, and only if staff marked it."
   },
   "email": {
     "greeting": "Hello {{0}},",

@@ -89,6 +89,7 @@ SELECT
     b.cancelled_by,
     b.checked_in_at,
     b.checked_in_device_id,
+    b.checked_in_method,
     b.created_at,
     b.updated_at
 FROM
@@ -113,6 +114,7 @@ type ExportBookingsRow struct {
 	CancelledBy       NullBookingCanceller `json:"cancelled_by"`
 	CheckedInAt       sql.NullTime         `json:"checked_in_at"`
 	CheckedInDeviceID uuid.NullUUID        `json:"checked_in_device_id"`
+	CheckedInMethod   NullCheckinMethod    `json:"checked_in_method"`
 	CreatedAt         time.Time            `json:"created_at"`
 	UpdatedAt         time.Time            `json:"updated_at"`
 }
@@ -139,6 +141,7 @@ func (q *Queries) ExportBookings(ctx context.Context, tenantID uuid.UUID) ([]Exp
 			&i.CancelledBy,
 			&i.CheckedInAt,
 			&i.CheckedInDeviceID,
+			&i.CheckedInMethod,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {

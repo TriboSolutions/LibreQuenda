@@ -21,6 +21,7 @@ import type {
   Notifications,
   PublicInvite,
   Reader,
+  StaffBooking,
   StaffDay,
   Superadmin,
   TagCatalogue,
@@ -370,7 +371,27 @@ const smtp: CouncilSmtp = {
   env_relay: true,
 }
 
-// the Reservas tab: a free turn, one walk-in booked by staff, one online booking with someone checked in
+// the Reservas tab: a turn under way whose entry staff can mark, a free turn, one walk-in
+// booked by staff, and one online booking that came in with the reader
+const staffBooking: StaffBooking = {
+  id: '',
+  starts_at: '',
+  ends_at: '',
+  booked_by_staff: false,
+  has_account: false,
+  name: '',
+  email: '',
+  phone: '',
+  checked_in_at: null,
+  checked_in_method: '',
+  checked_in_by: '',
+  checkin_state: '',
+  undo_until: null,
+  participant_count: 0,
+  can_cancel: true,
+  checkin_code: '',
+}
+
 const staffDay: StaffDay = {
   date: iso(now).slice(0, 10),
   timezone: TZ,
@@ -378,15 +399,26 @@ const staffDay: StaffDay = {
   min_age: 16,
   slot_minutes: 60,
   slots: [
+    { starts_at: at(0), ends_at: at(1), status: 'booked', booking_id: 'sb3' },
     { starts_at: at(1), ends_at: at(2), status: 'free', booking_id: '' },
     { starts_at: at(2), ends_at: at(3), status: 'booked', booking_id: 'sb1' },
     { starts_at: at(3), ends_at: at(4), status: 'booked', booking_id: 'sb2' },
     { starts_at: at(4), ends_at: at(5), status: 'closed', booking_id: '' },
   ],
   bookings: [
-    { id: 'sb1', starts_at: at(2), ends_at: at(3), booked_by_staff: true, has_account: false, name: 'Carmen Souto', email: '', phone: '600123123', checked_in_at: null, participant_count: 0, can_cancel: true, checkin_code: 'lq1:5c1d3b8e-3f6a-4b0e-9d6e-2a7c1f0b9e41' },
-    { id: 'sb2', starts_at: at(3), ends_at: at(4), booked_by_staff: false, has_account: true, name: 'Ana Pérez', email: 'ana@example.org', phone: '', checked_in_at: null, participant_count: 2, can_cancel: true, checkin_code: '' },
+    { ...staffBooking, id: 'sb3', starts_at: at(0), ends_at: at(1), has_account: true, name: 'Lucía Gómez', email: 'lucia@example.org', can_cancel: false, checkin_state: 'open' },
+    { ...staffBooking, id: 'sb1', starts_at: at(2), ends_at: at(3), booked_by_staff: true, name: 'Carmen Souto', phone: '600123123', checkin_state: 'too_early', checkin_code: 'lq1:5c1d3b8e-3f6a-4b0e-9d6e-2a7c1f0b9e41' },
+    { ...staffBooking, id: 'sb2', starts_at: at(3), ends_at: at(4), has_account: true, name: 'Ana Pérez', email: 'ana@example.org', checked_in_at: at(3), checked_in_method: 'reader', participant_count: 2 },
   ],
+  staff_checkin: true,
+}
+
+/** Staff mark Lucía as in (POST), or take it back (DELETE). */
+export const staffCheckinResponse = (undo: boolean): StaffBooking => {
+  const lucia = staffDay.bookings[0]
+  if (undo) return lucia
+  const marked = new Date()
+  return { ...lucia, checked_in_at: iso(marked), checked_in_method: 'staff', checked_in_by: 'Xoán Conserxe', checkin_state: '', undo_until: iso(new Date(marked.getTime() + 5 * 60_000)) }
 }
 
 const reader: Reader = {
@@ -400,7 +432,7 @@ const reader: Reader = {
 }
 
 // check-in from the resident's phone: both ways on, so the tab shows the QR and the sheet
-const checkinSettings = { printed_qr: true, qr_token: '9a1f6c2e-3b4d-4e5f-8a7b-1c2d3e4f5a6b', turn_codes: true, radius_m: 100, flash_booking: true, has_location: true }
+const checkinSettings = { printed_qr: true, qr_token: '9a1f6c2e-3b4d-4e5f-8a7b-1c2d3e4f5a6b', turn_codes: true, radius_m: 100, flash_booking: true, staff_confirm: true, has_location: true }
 const turnCodes = {
   date: '2026-11-03',
   timezone: TZ,
@@ -482,6 +514,10 @@ export async function mockApp(page: Page, { signedIn = true, theme = 'light', la
     // the phone at the door without a booking: it is offered to book the free turn
     if (route.request().method() === 'POST' && /\/entrance$/.test(path)) {
       return fulfil(route, { granted: false, result: 'no_booking', can_book: true, booking: null })
+    }
+    // staff mark the entry of a booking from the calendar, or take it back
+    if (/^\/tenants\/[^/]+\/admin\/bookings\/[^/]+\/checkin$/.test(path)) {
+      return fulfil(route, staffCheckinResponse(route.request().method() === 'DELETE'))
     }
     if (route.request().method() !== 'GET') return route.fulfill({ status: 204 })
     if (path === '/branding') return fulfil(route, branding)

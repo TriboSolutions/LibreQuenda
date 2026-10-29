@@ -51,6 +51,8 @@ func (r *counciladminRoutes) RegisterRoutes() {
 		{Path: "/tenants/{slug}/admin/facilities/{id}/bookings", Method: http.MethodGet, Handler: h.GetStaffDay},
 		{Path: "/tenants/{slug}/admin/bookings", Method: http.MethodPost, Handler: h.CreateStaffBooking},
 		{Path: "/tenants/{slug}/admin/bookings/{bookingId}/cancel", Method: http.MethodPost, Handler: h.CancelStaffBooking},
+		{Path: "/tenants/{slug}/admin/bookings/{bookingId}/checkin", Method: http.MethodPost, Handler: h.StaffCheckIn},
+		{Path: "/tenants/{slug}/admin/bookings/{bookingId}/checkin", Method: http.MethodDelete, Handler: h.UndoStaffCheckIn},
 		{Path: "/tenants/{slug}/admin/indicators", Method: http.MethodGet, Handler: h.GetIndicators},
 		{Path: "/tenants/{slug}/admin/indicators/export", Method: http.MethodGet, Handler: h.ExportIndicators},
 		{Path: "/tenants/{slug}/admin/export", Method: http.MethodGet, Handler: middlewares.WithStrictRateLimit(h.ExportCouncil)},

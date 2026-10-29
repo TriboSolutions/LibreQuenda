@@ -52,13 +52,14 @@ type StaffCancelInput struct {
 
 // StaffDayDto: one facility's turns on one day, and who holds each booking.
 type StaffDayDto struct {
-	Date        string            `json:"date"` // YYYY-MM-DD in the council's time zone
-	Timezone    string            `json:"timezone"`
-	FacilityId  string            `json:"facility_id"`
-	MinAge      *int32            `json:"min_age"` // a reminder for staff: nobody checks the age of someone without an account
-	SlotMinutes int32             `json:"slot_minutes"`
-	Slots       []StaffSlotDto    `json:"slots"`
-	Bookings    []StaffBookingDto `json:"bookings"` // confirmed, by start
+	Date         string            `json:"date"` // YYYY-MM-DD in the council's time zone
+	Timezone     string            `json:"timezone"`
+	FacilityId   string            `json:"facility_id"`
+	MinAge       *int32            `json:"min_age"` // a reminder for staff: nobody checks the age of someone without an account
+	SlotMinutes  int32             `json:"slot_minutes"`
+	Slots        []StaffSlotDto    `json:"slots"`
+	Bookings     []StaffBookingDto `json:"bookings"`      // confirmed, by start
+	StaffCheckin bool              `json:"staff_checkin"` // staff can mark the entry (Entrada tab)
 }
 
 type StaffSlotDto struct {
@@ -80,12 +81,35 @@ type StaffBookingDto struct {
 	Email            string     `json:"email"`
 	Phone            string     `json:"phone"`
 	CheckedInAt      *time.Time `json:"checked_in_at"`
+	CheckedInMethod  string     `json:"checked_in_method"` // reader, printed_qr, turn_code or staff; "" before the entry
+	CheckedInBy      string     `json:"checked_in_by"`     // staff entry: who marked it
+	CheckinState     string     `json:"checkin_state"`     // staff entry on and not in yet: open, too_early or ended; "" otherwise
+	UndoUntil        *time.Time `json:"undo_until"`        // staff entry: until when it can be taken back
 	ParticipantCount int64      `json:"participant_count"`
 	CanCancel        bool       `json:"can_cancel"`   // until it starts
 	CheckinCode      string     `json:"checkin_code"` // booked by staff only: to print the entry QR for the person
 }
 
-func mapStaffBooking(row model.ListFacilityBookingsForStaffRow, now time.Time) StaffBookingDto {
+// Staff entry: when staff can mark that the person came in (StaffBookingDto.CheckinState).
+const (
+	StaffCheckinOpen     = "open"
+	StaffCheckinTooEarly = "too_early" // as at a reader: from checkin.EarlyWindow before the start
+	StaffCheckinEnded    = "ended"
+)
+
+// staffCheckinState: whether staff can mark the entry of a booking not in yet.
+func staffCheckinState(startsAt, endsAt, now time.Time) string {
+	switch {
+	case !now.Before(endsAt):
+		return StaffCheckinEnded
+	case now.Before(startsAt.Add(-checkin.EarlyWindow)):
+		return StaffCheckinTooEarly
+	}
+	return StaffCheckinOpen
+}
+
+// mapStaffBooking: staffCheckin, whether the facility lets staff mark the entry.
+func mapStaffBooking(row model.ListFacilityBookingsForStaffRow, now time.Time, staffCheckin bool) StaffBookingDto {
 	var dto = StaffBookingDto{
 		Id:               row.ID.String(),
 		StartsAt:         row.StartsAt,
@@ -104,8 +128,18 @@ func mapStaffBooking(row model.ListFacilityBookingsForStaffRow, now time.Time) S
 	} else if dto.Name == "" {
 		dto.Name = dto.Email
 	}
-	if row.CheckedInAt.Valid {
+	switch {
+	case row.CheckedInAt.Valid:
 		dto.CheckedInAt = &row.CheckedInAt.Time
+		dto.CheckedInMethod = string(row.CheckedInMethod.CheckinMethod)
+		if row.CheckedInMethod.CheckinMethod == model.CheckinMethodStaff {
+			dto.CheckedInBy = row.CheckedInByName
+			if until := row.CheckedInAt.Time.Add(checkin.StaffUndoWindow); until.After(now) {
+				dto.UndoUntil = &until
+			}
+		}
+	case staffCheckin:
+		dto.CheckinState = staffCheckinState(row.StartsAt, row.EndsAt, now)
 	}
 	if dto.BookedByStaff && row.EndsAt.After(now) {
 		dto.CheckinCode = checkin.Payload(row.CheckinToken)

@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import QRCode from 'qrcode'
-import { CircleCheck, ChevronLeft, ChevronRight, Plus, Printer } from 'lucide-react'
+import { CircleCheck, ChevronLeft, ChevronRight, Plus, Printer, Undo2, UserCheck } from 'lucide-react'
 import { DatePicker } from '@/components/DatePicker'
 import { QrImage } from '@/components/QrImage'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -164,10 +164,13 @@ export function StaffBookingsPanel({ slug, facilities, facilityId, onFacilityCha
       )}
       {details && facility && (
         <DetailsDialog
+          slug={slug}
+          token={token}
           booking={details.booking}
           zone={details.day.timezone}
           facilityName={facility.name}
           onClose={() => setDetails(null)}
+          onChanged={calendar.reload}
           onCancel={() => {
             setCancelling(details)
             setDetails(null)
@@ -381,12 +384,55 @@ function StatusLegend() {
   )
 }
 
-type DetailsProps = { booking: StaffBooking; zone: string; facilityName: string; onClose: () => void; onCancel: () => void }
+type DetailsProps = {
+  slug: string
+  token: string
+  booking: StaffBooking
+  zone: string
+  facilityName: string
+  onClose: () => void
+  onCancel: () => void
+  onChanged: () => void
+}
 
 /** One booking, opened from the calendar: who holds it, how to reach them, and what staff can do. */
-function DetailsDialog({ booking: b, zone, facilityName, onClose, onCancel }: DetailsProps) {
+function DetailsDialog({ slug, token, booking, zone, facilityName, onClose, onCancel, onChanged }: DetailsProps) {
   const { t } = useTranslation('admin')
   const labels = { title: t('staff.ticketTitle'), hint: t('staff.ticketHint') }
+  const [b, setB] = useState(booking)
+  const [saving, setSaving] = useState(false)
+  const [status, setStatus] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  // after marking, focus goes to the undo button that takes the mark button's place, and back again
+  const [focusNext, setFocusNext] = useState<'undo' | 'mark' | null>(null)
+  const focusRef = (target: 'undo' | 'mark') => (el: HTMLButtonElement | null) => {
+    if (el && focusNext === target) {
+      el.focus()
+      setFocusNext(null)
+    }
+  }
+
+  const change = async (undo: boolean) => {
+    setSaving(true)
+    setError(null)
+    setStatus(null)
+    try {
+      const updated = undo ? await api.council.undoStaffCheckIn(token, slug, b.id) : await api.council.staffCheckIn(token, slug, b.id)
+      setB(updated)
+      setStatus(undo ? t('staff.checkinUndone') : t('staff.checkinMarked', { time: formatTime(updated.checked_in_at ?? new Date().toISOString(), zone) }))
+      setFocusNext(undo ? 'mark' : 'undo')
+      onChanged()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  // the API only sends undo_until while the undo window is open; past it, the undo is refused with a reason
+  const canUndo = b.undo_until !== null
+  const opensAt = new Date(new Date(b.starts_at).getTime() - 15 * 60_000).toISOString()
+
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-md">
@@ -405,6 +451,16 @@ function DetailsDialog({ booking: b, zone, facilityName, onClose, onCancel }: De
             {b.checked_in_at && <span className={`${pill} num bg-pill-positive-bg text-pill-positive-ink`}>{t('staff.checkedIn', { time: formatTime(b.checked_in_at, zone) })}</span>}
             {b.participant_count > 0 && <span className={`${pill} num bg-pill-neutral-bg text-pill-neutral-ink`}>{t('staff.joined', { count: b.participant_count })}</span>}
           </p>
+          {b.checked_in_at && b.checked_in_method && (
+            <p className="text-sm text-muted-foreground">
+              {b.checked_in_method === 'staff' && b.checked_in_by
+                ? t('staff.checkedInBy', { name: b.checked_in_by })
+                : t(`staff.checkedInMethod.${b.checked_in_method}`)}
+              {canUndo && <span className="num"> {t('staff.undoUntil', { time: formatTime(b.undo_until!, zone) })}</span>}
+            </p>
+          )}
+          {b.checkin_state === 'too_early' && <p className="num text-sm text-muted-foreground">{t('staff.checkinTooEarly', { time: formatTime(opensAt, zone) })}</p>}
+          {b.checkin_state === 'ended' && <p className="text-sm text-muted-foreground">{t('staff.checkinEnded')}</p>}
           {(b.phone || b.email) && (
             <dl className="grid gap-1 break-all">
               <dt className="text-xs text-muted-foreground">{t('staff.colContact')}</dt>
@@ -418,6 +474,15 @@ function DetailsDialog({ booking: b, zone, facilityName, onClose, onCancel }: De
               {b.email && <dd className="text-muted-foreground">{b.email}</dd>}
             </dl>
           )}
+          <div aria-live="polite" className="empty:hidden">
+            {error ? (
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            ) : (
+              status && <p className="num text-sm font-medium">{status}</p>
+            )}
+          </div>
         </div>
         <DialogFooter>
           {b.checkin_code && (
@@ -431,7 +496,21 @@ function DetailsDialog({ booking: b, zone, facilityName, onClose, onCancel }: De
               {t('staff.cancel')}
             </Button>
           )}
-          <Button onClick={onClose}>{t('staff.close')}</Button>
+          {canUndo && (
+            <Button ref={focusRef('undo')} variant="outline" disabled={saving} onClick={() => void change(true)}>
+              <Undo2 />
+              {saving ? t('staff.undoing') : t('staff.undoCheckin')}
+            </Button>
+          )}
+          {b.checkin_state === 'open' && (
+            <Button ref={focusRef('mark')} disabled={saving} onClick={() => void change(false)}>
+              <UserCheck />
+              {saving ? t('staff.marking') : t('staff.markCheckin')}
+            </Button>
+          )}
+          <Button variant={b.checkin_state === 'open' ? 'outline' : 'default'} onClick={onClose}>
+            {t('staff.close')}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

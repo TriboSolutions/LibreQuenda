@@ -158,10 +158,19 @@ export type StaffBooking = {
   email: string
   phone: string
   checked_in_at: string | null
+  checked_in_method: CheckinMethod | ''
+  checked_in_by: string // staff entry: who marked it
+  checkin_state: StaffCheckinState // staff entry on and not in yet; '' otherwise
+  undo_until: string | null // staff entry: until when it can be taken back
   participant_count: number
   can_cancel: boolean // until it starts
   checkin_code: string // booked by staff only: the entry QR to print for the person
 }
+
+/** How the person got in. */
+export type CheckinMethod = 'reader' | 'printed_qr' | 'turn_code' | 'staff'
+/** Whether staff can mark the entry now: from 15 minutes before the start until the turn ends. */
+export type StaffCheckinState = 'open' | 'too_early' | 'ended' | ''
 
 export type StaffSlot = { starts_at: string; ends_at: string; status: SlotStatus; booking_id: string }
 
@@ -174,6 +183,7 @@ export type StaffDay = {
   slot_minutes: number
   slots: StaffSlot[]
   bookings: StaffBooking[]
+  staff_checkin: boolean // staff can mark the entry (the facility's Check-in tab)
 }
 
 /** For an account (email) or for someone without one (name, phone): exactly one of the two. */
@@ -250,9 +260,10 @@ export type CheckinSettings = {
   turn_codes: boolean
   radius_m: number // how far from the pin the phone may be
   flash_booking: boolean // a free turn can be booked on the spot, also with the personal QR at the readers
+  staff_confirm: boolean // staff mark the entry from the bookings calendar
   has_location: boolean
 }
-export type CheckinSettingsInput = Pick<CheckinSettings, 'printed_qr' | 'turn_codes' | 'radius_m' | 'flash_booking'>
+export type CheckinSettingsInput = Pick<CheckinSettings, 'printed_qr' | 'turn_codes' | 'radius_m' | 'flash_booking' | 'staff_confirm'>
 /** The daily sheet: one code per turn. */
 export type TurnCodes = { date: string; timezone: string; turns: { starts_at: string; ends_at: string; code: string }[] }
 
@@ -790,6 +801,11 @@ export const api = {
     // the resident is told if they have an account, with the reason when there is one
     staffCancel: (token: string, slug: string, bookingId: string, reason: string) =>
       request<void>(`/tenants/${encodeURIComponent(slug)}/admin/bookings/${bookingId}/cancel`, { token, method: 'POST', body: { reason } }),
+    // staff mark that the person came in; undo only within a few minutes of a staff entry
+    staffCheckIn: (token: string, slug: string, bookingId: string) =>
+      request<StaffBooking>(`/tenants/${encodeURIComponent(slug)}/admin/bookings/${bookingId}/checkin`, { token, method: 'POST' }),
+    undoStaffCheckIn: (token: string, slug: string, bookingId: string) =>
+      request<StaffBooking>(`/tenants/${encodeURIComponent(slug)}/admin/bookings/${bookingId}/checkin`, { token, method: 'DELETE' }),
     indicators: (token: string, slug: string, query: IndicatorsQuery) =>
       request<Indicators>(`/tenants/${encodeURIComponent(slug)}/admin/indicators?${indicatorsParams(query)}`, { token }),
     exportIndicators,

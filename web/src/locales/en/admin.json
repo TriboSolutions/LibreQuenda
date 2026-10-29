@@ -491,7 +491,23 @@
     "reason": "Reason for them",
     "keep": "Keep it",
     "cancelling": "Cancelling…",
-    "confirmCancel": "Cancel booking"
+    "confirmCancel": "Cancel booking",
+    "markCheckin": "Mark as in",
+    "marking": "Marking…",
+    "undoCheckin": "Undo the entry",
+    "undoing": "Undoing…",
+    "checkinMarked": "Marked as in at {{time}}.",
+    "checkinUndone": "Entry undone.",
+    "checkedInBy": "Marked by staff: {{name}}.",
+    "undoUntil": "It can be undone until {{time}}.",
+    "checkedInMethod": {
+      "reader": "Came in with the QR reader.",
+      "printed_qr": "Came in with the printed QR.",
+      "turn_code": "Came in with the turn code.",
+      "staff": "Marked by staff."
+    },
+    "checkinTooEarly": "The entry can be marked from {{time}}.",
+    "checkinEnded": "The turn ended with no entry marked."
   },
   "tags": {
     "help": "The tag catalogue for every council, in categories. Councils tag their facilities with them (a facility can have several), and residents filter by them on the home page and on each council's page.",
@@ -528,7 +544,7 @@
   "checkin": {
     "title": "How people check in",
     "help": "Choose one or several ways for residents to check in at the entrance. They all end in the same check-in on the booking, so attendance and the indicators stay the same. Pick by budget and by how much cheating matters here.",
-    "preview": "The QR reader, the printed QR and the code on a daily sheet work. NFC, the rotating code and staff confirmation are a preview: their choices are not saved.",
+    "preview": "The QR reader, the printed QR, the code on a daily sheet and staff confirmation work. NFC and the rotating code are a preview: their choices are not saved.",
     "built": "Working",
     "soon": "Coming soon",
     "door": "At the door:",
@@ -593,11 +609,11 @@
     },
     "staff": {
       "name": "Staff confirmation",
-      "how": "Staff mark people as arrived on the manual booking calendar.",
+      "how": "Staff mark the entry from the booking on the manual booking calendar.",
       "door": "nobody, or the desk",
       "cost": "staff time",
       "cheat": "as good as the staff",
-      "help": "Staff mark arrivals in the manual booking tab.",
+      "help": "Open a booking in the manual booking tab and press “Mark as in”, from 15 minutes before the start until the turn ends. If you picked the wrong booking, you can undo it for 5 minutes.",
       "open": "Open this facility’s bookings"
     },
     "location": {

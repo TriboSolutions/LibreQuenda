@@ -408,6 +408,7 @@ func (data *councilExport) tables(media map[string]string) []exportTable {
 			{"cancelled_by", "string", "user (the person) or council (a closure or the facility deactivated)"},
 			{"checked_in_at", "datetime", "When the QR was scanned at the entrance"},
 			{"checked_in_device_id", "string", "Reader that scanned it"},
+			{"checked_in_method", "string", "How the person got in: reader, printed_qr, turn_code or staff"},
 			{"created_at", "datetime", "Booked"},
 			{"updated_at", "datetime", "Last changed"},
 		},
@@ -418,14 +419,17 @@ func (data *councilExport) tables(media map[string]string) []exportTable {
 		bookings.foreignKeys = append(bookings.foreignKeys, exportForeignKey{"person_id", "people"})
 	}
 	for _, b := range data.bookings {
-		var cancelledBy string
+		var cancelledBy, checkedInMethod string
 		if b.CancelledBy.Valid {
 			cancelledBy = string(b.CancelledBy.BookingCanceller)
+		}
+		if b.CheckedInMethod.Valid {
+			checkedInMethod = string(b.CheckedInMethod.CheckinMethod)
 		}
 		bookings.rows = append(bookings.rows, []string{
 			b.ID.String(), b.FacilityID.String(), exportNullUUID(b.UserID), exportTime(b.StartsAt), exportTime(b.EndsAt),
 			string(b.Status), exportNullTime(b.RulesAcceptedAt), exportNullTime(b.CancelledAt), cancelledBy,
-			exportNullTime(b.CheckedInAt), exportNullUUID(b.CheckedInDeviceID), exportTime(b.CreatedAt), exportTime(b.UpdatedAt),
+			exportNullTime(b.CheckedInAt), exportNullUUID(b.CheckedInDeviceID), checkedInMethod, exportTime(b.CreatedAt), exportTime(b.UpdatedAt),
 		})
 	}
 
