@@ -381,6 +381,17 @@ test.describe('keyboard', () => {
     await expect(page.getByRole('status')).toContainText('Non tes reserva para esta quenda')
   })
 
+  test('the QR reader can be switched off and stays set up', async ({ page }) => {
+    await open(page, '/lugo/admin/facilities/f1?vista=entrada')
+    const reader = page.getByRole('switch', { name: 'QR de reserva ou flash nun lector' })
+    await expect(reader).toBeChecked()
+    await reader.press('Space')
+    await expect(reader).not.toBeChecked()
+    await expect(page.getByText('O lector está apagado')).toBeVisible()
+    await expect(page.getByText('Entrada principal')).toBeVisible() // the reader is still listed
+    await expect(page.getByRole('button', { name: 'Gardar', exact: true })).toBeEnabled()
+  })
+
   test('the facility editor saves the check-in ways and keeps the old QR until asked', async ({ page }) => {
     await open(page, '/lugo/admin/facilities/f1?vista=entrada')
     await expect(page.getByRole('img', { name: 'QR para rexistrar a entrada na instalación' })).toBeVisible()

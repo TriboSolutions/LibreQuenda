@@ -380,6 +380,7 @@ type FacilityCheckin struct {
 	RadiusM      int32     `json:"radius_m"`
 	FlashBooking bool      `json:"flash_booking"`
 	StaffConfirm bool      `json:"staff_confirm"`
+	QrReader     bool      `json:"qr_reader"`
 	UpdatedAt    time.Time `json:"updated_at"`
 }
 

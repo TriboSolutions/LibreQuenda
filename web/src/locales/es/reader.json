@@ -43,7 +43,9 @@
     "bookedDetail": "Turno reservado: {{facility}} · {{start}}–{{end}}",
     "notBooked": "No se ha podido reservar un turno",
     "codeExpired": "Este QR ha caducado",
-    "codeExpiredDetail": "Muestra el código actual de «Reserva flash»: cambia cada minuto."
+    "codeExpiredDetail": "Muestra el código actual de «Reserva flash»: cambia cada minuto.",
+    "readerOff": "Lector apagado",
+    "readerOffDetail": "El ayuntamiento apagó el lector de esta instalación. Entra de otra forma o pregunta al personal."
   },
   "reason": {
     "no_turn_soon": "No hay ningún turno en curso ni en los próximos 15 minutos.",

@@ -555,7 +555,8 @@
       "how": "El veí mostra el QR de la seva reserva, o el seu QR flaix personal, a un dispositiu amb càmera a la porta.",
       "door": "un mòbil, tauleta o petit ordinador amb el lector",
       "cost": "un mòbil o tauleta barat",
-      "cheat": "sí, els codis són per reserva o canvien cada minut"
+      "cheat": "sí, els codis són per reserva o canvien cada minut",
+      "off": "El lector està apagat: rebutja tots els QR fins que l’engeguis. Continua configurat aquí sota."
     },
     "printedQr": {
       "name": "QR imprès a la porta",

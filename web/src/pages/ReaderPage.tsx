@@ -310,6 +310,10 @@ function Answer({ shown, reader, now, onDismiss }: { shown: Shown; reader: Reade
         title = t('result.codeExpired')
         detail = t('result.codeExpiredDetail')
         break
+      case 'reader_off':
+        title = t('result.readerOff')
+        detail = t('result.readerOffDetail')
+        break
       case 'unknown_booking':
         title = t('result.unknown')
         detail = t('result.unknownDetail')

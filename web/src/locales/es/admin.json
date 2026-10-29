@@ -555,7 +555,8 @@
       "how": "El vecino enseña el QR de su reserva, o su QR flash personal, a un dispositivo con cámara en la puerta.",
       "door": "un móvil, tableta o pequeño ordenador con el lector",
       "cost": "un móvil o tableta barato",
-      "cheat": "sí, los códigos son por reserva o cambian cada minuto"
+      "cheat": "sí, los códigos son por reserva o cambian cada minuto",
+      "off": "El lector está apagado: rechaza todos los QR hasta que lo enciendas. Sigue configurado aquí abajo."
     },
     "printedQr": {
       "name": "QR impreso en la puerta",

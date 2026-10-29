@@ -555,7 +555,8 @@
       "how": "The resident shows the QR of their booking, or their personal flash QR, to a device with a camera at the door.",
       "door": "a phone, tablet or small computer running the reader",
       "cost": "a cheap phone or tablet",
-      "cheat": "yes, the codes are per booking or change every minute"
+      "cheat": "yes, the codes are per booking or change every minute",
+      "off": "The reader is off: it refuses every QR until you turn it back on. It stays set up below."
     },
     "printedQr": {
       "name": "Printed QR at the door",

@@ -235,6 +235,7 @@ export type CheckinResultCode =
   | 'cancelled'
   | 'too_early'
   | 'ended'
+  | 'reader_off' // the council turned this facility's readers off
   // the personal QR from /perfil
   | 'booked' // the turn about to start was booked, and the entry recorded
   | 'not_booked' // no booking here to let in, and none could be made: see `reason`
@@ -262,9 +263,10 @@ export type CheckinSettings = {
   radius_m: number // how far from the pin the phone may be
   flash_booking: boolean // a free turn can be booked on the spot, also with the personal QR at the readers
   staff_confirm: boolean // staff mark the entry from the bookings calendar
+  qr_reader: boolean // off: the readers refuse every QR, but stay set up
   has_location: boolean
 }
-export type CheckinSettingsInput = Pick<CheckinSettings, 'printed_qr' | 'entry_code' | 'radius_m' | 'flash_booking' | 'staff_confirm'>
+export type CheckinSettingsInput = Pick<CheckinSettings, 'printed_qr' | 'entry_code' | 'radius_m' | 'flash_booking' | 'staff_confirm' | 'qr_reader'>
 
 /** /<council>/<facility>/entrada: checking in from the resident's own phone. */
 export type Entrance = {

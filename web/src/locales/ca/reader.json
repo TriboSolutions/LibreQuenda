@@ -43,7 +43,9 @@
     "bookedDetail": "Torn reservat: {{facility}} · {{start}}–{{end}}",
     "notBooked": "No s'ha pogut reservar cap torn",
     "codeExpired": "Aquest QR ha caducat",
-    "codeExpiredDetail": "Mostra el codi actual de «Reserva flash»: canvia cada minut."
+    "codeExpiredDetail": "Mostra el codi actual de «Reserva flash»: canvia cada minut.",
+    "readerOff": "Lector apagat",
+    "readerOffDetail": "L’ajuntament ha apagat el lector d’aquesta instal·lació. Entra d’una altra manera o pregunta al personal."
   },
   "reason": {
     "no_turn_soon": "No hi ha cap torn en curs ni en els propers 15 minuts.",
