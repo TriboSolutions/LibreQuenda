@@ -186,7 +186,9 @@
     },
     "tagsEmpty": "There are no tags yet: ask a superadministrator.",
     "tagsNone": "None",
-    "tagsClear": "Clear all"
+    "tagsClear": "Clear all",
+    "tabDetails": "Details",
+    "tabCheckin": "Check-in"
   },
   "readers": {
     "title": "Entrance QR readers",
@@ -521,5 +523,79 @@
     "confirmDeleteTag": "Yes, delete",
     "facilitiesUsing_one": "on {{count}} facility",
     "facilitiesUsing_other": "on {{count}} facilities"
+  },
+  "checkin": {
+    "title": "How people check in",
+    "help": "Choose one or several ways for residents to check in at the entrance. They all end in the same check-in on the booking, so attendance and the indicators stay the same. Pick by budget and by how much cheating matters here.",
+    "preview": "Preview: only the QR reader works today, and the choices on this tab are not saved yet. The readers listed under it are real.",
+    "built": "Working",
+    "soon": "Coming soon",
+    "door": "At the door:",
+    "cost": "Cost:",
+    "cheat": "Hard to cheat:",
+    "reader": {
+      "name": "Booking or flash QR on a reader",
+      "how": "The resident shows the QR of their booking, or their personal flash QR, to a device with a camera at the door.",
+      "door": "a phone, tablet or small computer running the reader",
+      "cost": "a cheap phone or tablet",
+      "cheat": "yes, the codes are per booking or change every minute",
+      "flash": "Accept the flash booking QR",
+      "flashHelp": "Scanning the personal QR books the turn under way, or the next one, on the spot if it is free."
+    },
+    "printedQr": {
+      "name": "Printed QR at the door",
+      "how": "The resident scans a sheet with the facility’s QR, and the app checks in their booking for this turn.",
+      "door": "a sheet of paper",
+      "cost": "nearly free",
+      "cheat": "low; better with a time window and the phone’s location",
+      "address": "The QR would open {{url}}.",
+      "window": "Check-in opens this many minutes before the start"
+    },
+    "nfc": {
+      "name": "NFC tag",
+      "how": "The resident taps a sticker on the door with their phone, which opens the check-in page.",
+      "door": "an NFC sticker",
+      "cost": "a few euros per door",
+      "cheat": "low with a plain tag, high with a signed one",
+      "tag": "Kind of tag",
+      "signed": "Signs every tap (NTAG 424 DNA)",
+      "plain": "Plain tag",
+      "signedHelp": "Each tap carries a signature and a counter that the server checks, so a copied or recorded tap does not work.",
+      "plainHelp": "A plain tag only holds the address and can be copied: add the location check."
+    },
+    "rotating": {
+      "name": "Rotating code on a display",
+      "how": "A small screen at the door shows a code or QR that changes every few minutes; the resident types or scans it in the app.",
+      "door": "an e-ink screen, ESP32 or old tablet",
+      "cost": "tens of euros per door",
+      "cheat": "high, the code only works for a few minutes and only at this door",
+      "every": "New code every",
+      "minutes_one": "{{count}} minute",
+      "minutes_other": "{{count}} minutes",
+      "digits": "Digits in the code",
+      "help": "The display gets a secret of its own, kept like the reader keys, and shows codes from it (TOTP)."
+    },
+    "dailySheet": {
+      "name": "Code on a daily sheet",
+      "how": "A sheet at the desk or on the door lists one code per turn; the resident types the code for their turn.",
+      "door": "a printed page, changed every day",
+      "cost": "nearly free",
+      "cheat": "medium, someone has to change the sheet every day",
+      "help": "The sheet for each day would be printed from here, with one code per turn."
+    },
+    "staff": {
+      "name": "Staff confirmation",
+      "how": "Staff mark people as arrived on the manual booking calendar.",
+      "door": "nobody, or the desk",
+      "cost": "staff time",
+      "cheat": "as good as the staff",
+      "help": "Staff mark arrivals in the manual booking tab.",
+      "open": "Open this facility’s bookings"
+    },
+    "location": {
+      "label": "Check the phone’s location",
+      "help": "The phone has to be near the facility’s map pin. The resident has to allow it, and the location is never stored.",
+      "radius": "Distance from the pin, in metres"
+    }
   }
 }
