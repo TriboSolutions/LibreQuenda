@@ -145,7 +145,10 @@
     "smtp_password_unreadable": "No se puede leer la configuración SMTP guardada (cambió la clave de cifrado). Escríbela de nuevo y guarda.",
     "export_failed": "No se pudieron preparar tus datos. Inténtalo de nuevo.",
     "council_export_failed": "No pudimos preparar los datos del ayuntamiento. Inténtalo de nuevo.",
-    "account_delete_failed": "No se pudo eliminar tu cuenta. No se borró nada; inténtalo de nuevo en un momento."
+    "account_delete_failed": "No se pudo eliminar tu cuenta. No se borró nada; inténtalo de nuevo en un momento.",
+    "checkin_settings_failed": "No se pudo guardar la configuración de entrada. Inténtalo de nuevo.",
+    "invalid_checkin_radius": "La distancia debe estar entre 25 y 1000 metros.",
+    "checkin_needs_location": "Sitúa primero la instalación en el mapa: la ubicación del móvil se compara con ella."
   },
   "email": {
     "greeting": "Hola {{0}}:",

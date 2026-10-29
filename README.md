@@ -89,23 +89,28 @@ Councils need to know who actually turned up: it frees no-show turns, feeds the 
 
 Staff can also book from the desk ("Reserva manual"), print the entry QR for the person, and cancel.
 
-**Other ways it could work (not built).** Today the resident carries the code and the facility has the reader. The options below turn that around, so a council can choose by budget and by how much it cares about cheating. They would all end in the same check-in on the booking, so the indicators stay the same.
+The resident can also check in from their own phone, reading the facility instead of being read. Both ways are switched on per facility in the facility editor's **Entrada** tab, and both need the facility's map pin:
+
+- **Printed QR at the door**: the tab prints a sheet with the facility's QR. It opens `/<council>/<facility>/entrada` with a random token, so the address alone does not work. "New QR" changes the token and the sheets already printed stop working.
+- **Code on a daily sheet**: the tab prints the sheet for any day, with a 6-digit code per turn. Codes come from an HMAC of a per-facility secret and the turn's start, so nothing is stored per turn and one day's sheet says nothing about another day. The resident types the code of a turn open for entry (from 15 minutes before it starts until it ends) on the same `/entrada` page; the endpoint has the strict rate limit, so guessing codes is slow.
+
+Either way the phone's location is required: within the facility's distance (100 m unless the council changes it, between 25 and 1000 m) of its pin, with an accuracy of 150 m or better. The browser asks the resident; the API checks the location and drops it, it is never stored. A location can be faked by someone determined, so these two are the cheap options, not the strict ones. Then the check-in is the reader's own: the person's booking for this turn goes in. Without one, the page offers **Book and check in**, a flash booking of the free turn under the usual rules. The council can turn flash booking off for the facility in the same tab, which also turns it off for the personal QR at the readers.
+
+**Other ways it could work (not built yet).** The options below let a council choose by budget and by how much it cares about cheating. They would all end in the same check-in on the booking, so the indicators stay the same.
 
 | Way | At the door | How the resident checks in | Cost | Hard to cheat? |
 | --- | --- | --- | --- | --- |
 | Booking or flash QR (built) | A device with a camera running `/lector` | Shows the QR from their phone or a printout | A cheap phone or tablet | Yes: tokens are per booking or change every minute |
-| Printed QR | A sheet of paper with the facility's QR | Scans it with their phone; the app checks in their booking for that facility and turn | Nearly free | Low: a photo of the sheet works from anywhere. Better with a time window and the phone's location |
+| Printed QR (built) | A sheet of paper with the facility's QR | Scans it with their phone; the app checks in their booking for that facility and turn | Nearly free | Low: a photo of the sheet works anywhere, so the phone's location is always checked |
+| Code on a printed page (built) | A daily sheet at the desk or on the door, with one code per turn | Types the code for their turn | Nearly free | Medium: someone has to change the sheet every day; the phone's location is always checked |
 | NFC tag | A sticker on the door | Taps it with their phone, which opens the check-in page | A few euros per door | Low with a plain tag (it can be copied). High with a tag that signs every tap (e.g. NTAG 424 DNA "SUN" messages), which the API checks |
 | Rotating code on a display | A small screen (e-ink, ESP32 or an old tablet) showing a code or QR that changes every few minutes, like a TOTP from a secret shared with the API | Types the code in the app or scans it | Tens of euros per door | High: the code is only good for a few minutes, and only at that door |
-| Code on a printed page | A daily sheet at the desk or on the door, with one code per turn | Types the code for their turn | Nearly free | Medium: someone has to change the sheet every day |
 | Staff confirmation | Nobody, or the desk | Staff tick them as arrived on the "Reserva manual" calendar | Staff time | As good as the staff |
 
-What the ones residents start from would need:
+What the ones not built yet would need:
 
-- **Printed QR or NFC tag:** a public check-in address per facility (for example `/<council>/<facility>/entrada`) that, once signed in, finds the person's booking for the current turn and checks it in. Without a booking it could offer the flash booking.
+- **NFC tag:** a plain tag can hold the `/entrada` address of the printed QR today. A signed one needs the tag's key, stored per door, and a check of the tap counter so a recorded tap cannot be replayed.
 - **Rotating code:** a secret per door, kept like the reader keys, and the same TOTP check on the API (time step and a little drift). The display runs no LibreQuenda code beyond showing the code.
-- **Signed NFC:** the tag's key, stored per door, and a check of the tap counter so a recorded tap cannot be replayed.
-- **Any of them:** an optional location check (the phone within some metres of the facility's map pin) for the cheap options, which the resident has to allow and which never gets stored.
 
 ## Next: a personal home (the feed)
 

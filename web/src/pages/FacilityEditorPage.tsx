@@ -527,7 +527,7 @@ function Editor({ slug, facility, tenants, token }: { slug: string; facility: Ad
             </TabsList>
             <TabsContent value="details">{layout}</TabsContent>
             <TabsContent value="checkin">
-              <CheckinMethods slug={slug} facilityId={facility.id} facilitySlug={facility.slug} token={token} />
+              <CheckinMethods slug={slug} facilityId={facility.id} facilitySlug={facility.slug} token={token} timeZone={facility.timezone} />
             </TabsContent>
           </Tabs>
         )}

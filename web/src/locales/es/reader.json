@@ -56,6 +56,7 @@
     "booking_overlaps": "Ya tienes otra reserva a esa hora.",
     "facility_not_found": "Esta instalación no se puede reservar ahora.",
     "other": "Reserva en la aplicación o pregunta al personal.",
-    "use_booking_qr": "Ya tienes una reserva aquí: entra con el QR de esa reserva."
+    "use_booking_qr": "Ya tienes una reserva aquí: entra con el QR de esa reserva.",
+    "flash_off": "Aquí el ayuntamiento no permite reservar un turno libre en la puerta. Reserva en la aplicación."
   }
 }

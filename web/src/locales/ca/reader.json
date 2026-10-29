@@ -56,6 +56,7 @@
     "booking_overlaps": "Ja tens una altra reserva a aquella hora.",
     "facility_not_found": "Aquesta instal·lació no es pot reservar ara.",
     "other": "Reserva a l'aplicació o pregunta al personal.",
-    "use_booking_qr": "Ja tens una reserva aquí: entra amb el QR d'aquella reserva."
+    "use_booking_qr": "Ja tens una reserva aquí: entra amb el QR d'aquella reserva.",
+    "flash_off": "Aquí l'ajuntament no permet reservar un torn lliure a la porta. Reserva a l'aplicació."
   }
 }

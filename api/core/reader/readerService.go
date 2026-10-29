@@ -57,11 +57,13 @@ func (s *readerService) CheckIn(ctx context.Context, device model.GetCheckinDevi
 	if !ok {
 		return &CheckinResultDto{Result: ResultNotABooking}, nil
 	}
-	return s.bookingCheckIn(ctx, device, token)
+	return s.CheckInBooking(ctx, device.FacilityID, uuid.NullUUID{UUID: device.ID, Valid: true}, token)
 }
 
-// bookingCheckIn records the first entry of the booking with that check-in token.
-func (s *readerService) bookingCheckIn(ctx context.Context, device model.GetCheckinDeviceByKeyRow, token uuid.UUID) (*CheckinResultDto, *shared.ErrorResponse) {
+// CheckInBooking records the first entry of the booking with that check-in token
+// at the facility: from a reader (deviceId) or from the resident's own phone at
+// the door (no device). Every way in ends here, so the indicators stay the same.
+func (s *readerService) CheckInBooking(ctx context.Context, facilityId uuid.UUID, deviceId uuid.NullUUID, token uuid.UUID) (*CheckinResultDto, *shared.ErrorResponse) {
 	var queries = model.New(s.db)
 	var booking, err = queries.GetBookingByCheckinToken(ctx, token)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -71,12 +73,12 @@ func (s *readerService) bookingCheckIn(ctx context.Context, device model.GetChec
 		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.checkin_failed"}
 	}
 
-	var result = decide(booking, device.FacilityID, time.Now())
+	var result = decide(booking, facilityId, time.Now())
 	if result == ResultCheckedIn {
 		var checkedInAt sql.NullTime
 		checkedInAt, err = queries.MarkBookingCheckedIn(ctx, model.MarkBookingCheckedInParams{
 			ID:       booking.ID,
-			DeviceID: uuid.NullUUID{UUID: device.ID, Valid: true},
+			DeviceID: deviceId,
 		})
 		switch {
 		case errors.Is(err, sql.ErrNoRows): // another reader got there first
@@ -138,20 +140,39 @@ func (s *readerService) personalCheckIn(ctx context.Context, device model.GetChe
 		return nil, failed
 	}
 
-	var booking, refused = bookings.GetBookingsService(s.db).QuickBook(ctx, owner.UserID, device.FacilityID)
-	if refused != nil {
+	var response, flashErr = s.FlashCheckIn(ctx, owner.UserID, owner.FullName.String, device.FacilityID, uuid.NullUUID{UUID: device.ID, Valid: true})
+	if flashErr != nil || !response.Granted {
 		s.release(ctx, queries, qrToken)
+	}
+	return response, flashErr
+}
+
+// FlashCheckIn books the turn under way or about to start for the person
+// (bookings.QuickBook), within the usual rules, and records the entry, so the
+// turn never shows as a no-show. Refused when the council turned flash booking off.
+func (s *readerService) FlashCheckIn(ctx context.Context, userId uuid.UUID, fullName string, facilityId uuid.UUID, deviceId uuid.NullUUID) (*CheckinResultDto, *shared.ErrorResponse) {
+	var failed = &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.checkin_failed"}
+	var queries = model.New(s.db)
+	var allowed, err = queries.GetFacilityFlashBooking(ctx, facilityId)
+	if err != nil {
+		return nil, failed
+	}
+	if !allowed {
+		return &CheckinResultDto{Result: ResultNotBooked, Reason: ReasonFlashOff}, nil
+	}
+
+	var booking, refused = bookings.GetBookingsService(s.db).QuickBook(ctx, userId, facilityId)
+	if refused != nil {
 		if refused.Code == http.StatusInternalServerError {
 			return nil, failed
 		}
 		return &CheckinResultDto{Result: ResultNotBooked, Reason: strings.TrimPrefix(refused.Message, "errors.")}, nil
 	}
 
-	// booked: the entry is recorded as well, so the turn never shows as a no-show
 	var checkedInAt sql.NullTime
 	checkedInAt, err = queries.MarkBookingCheckedIn(ctx, model.MarkBookingCheckedInParams{
 		ID:       uuid.MustParse(booking.Id),
-		DeviceID: uuid.NullUUID{UUID: device.ID, Valid: true},
+		DeviceID: deviceId,
 	})
 	if err != nil {
 		shared.Logger.Error("failed to check in quick booking %s: %v", booking.Id, err)
@@ -162,7 +183,7 @@ func (s *readerService) personalCheckIn(ctx context.Context, device model.GetChe
 		Result:  ResultBooked,
 		Booking: &CheckinBookingDto{
 			FacilityName: booking.FacilityName,
-			FirstName:    firstName(owner.FullName.String),
+			FirstName:    firstName(fullName),
 			StartsAt:     booking.StartsAt,
 			EndsAt:       booking.EndsAt,
 			CheckedInAt:  &checkedInAt.Time,

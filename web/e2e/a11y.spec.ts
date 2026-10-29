@@ -49,6 +49,11 @@ const pages: { name: string; path: string; signedIn?: boolean }[] = [
   { name: 'council admin, bookings', path: '/lugo/admin?vista=reservas' },
   { name: 'facility editor', path: '/lugo/admin/facilities/f1' },
   { name: 'facility editor, check-in', path: '/lugo/admin/facilities/f1?vista=entrada' },
+  { name: 'check-in QR to print', path: '/lugo/admin/facilities/f1/imprimir?que=qr' },
+  { name: 'turn codes to print', path: '/lugo/admin/facilities/f1/imprimir?que=codigos&data=2026-11-03' },
+  { name: 'check-in at the door, printed QR', path: '/lugo/padel-1/entrada?c=9a1f6c2e-3b4d-4e5f-8a7b-1c2d3e4f5a6b' },
+  { name: 'check-in at the door, turn code', path: '/lugo/padel-1/entrada' },
+  { name: 'check-in at the door, signed out', path: '/lugo/padel-1/entrada', signedIn: false },
   { name: 'platform admin', path: '/admin' },
   { name: 'entrance reader', path: '/lector' },
   { name: 'accessibility statement', path: '/accesibilidade', signedIn: false },
@@ -127,6 +132,18 @@ for (const theme of ['light', 'dark'] as const) {
       const off = page.getByRole('switch', { checked: false })
       while ((await off.count()) > 0) await off.first().click()
       await expect(page.getByLabel('Tipo de etiqueta')).toBeVisible()
+      await expectAccessible(page)
+    })
+
+    test('check-in at the door, the answer and the offer to book', async ({ page, context }) => {
+      await context.grantPermissions(['geolocation'])
+      await context.setGeolocation({ latitude: 43.0097, longitude: -7.5568, accuracy: 10 })
+      await open(page, '/lugo/padel-1/entrada', { theme })
+      await page.getByLabel('Código da túa quenda').fill('482 913')
+      await page.getByRole('button', { name: 'Rexistrar entrada' }).click()
+      await expect(page.getByRole('status')).toContainText('Non tes reserva para esta quenda')
+      await expect(page.getByRole('button', { name: 'Reservar e entrar' })).toBeVisible()
+      await page.mouse.move(0, 0) // the button just clicked would be scanned in its hover colour
       await expectAccessible(page)
     })
 
@@ -212,6 +229,29 @@ test.describe('keyboard', () => {
     await page.keyboard.press('Space')
     await expect(nfc).toBeChecked()
     await expect(page.getByLabel('Tipo de etiqueta')).toBeVisible()
+  })
+
+  test('2.1.1 a turn code can be typed and sent with the keyboard alone', async ({ page, context }) => {
+    await context.grantPermissions(['geolocation'])
+    await context.setGeolocation({ latitude: 43.0097, longitude: -7.5568, accuracy: 10 })
+    await open(page, '/lugo/padel-1/entrada')
+    await page.getByLabel('Código da túa quenda').focus()
+    await page.keyboard.type('482913')
+    await page.keyboard.press('Enter')
+    await expect(page.getByRole('status')).toContainText('Non tes reserva para esta quenda')
+  })
+
+  test('the facility editor saves the check-in ways and keeps the old QR until asked', async ({ page }) => {
+    await open(page, '/lugo/admin/facilities/f1?vista=entrada')
+    await expect(page.getByRole('img', { name: 'QR para rexistrar a entrada na instalación' })).toBeVisible()
+    const save = page.getByRole('button', { name: 'Gardar', exact: true })
+    await expect(save).toBeDisabled() // nothing changed yet
+    await page.getByLabel('Distancia ao punto, en metros').fill('150')
+    await expect(save).toBeEnabled()
+    await page.getByRole('button', { name: 'Novo QR' }).click()
+    await expect(page.getByRole('dialog')).toContainText('deixan de funcionar')
+    await page.getByRole('button', { name: 'Manter este QR' }).click()
+    await expect(page.getByRole('dialog')).toBeHidden()
   })
 
   test('2.1.2 the account menu opens and closes from the keyboard', async ({ page }) => {
