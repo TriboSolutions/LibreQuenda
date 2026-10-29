@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, type Page, test } from '@playwright/test'
+import QRCode from 'qrcode'
 import { mockApp, type MockOptions } from './mocks'
 
 // Every automatable WCAG 2.1 A and AA rule, plus axe's AAA rules (7:1 contrast and the like).
@@ -91,6 +92,18 @@ for (const theme of ['light', 'dark'] as const) {
       await page.getByRole('menuitem', { name: /Reserva flash/ }).click()
       await expect(page.getByRole('dialog')).toBeVisible()
       await expect(page.getByRole('img', { name: /QR/ })).toBeVisible()
+      await page.waitForTimeout(300)
+      await expectAccessible(page, { overlay: true })
+    })
+
+    test('flash booking dialog, door QR tab with the camera off', async ({ page }) => {
+      await open(page, '/lugo', { theme })
+      await page.getByRole('button', { name: /Ana Pérez/ }).click()
+      await page.getByRole('menuitem', { name: /Reserva flash/ }).click()
+      await page.getByRole('tab', { name: 'QR da porta' }).click()
+      await page.getByRole('button', { name: 'Abrir a cámara' }).click()
+      await expect(page.getByRole('button', { name: 'Pechar a cámara' })).toBeVisible()
+      await page.mouse.move(0, 0)
       await page.waitForTimeout(300)
       await expectAccessible(page, { overlay: true })
     })
@@ -280,6 +293,42 @@ test.describe('keyboard', () => {
     await page.keyboard.type('482915')
     await page.keyboard.press('Enter')
     await expect(dialog.getByRole('status')).toContainText('Non tes reserva para esta quenda')
+  })
+
+  test('a flash booking reads the QR on the door with the phone camera', async ({ page, context }) => {
+    // the camera films the door's printed QR: a canvas stream stands in for it
+    const door = await QRCode.toDataURL('http://localhost:5179/lugo/padel-1/entrada?c=9a1f6c2e-3b4d-4e5f-8a7b-1c2d3e4f5a6b', { margin: 4, width: 480 })
+    await page.addInitScript((src) => {
+      navigator.mediaDevices.getUserMedia = async () => {
+        const canvas = document.createElement('canvas')
+        canvas.width = canvas.height = 480
+        const context = canvas.getContext('2d')!
+        const image = new Image()
+        image.src = src
+        await image.decode()
+        const draw = () => {
+          context.fillStyle = '#fff'
+          context.fillRect(0, 0, 480, 480)
+          context.drawImage(image, 0, 0)
+          requestAnimationFrame(draw)
+        }
+        draw()
+        return canvas.captureStream(10)
+      }
+    }, door)
+    await context.grantPermissions(['geolocation'])
+    await context.setGeolocation({ latitude: 43.0097, longitude: -7.5568, accuracy: 10 })
+    await open(page, '/lugo')
+    await page.getByRole('button', { name: /Ana Pérez/ }).click()
+    await page.getByRole('menuitem', { name: /Reserva flash/ }).click()
+    const dialog = page.getByRole('dialog')
+    await dialog.getByRole('tab', { name: 'QR da porta' }).click()
+    const sent = page.waitForRequest((r) => r.method() === 'POST' && r.url().endsWith('/tenants/lugo/facilities/padel-1/entrance'))
+    await dialog.getByRole('button', { name: 'Abrir a cámara' }).click()
+    const body = (await sent).postDataJSON()
+    expect(body).toMatchObject({ qr_token: '9a1f6c2e-3b4d-4e5f-8a7b-1c2d3e4f5a6b', book: true, latitude: 43.0097 })
+    await expect(dialog.getByRole('status')).toContainText('Non tes reserva para esta quenda')
+    await expect(dialog.getByRole('button', { name: 'Escanear de novo' })).toBeVisible()
   })
 
   test('2.1.1 a booking can be checked in from my bookings with the keyboard alone', async ({ page, context }) => {

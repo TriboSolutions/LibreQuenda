@@ -13,7 +13,7 @@
   },
   "camera": {
     "starting": "Starting the camera…",
-    "denied": "The reader needs the camera. Allow access in the browser and try again.",
+    "denied": "The camera is needed. Allow access in the browser and try again.",
     "missing": "No camera found on this device.",
     "insecure": "The camera only works when the page is served over https.",
     "failed": "The camera could not be started."

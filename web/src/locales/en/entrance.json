@@ -43,5 +43,12 @@
     "location_inaccurate": "Your location is not precise enough.",
     "too_far": "You are too far from the facility. Check in at the door.",
     "refused": "The check-in did not go through."
+  },
+  "scan": {
+    "open": "Open the camera",
+    "again": "Scan again",
+    "aim": "Point it at the QR printed on the door.",
+    "notOurs": "That QR is not a facility’s entrance. Point it at the one on the door.",
+    "cancel": "Close the camera"
   }
 }

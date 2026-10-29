@@ -13,7 +13,7 @@
   },
   "camera": {
     "starting": "Iniciando a cámara…",
-    "denied": "O lector necesita a cámara. Permite o acceso no navegador e téntao de novo.",
+    "denied": "Necesítase a cámara. Permite o acceso no navegador e téntao de novo.",
     "missing": "Non se atopou ningunha cámara neste dispositivo.",
     "insecure": "A cámara só funciona se a páxina se serve por https.",
     "failed": "Non foi posible iniciar a cámara."

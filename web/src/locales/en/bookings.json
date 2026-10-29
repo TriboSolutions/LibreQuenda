@@ -97,7 +97,7 @@
     },
     "printed_qr": {
       "title": "QR at the door",
-      "help": "Scan the QR printed on the facility’s door with your phone’s camera."
+      "help": "Open the camera and point it at the QR printed on the door. Then we ask for your location, which is checked and never stored."
     },
     "reader": {
       "title": "Your booking’s QR",

@@ -13,7 +13,7 @@
   },
   "camera": {
     "starting": "Iniciant la càmera…",
-    "denied": "El lector necessita la càmera. Permet l'accés al navegador i torna-ho a provar.",
+    "denied": "Cal la càmera. Permet l'accés al navegador i torna-ho a provar.",
     "missing": "No s'ha trobat cap càmera en aquest dispositiu.",
     "insecure": "La càmera només funciona si la pàgina se serveix per https.",
     "failed": "No s'ha pogut iniciar la càmera."

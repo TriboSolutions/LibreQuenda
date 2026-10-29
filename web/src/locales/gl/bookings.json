@@ -97,7 +97,7 @@
     },
     "printed_qr": {
       "title": "QR da porta",
-      "help": "Escanea coa cámara do móbil o QR impreso na porta da instalación."
+      "help": "Abre a cámara e apunta ao QR impreso na porta. Despois pedirémosche a localización, que se comproba e nunca se garda."
     },
     "reader": {
       "title": "QR da túa reserva",
