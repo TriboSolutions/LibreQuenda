@@ -129,7 +129,7 @@
     },
     "door": {
       "tab": "QR de la porta",
-      "help": "Obre la càmera i apunta al QR imprès a la porta: si el torn és lliure, es reserva i entres. Després et demanarem la ubicació, que es comprova i mai no es desa."
+      "help": "Obre la càmera i apunta al QR imprès a la porta: si el torn és lliure, es reserva i entres. Abans et demanarem la ubicació, que es comprova i mai no es desa."
     },
     "staff": {
       "tab": "Personal",

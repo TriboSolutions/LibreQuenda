@@ -49,6 +49,7 @@
     "again": "Escanear de novo",
     "aim": "Apunta ao QR impreso na porta.",
     "notOurs": "Ese QR non é o da entrada dunha instalación. Apunta ao da porta.",
-    "cancel": "Pechar a cámara"
+    "cancel": "Pechar a cámara",
+    "locating": "Comprobando onde estás…"
   }
 }

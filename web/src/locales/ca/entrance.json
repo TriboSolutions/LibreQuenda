@@ -49,6 +49,7 @@
     "again": "Tornar a escanejar",
     "aim": "Apunta al QR imprès a la porta.",
     "notOurs": "Aquest QR no és el de l’entrada d’una instal·lació. Apunta al de la porta.",
-    "cancel": "Tancar la càmera"
+    "cancel": "Tancar la càmera",
+    "locating": "Comprovant on ets…"
   }
 }

@@ -97,7 +97,7 @@
     },
     "printed_qr": {
       "title": "QR de la porta",
-      "help": "Obre la càmera i apunta al QR imprès a la porta. Després et demanarem la ubicació, que es comprova i mai no es desa."
+      "help": "Obre la càmera i apunta al QR imprès a la porta. Abans et demanarem la ubicació, que es comprova i mai no es desa."
     },
     "reader": {
       "title": "QR de la teva reserva",
