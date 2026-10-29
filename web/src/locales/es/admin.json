@@ -623,9 +623,9 @@
       "open": "Abrir las reservas de esta instalación"
     },
     "location": {
-      "help": "El QR impreso y los códigos de turno solo funcionan con el móvil a esta distancia del punto de la instalación en el mapa. El vecino tiene que permitir la ubicación, que se comprueba y nunca se guarda.",
+      "help": "El QR impreso y el código de entrada solo funcionan con el móvil a esta distancia del punto de la instalación en el mapa. El vecino tiene que permitir la ubicación, que se comprueba y nunca se guarda.",
       "radius": "Distancia al punto, en metros",
-      "noPin": "Sitúa la instalación en el mapa, en la pestaña Datos, para usar el QR impreso o los códigos de turno: la ubicación del móvil se compara con ese punto.",
+      "noPin": "Sitúa la instalación en el mapa, en la pestaña Datos, para usar el QR impreso o el código de entrada: la ubicación del móvil se compara con ese punto.",
       "required": "Quien entre con el QR impreso o un código de turno tiene que estar a menos de {{metres}} m de la instalación."
     },
     "loadError": "No se pudo cargar la configuración de entrada.",
