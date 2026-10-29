@@ -133,7 +133,9 @@
     },
     "staff": {
       "tab": "Persoal",
-      "help": "Pide no mostrador ou ao persoal que che reserven a quenda libre: poden facelo coa túa conta ou só co teu nome."
+      "help": "Pide no mostrador ou ao persoal que che reserven a quenda libre: poden facelo coa túa conta ou só co teu nome. Buscamos coa localización a instalación onde estás para amosarche a quen preguntar.",
+      "locate": "Buscar a quen preguntar",
+      "none": "Non estás preto de ningunha instalación con persoas de contacto."
     }
   }
 }

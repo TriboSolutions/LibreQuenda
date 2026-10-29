@@ -103,8 +103,10 @@
       "tab": "QR reader"
     },
     "staff": {
-      "help": "Tell the staff your name and they will mark you in.",
-      "tab": "Staff"
+      "help": "Tell the facility’s staff your name and they will mark you in.",
+      "tab": "Staff",
+      "contacts": "Contact people",
+      "helpWithContacts": "Tell the facility’s staff your name and they will mark you in. You can find them here:"
     },
     "ways": "How you check in"
   }

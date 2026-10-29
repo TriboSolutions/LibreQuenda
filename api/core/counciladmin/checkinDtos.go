@@ -1,5 +1,7 @@
 package counciladmin
 
+import "librequenda/checkin"
+
 // CheckinSettingsDto: the facility's ways in from the resident's phone (Entrada tab).
 type CheckinSettingsDto struct {
 	PrintedQr    bool   `json:"printed_qr"`
@@ -10,16 +12,19 @@ type CheckinSettingsDto struct {
 	FlashBooking bool   `json:"flash_booking"`
 	StaffConfirm bool   `json:"staff_confirm"` // staff mark the entry from the bookings calendar
 	QrReader     bool   `json:"qr_reader"`     // off: the readers refuse every QR, but stay set up
-	HasLocation  bool   `json:"has_location"`  // both ways need the facility's pin
+	// who residents ask on site (staff confirmation); not accounts
+	StaffContacts []checkin.StaffContact `json:"staff_contacts"`
+	HasLocation   bool                   `json:"has_location"` // both ways need the facility's pin
 }
 
 type CheckinSettingsInput struct {
-	PrintedQr    bool `json:"printed_qr"`
-	EntryCode    bool `json:"entry_code"`
-	RadiusM      int  `json:"radius_m"`
-	FlashBooking bool `json:"flash_booking"`
-	StaffConfirm bool `json:"staff_confirm"`
-	QrReader     bool `json:"qr_reader"`
+	PrintedQr     bool                   `json:"printed_qr"`
+	EntryCode     bool                   `json:"entry_code"`
+	RadiusM       int                    `json:"radius_m"`
+	FlashBooking  bool                   `json:"flash_booking"`
+	StaffConfirm  bool                   `json:"staff_confirm"`
+	QrReader      bool                   `json:"qr_reader"`
+	StaffContacts []checkin.StaffContact `json:"staff_contacts"`
 }
 
 const (

@@ -5,6 +5,7 @@ import { LocateFixed } from 'lucide-react'
 import { DoorQrScanner } from '@/components/DoorQrScanner'
 import { EntranceAnswer } from '@/components/EntranceAnswer'
 import { QrImage } from '@/components/QrImage'
+import { StaffContacts } from '@/components/StaffContacts'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -75,7 +76,7 @@ export function FlashBookingDialog({ open, onOpenChange }: { open: boolean; onOp
             <DoorQrScanner book />
           </TabsContent>
           <TabsContent value="staff">
-            <p className="text-muted-foreground">{t('flash.staff.help')}</p>
+            <StaffFlash />
           </TabsContent>
         </Tabs>
 
@@ -90,50 +91,97 @@ export function FlashBookingDialog({ open, onOpenChange }: { open: boolean; onOp
 }
 
 /** The entry code: find the facility by the phone's location, then book and check in with its code. */
-function CodeFlash() {
-  const { t } = useTranslation(['profile', 'entrance', 'reader'])
+type Place = Nearby['facilities'][number]
+
+/** The facilities the phone is at, by its location (checked, never stored), kept to those `keep` accepts. */
+function useNearby(keep: (place: Place) => boolean) {
+  const { t } = useTranslation('entrance')
   const auth = useAuth()
   const token = auth.user?.access_token
   const [busy, setBusy] = useState(false)
   const [position, setPosition] = useState<Position | null>(null)
-  const [places, setPlaces] = useState<Nearby['facilities'] | null>(null)
-  const [chosen, setChosen] = useState('')
-  const [code, setCode] = useState('')
-  const [result, setResult] = useState<EntranceResult | null>(null)
+  const [places, setPlaces] = useState<Place[] | null>(null)
   const [problem, setProblem] = useState<string | null>(null)
 
   const find = async () => {
     if (!token) return
     setBusy(true)
     setProblem(null)
-    setResult(null)
     try {
       let where: Position
       try {
         where = await locate()
       } catch (e) {
-        setProblem(t(`entrance:location.${e instanceof Error ? e.message : 'unavailable'}`))
+        setProblem(t(`location.${e instanceof Error ? e.message : 'unavailable'}`))
         return
       }
       const answer = await api.entrance.nearby(token, where)
       if (answer.result) {
-        setProblem(t(`entrance:result.${answer.result}`))
+        setProblem(t(`result.${answer.result}`))
         return
       }
       setPosition(where)
-      setPlaces(answer.facilities)
-      setChosen(answer.facilities[0] ? `${answer.facilities[0].tenant_slug}/${answer.facilities[0].facility_slug}` : '')
+      setPlaces(answer.facilities.filter(keep))
     } catch (e) {
       setProblem(e instanceof Error ? e.message : String(e))
     } finally {
       setBusy(false)
     }
   }
+  return { token, busy, setBusy, position, places, problem, setProblem, find }
+}
+
+/** Staff to ask on site: the people the council lists for the facility the phone is at. */
+function StaffFlash() {
+  const { t } = useTranslation('profile')
+  const { busy, places, problem, find } = useNearby((place) => place.staff_contacts.length > 0)
+  return (
+    <div className="grid gap-4">
+      <p className="text-muted-foreground">{t('flash.staff.help')}</p>
+      {places === null || places.length === 0 ? (
+        <div className="grid gap-3">
+          {places && <p className="rounded-md border border-dashed px-3 py-2">{t('flash.staff.none')}</p>}
+          <div>
+            <Button type="button" variant={places ? 'outline' : 'default'} disabled={busy} onClick={() => void find()}>
+              <LocateFixed aria-hidden />
+              {busy ? t('flash.code.locating') : places ? t('flash.code.again') : t('flash.staff.locate')}
+            </Button>
+          </div>
+        </div>
+      ) : (
+        places.map((place) => (
+          <section key={`${place.tenant_slug}/${place.facility_slug}`} className="grid gap-2">
+            <h3 className="font-medium">
+              {place.facility_name} <span className="font-normal text-muted-foreground">· {place.tenant_name}</span>
+            </h3>
+            <StaffContacts contacts={place.staff_contacts} />
+          </section>
+        ))
+      )}
+      <EntranceAnswer result={null} problem={problem} />
+    </div>
+  )
+}
+
+function CodeFlash() {
+  const { t } = useTranslation(['profile', 'entrance', 'reader'])
+  const { token, busy, setBusy, position, places, problem, setProblem, find: locateAndFind } = useNearby((place) => place.entry_code)
+  const [chosen, setChosen] = useState('')
+  const [code, setCode] = useState('')
+  const [result, setResult] = useState<EntranceResult | null>(null)
+
+  const find = async () => {
+    setResult(null)
+    await locateAndFind()
+  }
+  // the nearest is chosen as soon as they are found
+  const first = places?.[0]
+  const chosenOrFirst = chosen || (first ? `${first.tenant_slug}/${first.facility_slug}` : '')
 
   const submit = async (event: FormEvent) => {
     event.preventDefault()
-    if (!token || !position || !chosen) return
-    const [tenant, facility] = chosen.split('/')
+    if (!token || !position || !chosenOrFirst) return
+    const [tenant, facility] = chosenOrFirst.split('/')
     setBusy(true)
     setProblem(null)
     try {
@@ -173,7 +221,7 @@ function CodeFlash() {
               const value = `${place.tenant_slug}/${place.facility_slug}`
               return (
                 <label key={value} className="flex min-h-11 items-center gap-3 rounded-md border px-3 py-2 has-checked:border-primary">
-                  <input type="radio" name="flash-facility" value={value} checked={chosen === value} onChange={() => setChosen(value)} className="size-4 accent-primary" />
+                  <input type="radio" name="flash-facility" value={value} checked={chosenOrFirst === value} onChange={() => setChosen(value)} className="size-4 accent-primary" />
                   <span>
                     {place.facility_name} <span className="text-muted-foreground">· {place.tenant_name}</span>
                   </span>

@@ -133,7 +133,9 @@
     },
     "staff": {
       "tab": "Staff",
-      "help": "Ask at the desk or the staff to book the free turn for you: they can do it with your account or just your name."
+      "help": "Ask at the desk or the staff to book the free turn for you: they can do it with your account or just your name. We find the facility you are at by your location to show you who to ask.",
+      "locate": "Find who to ask",
+      "none": "You are not near any facility with contact people."
     }
   }
 }

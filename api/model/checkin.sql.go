@@ -8,6 +8,7 @@ package model
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"time"
 
 	"github.com/google/uuid"
@@ -268,7 +269,8 @@ SELECT
     c.radius_m,
     c.flash_booking,
     c.staff_confirm,
-    c.qr_reader
+    c.qr_reader,
+    c.staff_contacts
 FROM
     facility_checkin c
     JOIN facility f ON f.id = c.facility_id
@@ -283,14 +285,15 @@ type GetFacilityCheckinParams struct {
 }
 
 type GetFacilityCheckinRow struct {
-	PrintedQr    bool      `json:"printed_qr"`
-	QrToken      uuid.UUID `json:"qr_token"`
-	EntryCode    bool      `json:"entry_code"`
-	CodeSecret   []byte    `json:"code_secret"`
-	RadiusM      int32     `json:"radius_m"`
-	FlashBooking bool      `json:"flash_booking"`
-	StaffConfirm bool      `json:"staff_confirm"`
-	QrReader     bool      `json:"qr_reader"`
+	PrintedQr     bool            `json:"printed_qr"`
+	QrToken       uuid.UUID       `json:"qr_token"`
+	EntryCode     bool            `json:"entry_code"`
+	CodeSecret    []byte          `json:"code_secret"`
+	RadiusM       int32           `json:"radius_m"`
+	FlashBooking  bool            `json:"flash_booking"`
+	StaffConfirm  bool            `json:"staff_confirm"`
+	QrReader      bool            `json:"qr_reader"`
+	StaffContacts json.RawMessage `json:"staff_contacts"`
 }
 
 func (q *Queries) GetFacilityCheckin(ctx context.Context, arg GetFacilityCheckinParams) (GetFacilityCheckinRow, error) {
@@ -305,6 +308,7 @@ func (q *Queries) GetFacilityCheckin(ctx context.Context, arg GetFacilityCheckin
 		&i.FlashBooking,
 		&i.StaffConfirm,
 		&i.QrReader,
+		&i.StaffContacts,
 	)
 	return i, err
 }
@@ -510,7 +514,7 @@ func (q *Queries) ListCheckinDevices(ctx context.Context, arg ListCheckinDevices
 	return items, nil
 }
 
-const listFlashCodeFacilities = `-- name: ListFlashCodeFacilities :many
+const listNearbyFacilities = `-- name: ListNearbyFacilities :many
 SELECT
     f.name,
     f.slug,
@@ -518,41 +522,56 @@ SELECT
     f.longitude::FLOAT8 AS longitude,
     t.name AS tenant_name,
     t.slug AS tenant_slug,
-    c.radius_m
+    c.radius_m,
+    (c.entry_code AND c.flash_booking)::BOOLEAN AS entry_code,
+    c.staff_confirm,
+    c.staff_contacts,
+    -- who to ask without staff contacts: the facility's, else the council's
+    f.contact_phone AS facility_phone,
+    f.contact_email AS facility_email,
+    t.contact_phone AS tenant_phone,
+    t.contact_email AS tenant_email
 FROM
     facility f
     JOIN tenant t ON t.id = f.tenant_id
     JOIN facility_checkin c ON c.facility_id = f.id
 WHERE
-    c.entry_code = TRUE
-    AND c.flash_booking = TRUE
+    ((c.entry_code AND c.flash_booking) OR c.staff_confirm)
     AND f.latitude IS NOT NULL
     AND f.longitude IS NOT NULL
     AND f.is_active = TRUE
     AND t.is_active = TRUE
 `
 
-type ListFlashCodeFacilitiesRow struct {
-	Name       string  `json:"name"`
-	Slug       string  `json:"slug"`
-	Latitude   float64 `json:"latitude"`
-	Longitude  float64 `json:"longitude"`
-	TenantName string  `json:"tenant_name"`
-	TenantSlug string  `json:"tenant_slug"`
-	RadiusM    int32   `json:"radius_m"`
+type ListNearbyFacilitiesRow struct {
+	Name          string          `json:"name"`
+	Slug          string          `json:"slug"`
+	Latitude      float64         `json:"latitude"`
+	Longitude     float64         `json:"longitude"`
+	TenantName    string          `json:"tenant_name"`
+	TenantSlug    string          `json:"tenant_slug"`
+	RadiusM       int32           `json:"radius_m"`
+	EntryCode     bool            `json:"entry_code"`
+	StaffConfirm  bool            `json:"staff_confirm"`
+	StaffContacts json.RawMessage `json:"staff_contacts"`
+	FacilityPhone sql.NullString  `json:"facility_phone"`
+	FacilityEmail sql.NullString  `json:"facility_email"`
+	TenantPhone   sql.NullString  `json:"tenant_phone"`
+	TenantEmail   sql.NullString  `json:"tenant_email"`
 }
 
-// Flash booking with the entry code: the facilities that take it and book free
-// turns at the door. The phone's distance to each is checked in the API.
-func (q *Queries) ListFlashCodeFacilities(ctx context.Context) ([]ListFlashCodeFacilitiesRow, error) {
-	rows, err := q.db.QueryContext(ctx, listFlashCodeFacilities)
+// What the flash booking can find by the phone's location: the facilities that
+// book with their entry code, or have staff confirmation (someone to ask). The phone's
+// distance to each is checked in the API.
+func (q *Queries) ListNearbyFacilities(ctx context.Context) ([]ListNearbyFacilitiesRow, error) {
+	rows, err := q.db.QueryContext(ctx, listNearbyFacilities)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ListFlashCodeFacilitiesRow
+	var items []ListNearbyFacilitiesRow
 	for rows.Next() {
-		var i ListFlashCodeFacilitiesRow
+		var i ListNearbyFacilitiesRow
 		if err := rows.Scan(
 			&i.Name,
 			&i.Slug,
@@ -561,6 +580,13 @@ func (q *Queries) ListFlashCodeFacilities(ctx context.Context) ([]ListFlashCodeF
 			&i.TenantName,
 			&i.TenantSlug,
 			&i.RadiusM,
+			&i.EntryCode,
+			&i.StaffConfirm,
+			&i.StaffContacts,
+			&i.FacilityPhone,
+			&i.FacilityEmail,
+			&i.TenantPhone,
+			&i.TenantEmail,
 		); err != nil {
 			return nil, err
 		}
@@ -722,9 +748,10 @@ SET
     flash_booking = $4,
     staff_confirm = $5,
     qr_reader     = $6,
+    staff_contacts = $7,
     updated_at    = NOW()
 WHERE
-    facility_id = $7
+    facility_id = $8
 RETURNING
     printed_qr,
     qr_token,
@@ -733,28 +760,31 @@ RETURNING
     radius_m,
     flash_booking,
     staff_confirm,
-    qr_reader
+    qr_reader,
+    staff_contacts
 `
 
 type UpdateFacilityCheckinParams struct {
-	PrintedQr    bool      `json:"printed_qr"`
-	EntryCode    bool      `json:"entry_code"`
-	RadiusM      int32     `json:"radius_m"`
-	FlashBooking bool      `json:"flash_booking"`
-	StaffConfirm bool      `json:"staff_confirm"`
-	QrReader     bool      `json:"qr_reader"`
-	FacilityID   uuid.UUID `json:"facility_id"`
+	PrintedQr     bool            `json:"printed_qr"`
+	EntryCode     bool            `json:"entry_code"`
+	RadiusM       int32           `json:"radius_m"`
+	FlashBooking  bool            `json:"flash_booking"`
+	StaffConfirm  bool            `json:"staff_confirm"`
+	QrReader      bool            `json:"qr_reader"`
+	StaffContacts json.RawMessage `json:"staff_contacts"`
+	FacilityID    uuid.UUID       `json:"facility_id"`
 }
 
 type UpdateFacilityCheckinRow struct {
-	PrintedQr    bool      `json:"printed_qr"`
-	QrToken      uuid.UUID `json:"qr_token"`
-	EntryCode    bool      `json:"entry_code"`
-	CodeSecret   []byte    `json:"code_secret"`
-	RadiusM      int32     `json:"radius_m"`
-	FlashBooking bool      `json:"flash_booking"`
-	StaffConfirm bool      `json:"staff_confirm"`
-	QrReader     bool      `json:"qr_reader"`
+	PrintedQr     bool            `json:"printed_qr"`
+	QrToken       uuid.UUID       `json:"qr_token"`
+	EntryCode     bool            `json:"entry_code"`
+	CodeSecret    []byte          `json:"code_secret"`
+	RadiusM       int32           `json:"radius_m"`
+	FlashBooking  bool            `json:"flash_booking"`
+	StaffConfirm  bool            `json:"staff_confirm"`
+	QrReader      bool            `json:"qr_reader"`
+	StaffContacts json.RawMessage `json:"staff_contacts"`
 }
 
 // Row-level security: runs as the facility's council (db.WithTenant).
@@ -766,6 +796,7 @@ func (q *Queries) UpdateFacilityCheckin(ctx context.Context, arg UpdateFacilityC
 		arg.FlashBooking,
 		arg.StaffConfirm,
 		arg.QrReader,
+		arg.StaffContacts,
 		arg.FacilityID,
 	)
 	var i UpdateFacilityCheckinRow
@@ -778,6 +809,7 @@ func (q *Queries) UpdateFacilityCheckin(ctx context.Context, arg UpdateFacilityC
 		&i.FlashBooking,
 		&i.StaffConfirm,
 		&i.QrReader,
+		&i.StaffContacts,
 	)
 	return i, err
 }

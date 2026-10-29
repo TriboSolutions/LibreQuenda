@@ -621,7 +621,18 @@
       "cost": "staff time",
       "cheat": "as good as the staff",
       "help": "Open a booking in the manual booking tab and press “Mark as in”, from 15 minutes before the start until the turn ends. If you picked the wrong booking, you can undo it for 5 minutes.",
-      "open": "Open this facility’s bookings"
+      "open": "Open this facility’s bookings",
+      "contactsTitle": "Contact people",
+      "contactsHelp": "Who residents can ask at the facility to check in or book a free turn. They need no account: only what you write here is shown.",
+      "contactN": "Person {{n}}",
+      "optional": "optional",
+      "place": "Where to find them",
+      "placePlaceholder": "For example: reception, at the entrance",
+      "remove": "Remove {{name}}",
+      "add": "Add a person",
+      "contactName": "Name",
+      "contactPhone": "Phone",
+      "fallback": "With none, the facility’s contact is shown, or the council’s if it has none."
     },
     "location": {
       "help": "The printed QR and the entry code only work with the phone this close to the facility’s map pin. The resident has to allow their location, which is checked and never stored.",

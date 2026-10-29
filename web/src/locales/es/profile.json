@@ -133,7 +133,9 @@
     },
     "staff": {
       "tab": "Personal",
-      "help": "Pide en el mostrador o al personal que te reserven el turno libre: pueden hacerlo con tu cuenta o solo con tu nombre."
+      "help": "Pide en el mostrador o al personal que te reserven el turno libre: pueden hacerlo con tu cuenta o solo con tu nombre. Buscamos con la ubicación la instalación donde estás para mostrarte a quién preguntar.",
+      "locate": "Buscar a quién preguntar",
+      "none": "No estás cerca de ninguna instalación con personas de contacto."
     }
   }
 }

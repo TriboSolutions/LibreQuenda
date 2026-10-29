@@ -621,7 +621,18 @@
       "cost": "tiempo del personal",
       "cheat": "tanto como el personal",
       "help": "Abre una reserva en la pestaña de reserva manual y pulsa «Marcar entrada», desde 15 minutos antes del comienzo hasta que termina el turno. Si te equivocas de reserva, puedes deshacerlo durante 5 minutos.",
-      "open": "Abrir las reservas de esta instalación"
+      "open": "Abrir las reservas de esta instalación",
+      "contactsTitle": "Personas de contacto",
+      "contactsHelp": "A quién puede preguntar un vecino en la instalación para registrar la entrada o reservar un turno libre. No necesitan cuenta: solo se muestra lo que pongas aquí.",
+      "contactN": "Persona {{n}}",
+      "optional": "opcional",
+      "place": "Dónde encontrarla",
+      "placePlaceholder": "Por ejemplo: conserjería, en la entrada",
+      "remove": "Quitar a {{name}}",
+      "add": "Añadir persona",
+      "contactName": "Nombre",
+      "contactPhone": "Teléfono",
+      "fallback": "Sin ninguna, se muestra el contacto de la instalación o, si no tiene, el del ayuntamiento."
     },
     "location": {
       "help": "El QR impreso y el código de entrada solo funcionan con el móvil a esta distancia del punto de la instalación en el mapa. El vecino tiene que permitir la ubicación, que se comprueba y nunca se guarda.",

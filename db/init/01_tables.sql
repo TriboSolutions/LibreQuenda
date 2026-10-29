@@ -256,6 +256,7 @@ CREATE TABLE facility_checkin (
     flash_booking BOOLEAN      NOT NULL DEFAULT TRUE,
     staff_confirm BOOLEAN      NOT NULL DEFAULT FALSE,              -- staff mark the entry from the calendar
     qr_reader     BOOLEAN      NOT NULL DEFAULT TRUE,               -- off: the readers refuse every QR, but stay set up (broken, switched off)
+    staff_contacts JSONB       NOT NULL DEFAULT '[]'::JSONB,        -- who residents ask on site: [{name, phone, place}], not accounts
     updated_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW()
 );
 

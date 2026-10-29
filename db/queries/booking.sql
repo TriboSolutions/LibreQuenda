@@ -76,6 +76,9 @@ SELECT
     (COALESCE(c.printed_qr, FALSE) AND f.latitude IS NOT NULL)::BOOLEAN AS printed_qr,
     (COALESCE(c.entry_code, FALSE) AND f.latitude IS NOT NULL)::BOOLEAN AS entry_code,
     COALESCE(c.staff_confirm, FALSE)::BOOLEAN AS staff_confirm,
+    COALESCE(c.staff_contacts, '[]'::JSONB) AS staff_contacts,
+    t.contact_phone AS tenant_phone, -- who to ask without staff contacts: the facility's, else the council's
+    t.contact_email AS tenant_email,
     f.id   AS facility_id,
     f.name AS facility_name,
     f.slug AS facility_slug,

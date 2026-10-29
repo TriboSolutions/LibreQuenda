@@ -171,8 +171,8 @@ func (s *entranceService) bookingToken(ctx context.Context, userId, facilityId u
 	return token, true, nil
 }
 
-// Nearby: for a flash booking with the entry code, the facilities that take it
-// and are within their radius of the phone, nearest first.
+// Nearby: for a flash booking, the facilities within their radius of the phone
+// that book with their entry code or have staff to ask, nearest first.
 func (s *entranceService) Nearby(ctx context.Context, input NearbyInput) (*NearbyDto, *shared.ErrorResponse) {
 	var response = &NearbyDto{Facilities: []NearbyFacilityDto{}}
 	var position *checkin.Position
@@ -184,7 +184,7 @@ func (s *entranceService) Nearby(ctx context.Context, input NearbyInput) (*Nearb
 		response.Result = problem
 		return response, nil
 	}
-	var rows, err = model.New(s.db).ListFlashCodeFacilities(ctx)
+	var rows, err = model.New(s.db).ListNearbyFacilities(ctx)
 	if err != nil {
 		return nil, failed
 	}
@@ -193,9 +193,9 @@ func (s *entranceService) Nearby(ctx context.Context, input NearbyInput) (*Nearb
 }
 
 // nearby keeps the facilities the position could be at, nearest first.
-func nearby(rows []model.ListFlashCodeFacilitiesRow, position checkin.Position) []NearbyFacilityDto {
+func nearby(rows []model.ListNearbyFacilitiesRow, position checkin.Position) []NearbyFacilityDto {
 	type near struct {
-		row      model.ListFlashCodeFacilitiesRow
+		row      model.ListNearbyFacilitiesRow
 		distance float64
 	}
 	var found []near
@@ -207,7 +207,24 @@ func nearby(rows []model.ListFlashCodeFacilitiesRow, position checkin.Position) 
 	sort.Slice(found, func(i, j int) bool { return found[i].distance < found[j].distance })
 	var facilities = make([]NearbyFacilityDto, 0, len(found))
 	for _, f := range found {
-		facilities = append(facilities, NearbyFacilityDto{FacilityName: f.row.Name, FacilitySlug: f.row.Slug, TenantName: f.row.TenantName, TenantSlug: f.row.TenantSlug})
+		facilities = append(facilities, NearbyFacilityDto{
+			FacilityName:  f.row.Name,
+			FacilitySlug:  f.row.Slug,
+			TenantName:    f.row.TenantName,
+			TenantSlug:    f.row.TenantSlug,
+			EntryCode:     f.row.EntryCode,
+			StaffContacts: staffContacts(f.row),
+		})
 	}
 	return facilities
+}
+
+// staffContacts: who to ask on site, with staff confirmation on; without staff
+// contacts, the facility's own contact, else the council's.
+func staffContacts(row model.ListNearbyFacilitiesRow) []checkin.StaffContact {
+	if !row.StaffConfirm {
+		return []checkin.StaffContact{}
+	}
+	return checkin.StaffOrFallback(row.StaffContacts, row.Name, row.FacilityPhone.String, row.FacilityEmail.String,
+		row.TenantName, row.TenantPhone.String, row.TenantEmail.String)
 }

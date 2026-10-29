@@ -8,6 +8,7 @@ package model
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"time"
 
 	"github.com/google/uuid"
@@ -260,6 +261,9 @@ SELECT
     (COALESCE(c.printed_qr, FALSE) AND f.latitude IS NOT NULL)::BOOLEAN AS printed_qr,
     (COALESCE(c.entry_code, FALSE) AND f.latitude IS NOT NULL)::BOOLEAN AS entry_code,
     COALESCE(c.staff_confirm, FALSE)::BOOLEAN AS staff_confirm,
+    COALESCE(c.staff_contacts, '[]'::JSONB) AS staff_contacts,
+    t.contact_phone AS tenant_phone, -- who to ask without staff contacts: the facility's, else the council's
+    t.contact_email AS tenant_email,
     f.id   AS facility_id,
     f.name AS facility_name,
     f.slug AS facility_slug,
@@ -280,25 +284,28 @@ ORDER BY
 `
 
 type ListBookingsByUserRow struct {
-	ID             uuid.UUID     `json:"id"`
-	StartsAt       time.Time     `json:"starts_at"`
-	EndsAt         time.Time     `json:"ends_at"`
-	Status         BookingStatus `json:"status"`
-	CheckinToken   uuid.UUID     `json:"checkin_token"`
-	CheckedInAt    sql.NullTime  `json:"checked_in_at"`
-	ReaderAtStart  bool          `json:"reader_at_start"`
-	HasReader      bool          `json:"has_reader"`
-	PrintedQr      bool          `json:"printed_qr"`
-	EntryCode      bool          `json:"entry_code"`
-	StaffConfirm   bool          `json:"staff_confirm"`
-	FacilityID     uuid.UUID     `json:"facility_id"`
-	FacilityName   string        `json:"facility_name"`
-	FacilitySlug   string        `json:"facility_slug"`
-	MinCancelHours int32         `json:"min_cancel_hours"`
-	TenantSlug     string        `json:"tenant_slug"`
-	TenantName     string        `json:"tenant_name"`
-	FacilitySport  string        `json:"facility_sport"`
-	Facility       Facility      `json:"facility"`
+	ID             uuid.UUID       `json:"id"`
+	StartsAt       time.Time       `json:"starts_at"`
+	EndsAt         time.Time       `json:"ends_at"`
+	Status         BookingStatus   `json:"status"`
+	CheckinToken   uuid.UUID       `json:"checkin_token"`
+	CheckedInAt    sql.NullTime    `json:"checked_in_at"`
+	ReaderAtStart  bool            `json:"reader_at_start"`
+	HasReader      bool            `json:"has_reader"`
+	PrintedQr      bool            `json:"printed_qr"`
+	EntryCode      bool            `json:"entry_code"`
+	StaffConfirm   bool            `json:"staff_confirm"`
+	StaffContacts  json.RawMessage `json:"staff_contacts"`
+	TenantPhone    sql.NullString  `json:"tenant_phone"`
+	TenantEmail    sql.NullString  `json:"tenant_email"`
+	FacilityID     uuid.UUID       `json:"facility_id"`
+	FacilityName   string          `json:"facility_name"`
+	FacilitySlug   string          `json:"facility_slug"`
+	MinCancelHours int32           `json:"min_cancel_hours"`
+	TenantSlug     string          `json:"tenant_slug"`
+	TenantName     string          `json:"tenant_name"`
+	FacilitySport  string          `json:"facility_sport"`
+	Facility       Facility        `json:"facility"`
 }
 
 // reader_at_start: a QR reader was there when the turn began, so a missing
@@ -324,6 +331,9 @@ func (q *Queries) ListBookingsByUser(ctx context.Context, userID uuid.NullUUID) 
 			&i.PrintedQr,
 			&i.EntryCode,
 			&i.StaffConfirm,
+			&i.StaffContacts,
+			&i.TenantPhone,
+			&i.TenantEmail,
 			&i.FacilityID,
 			&i.FacilityName,
 			&i.FacilitySlug,

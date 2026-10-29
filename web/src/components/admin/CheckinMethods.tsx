@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
-import { Hash, MonitorSmartphone, Nfc, Printer, QrCode, RefreshCw, ScanLine, UserCheck } from 'lucide-react'
+import { Hash, MonitorSmartphone, Nfc, Printer, QrCode, RefreshCw, ScanLine, UserCheck, UserPlus } from 'lucide-react'
 import { CheckinDevices } from '@/components/admin/CheckinDevices'
 import { QrImage } from '@/components/QrImage'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
 import { useAsync } from '@/hooks/useAsync'
-import { api, type CheckinSettings, type CheckinSettingsInput } from '@/lib/api'
+import { api, type CheckinSettings, type CheckinSettingsInput, type StaffContact } from '@/lib/api'
 import { entranceUrl } from '@/lib/entrance'
 
 type Props = { slug: string; facilityId: string; facilitySlug: string; token: string }
@@ -45,6 +45,7 @@ function toInput(settings: CheckinSettings): CheckinSettingsInput {
     flash_booking: settings.flash_booking,
     staff_confirm: settings.staff_confirm,
     qr_reader: settings.qr_reader,
+    staff_contacts: settings.staff_contacts,
   }
 }
 
@@ -247,12 +248,15 @@ function Methods({ slug, facilityId, facilitySlug, token, initial }: Props & { i
       </div>
     ),
     staff: (
-      <p className="text-sm text-muted-foreground">
-        {t('admin:checkin.staff.help')}{' '}
-        <Link to={`/${slug}/admin?vista=reservas&instalacion=${facilityId}`} className="text-primary underline underline-offset-4">
-          {t('admin:checkin.staff.open')}
-        </Link>
-      </p>
+      <>
+        <p className="text-sm text-muted-foreground">
+          {t('admin:checkin.staff.help')}{' '}
+          <Link to={`/${slug}/admin?vista=reservas&instalacion=${facilityId}`} className="text-primary underline underline-offset-4">
+            {t('admin:checkin.staff.open')}
+          </Link>
+        </p>
+        <StaffContactsEditor contacts={draft.staff_contacts} onChange={(contacts) => set('staff_contacts', contacts)} />
+      </>
     ),
   }
 
@@ -384,6 +388,69 @@ function Methods({ slug, facilityId, facilitySlug, token, initial }: Props & { i
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    </div>
+  )
+}
+
+const MAX_CONTACTS = 10
+
+/** Who residents ask on site: name, phone and where to find them. Not accounts; saved with the tab. */
+function StaffContactsEditor({ contacts, onChange }: { contacts: StaffContact[]; onChange: (contacts: StaffContact[]) => void }) {
+  const { t } = useTranslation('admin')
+  const update = (i: number, field: keyof StaffContact, value: string) =>
+    onChange(contacts.map((contact, j) => (j === i ? { ...contact, [field]: value } : contact)))
+  return (
+    <div className="grid gap-3">
+      <div>
+        <h3 className="font-medium">{t('checkin.staff.contactsTitle')}</h3>
+        <p className="text-sm text-muted-foreground">{t('checkin.staff.contactsHelp')} {t('checkin.staff.fallback')}</p>
+      </div>
+      {contacts.map((contact, i) => (
+        <fieldset key={i} className="grid gap-3 rounded-md border p-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
+          <legend className="sr-only">{t('checkin.staff.contactN', { n: i + 1 })}</legend>
+          <div className="grid gap-1.5">
+            <Label htmlFor={`ci-contact-${i}-name`}>{t('checkin.staff.contactName')}</Label>
+            <Input id={`ci-contact-${i}-name`} required maxLength={80} value={contact.name} onChange={(e) => update(i, 'name', e.target.value)} />
+          </div>
+          <div className="grid gap-1.5">
+            <Label htmlFor={`ci-contact-${i}-phone`}>
+              {t('checkin.staff.contactPhone')} <span className="font-normal text-muted-foreground">({t('checkin.staff.optional')})</span>
+            </Label>
+            <Input
+              id={`ci-contact-${i}-phone`}
+              type="tel"
+              autoComplete="off"
+              maxLength={30}
+              value={contact.phone}
+              onChange={(e) => update(i, 'phone', e.target.value)}
+              className="num"
+            />
+          </div>
+          <Button type="button" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => onChange(contacts.filter((_, j) => j !== i))}>
+            {t('checkin.staff.remove', { name: contact.name || t('checkin.staff.contactN', { n: i + 1 }) })}
+          </Button>
+          <div className="grid gap-1.5 sm:col-span-3">
+            <Label htmlFor={`ci-contact-${i}-place`}>
+              {t('checkin.staff.place')} <span className="font-normal text-muted-foreground">({t('checkin.staff.optional')})</span>
+            </Label>
+            <Input
+              id={`ci-contact-${i}-place`}
+              maxLength={120}
+              placeholder={t('checkin.staff.placePlaceholder')}
+              value={contact.place}
+              onChange={(e) => update(i, 'place', e.target.value)}
+            />
+          </div>
+        </fieldset>
+      ))}
+      {contacts.length < MAX_CONTACTS && (
+        <div>
+          <Button type="button" variant="outline" onClick={() => onChange([...contacts, { name: '', phone: '', place: '' }])}>
+            <UserPlus aria-hidden />
+            {t('checkin.staff.add')}
+          </Button>
+        </div>
+      )}
     </div>
   )
 }

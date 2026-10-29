@@ -621,7 +621,18 @@
       "cost": "tempo do persoal",
       "cheat": "tanto coma o persoal",
       "help": "Abre unha reserva na lapela de reserva manual e preme «Marcar entrada», desde 15 minutos antes do comezo ata que remata a quenda. Se te equivocas de reserva, podes desfacelo durante 5 minutos.",
-      "open": "Abrir as reservas desta instalación"
+      "open": "Abrir as reservas desta instalación",
+      "contactsTitle": "Persoas de contacto",
+      "contactsHelp": "A quen pode preguntar un veciño na instalación para rexistrar a entrada ou reservar unha quenda libre. Non precisan conta: só se amosa o que poñas aquí.",
+      "contactN": "Persoa {{n}}",
+      "optional": "opcional",
+      "place": "Onde atopala",
+      "placePlaceholder": "Por exemplo: conserxería, á entrada",
+      "remove": "Quitar a {{name}}",
+      "add": "Engadir persoa",
+      "contactName": "Nome",
+      "contactPhone": "Teléfono",
+      "fallback": "Sen ningunha, amósase o contacto da instalación ou, se non ten, o do concello."
     },
     "location": {
       "help": "O QR impreso e o código de entrada só funcionan co móbil a esta distancia do punto da instalación no mapa. O veciño ten que permitir a localización, que se comproba e nunca se garda.",

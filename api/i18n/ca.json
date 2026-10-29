@@ -153,7 +153,9 @@
     "staff_checkin_off": "Aquesta instal·lació no permet marcar l'entrada des del calendari. Activa-ho a la pestanya Entrada.",
     "staff_checkin_too_early": "Encara és d'hora: l'entrada es pot marcar des de 15 minuts abans del començament.",
     "staff_checkin_ended": "El torn ja ha acabat i l'entrada ja no es pot marcar.",
-    "staff_checkin_undo_expired": "Ja no es pot desfer: només es pot durant 5 minuts després de marcar-la, i només si la va marcar el personal."
+    "staff_checkin_undo_expired": "Ja no es pot desfer: només es pot durant 5 minuts després de marcar-la, i només si la va marcar el personal.",
+    "too_many_staff_contacts": "Es poden afegir fins a 10 persones de contacte.",
+    "invalid_staff_contact": "Cada persona de contacte necessita un nom (fins a 80 caràcters); el telèfon fins a 30 i on trobar-la fins a 120."
   },
   "email": {
     "greeting": "Hola {{0}},",
