@@ -1,7 +1,6 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import jsQR from 'jsqr'
-import { CameraOff, CircleCheck, CircleX, Clock, WifiOff } from 'lucide-react'
+import { CircleCheck, CircleX, Clock, WifiOff } from 'lucide-react'
 import { BrandLogo } from '@/components/Brand'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -11,6 +10,8 @@ import { useAsync } from '@/hooks/useAsync'
 import { api, ApiError, type CheckinResult, type Reader } from '@/lib/api'
 import { formatBookingDay, formatTime, localDate } from '@/lib/time'
 import { usePageTitle } from '@/hooks/usePageTitle'
+import { useQrCamera } from '@/hooks/useQrCamera'
+import { CameraProblem } from '@/components/CameraProblem'
 
 /*
   Entrance reader: a demo of what a device at the door runs. It signs in with
@@ -21,10 +22,8 @@ import { usePageTitle } from '@/hooks/usePageTitle'
 */
 
 const KEY_STORAGE = 'lq.readerKey'
-const SCAN_EVERY_MS = 150
 const SHOW_GRANTED_MS = 2500
 const SHOW_REFUSED_MS = 4000
-const SAME_CODE_PAUSE_MS = 6000 // the same QR held in front of the camera is read once
 
 function storedKey() {
   try {
@@ -130,7 +129,6 @@ function KeyForm({ rejected, onSubmit }: { rejected: boolean; onSubmit: (key: st
   )
 }
 
-type CameraState = 'starting' | 'running' | 'denied' | 'missing' | 'insecure' | 'failed'
 type Shown = { result: CheckinResult } | { offline: true }
 
 function beep(granted: boolean) {
@@ -151,16 +149,7 @@ function beep(granted: boolean) {
 
 function Scanner({ deviceKey, reader, onSignOut }: { deviceKey: string; reader: Reader; onSignOut: () => void }) {
   const { t } = useTranslation('reader')
-  const video = useRef<HTMLVideoElement>(null)
-  const canvas = useRef<HTMLCanvasElement>(null)
   const busy = useRef(false)
-  const last = useRef({ code: '', at: 0 })
-  // getUserMedia only exists in a secure context (https or localhost)
-  const [camera, setCamera] = useState<CameraState>(() =>
-    'getUserMedia' in (navigator.mediaDevices ?? {}) ? 'starting' : window.isSecureContext ? 'missing' : 'insecure',
-  )
-  const [attempt, setAttempt] = useState(0)
-  const [mirrored, setMirrored] = useState(true)
   const [shown, setShown] = useState<Shown | null>(null)
   const [now, setNow] = useState(() => new Date())
 
@@ -178,39 +167,8 @@ function Scanner({ deviceKey, reader, onSignOut }: { deviceKey: string; reader: 
     }
   }, [])
 
-  // the camera: the back one on a phone, whatever there is on a kiosk
-  useEffect(() => {
-    if (!('getUserMedia' in (navigator.mediaDevices ?? {}))) return // no camera API: see the initial state
-    let stream: MediaStream | null = null
-    let stopped = false
-    navigator.mediaDevices
-      .getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 } }, audio: false })
-      .then(async (s) => {
-        if (stopped) return s.getTracks().forEach((track) => track.stop())
-        stream = s
-        const facing = s.getVideoTracks()[0]?.getSettings().facingMode
-        setMirrored(facing !== 'environment') // a camera that faces the person reads like a mirror
-        if (video.current) {
-          video.current.srcObject = s
-          await video.current.play().catch(() => {})
-        }
-        setCamera('running')
-      })
-      .catch((error: DOMException) => {
-        if (stopped) return
-        setCamera(error.name === 'NotAllowedError' ? 'denied' : error.name === 'NotFoundError' || error.name === 'OverconstrainedError' ? 'missing' : 'failed')
-      })
-    return () => {
-      stopped = true
-      stream?.getTracks().forEach((track) => track.stop())
-    }
-  }, [attempt])
-
-  // reading: a frame every SCAN_EVERY_MS, skipped while an answer is on screen
-  useEffect(() => {
-    if (camera !== 'running') return
-
-    const check = async (code: string) => {
+  const check = useCallback(
+    async (code: string) => {
       busy.current = true
       let next: Shown
       try {
@@ -229,28 +187,11 @@ function Scanner({ deviceKey, reader, onSignOut }: { deviceKey: string; reader: 
         setShown(null)
         busy.current = false
       }, granted ? SHOW_GRANTED_MS : SHOW_REFUSED_MS)
-    }
-
-    const timer = setInterval(() => {
-      const source = video.current
-      const target = canvas.current
-      if (busy.current || !source || !target || source.readyState < source.HAVE_ENOUGH_DATA) return
-      const scale = Math.min(1, 640 / source.videoWidth) // smaller frames decode faster
-      target.width = Math.round(source.videoWidth * scale)
-      target.height = Math.round(source.videoHeight * scale)
-      const context = target.getContext('2d', { willReadFrequently: true })
-      if (!context) return
-      context.drawImage(source, 0, 0, target.width, target.height)
-      const frame = context.getImageData(0, 0, target.width, target.height)
-      const found = jsQR(frame.data, frame.width, frame.height, { inversionAttempts: 'dontInvert' })
-      if (!found?.data) return
-      const at = Date.now()
-      if (found.data === last.current.code && at - last.current.at < SAME_CODE_PAUSE_MS) return
-      last.current = { code: found.data, at }
-      void check(found.data)
-    }, SCAN_EVERY_MS)
-    return () => clearInterval(timer)
-  }, [camera, deviceKey, onSignOut])
+    },
+    [deviceKey, onSignOut],
+  )
+  // reading, skipped while an answer is on screen
+  const { video, camera, mirrored, retry } = useQrCamera((code) => void check(code), () => busy.current)
 
   const dismiss = () => {
     setShown(null)
@@ -280,16 +221,9 @@ function Scanner({ deviceKey, reader, onSignOut }: { deviceKey: string; reader: 
             // the frame to aim at
             <div className="pointer-events-none absolute inset-[14%] rounded-lg border-4 border-white/80 shadow-[0_0_0_100vmax_rgb(0_0_0/0.35)]" aria-hidden />
           ) : (
-            <CameraProblem
-              state={camera}
-              onRetry={() => {
-                setCamera('starting')
-                setAttempt((n) => n + 1)
-              }}
-            />
+            <CameraProblem state={camera} onRetry={retry} />
           )}
         </div>
-        <canvas ref={canvas} hidden />
         <p className="max-w-md text-center text-lg text-balance">{t('instructions')}</p>
       </main>
 
@@ -306,23 +240,6 @@ function Scanner({ deviceKey, reader, onSignOut }: { deviceKey: string; reader: 
   )
 }
 
-function CameraProblem({ state, onRetry }: { state: CameraState; onRetry: () => void }) {
-  const { t } = useTranslation('reader')
-  if (state === 'starting') {
-    return <p className="absolute inset-0 grid place-items-center p-6 text-center text-white/80">{t('camera.starting')}</p>
-  }
-  return (
-    <div className="absolute inset-0 grid place-content-center justify-items-center gap-3 p-6 text-center text-white">
-      <CameraOff className="size-10" aria-hidden />
-      <p className="max-w-xs text-balance">{t(`camera.${state}`)}</p>
-      {state !== 'insecure' && (
-        <Button variant="secondary" onClick={onRetry}>
-          {t('retry')}
-        </Button>
-      )}
-    </div>
-  )
-}
 
 /** The answer, full screen: green to go in, red (or blue when it is early) to stop. */
 function Answer({ shown, reader, now, onDismiss }: { shown: Shown; reader: Reader; now: Date; onDismiss: () => void }) {

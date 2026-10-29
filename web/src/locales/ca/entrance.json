@@ -43,5 +43,12 @@
     "location_inaccurate": "La teva ubicació no és prou precisa.",
     "too_far": "Ets massa lluny de la instal·lació. Registra l’entrada a la porta.",
     "refused": "No s’ha pogut registrar l’entrada."
+  },
+  "scan": {
+    "open": "Obrir la càmera",
+    "again": "Tornar a escanejar",
+    "aim": "Apunta al QR imprès a la porta.",
+    "notOurs": "Aquest QR no és el de l’entrada d’una instal·lació. Apunta al de la porta.",
+    "cancel": "Tancar la càmera"
   }
 }

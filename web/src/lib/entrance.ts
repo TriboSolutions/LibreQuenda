@@ -24,3 +24,17 @@ export function locate(): Promise<Position> {
 
 /** The results that leave the person in. */
 export const GRANTED = ['checked_in', 'already_checked_in', 'booked']
+
+/** The council, facility and token in a printed QR's address (see entranceUrl); null for any other QR. */
+export function parseEntranceUrl(text: string): { slug: string; facility: string; qrToken: string } | null {
+  let url: URL
+  try {
+    url = new URL(text)
+  } catch {
+    return null
+  }
+  const match = /^\/([^/]+)\/([^/]+)\/entrada\/?$/.exec(url.pathname)
+  const qrToken = url.searchParams.get('c')
+  if (!match || !qrToken) return null
+  return { slug: decodeURIComponent(match[1]), facility: decodeURIComponent(match[2]), qrToken }
+}

@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { CheckCircle2, CircleCheck, Hash, QrCode, ScanLine, UserCheck, XCircle } from 'lucide-react'
+import { CircleCheck, Hash, QrCode, ScanLine, UserCheck } from 'lucide-react'
+import { DoorQrScanner } from '@/components/DoorQrScanner'
+import { EntranceAnswer } from '@/components/EntranceAnswer'
 import { QrImage } from '@/components/QrImage'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -31,7 +33,6 @@ export function CheckinDialog({ booking, token, timeZone, today, onClose, onChec
 
   if (!booking) return <Dialog open={false} />
   const ways = booking.checkin_ways ?? []
-  const granted = result && GRANTED.includes(result.result)
 
   const submit = async (event: FormEvent) => {
     event.preventDefault()
@@ -83,24 +84,15 @@ export function CheckinDialog({ booking, token, timeZone, today, onClose, onChec
             {busy ? t('entrance:checking') : t('checkin.button')}
           </Button>
         </div>
-        <div role="status" aria-live="polite" className="empty:hidden">
-          {result && (
-            <p
-              className={`flex items-start gap-2 rounded-md px-3 py-2 ${granted ? 'bg-pill-positive-bg text-pill-positive-ink' : 'bg-pill-negative-bg text-pill-negative-ink'}`}
-            >
-              {granted ? <CheckCircle2 className="mt-0.5 size-4 shrink-0" aria-hidden /> : <XCircle className="mt-0.5 size-4 shrink-0" aria-hidden />}
-              <span>
-                {t(`entrance:result.${result.result}`, { defaultValue: t('entrance:result.refused') })}
-                {result.result === 'location_inaccurate' && ` ${t('entrance:inaccurateHelp')}`}
-                {result.result === 'not_booked' && result.reason && ` ${t(`reader:reason.${result.reason}`, { defaultValue: t('reader:reason.other') })}`}
-              </span>
-            </p>
-          )}
-          {problem && <p className="rounded-md bg-pill-negative-bg px-3 py-2 text-pill-negative-ink">{problem}</p>}
-        </div>
+        <EntranceAnswer result={result} problem={problem} />
       </form>
     ),
-    printed_qr: <p className="text-muted-foreground">{t('checkin.printed_qr.help')}</p>,
+    printed_qr: (
+      <div className="grid gap-3">
+        <p className="text-muted-foreground">{t('checkin.printed_qr.help')}</p>
+        <DoorQrScanner book={false} onCheckedIn={onCheckedIn} />
+      </div>
+    ),
     reader: (
       <div className="grid gap-2">
         <p className="text-muted-foreground">{t('checkin.reader.help')}</p>

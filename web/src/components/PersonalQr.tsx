@@ -1,7 +1,9 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
-import { CheckCircle2, LocateFixed, XCircle } from 'lucide-react'
+import { LocateFixed } from 'lucide-react'
+import { DoorQrScanner } from '@/components/DoorQrScanner'
+import { EntranceAnswer } from '@/components/EntranceAnswer'
 import { QrImage } from '@/components/QrImage'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -12,7 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useMe } from '@/hooks/useMe'
 import { api, type EntranceResult, type Nearby, type PersonalQr as Qr } from '@/lib/api'
-import { GRANTED, locate, type Position } from '@/lib/entrance'
+import { locate, type Position } from '@/lib/entrance'
 
 const RETRY_MS = 10_000
 
@@ -68,8 +70,9 @@ export function FlashBookingDialog({ open, onOpenChange }: { open: boolean; onOp
           <TabsContent value="code">
             <CodeFlash />
           </TabsContent>
-          <TabsContent value="door">
+          <TabsContent value="door" className="grid gap-4">
             <p className="text-muted-foreground">{t('flash.door.help')}</p>
+            <DoorQrScanner book />
           </TabsContent>
           <TabsContent value="staff">
             <p className="text-muted-foreground">{t('flash.staff.help')}</p>
@@ -143,7 +146,6 @@ function CodeFlash() {
     }
   }
 
-  const granted = result && GRANTED.includes(result.result)
   return (
     <div className="grid gap-4">
       <p className="text-muted-foreground">{t('flash.code.help')}</p>
@@ -204,21 +206,7 @@ function CodeFlash() {
           </div>
         </form>
       )}
-      <div role="status" aria-live="polite" className="empty:hidden">
-        {result && (
-          <p
-            className={`flex items-start gap-2 rounded-md px-3 py-2 ${granted ? 'bg-pill-positive-bg text-pill-positive-ink' : 'bg-pill-negative-bg text-pill-negative-ink'}`}
-          >
-            {granted ? <CheckCircle2 className="mt-0.5 size-4 shrink-0" aria-hidden /> : <XCircle className="mt-0.5 size-4 shrink-0" aria-hidden />}
-            <span>
-              {t(`entrance:result.${result.result}`, { defaultValue: t('entrance:result.refused') })}
-              {result.result === 'location_inaccurate' && ` ${t('entrance:inaccurateHelp')}`}
-              {result.result === 'not_booked' && result.reason && ` ${t(`reader:reason.${result.reason}`, { defaultValue: t('reader:reason.other') })}`}
-            </span>
-          </p>
-        )}
-        {problem && <p className="rounded-md bg-pill-negative-bg px-3 py-2 text-pill-negative-ink">{problem}</p>}
-      </div>
+      <EntranceAnswer result={result} problem={problem} />
     </div>
   )
 }

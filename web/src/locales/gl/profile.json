@@ -129,7 +129,7 @@
     },
     "door": {
       "tab": "QR da porta",
-      "help": "Escanea coa cámara do móbil o QR impreso na porta. Abrirase a páxina de entrada, onde podes reservar no momento unha quenda libre."
+      "help": "Abre a cámara e apunta ao QR impreso na porta: se a quenda está libre, resérvase e entras. Despois pedirémosche a localización, que se comproba e nunca se garda."
     },
     "staff": {
       "tab": "Persoal",

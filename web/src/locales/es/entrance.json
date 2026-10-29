@@ -43,5 +43,12 @@
     "location_inaccurate": "Tu ubicación no es lo bastante precisa.",
     "too_far": "Estás demasiado lejos de la instalación. Registra la entrada en la puerta.",
     "refused": "No se pudo registrar la entrada."
+  },
+  "scan": {
+    "open": "Abrir la cámara",
+    "again": "Escanear de nuevo",
+    "aim": "Apunta al QR impreso en la puerta.",
+    "notOurs": "Ese QR no es el de la entrada de una instalación. Apunta al de la puerta.",
+    "cancel": "Cerrar la cámara"
   }
 }
