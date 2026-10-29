@@ -623,9 +623,9 @@
       "open": "Open this facility’s bookings"
     },
     "location": {
-      "help": "The printed QR and the turn codes only work with the phone this close to the facility’s map pin. The resident has to allow their location, which is checked and never stored.",
+      "help": "The printed QR and the entry code only work with the phone this close to the facility’s map pin. The resident has to allow their location, which is checked and never stored.",
       "radius": "Distance from the pin, in metres",
-      "noPin": "Put the facility on the map in the Details tab to use the printed QR or the turn codes: the phone’s location is checked against its pin.",
+      "noPin": "Put the facility on the map in the Details tab to use the printed QR or the entry code: the phone’s location is checked against its pin.",
       "required": "Residents checking in with the printed QR or a turn code must be within {{metres}} m of the facility."
     },
     "loadError": "The check-in settings could not be loaded.",

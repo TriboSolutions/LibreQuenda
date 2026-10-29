@@ -623,9 +623,9 @@
       "open": "Obrir les reserves d’aquesta instal·lació"
     },
     "location": {
-      "help": "El QR imprès i els codis de torn només funcionen amb el mòbil a aquesta distància del punt de la instal·lació al mapa. El veí ha de permetre la ubicació, que es comprova i no es desa mai.",
+      "help": "El QR imprès i el codi d’entrada només funcionen amb el mòbil a aquesta distància del punt de la instal·lació al mapa. El veí ha de permetre la ubicació, que es comprova i no es desa mai.",
       "radius": "Distància al punt, en metres",
-      "noPin": "Situa la instal·lació al mapa, a la pestanya Dades, per fer servir el QR imprès o els codis de torn: la ubicació del mòbil es compara amb aquest punt.",
+      "noPin": "Situa la instal·lació al mapa, a la pestanya Dades, per fer servir el QR imprès o el codi d’entrada: la ubicació del mòbil es compara amb aquest punt.",
       "required": "Qui entri amb el QR imprès o un codi de torn ha de ser a menys de {{metres}} m de la instal·lació."
     },
     "loadError": "No s’ha pogut carregar la configuració d’entrada.",

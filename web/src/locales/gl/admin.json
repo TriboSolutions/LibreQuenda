@@ -623,9 +623,9 @@
       "open": "Abrir as reservas desta instalación"
     },
     "location": {
-      "help": "O QR impreso e os códigos de quenda só funcionan co móbil a esta distancia do punto da instalación no mapa. O veciño ten que permitir a localización, que se comproba e nunca se garda.",
+      "help": "O QR impreso e o código de entrada só funcionan co móbil a esta distancia do punto da instalación no mapa. O veciño ten que permitir a localización, que se comproba e nunca se garda.",
       "radius": "Distancia ao punto, en metros",
-      "noPin": "Sitúa a instalación no mapa, na lapela Datos, para usar o QR impreso ou os códigos de quenda: a localización do móbil compárase con ese punto.",
+      "noPin": "Sitúa a instalación no mapa, na lapela Datos, para usar o QR impreso ou o código de entrada: a localización do móbil compárase con ese punto.",
       "required": "Quen entre co QR impreso ou cun código de quenda ten que estar a menos de {{metres}} m da instalación."
     },
     "loadError": "Non se puido cargar a configuración de entrada.",
