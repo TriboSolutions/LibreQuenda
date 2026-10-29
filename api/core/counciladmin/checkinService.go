@@ -42,6 +42,7 @@ func mapCheckinSettings(row model.GetFacilityCheckinRow, hasLocation bool) *Chec
 		RadiusM:      int(row.RadiusM),
 		FlashBooking: row.FlashBooking,
 		StaffConfirm: row.StaffConfirm,
+		QrReader:     row.QrReader,
 		HasLocation:  hasLocation,
 	}
 }
@@ -81,6 +82,7 @@ func (s *counciladminService) SaveCheckinSettings(ctx context.Context, tenantId 
 			RadiusM:      int32(input.RadiusM),
 			FlashBooking: input.FlashBooking,
 			StaffConfirm: input.StaffConfirm,
+			QrReader:     input.QrReader,
 			FacilityID:   facilityId,
 		})
 		return updateErr

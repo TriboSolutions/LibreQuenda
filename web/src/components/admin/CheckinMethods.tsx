@@ -21,12 +21,12 @@ type Props = { slug: string; facilityId: string; facilitySlug: string; token: st
 
 type Method = 'reader' | 'printedQr' | 'nfc' | 'rotating' | 'entryCode' | 'staff'
 
-type SavedKey = 'printed_qr' | 'entry_code' | 'staff_confirm'
+type SavedKey = 'printed_qr' | 'entry_code' | 'staff_confirm' | 'qr_reader'
 
 // the ways in from the README's "Check-in at the entrance". saved: switched on
-// and off with the facility's settings; the reader is always there; the rest is a preview
+// and off with the facility's settings; the rest is a preview
 const METHODS: { key: Method; icon: typeof QrCode; built?: boolean; saved?: SavedKey }[] = [
-  { key: 'reader', icon: ScanLine, built: true },
+  { key: 'reader', icon: ScanLine, built: true, saved: 'qr_reader' },
   { key: 'printedQr', icon: QrCode, built: true, saved: 'printed_qr' },
   { key: 'entryCode', icon: Hash, built: true, saved: 'entry_code' },
   { key: 'nfc', icon: Nfc },
@@ -44,6 +44,7 @@ function toInput(settings: CheckinSettings): CheckinSettingsInput {
     radius_m: settings.radius_m,
     flash_booking: settings.flash_booking,
     staff_confirm: settings.staff_confirm,
+    qr_reader: settings.qr_reader,
   }
 }
 
@@ -133,8 +134,7 @@ function Methods({ slug, facilityId, facilitySlug, token, initial }: Props & { i
   }
 
   const printBase = `/${slug}/admin/facilities/${facilityId}/imprimir`
-  const isOn = (key: Method, saved?: SavedKey) =>
-    key === 'reader' ? true : saved ? draft[saved] : preview[key as keyof typeof preview]
+  const isOn = (key: Method, saved?: SavedKey) => (saved ? draft[saved] : preview[key as keyof typeof preview])
   const toggle = (key: Method, on: boolean, savedKey?: SavedKey) =>
     savedKey ? set(savedKey, on) : setPreview((p) => ({ ...p, [key]: on }))
 
@@ -268,7 +268,7 @@ function Methods({ slug, facilityId, facilitySlug, token, initial }: Props & { i
         </Alert>
       )}
 
-      <div className="grid gap-4 rounded-md border p-4">
+      <div className="grid gap-x-8 gap-y-4 rounded-md border p-4 md:grid-cols-2">
         <div className="flex items-start gap-2">
           <Switch
             id="ci-flash"
@@ -283,7 +283,7 @@ function Methods({ slug, facilityId, facilitySlug, token, initial }: Props & { i
             </p>
           </div>
         </div>
-        <div className="grid gap-2 sm:max-w-xs">
+        <div className="grid content-start gap-2">
           <Label htmlFor="ci-radius">{t('admin:checkin.location.radius')}</Label>
           <Input
             id="ci-radius"
@@ -295,7 +295,7 @@ function Methods({ slug, facilityId, facilitySlug, token, initial }: Props & { i
             value={draft.radius_m}
             onChange={(e) => set('radius_m', Number(e.target.value))}
             aria-describedby="ci-radius-help"
-            className="num"
+            className="num sm:max-w-xs"
           />
           <p id="ci-radius-help" className="text-sm text-muted-foreground">
             {t('admin:checkin.location.help')}
@@ -312,13 +312,9 @@ function Methods({ slug, facilityId, facilitySlug, token, initial }: Props & { i
                 <Icon className="mt-0.5 size-5 shrink-0 text-muted-foreground" aria-hidden />
                 <div className="grid min-w-0 flex-1 gap-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    {key === 'reader' ? (
-                      <h3 className="text-base font-semibold">{t(`admin:checkin.${key}.name`)}</h3>
-                    ) : (
-                      <Label htmlFor={`ci-${key}`} className="text-base font-semibold">
-                        {t(`admin:checkin.${key}.name`)}
-                      </Label>
-                    )}
+                    <Label htmlFor={`ci-${key}`} className="text-base font-semibold">
+                      {t(`admin:checkin.${key}.name`)}
+                    </Label>
                     <Badge variant={built ? 'default' : 'outline'}>{built ? t('admin:checkin.built') : t('admin:checkin.soon')}</Badge>
                   </div>
                   <p id={`ci-${key}-help`} className="text-muted-foreground">
@@ -339,17 +335,17 @@ function Methods({ slug, facilityId, facilitySlug, token, initial }: Props & { i
                     </div>
                   </dl>
                 </div>
-                {key !== 'reader' && (
-                  <Switch
-                    id={`ci-${key}`}
-                    checked={on}
-                    disabled={needsPin(savedKey) && !saved.has_location && !on}
-                    aria-describedby={`ci-${key}-help`}
-                    onCheckedChange={(checked) => toggle(key, checked, savedKey)}
-                  />
-                )}
+                <Switch
+                  id={`ci-${key}`}
+                  checked={on}
+                  disabled={needsPin(savedKey) && !saved.has_location && !on}
+                  aria-describedby={`ci-${key}-help`}
+                  onCheckedChange={(checked) => toggle(key, checked, savedKey)}
+                />
               </div>
-              {on && <div className="grid gap-4 border-t pt-4">{settings[key]}</div>}
+              {key === 'reader' && !on && <p className="text-sm text-muted-foreground">{t('admin:checkin.reader.off')}</p>}
+              {/* the readers stay listed while off, to manage or remove them */}
+              {(on || key === 'reader') && <div className="grid gap-4 border-t pt-4">{settings[key]}</div>}
             </li>
           )
         })}

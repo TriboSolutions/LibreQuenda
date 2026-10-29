@@ -189,7 +189,8 @@ SELECT
     c.code_secret,
     c.radius_m,
     c.flash_booking,
-    c.staff_confirm
+    c.staff_confirm,
+    c.qr_reader
 FROM
     facility_checkin c
     JOIN facility f ON f.id = c.facility_id
@@ -206,6 +207,7 @@ SET
     radius_m      = sqlc.arg('radius_m'),
     flash_booking = sqlc.arg('flash_booking'),
     staff_confirm = sqlc.arg('staff_confirm'),
+    qr_reader     = sqlc.arg('qr_reader'),
     updated_at    = NOW()
 WHERE
     facility_id = sqlc.arg('facility_id')
@@ -216,7 +218,8 @@ RETURNING
     code_secret,
     radius_m,
     flash_booking,
-    staff_confirm;
+    staff_confirm,
+    qr_reader;
 
 -- name: RotateFacilityQrToken :one
 -- Row-level security: runs as the facility's council (db.WithTenant). The QRs
@@ -241,6 +244,11 @@ WHERE
     facility_id = sqlc.arg('facility_id')
 RETURNING
     code_secret;
+
+-- name: GetFacilityQrReader :one
+-- Whether the facility's QR readers let anyone in; on without settings.
+SELECT
+    COALESCE((SELECT c.qr_reader FROM facility_checkin c WHERE c.facility_id = sqlc.arg('facility_id')), TRUE)::BOOLEAN AS qr_reader;
 
 -- name: GetFacilityFlashBooking :one
 -- Whether a free turn can be booked on the spot at the entrance; on without settings.

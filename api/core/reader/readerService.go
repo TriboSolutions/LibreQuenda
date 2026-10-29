@@ -50,6 +50,12 @@ func decide(booking model.GetBookingByCheckinTokenRow, facilityId uuid.UUID, now
 // CheckIn validates a scanned QR at the reader's facility: a booking QR lets its
 // booking in; the personal QR (quick entry) flash-books a free turn.
 func (s *readerService) CheckIn(ctx context.Context, device model.GetCheckinDeviceByKeyRow, code string) (*CheckinResultDto, *shared.ErrorResponse) {
+	// the council can turn the readers off (broken, switched off) without removing them
+	if on, err := model.New(s.db).GetFacilityQrReader(ctx, device.FacilityID); err != nil {
+		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.checkin_failed"}
+	} else if !on {
+		return &CheckinResultDto{Result: ResultReaderOff}, nil
+	}
 	if token, ok := checkin.ParsePersonalPayload(code); ok {
 		return s.personalCheckIn(ctx, device, token)
 	}

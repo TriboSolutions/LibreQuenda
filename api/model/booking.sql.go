@@ -256,7 +256,7 @@ SELECT
     b.checked_in_at,
     EXISTS (SELECT 1 FROM checkin_device d WHERE d.facility_id = f.id AND d.created_at <= b.starts_at)::BOOLEAN AS reader_at_start,
     -- the ways in the facility offers now, for the check-in button
-    EXISTS (SELECT 1 FROM checkin_device d WHERE d.facility_id = f.id)::BOOLEAN AS has_reader,
+    (EXISTS (SELECT 1 FROM checkin_device d WHERE d.facility_id = f.id) AND COALESCE(c.qr_reader, TRUE))::BOOLEAN AS has_reader,
     (COALESCE(c.printed_qr, FALSE) AND f.latitude IS NOT NULL)::BOOLEAN AS printed_qr,
     (COALESCE(c.entry_code, FALSE) AND f.latitude IS NOT NULL)::BOOLEAN AS entry_code,
     COALESCE(c.staff_confirm, FALSE)::BOOLEAN AS staff_confirm,

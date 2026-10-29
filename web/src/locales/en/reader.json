@@ -43,7 +43,9 @@
     "bookedDetail": "Turn booked: {{facility}} · {{start}}–{{end}}",
     "notBooked": "No turn could be booked",
     "codeExpired": "This QR has expired",
-    "codeExpiredDetail": "Show the current code from “Flash booking”: it changes every minute."
+    "codeExpiredDetail": "Show the current code from “Flash booking”: it changes every minute.",
+    "readerOff": "Reader off",
+    "readerOffDetail": "The council has turned this facility’s reader off. Go in another way or ask the staff."
   },
   "reason": {
     "no_turn_soon": "No turn is under way or starts in the next 15 minutes.",

@@ -46,6 +46,7 @@ const (
 	ResultCancelled        = "cancelled"
 	ResultTooEarly         = "too_early"
 	ResultEnded            = "ended"
+	ResultReaderOff        = "reader_off" // the council turned this facility's readers off
 )
 
 // ReasonFlashOff: not_booked because the council does not let a free turn be booked at the entrance.

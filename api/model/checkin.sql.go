@@ -267,7 +267,8 @@ SELECT
     c.code_secret,
     c.radius_m,
     c.flash_booking,
-    c.staff_confirm
+    c.staff_confirm,
+    c.qr_reader
 FROM
     facility_checkin c
     JOIN facility f ON f.id = c.facility_id
@@ -289,6 +290,7 @@ type GetFacilityCheckinRow struct {
 	RadiusM      int32     `json:"radius_m"`
 	FlashBooking bool      `json:"flash_booking"`
 	StaffConfirm bool      `json:"staff_confirm"`
+	QrReader     bool      `json:"qr_reader"`
 }
 
 func (q *Queries) GetFacilityCheckin(ctx context.Context, arg GetFacilityCheckinParams) (GetFacilityCheckinRow, error) {
@@ -302,6 +304,7 @@ func (q *Queries) GetFacilityCheckin(ctx context.Context, arg GetFacilityCheckin
 		&i.RadiusM,
 		&i.FlashBooking,
 		&i.StaffConfirm,
+		&i.QrReader,
 	)
 	return i, err
 }
@@ -389,6 +392,19 @@ func (q *Queries) GetFacilityFlashBooking(ctx context.Context, facilityID uuid.U
 	var flash_booking bool
 	err := row.Scan(&flash_booking)
 	return flash_booking, err
+}
+
+const getFacilityQrReader = `-- name: GetFacilityQrReader :one
+SELECT
+    COALESCE((SELECT c.qr_reader FROM facility_checkin c WHERE c.facility_id = $1), TRUE)::BOOLEAN AS qr_reader
+`
+
+// Whether the facility's QR readers let anyone in; on without settings.
+func (q *Queries) GetFacilityQrReader(ctx context.Context, facilityID uuid.UUID) (bool, error) {
+	row := q.db.QueryRowContext(ctx, getFacilityQrReader, facilityID)
+	var qr_reader bool
+	err := row.Scan(&qr_reader)
+	return qr_reader, err
 }
 
 const getFacilityStaffConfirm = `-- name: GetFacilityStaffConfirm :one
@@ -705,9 +721,10 @@ SET
     radius_m      = $3,
     flash_booking = $4,
     staff_confirm = $5,
+    qr_reader     = $6,
     updated_at    = NOW()
 WHERE
-    facility_id = $6
+    facility_id = $7
 RETURNING
     printed_qr,
     qr_token,
@@ -715,7 +732,8 @@ RETURNING
     code_secret,
     radius_m,
     flash_booking,
-    staff_confirm
+    staff_confirm,
+    qr_reader
 `
 
 type UpdateFacilityCheckinParams struct {
@@ -724,6 +742,7 @@ type UpdateFacilityCheckinParams struct {
 	RadiusM      int32     `json:"radius_m"`
 	FlashBooking bool      `json:"flash_booking"`
 	StaffConfirm bool      `json:"staff_confirm"`
+	QrReader     bool      `json:"qr_reader"`
 	FacilityID   uuid.UUID `json:"facility_id"`
 }
 
@@ -735,6 +754,7 @@ type UpdateFacilityCheckinRow struct {
 	RadiusM      int32     `json:"radius_m"`
 	FlashBooking bool      `json:"flash_booking"`
 	StaffConfirm bool      `json:"staff_confirm"`
+	QrReader     bool      `json:"qr_reader"`
 }
 
 // Row-level security: runs as the facility's council (db.WithTenant).
@@ -745,6 +765,7 @@ func (q *Queries) UpdateFacilityCheckin(ctx context.Context, arg UpdateFacilityC
 		arg.RadiusM,
 		arg.FlashBooking,
 		arg.StaffConfirm,
+		arg.QrReader,
 		arg.FacilityID,
 	)
 	var i UpdateFacilityCheckinRow
@@ -756,6 +777,7 @@ func (q *Queries) UpdateFacilityCheckin(ctx context.Context, arg UpdateFacilityC
 		&i.RadiusM,
 		&i.FlashBooking,
 		&i.StaffConfirm,
+		&i.QrReader,
 	)
 	return i, err
 }

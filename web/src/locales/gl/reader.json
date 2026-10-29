@@ -43,7 +43,9 @@
     "bookedDetail": "Quenda reservada: {{facility}} · {{start}}–{{end}}",
     "notBooked": "Non foi posible reservar unha quenda",
     "codeExpired": "Este QR caducou",
-    "codeExpiredDetail": "Amosa o código actual de «Reserva flash»: cambia cada minuto."
+    "codeExpiredDetail": "Amosa o código actual de «Reserva flash»: cambia cada minuto.",
+    "readerOff": "Lector apagado",
+    "readerOffDetail": "O concello apagou o lector desta instalación. Entra doutro xeito ou pregunta ao persoal."
   },
   "reason": {
     "no_turn_soon": "Non hai ningunha quenda en curso nin nos próximos 15 minutos.",

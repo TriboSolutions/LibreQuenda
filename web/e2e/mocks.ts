@@ -440,7 +440,7 @@ const reader: Reader = {
 }
 
 // check-in from the resident's phone: both ways on, so the tab shows the QR and the code
-const checkinSettings = { printed_qr: true, qr_token: '9a1f6c2e-3b4d-4e5f-8a7b-1c2d3e4f5a6b', entry_code: true, code: '482915', radius_m: 100, flash_booking: true, staff_confirm: true, has_location: true }
+const checkinSettings = { printed_qr: true, qr_token: '9a1f6c2e-3b4d-4e5f-8a7b-1c2d3e4f5a6b', entry_code: true, code: '482915', radius_m: 100, flash_booking: true, staff_confirm: true, qr_reader: true, has_location: true }
 const entrance = {
   facility_name: 'Pista de pádel 1',
   facility_slug: 'padel-1',

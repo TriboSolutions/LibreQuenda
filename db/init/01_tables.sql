@@ -243,7 +243,8 @@ CREATE TABLE checkin_device (
 -- code (derived from code_secret; a new secret gives a new code). Both need the
 -- phone's location within radius_m of the facility's pin; the location is never
 -- stored. flash_booking also covers the personal QR at the readers. staff_confirm
--- lets council staff mark the entry from the bookings calendar. No row: the
+-- lets council staff mark the entry from the bookings calendar. qr_reader turns
+-- the facility's QR readers off without removing them. No row: the
 -- defaults, with every way off.
 CREATE TABLE facility_checkin (
     facility_id   UUID         PRIMARY KEY REFERENCES facility(id) ON DELETE CASCADE,
@@ -254,6 +255,7 @@ CREATE TABLE facility_checkin (
     radius_m      INT          NOT NULL DEFAULT 100 CHECK (radius_m BETWEEN 25 AND 1000),
     flash_booking BOOLEAN      NOT NULL DEFAULT TRUE,
     staff_confirm BOOLEAN      NOT NULL DEFAULT FALSE,              -- staff mark the entry from the calendar
+    qr_reader     BOOLEAN      NOT NULL DEFAULT TRUE,               -- off: the readers refuse every QR, but stay set up (broken, switched off)
     updated_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW()
 );
 

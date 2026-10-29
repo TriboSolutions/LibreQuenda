@@ -9,6 +9,7 @@ type CheckinSettingsDto struct {
 	RadiusM      int    `json:"radius_m"`
 	FlashBooking bool   `json:"flash_booking"`
 	StaffConfirm bool   `json:"staff_confirm"` // staff mark the entry from the bookings calendar
+	QrReader     bool   `json:"qr_reader"`     // off: the readers refuse every QR, but stay set up
 	HasLocation  bool   `json:"has_location"`  // both ways need the facility's pin
 }
 
@@ -18,6 +19,7 @@ type CheckinSettingsInput struct {
 	RadiusM      int  `json:"radius_m"`
 	FlashBooking bool `json:"flash_booking"`
 	StaffConfirm bool `json:"staff_confirm"`
+	QrReader     bool `json:"qr_reader"`
 }
 
 const (
