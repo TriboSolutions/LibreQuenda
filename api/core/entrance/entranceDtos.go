@@ -1,6 +1,7 @@
 package entrance
 
 import (
+	"librequenda/checkin"
 	"librequenda/core/reader"
 	"time"
 )
@@ -59,7 +60,7 @@ type NearbyInput struct {
 	Accuracy  *float64 `json:"accuracy"` // metres
 }
 
-// NearbyDto: the facilities the phone is at, nearest first; Result is a location
+// NearbyDto: the facilities the phone is at (by entry code or with staff to ask), nearest first; Result is a location
 // problem (location_required, location_inaccurate) when it cannot tell.
 type NearbyDto struct {
 	Result     string              `json:"result"`
@@ -71,4 +72,7 @@ type NearbyFacilityDto struct {
 	FacilitySlug string `json:"facility_slug"`
 	TenantName   string `json:"tenant_name"`
 	TenantSlug   string `json:"tenant_slug"`
+	EntryCode    bool   `json:"entry_code"` // books with its entry code
+	// staff to ask on site, when the facility has staff confirmation
+	StaffContacts []checkin.StaffContact `json:"staff_contacts"`
 }

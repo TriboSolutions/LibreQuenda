@@ -153,7 +153,9 @@
     "staff_checkin_off": "Esta instalación no permite marcar la entrada desde el calendario. Actívalo en la pestaña Entrada.",
     "staff_checkin_too_early": "Todavía es pronto: la entrada se puede marcar desde 15 minutos antes del comienzo.",
     "staff_checkin_ended": "El turno ya ha terminado y la entrada ya no se puede marcar.",
-    "staff_checkin_undo_expired": "Ya no se puede deshacer: solo se puede durante 5 minutos después de marcarla, y solo si la marcó el personal."
+    "staff_checkin_undo_expired": "Ya no se puede deshacer: solo se puede durante 5 minutos después de marcarla, y solo si la marcó el personal.",
+    "too_many_staff_contacts": "Se pueden añadir hasta 10 personas de contacto.",
+    "invalid_staff_contact": "Cada persona de contacto necesita un nombre (hasta 80 caracteres); el teléfono hasta 30 y dónde encontrarla hasta 120."
   },
   "email": {
     "greeting": "Hola {{0}}:",

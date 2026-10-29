@@ -4,6 +4,7 @@ import { CircleCheck } from 'lucide-react'
 import { DoorQrScanner } from '@/components/DoorQrScanner'
 import { EntranceAnswer } from '@/components/EntranceAnswer'
 import { QrImage } from '@/components/QrImage'
+import { StaffContacts } from '@/components/StaffContacts'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
@@ -102,7 +103,12 @@ export function CheckinDialog({ booking, token, timeZone, today, onClose, onChec
         {booking.checkin_code && <QrImage code={booking.checkin_code} alt={t('qr.alt', { facility: booking.facility_name })} className="max-w-64" />}
       </div>
     ),
-    staff: <p className="text-muted-foreground">{t('checkin.staff.help')}</p>,
+    staff: (
+      <div className="grid gap-4">
+        <p className="text-muted-foreground">{t(booking.staff_contacts?.length ? 'checkin.staff.helpWithContacts' : 'checkin.staff.help')}</p>
+        <StaffContacts contacts={booking.staff_contacts ?? []} />
+      </div>
+    ),
   }
 
   return (

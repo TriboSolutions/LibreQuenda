@@ -372,16 +372,17 @@ type Facility struct {
 }
 
 type FacilityCheckin struct {
-	FacilityID   uuid.UUID `json:"facility_id"`
-	PrintedQr    bool      `json:"printed_qr"`
-	QrToken      uuid.UUID `json:"qr_token"`
-	EntryCode    bool      `json:"entry_code"`
-	CodeSecret   []byte    `json:"code_secret"`
-	RadiusM      int32     `json:"radius_m"`
-	FlashBooking bool      `json:"flash_booking"`
-	StaffConfirm bool      `json:"staff_confirm"`
-	QrReader     bool      `json:"qr_reader"`
-	UpdatedAt    time.Time `json:"updated_at"`
+	FacilityID    uuid.UUID       `json:"facility_id"`
+	PrintedQr     bool            `json:"printed_qr"`
+	QrToken       uuid.UUID       `json:"qr_token"`
+	EntryCode     bool            `json:"entry_code"`
+	CodeSecret    []byte          `json:"code_secret"`
+	RadiusM       int32           `json:"radius_m"`
+	FlashBooking  bool            `json:"flash_booking"`
+	StaffConfirm  bool            `json:"staff_confirm"`
+	QrReader      bool            `json:"qr_reader"`
+	StaffContacts json.RawMessage `json:"staff_contacts"`
+	UpdatedAt     time.Time       `json:"updated_at"`
 }
 
 type FacilityTag struct {

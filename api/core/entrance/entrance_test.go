@@ -61,7 +61,7 @@ func TestProve(t *testing.T) {
 }
 
 func TestNearby(t *testing.T) {
-	var rows = []model.ListFlashCodeFacilitiesRow{
+	var rows = []model.ListNearbyFacilitiesRow{
 		{Name: "Far", Slug: "far", Latitude: 42.70, Longitude: -8.10, RadiusM: 100},
 		{Name: "Pavillón", Slug: "pavillon", Latitude: 42.66453, Longitude: -8.10815, RadiusM: 100},
 		{Name: "Next door", Slug: "next", Latitude: 42.66500, Longitude: -8.10815, RadiusM: 100},

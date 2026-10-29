@@ -103,8 +103,10 @@
       "tab": "Lector QR"
     },
     "staff": {
-      "help": "Dile tu nombre al personal y ellos marcan tu entrada.",
-      "tab": "Personal"
+      "help": "Dile tu nombre al personal de la instalación y ellos marcan tu entrada.",
+      "tab": "Personal",
+      "contacts": "Personas de contacto",
+      "helpWithContacts": "Dile tu nombre al personal de la instalación y marcan tu entrada. Puedes encontrarlo aquí:"
     },
     "ways": "Cómo registras la entrada"
   }

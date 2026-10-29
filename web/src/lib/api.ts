@@ -264,9 +264,16 @@ export type CheckinSettings = {
   flash_booking: boolean // a free turn can be booked on the spot, also with the personal QR at the readers
   staff_confirm: boolean // staff mark the entry from the bookings calendar
   qr_reader: boolean // off: the readers refuse every QR, but stay set up
+  staff_contacts: StaffContact[] // who residents ask on site (staff confirmation); not accounts
   has_location: boolean
 }
-export type CheckinSettingsInput = Pick<CheckinSettings, 'printed_qr' | 'entry_code' | 'radius_m' | 'flash_booking' | 'staff_confirm' | 'qr_reader'>
+export type CheckinSettingsInput = Pick<
+  CheckinSettings,
+  'printed_qr' | 'entry_code' | 'radius_m' | 'flash_booking' | 'staff_confirm' | 'qr_reader' | 'staff_contacts'
+>
+/** Someone residents can ask on site to check in or book a free turn: only what the council shows. */
+/** Without any, the facility's own contact (else the council's) stands in, with an email. */
+export type StaffContact = { name: string; phone: string; place: string; email?: string }
 
 /** /<council>/<facility>/entrada: checking in from the resident's own phone. */
 export type Entrance = {
@@ -291,10 +298,17 @@ export type EntranceInput = {
   book?: boolean // without a booking: book a free turn and check in
 }
 type Position = Pick<EntranceInput, 'latitude' | 'longitude' | 'accuracy'>
-/** Flash booking with the entry code: where the phone is, nearest first; result is a location problem when it cannot tell. */
+/** Flash booking: the facilities the phone is at (by entry code or with staff to ask), nearest first; result is a location problem when it cannot tell. */
 export type Nearby = {
   result: '' | 'location_required' | 'location_inaccurate'
-  facilities: { facility_name: string; facility_slug: string; tenant_name: string; tenant_slug: string }[]
+  facilities: {
+    facility_name: string
+    facility_slug: string
+    tenant_name: string
+    tenant_slug: string
+    entry_code: boolean // books with its entry code
+    staff_contacts: StaffContact[] // staff to ask on site
+  }[]
 }
 export type EntranceResult = Omit<CheckinResult, 'result'> & {
   result:
@@ -325,7 +339,8 @@ export type Booking = {
   cancel_until: string
   checkin_code: string // QR content; "" unless the booking is upcoming and confirmed
   checked_in_at: string | null
-  checkin_ways?: CheckinMethod[] | null // owner only: the ways in the facility takes, for the check-in button
+  checkin_ways?: CheckinMethod[] | null // owner only: the ways to check in the facility takes, for the check-in button
+  staff_contacts?: StaffContact[] // owner only, with staff confirmation on: who to ask on site
   // past confirmed bookings only, from the QR readers: unknown = no reader when it began, so nobody could check in
   attendance: '' | 'attended' | 'no_show' | 'unknown'
   // invites: the owner shares a link and others fill the facility's capacity

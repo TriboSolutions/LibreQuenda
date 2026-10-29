@@ -110,6 +110,20 @@ for (const theme of ['light', 'dark'] as const) {
       await expectAccessible(page, { overlay: true })
     })
 
+    test('flash booking dialog, staff tab with contacts', async ({ page, context }) => {
+      await context.grantPermissions(['geolocation'])
+      await context.setGeolocation({ latitude: 43.0097, longitude: -7.5568, accuracy: 10 })
+      await open(page, '/lugo', { theme })
+      await page.getByRole('button', { name: /Ana Pérez/ }).click()
+      await page.getByRole('menuitem', { name: /Reserva flash/ }).click()
+      await page.getByRole('tab', { name: 'Persoal' }).click()
+      await page.getByRole('button', { name: 'Buscar a quen preguntar' }).click()
+      await expect(page.getByRole('list', { name: 'Persoas de contacto' })).toBeVisible()
+      await page.mouse.move(0, 0)
+      await page.waitForTimeout(300)
+      await expectAccessible(page, { overlay: true })
+    })
+
     test('flash booking dialog, entry code tab', async ({ page, context }) => {
       await context.grantPermissions(['geolocation'])
       await context.setGeolocation({ latitude: 43.0097, longitude: -7.5568, accuracy: 10 })
@@ -406,6 +420,32 @@ test.describe('keyboard', () => {
     await open(page, '/lugo')
     await expect(page.getByRole('heading', { name: 'As túas reservas' })).toBeVisible()
     await expect(page.getByRole('button', { name: /QR/ })).toHaveCount(0)
+  })
+
+  test('staff contacts: edited in the Entrada tab, shown in check-in and flash booking', async ({ page, context }) => {
+    await open(page, '/lugo/admin/facilities/f1?vista=entrada')
+    await expect(page.getByLabel('Nome', { exact: true })).toHaveValue('Marta Rey')
+    await page.getByRole('button', { name: 'Engadir persoa' }).click()
+    await page.getByLabel('Nome', { exact: true }).nth(1).fill('Xan Pérez')
+    await expect(page.getByRole('button', { name: 'Gardar', exact: true })).toBeEnabled()
+    await page.getByRole('button', { name: 'Quitar a Xan Pérez' }).click()
+    await expect(page.getByLabel('Nome', { exact: true })).toHaveCount(1)
+
+    await open(page, '/reservas')
+    await page.getByRole('button', { name: 'Rexistrar entrada' }).first().click()
+    await page.getByRole('tab', { name: 'Persoal' }).click()
+    await expect(page.getByRole('list', { name: 'Persoas de contacto' })).toContainText('Conserxería, á entrada')
+    await expect(page.getByRole('link', { name: '982 000 111' })).toHaveAttribute('href', 'tel:982000111')
+
+    await context.grantPermissions(['geolocation'])
+    await context.setGeolocation({ latitude: 43.0097, longitude: -7.5568, accuracy: 10 })
+    await open(page, '/lugo')
+    await page.getByRole('button', { name: /Ana Pérez/ }).click()
+    await page.getByRole('menuitem', { name: /Reserva flash/ }).click()
+    await page.getByRole('tab', { name: 'Persoal' }).click()
+    await page.getByRole('button', { name: 'Buscar a quen preguntar' }).click()
+    await expect(page.getByRole('heading', { name: /Pista de pádel 1/ })).toBeVisible()
+    await expect(page.getByRole('list', { name: 'Persoas de contacto' })).toContainText('Marta Rey')
   })
 
   test('the QR reader can be switched off and stays set up', async ({ page }) => {

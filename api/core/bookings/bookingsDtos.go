@@ -57,7 +57,9 @@ type BookingDto struct {
 	CheckedInAt  *time.Time `json:"checked_in_at"`
 	// owner only: the ways in the facility offers ("reader", "printed_qr", "entry_code", "staff")
 	CheckinWays []string `json:"checkin_ways"`
-	Attendance  string   `json:"attendance"` // past confirmed bookings only: "attended", "no_show" or "unknown"; "" otherwise
+	// owner only, with staff confirmation on: who to ask on site
+	StaffContacts []checkin.StaffContact `json:"staff_contacts,omitempty"`
+	Attendance    string                 `json:"attendance"` // past confirmed bookings only: "attended", "no_show" or "unknown"; "" otherwise
 	// invites: the owner shares a link and others fill the facility's capacity
 	Role             string      `json:"role"`              // "owner" or "participant" (joined through an invite)
 	OwnerName        string      `json:"owner_name"`        // participant only
@@ -243,24 +245,25 @@ func mapBooking(row model.ListBookingsByUserRow, now time.Time) BookingDto {
 		checkedInAt = &row.CheckedInAt.Time
 	}
 	return BookingDto{
-		Id:           row.ID.String(),
-		StartsAt:     row.StartsAt,
-		EndsAt:       row.EndsAt,
-		Status:       string(row.Status),
-		FacilityId:   row.FacilityID.String(),
-		FacilityName: row.FacilityName,
-		FacilitySlug: row.FacilitySlug,
-		TenantSlug:   row.TenantSlug,
-		TenantName:   row.TenantName,
-		CanCancel:    canCancel,
-		CanChange:    canCancel,
-		CancelUntil:  cancelUntil,
-		CheckinCode:  checkinCode,
-		CheckedInAt:  checkedInAt,
-		Attendance:   attendance(row.Status, row.EndsAt, row.CheckedInAt.Valid, row.ReaderAtStart, now),
-		Role:         RoleOwner,
-		CheckinWays:  checkinWays(row),
-		Facility:     FacilityDetails(row.Facility, row.FacilitySport),
+		Id:            row.ID.String(),
+		StartsAt:      row.StartsAt,
+		EndsAt:        row.EndsAt,
+		Status:        string(row.Status),
+		FacilityId:    row.FacilityID.String(),
+		FacilityName:  row.FacilityName,
+		FacilitySlug:  row.FacilitySlug,
+		TenantSlug:    row.TenantSlug,
+		TenantName:    row.TenantName,
+		CanCancel:     canCancel,
+		CanChange:     canCancel,
+		CancelUntil:   cancelUntil,
+		CheckinCode:   checkinCode,
+		CheckedInAt:   checkedInAt,
+		Attendance:    attendance(row.Status, row.EndsAt, row.CheckedInAt.Valid, row.ReaderAtStart, now),
+		Role:          RoleOwner,
+		CheckinWays:   checkinWays(row),
+		StaffContacts: staffContacts(row),
+		Facility:      FacilityDetails(row.Facility, row.FacilitySport),
 	}
 }
 
@@ -281,4 +284,14 @@ func checkinWays(row model.ListBookingsByUserRow) []string {
 		}
 	}
 	return ways
+}
+
+// staffContacts: who to ask on site, when the facility has staff confirmation; without
+// staff contacts, the facility's own contact, else the council's.
+func staffContacts(row model.ListBookingsByUserRow) []checkin.StaffContact {
+	if !row.StaffConfirm {
+		return nil
+	}
+	return checkin.StaffOrFallback(row.StaffContacts, row.FacilityName, row.Facility.ContactPhone.String, row.Facility.ContactEmail.String,
+		row.TenantName, row.TenantPhone.String, row.TenantEmail.String)
 }

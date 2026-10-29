@@ -59,6 +59,7 @@ RELATIVE_COLUMN_TYPES = {
 
 # Generated in SQL once the schedule is loaded, after the CSV tables
 HISTORY_SQL = Path(__file__).parent / "history.sql"
+CHECKIN_SQL = Path(__file__).parent / "checkin.sql"
 TESTER_SQL = Path(__file__).parent / "tester.sql"
 ENV_FILE = Path(__file__).parent.parent.parent.parent / ".env"
 
@@ -117,6 +118,10 @@ def generate_sql(csv_dir: Path, sql_file: Path) -> None:
         lines.append("")
 
         print(f"  [sql]     {table}  ({row_count} rows)")
+
+    lines.append("-- ways to check in (checkin.sql)")
+    lines.append(CHECKIN_SQL.read_text(encoding="utf-8"))
+    print("  [sql]     ways to check in  (staff contacts, entry codes)")
 
     email = tester_email()
     if email:

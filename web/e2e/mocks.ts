@@ -182,6 +182,7 @@ const myBookings: MyBookings = {
       can_cancel: false,
       can_change: false,
       checkin_ways: ['entry_code', 'printed_qr', 'reader', 'staff'],
+      staff_contacts: [{ name: 'Marta Rey', phone: '982 000 111', place: 'Conserxería, á entrada' }],
     }),
     booking('b1', 3),
     booking('b2', 26, { role: 'participant', owner_name: 'Uxía', can_cancel: false, can_change: false, can_leave: true }),
@@ -440,7 +441,7 @@ const reader: Reader = {
 }
 
 // check-in from the resident's phone: both ways on, so the tab shows the QR and the code
-const checkinSettings = { printed_qr: true, qr_token: '9a1f6c2e-3b4d-4e5f-8a7b-1c2d3e4f5a6b', entry_code: true, code: '482915', radius_m: 100, flash_booking: true, staff_confirm: true, qr_reader: true, has_location: true }
+const checkinSettings = { printed_qr: true, qr_token: '9a1f6c2e-3b4d-4e5f-8a7b-1c2d3e4f5a6b', entry_code: true, code: '482915', radius_m: 100, flash_booking: true, staff_confirm: true, qr_reader: true, staff_contacts: [{ name: 'Marta Rey', phone: '982 000 111', place: 'Conserxería, á entrada' }], has_location: true }
 const entrance = {
   facility_name: 'Pista de pádel 1',
   facility_slug: 'padel-1',
@@ -514,7 +515,16 @@ export async function mockApp(page: Page, { signedIn = true, theme = 'light', la
     if (route.request().method() === 'POST' && path === '/entrance/nearby') {
       return fulfil(route, {
         result: '',
-        facilities: [{ facility_name: 'Pista de pádel 1', facility_slug: 'padel-1', tenant_name: 'Concello de Lugo', tenant_slug: 'lugo' }],
+        facilities: [
+          {
+            facility_name: 'Pista de pádel 1',
+            facility_slug: 'padel-1',
+            tenant_name: 'Concello de Lugo',
+            tenant_slug: 'lugo',
+            entry_code: true,
+            staff_contacts: [{ name: 'Marta Rey', phone: '982 000 111', place: 'Conserxería, á entrada' }],
+          },
+        ],
       })
     }
     // the phone at the door without a booking: it is offered to book the free turn

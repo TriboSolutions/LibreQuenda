@@ -3,6 +3,7 @@ package counciladmin
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"librequenda/checkin"
 	"librequenda/db"
@@ -35,15 +36,16 @@ func (s *counciladminService) checkinSettings(ctx context.Context, tenantId uuid
 
 func mapCheckinSettings(row model.GetFacilityCheckinRow, hasLocation bool) *CheckinSettingsDto {
 	return &CheckinSettingsDto{
-		PrintedQr:    row.PrintedQr,
-		QrToken:      row.QrToken.String(),
-		EntryCode:    row.EntryCode,
-		Code:         checkin.EntryCode(row.CodeSecret),
-		RadiusM:      int(row.RadiusM),
-		FlashBooking: row.FlashBooking,
-		StaffConfirm: row.StaffConfirm,
-		QrReader:     row.QrReader,
-		HasLocation:  hasLocation,
+		PrintedQr:     row.PrintedQr,
+		QrToken:       row.QrToken.String(),
+		EntryCode:     row.EntryCode,
+		Code:          checkin.EntryCode(row.CodeSecret),
+		RadiusM:       int(row.RadiusM),
+		FlashBooking:  row.FlashBooking,
+		StaffConfirm:  row.StaffConfirm,
+		QrReader:      row.QrReader,
+		StaffContacts: checkin.StaffContacts(row.StaffContacts),
+		HasLocation:   hasLocation,
 	}
 }
 
@@ -70,6 +72,11 @@ func (s *counciladminService) SaveCheckinSettings(ctx context.Context, tenantId 
 	if key := input.validate(hasLocation); key != "" {
 		return nil, &shared.ErrorResponse{Code: http.StatusUnprocessableEntity, Message: key}
 	}
+	var contacts, contactsErr = checkin.CleanStaffContacts(input.StaffContacts)
+	if contactsErr != "" {
+		return nil, &shared.ErrorResponse{Code: http.StatusUnprocessableEntity, Message: contactsErr}
+	}
+	var contactsJson, _ = json.Marshal(contacts)
 	if _, err := s.checkinSettings(ctx, tenantId, facilityId); err != nil {
 		return nil, err
 	}
@@ -77,13 +84,14 @@ func (s *counciladminService) SaveCheckinSettings(ctx context.Context, tenantId 
 	var err = db.WithTenant(ctx, s.db, tenantId, func(queries *model.Queries) error {
 		var updateErr error
 		row, updateErr = queries.UpdateFacilityCheckin(ctx, model.UpdateFacilityCheckinParams{
-			PrintedQr:    input.PrintedQr,
-			EntryCode:    input.EntryCode,
-			RadiusM:      int32(input.RadiusM),
-			FlashBooking: input.FlashBooking,
-			StaffConfirm: input.StaffConfirm,
-			QrReader:     input.QrReader,
-			FacilityID:   facilityId,
+			PrintedQr:     input.PrintedQr,
+			EntryCode:     input.EntryCode,
+			RadiusM:       int32(input.RadiusM),
+			FlashBooking:  input.FlashBooking,
+			StaffConfirm:  input.StaffConfirm,
+			QrReader:      input.QrReader,
+			StaffContacts: contactsJson,
+			FacilityID:    facilityId,
 		})
 		return updateErr
 	})

@@ -153,7 +153,9 @@
     "staff_checkin_off": "This facility does not let staff mark the entry from the calendar. Turn it on in the Check-in tab.",
     "staff_checkin_too_early": "It is too early: the entry can be marked from 15 minutes before the start.",
     "staff_checkin_ended": "The turn has ended, so the entry can no longer be marked.",
-    "staff_checkin_undo_expired": "This can no longer be undone: only for 5 minutes after marking it, and only if staff marked it."
+    "staff_checkin_undo_expired": "This can no longer be undone: only for 5 minutes after marking it, and only if staff marked it.",
+    "too_many_staff_contacts": "Up to 10 contact people can be added.",
+    "invalid_staff_contact": "Each contact person needs a name (up to 80 characters); the phone up to 30 and where to find them up to 120."
   },
   "email": {
     "greeting": "Hello {{0}},",

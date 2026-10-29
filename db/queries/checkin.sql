@@ -190,7 +190,8 @@ SELECT
     c.radius_m,
     c.flash_booking,
     c.staff_confirm,
-    c.qr_reader
+    c.qr_reader,
+    c.staff_contacts
 FROM
     facility_checkin c
     JOIN facility f ON f.id = c.facility_id
@@ -208,6 +209,7 @@ SET
     flash_booking = sqlc.arg('flash_booking'),
     staff_confirm = sqlc.arg('staff_confirm'),
     qr_reader     = sqlc.arg('qr_reader'),
+    staff_contacts = sqlc.arg('staff_contacts'),
     updated_at    = NOW()
 WHERE
     facility_id = sqlc.arg('facility_id')
@@ -219,7 +221,8 @@ RETURNING
     radius_m,
     flash_booking,
     staff_confirm,
-    qr_reader;
+    qr_reader,
+    staff_contacts;
 
 -- name: RotateFacilityQrToken :one
 -- Row-level security: runs as the facility's council (db.WithTenant). The QRs
@@ -282,9 +285,10 @@ WHERE
     AND f.is_active = TRUE
     AND t.is_active = TRUE;
 
--- name: ListFlashCodeFacilities :many
--- Flash booking with the entry code: the facilities that take it and book free
--- turns at the door. The phone's distance to each is checked in the API.
+-- name: ListNearbyFacilities :many
+-- What the flash booking can find by the phone's location: the facilities that
+-- book with their entry code, or have staff confirmation (someone to ask). The phone's
+-- distance to each is checked in the API.
 SELECT
     f.name,
     f.slug,
@@ -292,14 +296,21 @@ SELECT
     f.longitude::FLOAT8 AS longitude,
     t.name AS tenant_name,
     t.slug AS tenant_slug,
-    c.radius_m
+    c.radius_m,
+    (c.entry_code AND c.flash_booking)::BOOLEAN AS entry_code,
+    c.staff_confirm,
+    c.staff_contacts,
+    -- who to ask without staff contacts: the facility's, else the council's
+    f.contact_phone AS facility_phone,
+    f.contact_email AS facility_email,
+    t.contact_phone AS tenant_phone,
+    t.contact_email AS tenant_email
 FROM
     facility f
     JOIN tenant t ON t.id = f.tenant_id
     JOIN facility_checkin c ON c.facility_id = f.id
 WHERE
-    c.entry_code = TRUE
-    AND c.flash_booking = TRUE
+    ((c.entry_code AND c.flash_booking) OR c.staff_confirm)
     AND f.latitude IS NOT NULL
     AND f.longitude IS NOT NULL
     AND f.is_active = TRUE

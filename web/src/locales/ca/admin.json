@@ -621,7 +621,18 @@
       "cost": "temps del personal",
       "cheat": "tant com el personal",
       "help": "Obre una reserva a la pestanya de reserva manual i prem «Marcar l'entrada», des de 15 minuts abans del començament fins que acaba el torn. Si t'equivoques de reserva, ho pots desfer durant 5 minuts.",
-      "open": "Obrir les reserves d’aquesta instal·lació"
+      "open": "Obrir les reserves d’aquesta instal·lació",
+      "contactsTitle": "Persones de contacte",
+      "contactsHelp": "A qui pot preguntar un veí a la instal·lació per registrar l’entrada o reservar un torn lliure. No necessiten compte: només es mostra el que escriguis aquí.",
+      "contactN": "Persona {{n}}",
+      "optional": "opcional",
+      "place": "On trobar-la",
+      "placePlaceholder": "Per exemple: consergeria, a l’entrada",
+      "remove": "Treure {{name}}",
+      "add": "Afegir una persona",
+      "contactName": "Nom",
+      "contactPhone": "Telèfon",
+      "fallback": "Sense cap, es mostra el contacte de la instal·lació o, si no en té, el de l’ajuntament."
     },
     "location": {
       "help": "El QR imprès i el codi d’entrada només funcionen amb el mòbil a aquesta distància del punt de la instal·lació al mapa. El veí ha de permetre la ubicació, que es comprova i no es desa mai.",
