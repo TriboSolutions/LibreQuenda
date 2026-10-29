@@ -112,8 +112,8 @@
     "turnOff": "Desactivar"
   },
   "flash": {
-    "help": "¿Llegas a una instalación y hay un turno libre? Resérvalo en el momento, de la forma que admita la instalación.",
-    "ways": "Cómo entras",
+    "help": "¿Llegas a una instalación y hay un turno libre? Resérvalo en el momento y registra la entrada con la forma que admita la instalación.",
+    "ways": "Cómo registras la entrada",
     "reader": {
       "tab": "Lector QR",
       "help": "Acerca este QR al lector de la puerta: si el turno está libre, se reserva y entras."

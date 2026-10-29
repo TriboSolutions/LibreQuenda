@@ -125,7 +125,7 @@ for (const theme of ['light', 'dark'] as const) {
     })
 
     // the dialogs on /reservas, each opened from the first upcoming booking
-    for (const button of [/^Cancelar$/, /QR/, /^Convidar$/, /^Cambiar$/, /^Rexistrar entrada$/]) {
+    for (const button of [/^Cancelar$/, /^Convidar$/, /^Cambiar$/, /^Rexistrar entrada$/]) {
       test(`my bookings dialog ${button.source}`, async ({ page }) => {
         await open(page, '/reservas', { theme })
         await page.getByRole('button', { name: button }).first().click()
@@ -379,6 +379,12 @@ test.describe('keyboard', () => {
     await page.keyboard.type('482913')
     await page.keyboard.press('Enter')
     await expect(page.getByRole('status')).toContainText('Non tes reserva para esta quenda')
+  })
+
+  test("the council page's bookings card shows no QR: check-in lives in My bookings", async ({ page }) => {
+    await open(page, '/lugo')
+    await expect(page.getByRole('heading', { name: 'As túas reservas' })).toBeVisible()
+    await expect(page.getByRole('button', { name: /QR/ })).toHaveCount(0)
   })
 
   test('the QR reader can be switched off and stays set up', async ({ page }) => {

@@ -69,7 +69,12 @@ SELECT
     t.slug     AS tenant_slug,
     t.timezone AS timezone,
     t.id       AS tenant_id,
-    s.config AS smtp_config
+    s.config AS smtp_config,
+    -- the ways in the facility takes, each explained in the email
+    (EXISTS (SELECT 1 FROM checkin_device d WHERE d.facility_id = f.id) AND COALESCE(c.qr_reader, TRUE))::BOOLEAN AS has_reader,
+    (COALESCE(c.entry_code, FALSE) AND f.latitude IS NOT NULL)::BOOLEAN AS entry_code,
+    (COALESCE(c.printed_qr, FALSE) AND f.latitude IS NOT NULL)::BOOLEAN AS printed_qr,
+    COALESCE(c.staff_confirm, FALSE)::BOOLEAN AS staff_confirm
 FROM
     notification n
     JOIN app_user u ON u.id = n.user_id
@@ -77,6 +82,7 @@ FROM
     JOIN facility f ON f.id = b.facility_id
     JOIN tenant   t ON t.id = f.tenant_id
     LEFT JOIN tenant_smtp s ON s.tenant_id = t.id
+    LEFT JOIN facility_checkin c ON c.facility_id = f.id
 WHERE
     n.emailed_at IS NULL
     -- with no relay in the environment, a council without its own waits

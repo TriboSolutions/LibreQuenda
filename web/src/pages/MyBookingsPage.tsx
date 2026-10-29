@@ -1,10 +1,9 @@
-import { CalendarClock, ChevronDown, DoorOpen, ExternalLink, MapPin, QrCode, UserPlus } from 'lucide-react'
+import { CalendarClock, ChevronDown, DoorOpen, ExternalLink, MapPin, UserPlus } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import { Link } from 'react-router'
 import { BookingOutcome } from '@/components/BookingOutcome'
-import { BookingQrDialog } from '@/components/BookingQrDialog'
 import { CancelDialog } from '@/components/CancelDialog'
 import { CheckinDialog } from '@/components/CheckinDialog'
 import { FacilityInfo } from '@/components/FacilityInfo'
@@ -56,7 +55,6 @@ export function MyBookingsPage() {
   const [toChange, setToChange] = useState<Booking | null>(null)
   const [toLeave, setToLeave] = useState<Booking | null>(null)
   const [toInvite, setToInvite] = useState<Booking | null>(null)
-  const [showQr, setShowQr] = useState<Booking | null>(null)
   const [toCheckIn, setToCheckIn] = useState<Booking | null>(null)
   const ticking = useNow()
   const [notice, setNotice] = useState<string | null>(null)
@@ -156,13 +154,7 @@ export function MyBookingsPage() {
                 <BookingRow key={booking.id} booking={booking} today={today} now={ticking}>
                   {booking.role === 'owner' ? (
                     <>
-                      {booking.checkin_ways?.length ? (
-                        <CheckinButton booking={booking} now={ticking} onOpen={() => setToCheckIn(booking)} />
-                      ) : booking.checkin_code && (
-                        <Button variant="outline" size="sm" aria-label={t('bookings:qr.show')} onClick={() => setShowQr(booking)}>
-                          <QrCode aria-hidden />
-                        </Button>
-                      )}
+                      {booking.checkin_ways?.length ? <CheckinButton booking={booking} now={ticking} onOpen={() => setToCheckIn(booking)} /> : null}
                       {booking.capacity > 0 && booking.starts_at > now && (
                         <Button variant="outline" size="sm" onClick={() => setToInvite(booking)}>
                           <UserPlus aria-hidden />
@@ -241,7 +233,6 @@ export function MyBookingsPage() {
         onClose={() => setToInvite(null)}
         onChanged={bookings.reload}
       />
-      <BookingQrDialog booking={showQr} timeZone={TIME_ZONE} today={today} onClose={() => setShowQr(null)} />
       <CheckinDialog
         key={toCheckIn?.id ?? 'none'}
         booking={toCheckIn}

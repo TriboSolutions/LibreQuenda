@@ -158,7 +158,15 @@
   "email": {
     "greeting": "Hello {{0}},",
     "greeting_anonymous": "Hello,",
-    "qr": "Show this QR code to the reader at the entrance. It works from 15 minutes before the start until the end of the booking.",
+    "checkin": {
+      "title_one": "To check in:",
+      "title_many": "This facility takes several ways to check in; use whichever is at hand:",
+      "reader": "QR reader: show this QR code to the reader at the entrance.",
+      "entry_code": "Entry code: type the code shown at the door or the desk in “Your bookings” → Check in ({{0}}), with your phone’s location on.",
+      "printed_qr": "QR at the door: in “Your bookings” → Check in ({{0}}), open the camera and scan the QR printed on the door, with your phone’s location on.",
+      "staff": "Staff: tell the facility’s staff your name and they will mark you in.",
+      "window": "You can check in from 15 minutes before the start until the booking ends."
+    },
     "address": "Address: {{0}}",
     "manage": "See your bookings",
     "footer": "This is an automatic message from {{0}} about your booking.",

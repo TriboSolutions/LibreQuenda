@@ -81,14 +81,14 @@
     "startsIn": "Comença d’aquí a {{time}}",
     "open": "Ja pots entrar",
     "running": "En curs · acaba d’aquí a {{time}}",
-    "in": "Vas entrar a les {{time}}"
+    "in": "Entrada registrada a les {{time}}"
   },
   "checkin": {
     "button": "Registrar l’entrada",
     "from": "Entrada des de les {{time}}",
     "title": "Registrar l’entrada",
     "description": "{{facility}}, {{day}}, {{start}}–{{end}}",
-    "intro": "Aquesta instal·lació admet aquestes maneres d’entrar. Fes servir la que tinguis a mà.",
+    "intro": "Aquesta instal·lació admet aquestes maneres de registrar l’entrada. Fes servir la que tinguis a mà.",
     "done": "Ja tens l’entrada registrada a les {{time}}.",
     "close": "Tancar",
     "entry_code": {

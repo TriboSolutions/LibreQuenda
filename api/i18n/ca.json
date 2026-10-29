@@ -158,7 +158,15 @@
   "email": {
     "greeting": "Hola {{0}},",
     "greeting_anonymous": "Hola,",
-    "qr": "Mostra aquest codi QR al lector de l'entrada. Funciona des de 15 minuts abans de l'inici fins al final de la reserva.",
+    "checkin": {
+      "title_one": "Per registrar l’entrada:",
+      "title_many": "Aquesta instal·lació admet diverses maneres de registrar l’entrada; fes servir la que tinguis a mà:",
+      "reader": "Lector QR: mostra aquest codi QR al lector de l’entrada.",
+      "entry_code": "Codi d’entrada: escriu el codi que hi ha a la porta o al taulell des de «Les teves reserves» → Registrar l’entrada ({{0}}), amb la ubicació del mòbil activada.",
+      "printed_qr": "QR de la porta: des de «Les teves reserves» → Registrar l’entrada ({{0}}), obre la càmera i escaneja el QR imprès a la porta, amb la ubicació del mòbil activada.",
+      "staff": "Personal: digues el teu nom al personal de la instal·lació i ells marquen la teva entrada.",
+      "window": "Pots registrar l’entrada des de 15 minuts abans del començament fins al final de la reserva."
+    },
     "address": "Adreça: {{0}}",
     "manage": "Veure les teves reserves",
     "footer": "Aquest és un missatge automàtic de {{0}} sobre la teva reserva.",

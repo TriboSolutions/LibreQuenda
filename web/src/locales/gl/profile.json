@@ -112,8 +112,8 @@
     "turnOff": "Desactivar"
   },
   "flash": {
-    "help": "Chegas a unha instalación e hai unha quenda libre? Resérvaa no momento, da forma que admita a instalación.",
-    "ways": "Como entras",
+    "help": "Chegas a unha instalación e hai unha quenda libre? Resérvaa no momento e rexistra a entrada coa forma que admita a instalación.",
+    "ways": "Como rexistras a entrada",
     "reader": {
       "tab": "Lector QR",
       "help": "Achega este QR ao lector da porta: se a quenda está libre, resérvase e entras."

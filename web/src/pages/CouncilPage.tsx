@@ -9,7 +9,6 @@ import { CancelDialog } from '@/components/CancelDialog'
 import { DayPicker } from '@/components/DayPicker'
 import { MyBookings } from '@/components/MyBookings'
 import { TagFilters } from '@/components/TagFilters'
-import { BookingQrDialog } from '@/components/BookingQrDialog'
 import { CouncilContact } from '@/components/CouncilContact'
 import { CouncilHeading } from '@/components/CouncilHeading'
 import { TopBar } from '@/components/TopBar'
@@ -75,7 +74,6 @@ export function CouncilPage() {
 
   const [pick, setPick] = useState<{ facility: Facility; slot: Slot } | null>(null)
   const [toCancel, setToCancel] = useState<Booking | null>(null)
-  const [showQr, setShowQr] = useState<Booking | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
 
   const timeZone = day.data?.timezone ?? FALLBACK_TIME_ZONE
@@ -203,7 +201,6 @@ export function CouncilPage() {
               onLogin={login}
               onRegister={register}
               onCancel={setToCancel}
-              onShowQr={setShowQr}
             />
             {day.data && <CouncilContact tenant={day.data.tenant} />}
           </div>
@@ -221,7 +218,6 @@ export function CouncilPage() {
         onConfirm={confirmBooking}
         onLogin={login}
       />
-      <BookingQrDialog key={showQr?.id ?? 'none'} booking={showQr} timeZone={timeZone} today={today} onClose={() => setShowQr(null)} />
       <CancelDialog
         key={toCancel?.id ?? 'none'}
         booking={toCancel}

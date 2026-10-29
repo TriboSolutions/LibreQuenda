@@ -158,7 +158,15 @@
   "email": {
     "greeting": "Ola {{0}},",
     "greeting_anonymous": "Ola,",
-    "qr": "Amosa este código QR no lector da entrada. Funciona desde 15 minutos antes do comezo ata o final da reserva.",
+    "checkin": {
+      "title_one": "Para rexistrar a entrada:",
+      "title_many": "Esta instalación admite varias formas de rexistrar a entrada; usa a que teñas á man:",
+      "reader": "Lector QR: amosa este código QR no lector da entrada.",
+      "entry_code": "Código de entrada: escribe o código que está na porta ou no mostrador desde «As túas reservas» → Rexistrar entrada ({{0}}), coa localización do móbil activada.",
+      "printed_qr": "QR da porta: desde «As túas reservas» → Rexistrar entrada ({{0}}), abre a cámara e escanea o QR impreso na porta, coa localización do móbil activada.",
+      "staff": "Persoal: dille o teu nome ao persoal da instalación e eles marcan a túa entrada.",
+      "window": "Podes rexistrar a entrada desde 15 minutos antes do comezo ata o final da reserva."
+    },
     "address": "Enderezo: {{0}}",
     "manage": "Ver as túas reservas",
     "footer": "Esta é unha mensaxe automática de {{0}} sobre a túa reserva.",

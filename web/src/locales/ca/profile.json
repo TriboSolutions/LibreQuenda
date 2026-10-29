@@ -112,8 +112,8 @@
     "turnOff": "Desactivar"
   },
   "flash": {
-    "help": "Arribes a una instal·lació i hi ha un torn lliure? Reserva’l al moment, de la manera que admeti la instal·lació.",
-    "ways": "Com entres",
+    "help": "Arribes a una instal·lació i hi ha un torn lliure? Reserva’l al moment i registra l’entrada de la manera que admeti la instal·lació.",
+    "ways": "Com registres l’entrada",
     "reader": {
       "tab": "Lector QR",
       "help": "Apropa aquest QR al lector de la porta: si el torn és lliure, es reserva i entres."
