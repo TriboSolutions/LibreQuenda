@@ -413,9 +413,11 @@
   "councilExport": {
     "title": "Exportar os datos do concello",
     "help": "Un ZIP con todo o que o concello garda en LibreQuenda, para levalo a outro sistema: instalacións e normas de uso, horarios, peches, lectores QR e todas as reservas, en CSV, coas imaxes orixinais e un datapackage.json (Frictionless Data) que describe cada columna.",
-    "privacy": "Non leva contrasinais nin claves, nin os nomes ou correos dos veciños: cada persoa aparece co identificador da súa conta.",
+    "privacy": "Non leva contrasinais nin claves. Sen os datos persoais, cada veciño aparece só co identificador da súa conta.",
     "download": "Descargar ZIP",
-    "downloading": "Preparando…"
+    "downloading": "Preparando…",
+    "personal": "Incluír os datos persoais dos veciños",
+    "personalHelp": "Engade people.csv (nome, correo, teléfono, data de nacemento e idioma de quen reservou ou se uniu a unha reserva) e o nome e a idade dos convidados. O concello é responsable deste tratamento segundo o RXPD: gárdao de forma segura e úsao só para levar o servizo a outro sistema."
   },
   "staff": {
     "tab": "Reserva manual",

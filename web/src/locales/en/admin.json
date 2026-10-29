@@ -413,9 +413,11 @@
   "councilExport": {
     "title": "Export the council's data",
     "help": "A ZIP with everything the council keeps in LibreQuenda, to take it to another system: facilities and usage rules, opening hours, closures, QR readers and every booking, as CSV, with the original images and a datapackage.json (Frictionless Data) describing each column.",
-    "privacy": "It holds no passwords or keys, and no residents' names or emails: each person appears as their account id.",
+    "privacy": "It holds no passwords or keys. Without the personal data, each resident appears only as their account id.",
     "download": "Download ZIP",
-    "downloading": "Preparing…"
+    "downloading": "Preparing…",
+    "personal": "Include residents' personal data",
+    "personalHelp": "Adds people.csv (name, email, phone, birth date and language of whoever booked or joined a booking) and the guests' names and ages. The council is the controller of this data under the GDPR: keep it safe and use it only to move the service to another system."
   },
   "staff": {
     "tab": "Manual booking",

@@ -378,16 +378,24 @@ func (h *counciladminHandler) ExportIndicators(w http.ResponseWriter, r *http.Re
 	write(w)
 }
 
-// ExportCouncil: the council's full data as a ZIP of CSVs (see exportService.go).
+// ExportCouncil: the council's full data as a ZIP of CSVs (see exportService.go);
+// personal=1 adds the residents' personal data.
 func (h *counciladminHandler) ExportCouncil(w http.ResponseWriter, r *http.Request) {
 	var tenantId, ok = h.councilAdmin(w, r)
 	if !ok {
 		return
 	}
-	var data, err = GetCounciladminService(h.db).ExportCouncil(r.Context(), tenantId)
+	var personal = r.URL.Query().Get("personal") == "1"
+	var data, err = GetCounciladminService(h.db).ExportCouncil(r.Context(), tenantId, personal)
 	if err != nil {
 		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
 		return
+	}
+	if personal {
+		// accountability (GDPR art. 5.2): who took the residents' data out, and when
+		var session, _ = auth.SessionFromContext(r.Context())
+		var userId, _ = me.CurrentUserId(r.Context(), h.db, session)
+		shared.Logger.Info("council export %s with personal data (%d people) by user %s", data.tenant.Slug, len(data.people), userId)
 	}
 	w.Header().Set("Content-Type", "application/zip")
 	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="librequenda-%s-%s.zip"`, data.tenant.Slug, data.generatedAt.Format(localDate)))

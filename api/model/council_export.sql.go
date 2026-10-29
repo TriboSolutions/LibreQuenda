@@ -20,6 +20,8 @@ SELECT
     p.booking_id,
     p.user_id,
     (p.user_id IS NULL)::BOOLEAN AS is_guest,
+    p.guest_name,
+    p.guest_age,
     p.joined_at
 FROM
     booking_participant p
@@ -33,14 +35,16 @@ ORDER BY
 `
 
 type ExportBookingParticipantsRow struct {
-	ID        uuid.UUID     `json:"id"`
-	BookingID uuid.UUID     `json:"booking_id"`
-	UserID    uuid.NullUUID `json:"user_id"`
-	IsGuest   bool          `json:"is_guest"`
-	JoinedAt  time.Time     `json:"joined_at"`
+	ID        uuid.UUID      `json:"id"`
+	BookingID uuid.UUID      `json:"booking_id"`
+	UserID    uuid.NullUUID  `json:"user_id"`
+	IsGuest   bool           `json:"is_guest"`
+	GuestName sql.NullString `json:"guest_name"`
+	GuestAge  sql.NullInt16  `json:"guest_age"`
+	JoinedAt  time.Time      `json:"joined_at"`
 }
 
-// Guests come out as guests, without their name or age.
+// A guest's name and age are written only with ?personal=1.
 func (q *Queries) ExportBookingParticipants(ctx context.Context, tenantID uuid.UUID) ([]ExportBookingParticipantsRow, error) {
 	rows, err := q.db.QueryContext(ctx, exportBookingParticipants, tenantID)
 	if err != nil {
@@ -55,6 +59,8 @@ func (q *Queries) ExportBookingParticipants(ctx context.Context, tenantID uuid.U
 			&i.BookingID,
 			&i.UserID,
 			&i.IsGuest,
+			&i.GuestName,
+			&i.GuestAge,
 			&i.JoinedAt,
 		); err != nil {
 			return nil, err
@@ -370,6 +376,79 @@ func (q *Queries) ExportOpeningHours(ctx context.Context, tenantID uuid.UUID) ([
 	return items, nil
 }
 
+const exportPeople = `-- name: ExportPeople :many
+SELECT
+    u.id,
+    u.full_name,
+    u.email,
+    u.email_verified,
+    u.phone,
+    u.birth_date,
+    u.preferred_language,
+    u.created_at
+FROM
+    app_user u
+WHERE
+    u.id IN (
+        SELECT b.user_id
+        FROM booking b
+        JOIN facility f ON f.id = b.facility_id
+        WHERE f.tenant_id = $1
+        UNION
+        SELECT p.user_id
+        FROM booking_participant p
+        JOIN booking  b ON b.id = p.booking_id
+        JOIN facility f ON f.id = b.facility_id
+        WHERE f.tenant_id = $1
+    )
+ORDER BY
+    u.id ASC
+`
+
+type ExportPeopleRow struct {
+	ID                uuid.UUID      `json:"id"`
+	FullName          sql.NullString `json:"full_name"`
+	Email             string         `json:"email"`
+	EmailVerified     bool           `json:"email_verified"`
+	Phone             sql.NullString `json:"phone"`
+	BirthDate         sql.NullTime   `json:"birth_date"`
+	PreferredLanguage sql.NullString `json:"preferred_language"`
+	CreatedAt         time.Time      `json:"created_at"`
+}
+
+// Everyone who booked at the council or joined one of its bookings (?personal=1).
+func (q *Queries) ExportPeople(ctx context.Context, tenantID uuid.UUID) ([]ExportPeopleRow, error) {
+	rows, err := q.db.QueryContext(ctx, exportPeople, tenantID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ExportPeopleRow
+	for rows.Next() {
+		var i ExportPeopleRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.FullName,
+			&i.Email,
+			&i.EmailVerified,
+			&i.Phone,
+			&i.BirthDate,
+			&i.PreferredLanguage,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const exportTenant = `-- name: ExportTenant :one
 
 SELECT
@@ -384,9 +463,9 @@ WHERE
 //
 //	COUNCIL DATA EXPORT: everything the council keeps in LibreQuenda, so it
 //	can take it to another system (GET /tenants/{slug}/admin/export)
-//	No secrets (SMTP, device keys, QR and invite tokens) and no resident
-//	identities: a person is their account id; name and email stay with them
-//	(GET /me/export).
+//	No secrets (SMTP, device keys, QR and invite tokens). Resident identities
+//	only when the administrator asks for them (?personal=1); otherwise a person
+//	is their account id.
 //
 // ============================================================
 func (q *Queries) ExportTenant(ctx context.Context, tenantID uuid.UUID) (Tenant, error) {

@@ -3,6 +3,8 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
 import { api } from '@/lib/api'
 
 type Props = { slug: string; token: string }
@@ -11,13 +13,14 @@ type Props = { slug: string; token: string }
 export function CouncilExport({ slug, token }: Props) {
   const { t } = useTranslation(['admin'])
   const [busy, setBusy] = useState(false)
+  const [personal, setPersonal] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const download = async () => {
     setBusy(true)
     setError(null)
     try {
-      await api.council.exportData(token, slug)
+      await api.council.exportData(token, slug, personal)
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
     } finally {
@@ -32,6 +35,15 @@ export function CouncilExport({ slug, token }: Props) {
       </h3>
       <p className="max-w-[70ch] text-muted-foreground">{t('admin:councilExport.help')}</p>
       <p className="max-w-[70ch] text-xs text-muted-foreground">{t('admin:councilExport.privacy')}</p>
+      <div className="flex items-start gap-2">
+        <Checkbox id="export-personal" checked={personal} onCheckedChange={(checked) => setPersonal(checked === true)} aria-describedby="export-personal-help" className="mt-0.5" />
+        <div className="grid gap-1">
+          <Label htmlFor="export-personal" className="leading-5 font-normal">{t('admin:councilExport.personal')}</Label>
+          <p id="export-personal-help" className="max-w-[70ch] text-xs text-muted-foreground">
+            {t('admin:councilExport.personalHelp')}
+          </p>
+        </div>
+      </div>
       {error && (
         <Alert variant="destructive" aria-live="assertive">
           <AlertDescription>{error}</AlertDescription>
