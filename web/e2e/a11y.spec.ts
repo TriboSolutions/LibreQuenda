@@ -51,6 +51,7 @@ const pages: { name: string; path: string; signedIn?: boolean }[] = [
   { name: 'facility editor, check-in', path: '/lugo/admin/facilities/f1?vista=entrada' },
   { name: 'check-in QR to print', path: '/lugo/admin/facilities/f1/imprimir?que=qr' },
   { name: 'entry code to print', path: '/lugo/admin/facilities/f1/imprimir?que=codigo' },
+  { name: 'entry code to print, in braille', path: '/lugo/admin/facilities/f1/imprimir?que=codigo&braille=1' },
   { name: 'check-in at the door, printed QR', path: '/lugo/padel-1/entrada?c=9a1f6c2e-3b4d-4e5f-8a7b-1c2d3e4f5a6b' },
   { name: 'check-in at the door, entry code', path: '/lugo/padel-1/entrada' },
   { name: 'check-in at the door, signed out', path: '/lugo/padel-1/entrada', signedIn: false },

@@ -646,7 +646,9 @@
       "qrStep3": "Your booking for this turn is checked in.",
       "qrStep3Flash": "Your booking for this turn is checked in. Without a booking, you can book a free turn on the spot.",
       "codeTitle": "Entry code",
-      "codeStep1": "Open {{url}} on your phone and type this code."
+      "codeStep1": "Open {{url}} on your phone and type this code.",
+      "braille": "Add the code in braille",
+      "brailleHelp": "The braille comes out to scale. To be read by touch, print it on swell (microcapsule) paper or on a braille embosser: on a plain printer the dots come out flat."
     }
   },
   "branding": {
