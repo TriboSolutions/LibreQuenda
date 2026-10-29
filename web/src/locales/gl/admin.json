@@ -634,8 +634,8 @@
     "saved": "Gardado.",
     "saveToPrint": "Actívao e garda para imprimilo.",
     "flash": {
-      "label": "Reservar unha quenda libre na porta",
-      "help": "Sen reserva, un veciño pode reservar no momento a quenda en curso ou a que está a piques de comezar, coas normas de sempre: co QR persoal nun lector ou desde o seu móbil na porta."
+      "label": "Permitir a reserva flash",
+      "help": "Sen reserva, un veciño pode reservar no momento a quenda en curso ou a que está a piques de comezar, coas normas de sempre: co QR persoal nun lector, co código de entrada ou co QR da porta. Quen xa ten reserva entra igual."
     },
     "print": {
       "back": "Volver á instalación",

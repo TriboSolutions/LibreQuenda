@@ -634,8 +634,8 @@
     "saved": "Desat.",
     "saveToPrint": "Activa-ho i desa per imprimir-ho.",
     "flash": {
-      "label": "Reservar un torn lliure a la porta",
-      "help": "Sense reserva, un veí pot reservar al moment el torn en curs o el que està a punt de començar, amb les normes de sempre: amb el QR personal en un lector o des del seu mòbil a la porta."
+      "label": "Permetre la reserva flash",
+      "help": "Sense reserva, un veí pot reservar al moment el torn en curs o el que està a punt de començar, amb les normes de sempre: amb el QR personal en un lector, amb el codi d’entrada o amb el QR de la porta. Qui ja té reserva entra igualment."
     },
     "print": {
       "back": "Tornar a la instal·lació",

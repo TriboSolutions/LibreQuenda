@@ -634,8 +634,8 @@
     "saved": "Guardado.",
     "saveToPrint": "Actívalo y guarda para imprimirlo.",
     "flash": {
-      "label": "Reservar un turno libre en la puerta",
-      "help": "Sin reserva, un vecino puede reservar en el momento el turno en curso o el que está a punto de empezar, con las normas de siempre: con el QR personal en un lector o desde su móvil en la puerta."
+      "label": "Permitir la reserva flash",
+      "help": "Sin reserva, un vecino puede reservar en el momento el turno en curso o el que está a punto de empezar, con las normas de siempre: con el QR personal en un lector, con el código de entrada o con el QR de la puerta. Quien ya tiene reserva entra igual."
     },
     "print": {
       "back": "Volver a la instalación",
