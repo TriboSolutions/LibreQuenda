@@ -9,7 +9,7 @@ import (
 	"github.com/angelbarreiros/Penguin/router/helpers"
 )
 
-func TestShouldEmailAndQR(t *testing.T) {
+func TestShouldEmailAndUsable(t *testing.T) {
 	var now = time.Date(2026, 11, 2, 10, 0, 0, 0, time.UTC)
 	var soon = model.ListPendingEmailsRow{Status: model.BookingStatusConfirmed, StartsAt: now.Add(10 * time.Minute), EndsAt: now.Add(70 * time.Minute), EmailReminders: true}
 	var with = func(change func(*model.ListPendingEmailsRow)) model.ListPendingEmailsRow {
@@ -20,7 +20,7 @@ func TestShouldEmailAndQR(t *testing.T) {
 	var cases = []struct {
 		name     string
 		row      model.ListPendingEmailsRow
-		send, qr bool
+		send, usable bool
 	}{
 		{"confirmed", with(func(r *model.ListPendingEmailsRow) { r.Type = model.NotificationTypeBookingConfirmed }), true, true},
 		{"confirmed, then cancelled", with(func(r *model.ListPendingEmailsRow) {
@@ -36,12 +36,12 @@ func TestShouldEmailAndQR(t *testing.T) {
 			r.Type = model.NotificationTypeBookingReminder
 			r.StartsAt = now.Add(-time.Minute)
 		}), false, true},
-		{"cancelled by the council: always, no QR", with(func(r *model.ListPendingEmailsRow) {
+		{"cancelled by the council: always, no ways in", with(func(r *model.ListPendingEmailsRow) {
 			r.Type = model.NotificationTypeBookingCancelledByCouncil
 			r.Status = model.BookingStatusCancelled
 			r.EmailReminders = false
 		}), true, false},
-		{"cancelled by the user: no QR", with(func(r *model.ListPendingEmailsRow) {
+		{"cancelled by the user: no ways in", with(func(r *model.ListPendingEmailsRow) {
 			r.Type = model.NotificationTypeBookingCancelled
 			r.Status = model.BookingStatusCancelled
 		}), true, false},
@@ -51,8 +51,8 @@ func TestShouldEmailAndQR(t *testing.T) {
 			if got := shouldEmail(c.row, now); got != c.send {
 				t.Errorf("shouldEmail() = %v, want %v", got, c.send)
 			}
-			if got := withQR(c.row, now); got != c.qr {
-				t.Errorf("withQR() = %v, want %v", got, c.qr)
+			if got := usable(c.row, now); got != c.usable {
+				t.Errorf("usable() = %v, want %v", got, c.usable)
 			}
 		})
 	}
@@ -104,5 +104,41 @@ func TestInvitationEmail(t *testing.T) {
 		!strings.Contains(message.Text, "/lalin/admin") || !strings.HasPrefix(message.Text, "Ola,") || strings.Contains(message.Text, "email.") ||
 		!strings.Contains(message.Text, "en Reservas Lalín") {
 		t.Errorf("invitation email: %q / %q", message.Subject, message.Text)
+	}
+}
+
+func TestEmailExplainsOnlyTheFacilityWaysIn(t *testing.T) {
+	helpers.GetI18nInstance(helpers.SetDefaultLocale("gl"), helpers.SetDirectory("../i18n"))
+	var now = time.Date(2026, 11, 2, 10, 0, 0, 0, time.UTC)
+	var row = model.ListPendingEmailsRow{
+		Type: model.NotificationTypeBookingConfirmed, Status: model.BookingStatusConfirmed,
+		StartsAt: now.Add(48 * time.Hour), EndsAt: now.Add(49 * time.Hour),
+		FacilityName: "Pavillón", TenantName: "Concello de Lalín", Timezone: "Europe/Madrid", Email: "a@example.com",
+	}
+	row.PreferredLanguage.String, row.PreferredLanguage.Valid = "en", true
+
+	// no way in: nothing to explain, no QR
+	var message, _ = notificationEmail(row, "LibreQuenda", now)
+	if strings.Contains(message.Text, "check in") || len(message.Inline) != 0 {
+		t.Errorf("no ways in, yet: %q, %d images", message.Text, len(message.Inline))
+	}
+
+	// only the entry code: one way, explained, and no QR
+	row.EntryCode = true
+	message, _ = notificationEmail(row, "LibreQuenda", now)
+	if !strings.Contains(message.Text, "To check in:") || !strings.Contains(message.Text, "Entry code:") || strings.Contains(message.Text, "QR reader") || len(message.Inline) != 0 {
+		t.Errorf("entry code only: %q, %d images", message.Text, len(message.Inline))
+	}
+
+	// a reader and staff too: every way, and the QR for the reader
+	row.HasReader, row.StaffConfirm = true, true
+	message, _ = notificationEmail(row, "LibreQuenda", now)
+	for _, want := range []string{"several ways", "QR reader:", "Entry code:", "Staff:"} {
+		if !strings.Contains(message.Text, want) {
+			t.Errorf("several ways: %q lacks %q", message.Text, want)
+		}
+	}
+	if strings.Contains(message.Text, "QR at the door") || len(message.Inline) != 1 || !strings.Contains(message.HTML, "cid:booking-qr") {
+		t.Errorf("several ways: %q, %d images", message.Text, len(message.Inline))
 	}
 }

@@ -27,7 +27,8 @@ type notificationEmailJob struct {
 }
 
 // registerNotificationEmailCronJob emails every notification: confirmations and
-// reminders carry the booking QR, cancellations say sorry.
+// reminders explain the facility's ways in (with the booking QR for a reader),
+// cancellations say sorry.
 func registerNotificationEmailCronJob(db *sql.DB, cronScheduler *scheduler.Scheduler) {
 	if _, ok := mailer.EnvRelay(); !ok {
 		log.Println("SMTP_HOST or SMTP_FROM not set: only councils with their own SMTP relay get emails")
@@ -127,15 +128,41 @@ func shouldEmail(row model.ListPendingEmailsRow, now time.Time) bool {
 	}
 }
 
-// withQR: the entry QR goes in while the booking can still be used.
-func withQR(row model.ListPendingEmailsRow, now time.Time) bool {
+// usable: how to get in is explained while the booking can still be used.
+func usable(row model.ListPendingEmailsRow, now time.Time) bool {
 	return row.Status == model.BookingStatusConfirmed && row.EndsAt.After(now) &&
 		row.Type != model.NotificationTypeBookingCancelled && row.Type != model.NotificationTypeBookingCancelledByCouncil
 }
 
+// waysIn: the facility's ways in, in the order the email explains them.
+func waysIn(row model.ListPendingEmailsRow) []model.CheckinMethod {
+	var ways []model.CheckinMethod
+	for _, way := range []struct {
+		on     bool
+		method model.CheckinMethod
+	}{
+		{row.HasReader, model.CheckinMethodReader},
+		{row.EntryCode, model.CheckinMethodEntryCode},
+		{row.PrintedQr, model.CheckinMethodPrintedQr},
+		{row.StaffConfirm, model.CheckinMethodStaff},
+	} {
+		if way.on {
+			ways = append(ways, way.method)
+		}
+	}
+	return ways
+}
+
 type emailView struct {
-	Greeting, Intro, Reason, QR, Address, Manage, ManageURL, Footer string
-	HasQR                                                           bool
+	Greeting, Intro, Reason, WaysTitle, Window, Address, Manage, ManageURL, Footer string
+	Ways                                                                           []emailWay
+	HasQR                                                                          bool // the booking QR, for a reader
+}
+
+// emailWay: one way in and how to use it; the reader's comes with the QR.
+type emailWay struct {
+	Text  string
+	HasQR bool
 }
 
 // councilCancellation is what CancelBookingsInRange stores: why, and for a closure until when.
@@ -153,8 +180,9 @@ var emailTemplate = template.Must(template.New("notification").Parse(`<!doctype 
 <p style="margin:0 0 12px">{{.Greeting}}</p>
 <p style="margin:0 0 16px">{{.Intro}}</p>
 {{if .Reason}}<p style="margin:0 0 16px">{{.Reason}}</p>{{end}}
-{{if .HasQR}}<p style="margin:0;text-align:center"><img src="cid:booking-qr" width="240" height="240" alt="QR" style="display:inline-block"></p>
-<p style="margin:16px 0">{{.QR}}</p>{{end}}
+{{if .Ways}}<p style="margin:0 0 8px;font-weight:600">{{.WaysTitle}}</p>
+<ul style="margin:0 0 12px;padding-left:20px">{{range .Ways}}<li style="margin:0 0 8px">{{.Text}}{{if .HasQR}}<br><img src="cid:booking-qr" width="200" height="200" alt="QR" style="display:block;margin:8px 0 0">{{end}}</li>{{end}}</ul>
+<p style="margin:0 0 16px;color:#5b6573">{{.Window}}</p>{{end}}
 {{if .Address}}<p style="margin:0 0 16px;color:#5b6573">{{.Address}}</p>{{end}}
 <p style="margin:0"><a href="{{.ManageURL}}" style="color:#0a6fb0">{{.Manage}}</a></p>
 </div>
@@ -184,7 +212,6 @@ func notificationEmail(row model.ListPendingEmailsRow, appName string, now time.
 		Manage:    t("manage"),
 		ManageURL: shared.PUBLIC_URL + "/reservas",
 		Footer:    t("footer", appName),
-		HasQR:     withQR(row, now),
 	}
 	if row.Type == model.NotificationTypeBookingReminder {
 		view.Footer = t("footer_reminders", shared.PUBLIC_URL+"/perfil")
@@ -207,8 +234,20 @@ func notificationEmail(row model.ListPendingEmailsRow, appName string, now time.
 	if name := strings.Fields(row.FullName.String); len(name) > 0 {
 		view.Greeting = t("greeting", name[0])
 	}
-	if view.HasQR {
-		view.QR = t("qr")
+	if usable(row, now) {
+		var ways = waysIn(row)
+		for _, way := range ways {
+			var reader = way == model.CheckinMethodReader
+			view.Ways = append(view.Ways, emailWay{Text: t("checkin."+string(way), shared.PUBLIC_URL+"/reservas"), HasQR: reader})
+			view.HasQR = view.HasQR || reader
+		}
+		if len(ways) > 0 {
+			view.WaysTitle = t("checkin.title_one")
+			if len(ways) > 1 {
+				view.WaysTitle = t("checkin.title_many")
+			}
+			view.Window = t("checkin.window")
+		}
 		if row.FacilityAddress.String != "" {
 			view.Address = t("address", row.FacilityAddress.String)
 		}
@@ -222,8 +261,12 @@ func notificationEmail(row model.ListPendingEmailsRow, appName string, now time.
 	if view.Reason != "" {
 		text = append(text, "", view.Reason)
 	}
-	if view.HasQR {
-		text = append(text, "", view.QR)
+	if len(view.Ways) > 0 {
+		text = append(text, "", view.WaysTitle)
+		for _, way := range view.Ways {
+			text = append(text, "- "+way.Text)
+		}
+		text = append(text, view.Window)
 	}
 	if view.Address != "" {
 		text = append(text, "", view.Address)

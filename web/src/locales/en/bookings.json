@@ -81,14 +81,14 @@
     "startsIn": "Starts in {{time}}",
     "open": "You can go in now",
     "running": "Under way · ends in {{time}}",
-    "in": "You went in at {{time}}"
+    "in": "Checked in at {{time}}"
   },
   "checkin": {
     "button": "Check in",
     "from": "Check-in from {{time}}",
     "title": "Check in",
     "description": "{{facility}}, {{day}}, {{start}}–{{end}}",
-    "intro": "This facility takes these ways in. Use whichever is at hand.",
+    "intro": "This facility takes these ways to check in. Use whichever is at hand.",
     "done": "You are checked in since {{time}}.",
     "close": "Close",
     "entry_code": {

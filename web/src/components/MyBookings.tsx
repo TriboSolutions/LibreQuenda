@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
-import { QrCode } from 'lucide-react'
 import { BookingOutcome } from '@/components/BookingOutcome'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -21,7 +20,6 @@ type Props = {
   onLogin: () => void
   onRegister: () => void
   onCancel: (booking: Booking) => void
-  onShowQr: (booking: Booking) => void
 }
 
 function When({ booking, timeZone, today }: { booking: Booking; timeZone: string; today: string }) {
@@ -32,7 +30,7 @@ function When({ booking, timeZone, today }: { booking: Booking; timeZone: string
   )
 }
 
-export function MyBookings({ authenticated, data, loading, error, timeZone, today, notice, onRetry, onLogin, onRegister, onCancel, onShowQr }: Props) {
+export function MyBookings({ authenticated, data, loading, error, timeZone, today, notice, onRetry, onLogin, onRegister, onCancel }: Props) {
   const { t } = useTranslation(['bookings', 'common', 'invites'])
   const upcoming = data?.upcoming ?? []
   const history = (data?.history ?? []).slice(0, 4)
@@ -112,12 +110,6 @@ export function MyBookings({ authenticated, data, loading, error, timeZone, toda
                     )}
                   </div>
                   <div className="flex shrink-0 items-center gap-1">
-                    {booking.checkin_code && (
-                      <Button variant="outline" size="sm" aria-label={t('bookings:qr.show')} onClick={() => onShowQr(booking)}>
-                        <QrCode aria-hidden />
-                        QR
-                      </Button>
-                    )}
                     {booking.role === 'participant' ? null : booking.can_cancel ? (
                       <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => onCancel(booking)}>
                         {t('bookings:cancel')}

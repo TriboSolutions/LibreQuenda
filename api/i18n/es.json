@@ -158,7 +158,15 @@
   "email": {
     "greeting": "Hola {{0}}:",
     "greeting_anonymous": "Hola:",
-    "qr": "Muestra este código QR en el lector de la entrada. Funciona desde 15 minutos antes del inicio hasta el final de la reserva.",
+    "checkin": {
+      "title_one": "Para registrar la entrada:",
+      "title_many": "Esta instalación admite varias formas de registrar la entrada; usa la que tengas a mano:",
+      "reader": "Lector QR: muestra este código QR en el lector de la entrada.",
+      "entry_code": "Código de entrada: escribe el código que está en la puerta o en el mostrador desde «Tus reservas» → Registrar entrada ({{0}}), con la ubicación del móvil activada.",
+      "printed_qr": "QR de la puerta: desde «Tus reservas» → Registrar entrada ({{0}}), abre la cámara y escanea el QR impreso en la puerta, con la ubicación del móvil activada.",
+      "staff": "Personal: dile tu nombre al personal de la instalación y ellos marcan tu entrada.",
+      "window": "Puedes registrar la entrada desde 15 minutos antes del comienzo hasta el final de la reserva."
+    },
     "address": "Dirección: {{0}}",
     "manage": "Ver tus reservas",
     "footer": "Este es un mensaje automático de {{0}} sobre tu reserva.",

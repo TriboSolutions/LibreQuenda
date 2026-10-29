@@ -81,14 +81,14 @@
     "startsIn": "Empeza en {{time}}",
     "open": "Xa podes entrar",
     "running": "En curso · remata en {{time}}",
-    "in": "Entraches ás {{time}}"
+    "in": "Entrada rexistrada ás {{time}}"
   },
   "checkin": {
     "button": "Rexistrar entrada",
     "from": "Entrada desde as {{time}}",
     "title": "Rexistrar a entrada",
     "description": "{{facility}}, {{day}}, {{start}}–{{end}}",
-    "intro": "Esta instalación admite estas formas de entrar. Usa a que teñas á man.",
+    "intro": "Esta instalación admite estas formas de rexistrar a entrada. Usa a que teñas á man.",
     "done": "Xa tes a entrada rexistrada ás {{time}}.",
     "close": "Pechar",
     "entry_code": {
