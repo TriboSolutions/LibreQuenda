@@ -182,6 +182,12 @@ SELECT
     f.name     AS facility_name,
     f.slug     AS facility_slug,
     f.address  AS facility_address,
+    f.latitude  AS facility_latitude,
+    f.longitude AS facility_longitude,
+    f.contact_phone AS facility_phone,
+    f.contact_email AS facility_email,
+    t.contact_phone AS tenant_phone,
+    t.contact_email AS tenant_email,
     t.name     AS tenant_name,
     t.slug     AS tenant_slug,
     t.timezone AS timezone,
@@ -229,6 +235,12 @@ type ListPendingEmailsRow struct {
 	FacilityName      string           `json:"facility_name"`
 	FacilitySlug      string           `json:"facility_slug"`
 	FacilityAddress   sql.NullString   `json:"facility_address"`
+	FacilityLatitude  sql.NullFloat64  `json:"facility_latitude"`
+	FacilityLongitude sql.NullFloat64  `json:"facility_longitude"`
+	FacilityPhone     sql.NullString   `json:"facility_phone"`
+	FacilityEmail     sql.NullString   `json:"facility_email"`
+	TenantPhone       sql.NullString   `json:"tenant_phone"`
+	TenantEmail       sql.NullString   `json:"tenant_email"`
 	TenantName        string           `json:"tenant_name"`
 	TenantSlug        string           `json:"tenant_slug"`
 	Timezone          string           `json:"timezone"`
@@ -266,6 +278,12 @@ func (q *Queries) ListPendingEmails(ctx context.Context, arg ListPendingEmailsPa
 			&i.FacilityName,
 			&i.FacilitySlug,
 			&i.FacilityAddress,
+			&i.FacilityLatitude,
+			&i.FacilityLongitude,
+			&i.FacilityPhone,
+			&i.FacilityEmail,
+			&i.TenantPhone,
+			&i.TenantEmail,
 			&i.TenantName,
 			&i.TenantSlug,
 			&i.Timezone,

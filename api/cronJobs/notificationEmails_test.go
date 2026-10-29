@@ -1,6 +1,7 @@
 package cronJobs
 
 import (
+	"database/sql"
 	"librequenda/model"
 	"strings"
 	"testing"
@@ -18,8 +19,8 @@ func TestShouldEmailAndUsable(t *testing.T) {
 		return row
 	}
 	var cases = []struct {
-		name     string
-		row      model.ListPendingEmailsRow
+		name         string
+		row          model.ListPendingEmailsRow
 		send, usable bool
 	}{
 		{"confirmed", with(func(r *model.ListPendingEmailsRow) { r.Type = model.NotificationTypeBookingConfirmed }), true, true},
@@ -140,5 +141,46 @@ func TestEmailExplainsOnlyTheFacilityWaysIn(t *testing.T) {
 	}
 	if strings.Contains(message.Text, "QR at the door") || len(message.Inline) != 1 || !strings.Contains(message.HTML, "cid:booking-qr") {
 		t.Errorf("several ways: %q, %d images", message.Text, len(message.Inline))
+	}
+}
+
+func TestEmailLinksDirectionsAndContacts(t *testing.T) {
+	helpers.GetI18nInstance(helpers.SetDefaultLocale("gl"), helpers.SetDirectory("../i18n"))
+	var now = time.Date(2026, 11, 2, 10, 0, 0, 0, time.UTC)
+	var row = model.ListPendingEmailsRow{
+		Type: model.NotificationTypeBookingConfirmed, Status: model.BookingStatusConfirmed,
+		StartsAt: now.Add(48 * time.Hour), EndsAt: now.Add(49 * time.Hour),
+		FacilityName: "Pavillón", TenantName: "Concello de Lalín", Timezone: "Europe/Madrid", Email: "a@example.com",
+		EntryCode:         true,
+		FacilityLatitude:  sql.NullFloat64{Float64: 42.66453, Valid: true},
+		FacilityLongitude: sql.NullFloat64{Float64: -8.10815, Valid: true},
+		FacilityPhone:     sql.NullString{String: "986 787 060", Valid: true},
+		TenantEmail:       sql.NullString{String: "lalin@lalin.org", Valid: true},
+	}
+	row.PreferredLanguage.String, row.PreferredLanguage.Valid = "en", true
+	var message, err = notificationEmail(row, "LibreQuenda", now)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{
+		`href="https://www.google.com/maps/dir/?api=1&amp;destination=42.66453,-8.10815"`, // how to get there
+		`>Check in</a>`,                 // the entry code's link, clickable
+		`href="tel:986787060"`,          // the facility's phone
+		`href="mailto:lalin@lalin.org"`, // the council's email
+		"Facility contact (Pavillón):", "Concello de Lalín contact:",
+	} {
+		if !strings.Contains(message.HTML, want) {
+			t.Errorf("HTML lacks %s:\n%s", want, message.HTML)
+		}
+	}
+	if !strings.Contains(message.Text, "How to get there: https://www.google.com/maps/dir/") || !strings.Contains(message.Text, "986 787 060") {
+		t.Errorf("text lacks directions or phone: %q", message.Text)
+	}
+
+	// a cancellation still says who to ask, but not how to get there
+	row.Type, row.Status = model.NotificationTypeBookingCancelledByCouncil, model.BookingStatusCancelled
+	message, _ = notificationEmail(row, "LibreQuenda", now)
+	if strings.Contains(message.HTML, "google.com/maps") || !strings.Contains(message.HTML, "mailto:lalin@lalin.org") {
+		t.Errorf("cancellation: %s", message.HTML)
 	}
 }

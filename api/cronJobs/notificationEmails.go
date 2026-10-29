@@ -5,6 +5,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"html/template"
 	"librequenda/branding"
 	"librequenda/checkin"
@@ -154,15 +155,44 @@ func waysIn(row model.ListPendingEmailsRow) []model.CheckinMethod {
 }
 
 type emailView struct {
-	Greeting, Intro, Reason, WaysTitle, Window, Address, Manage, ManageURL, Footer string
-	Ways                                                                           []emailWay
-	HasQR                                                                          bool // the booking QR, for a reader
+	Greeting, Intro, Reason, WaysTitle, Window, Address, Directions, Manage, ManageURL, Footer string
+	DirectionsURL                                                                              string
+	Ways                                                                                       []emailWay
+	Contacts                                                                                   []emailContact
+	HasQR                                                                                      bool // the booking QR, for a reader
 }
 
-// emailWay: one way in and how to use it; the reader's comes with the QR.
+// emailWay: one way to check in and how to use it; the reader's comes with the
+// QR, the phone's with a link to where it is done.
 type emailWay struct {
-	Text  string
-	HasQR bool
+	Text, Link, LinkURL string
+	HasQR               bool
+}
+
+// emailContact: who to call or write to, the facility or the council.
+type emailContact struct {
+	Label, Phone, Email string
+	PhoneURL, EmailURL  template.URL // tel: and mailto:, which html/template would otherwise blank
+}
+
+// contact: nil when there is neither a phone nor an email.
+func contact(label string, phone, email sql.NullString) *emailContact {
+	var c = emailContact{Label: label, Phone: strings.TrimSpace(phone.String), Email: strings.TrimSpace(email.String)}
+	if c.Phone == "" && c.Email == "" {
+		return nil
+	}
+	if c.Phone != "" {
+		c.PhoneURL = template.URL("tel:" + strings.Join(strings.Fields(c.Phone), ""))
+	}
+	if c.Email != "" {
+		c.EmailURL = template.URL("mailto:" + c.Email)
+	}
+	return &c
+}
+
+// directionsURL: the route there in the visitor's own maps, as on the web (web/src/lib/maps.ts).
+func directionsURL(latitude, longitude float64) string {
+	return fmt.Sprintf("https://www.google.com/maps/dir/?api=1&destination=%v,%v", latitude, longitude)
 }
 
 // councilCancellation is what CancelBookingsInRange stores: why, and for a closure until when.
@@ -181,9 +211,10 @@ var emailTemplate = template.Must(template.New("notification").Parse(`<!doctype 
 <p style="margin:0 0 16px">{{.Intro}}</p>
 {{if .Reason}}<p style="margin:0 0 16px">{{.Reason}}</p>{{end}}
 {{if .Ways}}<p style="margin:0 0 8px;font-weight:600">{{.WaysTitle}}</p>
-<ul style="margin:0 0 12px;padding-left:20px">{{range .Ways}}<li style="margin:0 0 8px">{{.Text}}{{if .HasQR}}<br><img src="cid:booking-qr" width="200" height="200" alt="QR" style="display:block;margin:8px 0 0">{{end}}</li>{{end}}</ul>
+<ul style="margin:0 0 12px;padding-left:20px">{{range .Ways}}<li style="margin:0 0 8px">{{.Text}}{{if .LinkURL}} <a href="{{.LinkURL}}" style="color:#0a6fb0">{{.Link}}</a>{{end}}{{if .HasQR}}<br><img src="cid:booking-qr" width="200" height="200" alt="QR" style="display:block;margin:8px 0 0">{{end}}</li>{{end}}</ul>
 <p style="margin:0 0 16px;color:#5b6573">{{.Window}}</p>{{end}}
-{{if .Address}}<p style="margin:0 0 16px;color:#5b6573">{{.Address}}</p>{{end}}
+{{if or .Address .DirectionsURL}}<p style="margin:0 0 16px">{{if .Address}}<span style="color:#5b6573">{{.Address}}</span>{{end}}{{if and .Address .DirectionsURL}}<br>{{end}}{{if .DirectionsURL}}<a href="{{.DirectionsURL}}" style="color:#0a6fb0">{{.Directions}}</a>{{end}}</p>{{end}}
+{{range .Contacts}}<p style="margin:0 0 12px"><span style="color:#5b6573">{{.Label}}</span>{{if .Phone}}<br><a href="{{.PhoneURL}}" style="color:#0a6fb0">{{.Phone}}</a>{{end}}{{if .Email}}<br><a href="{{.EmailURL}}" style="color:#0a6fb0">{{.Email}}</a>{{end}}</p>{{end}}
 <p style="margin:0"><a href="{{.ManageURL}}" style="color:#0a6fb0">{{.Manage}}</a></p>
 </div>
 <p style="max-width:480px;margin:16px auto 0;color:#5b6573;font-size:12px;line-height:18px">{{.Footer}}</p>
@@ -238,7 +269,11 @@ func notificationEmail(row model.ListPendingEmailsRow, appName string, now time.
 		var ways = waysIn(row)
 		for _, way := range ways {
 			var reader = way == model.CheckinMethodReader
-			view.Ways = append(view.Ways, emailWay{Text: t("checkin."+string(way), shared.PUBLIC_URL+"/reservas"), HasQR: reader})
+			var item = emailWay{Text: t("checkin." + string(way)), HasQR: reader}
+			if way == model.CheckinMethodEntryCode || way == model.CheckinMethodPrintedQr {
+				item.Link, item.LinkURL = t("checkin.open"), shared.PUBLIC_URL+"/reservas"
+			}
+			view.Ways = append(view.Ways, item)
 			view.HasQR = view.HasQR || reader
 		}
 		if len(ways) > 0 {
@@ -250,6 +285,18 @@ func notificationEmail(row model.ListPendingEmailsRow, appName string, now time.
 		}
 		if row.FacilityAddress.String != "" {
 			view.Address = t("address", row.FacilityAddress.String)
+		}
+		if row.FacilityLatitude.Valid && row.FacilityLongitude.Valid {
+			view.Directions, view.DirectionsURL = t("directions"), directionsURL(row.FacilityLatitude.Float64, row.FacilityLongitude.Float64)
+		}
+	}
+	// who to ask: the facility's own contact, then the council's
+	for _, c := range []*emailContact{
+		contact(t("contact_facility", row.FacilityName), row.FacilityPhone, row.FacilityEmail),
+		contact(t("contact_council", row.TenantName), row.TenantPhone, row.TenantEmail),
+	} {
+		if c != nil {
+			view.Contacts = append(view.Contacts, *c)
 		}
 	}
 
@@ -264,12 +311,29 @@ func notificationEmail(row model.ListPendingEmailsRow, appName string, now time.
 	if len(view.Ways) > 0 {
 		text = append(text, "", view.WaysTitle)
 		for _, way := range view.Ways {
-			text = append(text, "- "+way.Text)
+			var line = "- " + way.Text
+			if way.LinkURL != "" {
+				line += " " + way.Link + ": " + way.LinkURL
+			}
+			text = append(text, line)
 		}
 		text = append(text, view.Window)
 	}
 	if view.Address != "" {
 		text = append(text, "", view.Address)
+	}
+	if view.DirectionsURL != "" {
+		text = append(text, view.Directions+": "+view.DirectionsURL)
+	}
+	for _, c := range view.Contacts {
+		var lines = []string{"", c.Label}
+		if c.Phone != "" {
+			lines = append(lines, c.Phone)
+		}
+		if c.Email != "" {
+			lines = append(lines, c.Email)
+		}
+		text = append(text, lines...)
 	}
 	text = append(text, "", view.Manage+": "+view.ManageURL, "", "--", view.Footer)
 
