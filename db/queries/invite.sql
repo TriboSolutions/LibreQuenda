@@ -211,3 +211,66 @@ WHERE
     p.booking_id = ANY(sqlc.arg('booking_ids')::UUID[])
 ORDER BY
     p.joined_at ASC;
+
+-- name: LockPublicBooking :one
+-- Inside the join transaction of a public booking, like LockBookingByInviteToken.
+SELECT
+    b.id,
+    b.user_id AS owner_id,
+    b.starts_at,
+    b.ends_at,
+    b.status,
+    f.capacity,
+    f.min_age,
+    t.timezone
+FROM
+    booking b
+    JOIN facility f ON f.id = b.facility_id
+    JOIN tenant   t ON t.id = f.tenant_id
+WHERE
+    b.id = sqlc.arg('id')
+    AND b.is_public = TRUE
+FOR UPDATE OF b;
+
+-- name: SetBookingPublic :execrows
+-- The owner makes an upcoming booking public or private again; capacity is checked in the API.
+UPDATE booking
+SET
+    is_public  = sqlc.arg('is_public'),
+    updated_at = NOW()
+WHERE
+    id = sqlc.arg('id')
+    AND user_id = sqlc.arg('owner_id')
+    AND status = 'confirmed'
+    AND starts_at > NOW();
+
+-- name: ListJoinablePublicBookings :many
+-- «For you»: upcoming public bookings with spots left that the person neither
+-- owns nor has joined, until `until`; the API keeps those near them or like theirs.
+SELECT
+    b.id,
+    b.starts_at,
+    b.ends_at,
+    f.id   AS facility_id,
+    f.capacity,
+    split_part(trim(COALESCE(u.full_name, '')), ' ', 1)::TEXT AS owner_first_name,
+    (SELECT COUNT(*) FROM booking_participant p WHERE p.booking_id = b.id) AS participant_count
+FROM
+    booking b
+    JOIN facility f ON f.id = b.facility_id
+    JOIN tenant   t ON t.id = f.tenant_id
+    LEFT JOIN app_user u ON u.id = b.user_id
+WHERE
+    b.is_public = TRUE
+    AND b.status = 'confirmed'
+    AND b.starts_at > NOW()
+    AND b.starts_at < sqlc.arg('until')
+    AND f.is_active = TRUE
+    AND t.is_active = TRUE
+    AND f.capacity > 1
+    AND (b.user_id IS NULL OR b.user_id <> sqlc.arg('user_id'))
+    AND NOT EXISTS (SELECT 1 FROM booking_participant p WHERE p.booking_id = b.id AND p.user_id = sqlc.arg('user_id'))
+    AND (SELECT COUNT(*) FROM booking_participant p WHERE p.booking_id = b.id) < f.capacity - 1
+ORDER BY
+    b.starts_at
+LIMIT 200;

@@ -47,11 +47,11 @@ export function FacilityPage() {
   const timeZone = data?.timezone ?? 'Europe/Madrid'
   const today = data ? localDate(data.now, data.timezone) : ''
 
-  const confirm = async (facility: Facility, slot: Slot) => {
+  const confirm = async (facility: Facility, slot: Slot, isPublic: boolean) => {
     const token = auth.user?.access_token
     if (!token) return t('bookings:dialog.needLogin')
     try {
-      const booking = await api.book(token, facility.id, slot.starts_at, true) // the dialog only enables booking once the rules are accepted
+      const booking = await api.book(token, facility.id, slot.starts_at, true, isPublic) // the dialog only enables booking once the rules are accepted
       setPick(null)
       setNotice(
         t('bookings:notice.booked', {

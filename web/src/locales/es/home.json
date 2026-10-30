@@ -66,6 +66,14 @@
     "more": "Ver {{count}} más",
     "less": "Ver menos",
     "hide": "No mostrar",
-    "settings": "Puedes volver a activarlo en tu perfil."
+    "settings": "Puedes volver a activarlo en tu perfil.",
+    "public": "Reserva pública",
+    "publicBy": "Reserva pública de {{name}}",
+    "join": "Unirme",
+    "joining": "Uniéndome…",
+    "joined": "Ya estás dentro.",
+    "seeBookings": "Ver mis reservas",
+    "spots_one": "Queda {{count}} plaza",
+    "spots_other": "Quedan {{count}} plazas"
   }
 }

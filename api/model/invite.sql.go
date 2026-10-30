@@ -331,6 +331,84 @@ func (q *Queries) LeaveBooking(ctx context.Context, arg LeaveBookingParams) (int
 	return result.RowsAffected()
 }
 
+const listJoinablePublicBookings = `-- name: ListJoinablePublicBookings :many
+SELECT
+    b.id,
+    b.starts_at,
+    b.ends_at,
+    f.id   AS facility_id,
+    f.capacity,
+    split_part(trim(COALESCE(u.full_name, '')), ' ', 1)::TEXT AS owner_first_name,
+    (SELECT COUNT(*) FROM booking_participant p WHERE p.booking_id = b.id) AS participant_count
+FROM
+    booking b
+    JOIN facility f ON f.id = b.facility_id
+    JOIN tenant   t ON t.id = f.tenant_id
+    LEFT JOIN app_user u ON u.id = b.user_id
+WHERE
+    b.is_public = TRUE
+    AND b.status = 'confirmed'
+    AND b.starts_at > NOW()
+    AND b.starts_at < $1
+    AND f.is_active = TRUE
+    AND t.is_active = TRUE
+    AND f.capacity > 1
+    AND (b.user_id IS NULL OR b.user_id <> $2)
+    AND NOT EXISTS (SELECT 1 FROM booking_participant p WHERE p.booking_id = b.id AND p.user_id = $2)
+    AND (SELECT COUNT(*) FROM booking_participant p WHERE p.booking_id = b.id) < f.capacity - 1
+ORDER BY
+    b.starts_at
+LIMIT 200
+`
+
+type ListJoinablePublicBookingsParams struct {
+	Until  time.Time     `json:"until"`
+	UserID uuid.NullUUID `json:"user_id"`
+}
+
+type ListJoinablePublicBookingsRow struct {
+	ID               uuid.UUID     `json:"id"`
+	StartsAt         time.Time     `json:"starts_at"`
+	EndsAt           time.Time     `json:"ends_at"`
+	FacilityID       uuid.UUID     `json:"facility_id"`
+	Capacity         sql.NullInt32 `json:"capacity"`
+	OwnerFirstName   string        `json:"owner_first_name"`
+	ParticipantCount int64         `json:"participant_count"`
+}
+
+// «For you»: upcoming public bookings with spots left that the person neither
+// owns nor has joined, until `until`; the API keeps those near them or like theirs.
+func (q *Queries) ListJoinablePublicBookings(ctx context.Context, arg ListJoinablePublicBookingsParams) ([]ListJoinablePublicBookingsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listJoinablePublicBookings, arg.Until, arg.UserID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListJoinablePublicBookingsRow
+	for rows.Next() {
+		var i ListJoinablePublicBookingsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.StartsAt,
+			&i.EndsAt,
+			&i.FacilityID,
+			&i.Capacity,
+			&i.OwnerFirstName,
+			&i.ParticipantCount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listParticipantsByBooking = `-- name: ListParticipantsByBooking :many
 SELECT
     p.id,
@@ -599,6 +677,54 @@ func (q *Queries) LockBookingByInviteToken(ctx context.Context, inviteToken uuid
 	return i, err
 }
 
+const lockPublicBooking = `-- name: LockPublicBooking :one
+SELECT
+    b.id,
+    b.user_id AS owner_id,
+    b.starts_at,
+    b.ends_at,
+    b.status,
+    f.capacity,
+    f.min_age,
+    t.timezone
+FROM
+    booking b
+    JOIN facility f ON f.id = b.facility_id
+    JOIN tenant   t ON t.id = f.tenant_id
+WHERE
+    b.id = $1
+    AND b.is_public = TRUE
+FOR UPDATE OF b
+`
+
+type LockPublicBookingRow struct {
+	ID       uuid.UUID     `json:"id"`
+	OwnerID  uuid.NullUUID `json:"owner_id"`
+	StartsAt time.Time     `json:"starts_at"`
+	EndsAt   time.Time     `json:"ends_at"`
+	Status   BookingStatus `json:"status"`
+	Capacity sql.NullInt32 `json:"capacity"`
+	MinAge   sql.NullInt32 `json:"min_age"`
+	Timezone string        `json:"timezone"`
+}
+
+// Inside the join transaction of a public booking, like LockBookingByInviteToken.
+func (q *Queries) LockPublicBooking(ctx context.Context, id uuid.UUID) (LockPublicBookingRow, error) {
+	row := q.db.QueryRowContext(ctx, lockPublicBooking, id)
+	var i LockPublicBookingRow
+	err := row.Scan(
+		&i.ID,
+		&i.OwnerID,
+		&i.StartsAt,
+		&i.EndsAt,
+		&i.Status,
+		&i.Capacity,
+		&i.MinAge,
+		&i.Timezone,
+	)
+	return i, err
+}
+
 const removeParticipant = `-- name: RemoveParticipant :execrows
 DELETE FROM booking_participant p
 USING booking b
@@ -647,4 +773,31 @@ func (q *Queries) SetBookingInviteToken(ctx context.Context, arg SetBookingInvit
 	var invite_token uuid.NullUUID
 	err := row.Scan(&invite_token)
 	return invite_token, err
+}
+
+const setBookingPublic = `-- name: SetBookingPublic :execrows
+UPDATE booking
+SET
+    is_public  = $1,
+    updated_at = NOW()
+WHERE
+    id = $2
+    AND user_id = $3
+    AND status = 'confirmed'
+    AND starts_at > NOW()
+`
+
+type SetBookingPublicParams struct {
+	IsPublic bool          `json:"is_public"`
+	ID       uuid.UUID     `json:"id"`
+	OwnerID  uuid.NullUUID `json:"owner_id"`
+}
+
+// The owner makes an upcoming booking public or private again; capacity is checked in the API.
+func (q *Queries) SetBookingPublic(ctx context.Context, arg SetBookingPublicParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, setBookingPublic, arg.IsPublic, arg.ID, arg.OwnerID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
 }

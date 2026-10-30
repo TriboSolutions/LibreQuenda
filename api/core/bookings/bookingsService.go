@@ -94,7 +94,18 @@ func (s *bookingsService) CreateBooking(ctx context.Context, userId uuid.UUID, b
 	if slotErr != nil {
 		return nil, slotErr
 	}
-	return s.book(ctx, queries, userId, facility, slot)
+	var booking, bookErr = s.book(ctx, queries, userId, facility, slot)
+	if bookErr != nil || !body.Public {
+		return booking, bookErr
+	}
+	// public: only where others can join (room for more than the owner); the booking stands either way
+	if facility.Capacity.Valid && facility.Capacity.Int32 > 1 {
+		var id = uuid.MustParse(booking.Id)
+		if _, err := queries.SetBookingPublic(ctx, model.SetBookingPublicParams{ID: id, OwnerID: uuid.NullUUID{UUID: userId, Valid: true}, IsPublic: true}); err == nil {
+			booking.IsPublic = true
+		}
+	}
+	return booking, nil
 }
 
 // book creates the booking of a turn already found free, within the person's

@@ -66,6 +66,14 @@
     "more": "Show {{count}} more",
     "less": "Show fewer",
     "hide": "Hide",
-    "settings": "You can turn it back on in your profile."
+    "settings": "You can turn it back on in your profile.",
+    "public": "Public booking",
+    "publicBy": "{{name}}’s public booking",
+    "join": "Join",
+    "joining": "Joining…",
+    "joined": "You are in.",
+    "seeBookings": "See my bookings",
+    "spots_one": "{{count}} spot left",
+    "spots_other": "{{count}} spots left"
   }
 }

@@ -57,7 +57,7 @@ INSERT INTO booking (
     $7
 )
 RETURNING
-    id, facility_id, user_id, starts_at, ends_at, status, rules_accepted_at, channel, booked_by, holder_name, holder_phone, cancelled_at, cancelled_by, created_at, updated_at, checkin_token, checked_in_at, checked_in_device_id, checked_in_method, checked_in_by, invite_token
+    id, facility_id, user_id, starts_at, ends_at, status, rules_accepted_at, channel, booked_by, holder_name, holder_phone, cancelled_at, cancelled_by, created_at, updated_at, checkin_token, checked_in_at, checked_in_device_id, checked_in_method, checked_in_by, invite_token, is_public
 `
 
 type CreateStaffBookingParams struct {
@@ -105,6 +105,7 @@ func (q *Queries) CreateStaffBooking(ctx context.Context, arg CreateStaffBooking
 		&i.CheckedInMethod,
 		&i.CheckedInBy,
 		&i.InviteToken,
+		&i.IsPublic,
 	)
 	return i, err
 }
