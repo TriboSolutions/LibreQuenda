@@ -41,7 +41,7 @@
     "noRules": "Aquesta instal·lació no té normes específiques: s’apliquen les normes generals de l’ajuntament.",
     "minAge": "Edat mínima",
     "minAgeValue": "{{count}} anys",
-    "public": "Fer pública la reserva",
+    "public": "Fes pública la reserva",
     "publicHelp": "Qualsevol persona amb compte la podrà veure a «Per a tu» i unir-s’hi mentre quedin places. Només es mostra el teu nom de pila."
   },
   "cancelDialog": {

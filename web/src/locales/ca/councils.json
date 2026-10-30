@@ -48,8 +48,8 @@
     "none": "No hi ha instal·lacions per mostrar.",
     "noFree": "Sense torns lliures aquest dia.",
     "freeTurns": "Torns lliures a {{facility}}",
-    "book": "Reservar {{facility}} a les {{time}}, obre una pestanya nova",
+    "book": "Reserva {{facility}} a les {{time}}, obre una pestanya nova",
     "newTab": "obre una pestanya nova",
-    "bookIn": "Reservar a {{app}}"
+    "bookIn": "Reserva a {{app}}"
   }
 }
