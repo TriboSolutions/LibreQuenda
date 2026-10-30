@@ -223,3 +223,25 @@ WHERE
     AND b.ends_at > NOW() - INTERVAL '30 days'
 ORDER BY
     b.starts_at ASC;
+
+-- name: ListUserBookingPatterns :many
+-- For the home page's recommendations: what the person booked or joined since
+-- `since` (not cancelled), by facility, local weekday (ISO: 1 = Monday) and
+-- starting time, in the facility's council time zone.
+SELECT
+    b.facility_id,
+    EXTRACT(ISODOW FROM b.starts_at AT TIME ZONE t.timezone)::INT AS weekday,
+    to_char(b.starts_at AT TIME ZONE t.timezone, 'HH24:MI')::TEXT AS start_time,
+    COUNT(*) AS bookings
+FROM
+    booking b
+    JOIN facility f ON f.id = b.facility_id
+    JOIN tenant   t ON t.id = f.tenant_id
+WHERE
+    (b.user_id = sqlc.arg('user_id')
+        OR EXISTS (SELECT 1 FROM booking_participant p WHERE p.booking_id = b.id AND p.user_id = sqlc.arg('user_id')))
+    AND b.status = 'confirmed'
+    AND b.starts_at >= sqlc.arg('since')
+    AND f.is_active = TRUE
+GROUP BY
+    1, 2, 3;

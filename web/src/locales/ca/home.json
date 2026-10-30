@@ -52,5 +52,15 @@
     "filterBy_one": "Filtra per {{category}}, {{count}} triada",
     "filterBy_other": "Filtra per {{category}}, {{count}} triades",
     "clearCategory": "Treu aquestes"
+  },
+  "forYou": {
+    "title": "Per a tu",
+    "help": "A partir de les teves reserves i del que queda lliure avui.",
+    "usual_one": "Acostumes a reservar els {{weekday}} a les {{time}} ({{count}} vegada)",
+    "usual_other": "Acostumes a reservar els {{weekday}} a les {{time}} ({{count}} vegades)",
+    "favourite_one": "Has reservat aquí {{count}} vegada",
+    "favourite_other": "Has reservat aquí {{count}} vegades",
+    "similar": "Com {{facility}}: {{tags}}",
+    "freeAt": "Lliure avui a les {{time}}"
   }
 }

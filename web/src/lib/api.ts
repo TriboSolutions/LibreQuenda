@@ -424,6 +424,17 @@ export type PublicInvite = {
   facility: FacilityDetails // image, address, rules and minimum age, before joining
 }
 
+/** The home page's "For you": from the signed-in person's own bookings and today's free turns. */
+export type Recommendation = {
+  kind: 'usual_today' | 'favourite' | 'similar'
+  facility: FacilityCard
+  starts_at: string // usual_today: that free turn; favourite and similar: the next free turn today
+  times?: number // usual_today: bookings that weekday and time; favourite: bookings there
+  weekday?: number // usual_today: ISO, 1 = Monday
+  because?: string // similar: the facility of theirs it is like
+  shared_tags?: string[] // similar: the tags (slugs) they share
+}
+
 export type MyBookings = { upcoming: Booking[]; history: Booking[] }
 
 export type Me = {
@@ -727,6 +738,7 @@ export const api = {
     verifyEmail: (token: string, code: string) => request<void>('/me/account/email/verify', { token, method: 'POST', body: { code } }),
   },
   myBookings: (token: string) => request<MyBookings>('/me/bookings', { token }),
+  recommendations: (token: string) => request<{ recommendations: Recommendation[] }>('/me/recommendations', { token }),
   facilityPage: (slug: string, facility: string, date?: string) =>
     request<FacilityPage>(`/tenants/${encodeURIComponent(slug)}/facilities/${encodeURIComponent(facility)}${date ? `?date=${date}` : ''}`),
   // acceptRules: the resident ticked "I have read the rules"; the API refuses the booking otherwise

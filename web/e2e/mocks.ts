@@ -455,6 +455,21 @@ const entrance = {
   booking: null,
 }
 
+// "For you": their usual Friday 19:00 free today, a facility they book often, one alike
+const recommendations = {
+  recommendations: [
+    { kind: 'usual_today', facility: facilityCards[0], starts_at: at(3), times: 5, weekday: 5 },
+    { kind: 'favourite', facility: facilityCards[1], starts_at: at(4), times: 3 },
+    {
+      kind: 'similar',
+      facility: { ...facilityCards[0], id: 'f4', slug: 'padel-2', name: 'Pista de pádel 2' },
+      starts_at: at(2),
+      because: facilityCards[0].name,
+      shared_tags: ['cuberta'],
+    },
+  ],
+}
+
 /** GET handlers by path (without /api), first match wins. */
 const routes: [RegExp, () => unknown][] = [
   [/^\/tenants$/, () => ({ tenants })],
@@ -475,6 +490,7 @@ const routes: [RegExp, () => unknown][] = [
   [/^\/me\/qr$/, () => ({ code: 'lq2:0b5e1a8e-6f1d-4c1e-9a55-3f6c2d7b9e10', expires_at: at(1), refresh_seconds: 60 })],
   [/^\/me\/calendar$/, () => ({ url: 'https://reservas.example.org/api/calendar/7c9e6679-7425-40de-944b-e07fc1f90ae7.ics' })],
   [/^\/me\/bookings$/, () => myBookings],
+  [/^\/me\/recommendations$/, () => recommendations],
   [/^\/me\/bookings\/[^/]+\/invite$/, () => invite],
   [/^\/me\/notifications$/, () => notifications],
   [/^\/invites\/[^/]+$/, () => publicInvite],

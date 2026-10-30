@@ -502,6 +502,69 @@ func (q *Queries) ListConfirmedBookingsInRange(ctx context.Context, arg ListConf
 	return items, nil
 }
 
+const listUserBookingPatterns = `-- name: ListUserBookingPatterns :many
+SELECT
+    b.facility_id,
+    EXTRACT(ISODOW FROM b.starts_at AT TIME ZONE t.timezone)::INT AS weekday,
+    to_char(b.starts_at AT TIME ZONE t.timezone, 'HH24:MI')::TEXT AS start_time,
+    COUNT(*) AS bookings
+FROM
+    booking b
+    JOIN facility f ON f.id = b.facility_id
+    JOIN tenant   t ON t.id = f.tenant_id
+WHERE
+    (b.user_id = $1
+        OR EXISTS (SELECT 1 FROM booking_participant p WHERE p.booking_id = b.id AND p.user_id = $1))
+    AND b.status = 'confirmed'
+    AND b.starts_at >= $2
+    AND f.is_active = TRUE
+GROUP BY
+    1, 2, 3
+`
+
+type ListUserBookingPatternsParams struct {
+	UserID uuid.NullUUID `json:"user_id"`
+	Since  time.Time     `json:"since"`
+}
+
+type ListUserBookingPatternsRow struct {
+	FacilityID uuid.UUID `json:"facility_id"`
+	Weekday    int32     `json:"weekday"`
+	StartTime  string    `json:"start_time"`
+	Bookings   int64     `json:"bookings"`
+}
+
+// For the home page's recommendations: what the person booked or joined since
+// `since` (not cancelled), by facility, local weekday (ISO: 1 = Monday) and
+// starting time, in the facility's council time zone.
+func (q *Queries) ListUserBookingPatterns(ctx context.Context, arg ListUserBookingPatternsParams) ([]ListUserBookingPatternsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listUserBookingPatterns, arg.UserID, arg.Since)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListUserBookingPatternsRow
+	for rows.Next() {
+		var i ListUserBookingPatternsRow
+		if err := rows.Scan(
+			&i.FacilityID,
+			&i.Weekday,
+			&i.StartTime,
+			&i.Bookings,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const lockOwnedBooking = `-- name: LockOwnedBooking :one
 SELECT
     b.id,

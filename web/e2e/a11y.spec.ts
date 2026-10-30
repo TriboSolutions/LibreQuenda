@@ -440,6 +440,21 @@ test.describe('keyboard', () => {
     expect(joins).toHaveLength(0)
   })
 
+  test('signed in, the home page recommends from their bookings', async ({ page }) => {
+    await open(page, '/')
+    const forYou = page.getByRole('region', { name: 'Para ti' })
+    await expect(forYou.getByRole('listitem')).toHaveCount(3)
+    await expect(forYou).toContainText(/Adoitas reservar os venres ás \d\d:\d\d \(5 veces\)/)
+    await expect(forYou).toContainText('Reservaches aquí 3 veces')
+    await expect(forYou).toContainText('Como ')
+  })
+
+  test('signed out, the home page has no recommendations', async ({ page }) => {
+    await open(page, '/', { signedIn: false })
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+    await expect(page.getByRole('region', { name: 'Para ti' })).toHaveCount(0)
+  })
+
   test("the council page's bookings card shows no QR: check-in lives in My bookings", async ({ page }) => {
     await open(page, '/lugo')
     await expect(page.getByRole('heading', { name: 'As túas reservas' })).toBeVisible()
