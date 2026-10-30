@@ -504,7 +504,7 @@
     "checkedInMethod": {
       "reader": "Checked in with the QR reader.",
       "printed_qr": "Checked in with the printed QR.",
-      "turn_code": "Came in with the entry code.",
+      "entry_code": "Came in with the entry code.",
       "staff": "Marked by staff."
     },
     "checkinTooEarly": "The check-in can be marked from {{time}}.",

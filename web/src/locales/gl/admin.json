@@ -504,7 +504,7 @@
     "checkedInMethod": {
       "reader": "Entrou co lector QR.",
       "printed_qr": "Entrou co QR impreso.",
-      "turn_code": "Entrou co código de entrada.",
+      "entry_code": "Entrou co código de entrada.",
       "staff": "Marcada polo persoal."
     },
     "checkinTooEarly": "A entrada pódese marcar desde as {{time}}.",

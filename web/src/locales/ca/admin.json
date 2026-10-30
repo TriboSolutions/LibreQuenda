@@ -504,7 +504,7 @@
     "checkedInMethod": {
       "reader": "Va entrar amb el lector QR.",
       "printed_qr": "Va entrar amb el QR imprès.",
-      "turn_code": "Va entrar amb el codi d’entrada.",
+      "entry_code": "Va entrar amb el codi d’entrada.",
       "staff": "Marcada pel personal."
     },
     "checkinTooEarly": "L’entrada es pot marcar des de les {{time}}.",
