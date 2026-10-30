@@ -621,7 +621,15 @@ export class ApiError extends Error {
 
 type RequestOptions = { token?: string; method?: string; body?: unknown }
 
-async function request<T>(path: string, { token, method = 'GET', body }: RequestOptions = {}): Promise<T> {
+// Access tokens are short (Zitadel, 10 minutes by default) and renewed in the
+// background; one that expired just before a request is renewed here once, and
+// the request sent again with the new one (AuthWithRouter sets the renewal).
+let renewToken: (() => Promise<string | null>) | null = null
+export function onTokenExpired(renew: (() => Promise<string | null>) | null) {
+  renewToken = renew
+}
+
+async function request<T>(path: string, { token, method = 'GET', body }: RequestOptions = {}, renewed = false): Promise<T> {
   const headers: Record<string, string> = { 'Accept-Language': i18n.resolvedLanguage ?? 'gl' }
   if (token) headers.Authorization = `Bearer ${token}`
   if (body !== undefined) headers['Content-Type'] = 'application/json'
@@ -631,6 +639,11 @@ async function request<T>(path: string, { token, method = 'GET', body }: Request
     headers,
     body: body === undefined ? undefined : JSON.stringify(body),
   })
+  // only user tokens (Zitadel's are JWTs); a reader's device key is never renewed
+  if (res.status === 401 && token?.startsWith('ey') && !renewed && renewToken) {
+    const fresh = await renewToken()
+    if (fresh && fresh !== token) return request<T>(path, { token: fresh, method, body }, true)
+  }
   if (res.status === 204) return undefined as T
   if (!res.ok) {
     let message = `HTTP ${res.status}`

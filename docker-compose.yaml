@@ -212,6 +212,10 @@ services:
       WEB_DOMAIN: ${WEB_DOMAIN}
       ZITADEL_DOMAIN: ${ZITADEL_DOMAIN}
       ZITADEL_PASSKEYS: ${ZITADEL_PASSKEYS:-false} # true: offer passkeys besides the password
+      # token lifetimes: short access tokens, renewed silently by the web
+      ZITADEL_ACCESS_TOKEN_MINUTES: ${ZITADEL_ACCESS_TOKEN_MINUTES:-10}
+      ZITADEL_REFRESH_IDLE_DAYS: ${ZITADEL_REFRESH_IDLE_DAYS:-30}
+      ZITADEL_REFRESH_DAYS: ${ZITADEL_REFRESH_DAYS:-90}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
     volumes:
