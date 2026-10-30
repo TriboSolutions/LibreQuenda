@@ -483,6 +483,45 @@ test.describe('keyboard', () => {
     await expect(page).toHaveURL(/\/$/)
   })
 
+  test('a new profile photo is framed in a circle before it is uploaded', async ({ page }) => {
+    await open(page, '/perfil')
+    // a wide picture, like a screenshot: the circle used to cut it at random
+    const wide = await page.evaluate(() => {
+      const canvas = document.createElement('canvas')
+      canvas.width = 600
+      canvas.height = 200
+      const context = canvas.getContext('2d')!
+      context.fillStyle = '#0a6fb0'
+      context.fillRect(0, 0, 600, 200)
+      context.fillStyle = '#ffffff'
+      context.fillRect(250, 50, 100, 100)
+      return canvas.toDataURL('image/png').split(',')[1]
+    })
+    let uploaded = ''
+    await page.route('**/api/media', async (route) => {
+      uploaded = route.request().postDataBuffer()?.toString('latin1') ?? ''
+      await route.fulfill({ json: { ref: 'users/cropped.webp', url: `data:image/png;base64,${wide}` } })
+    })
+    await page.locator('input[type=file]').first().setInputFiles({ name: 'wide.png', mimeType: 'image/png', buffer: Buffer.from(wide, 'base64') })
+    const dialog = page.getByRole('dialog', { name: 'Encadra a túa foto' })
+    await expect(dialog).toBeVisible()
+    const zoom = dialog.getByLabel('Achegar')
+    await expect(zoom).toHaveValue('1')
+    // the keyboard alone moves and zooms it
+    await dialog.getByRole('group', { name: 'Foto para encadrar' }).focus()
+    await page.keyboard.press('ArrowLeft')
+    await page.keyboard.press('+')
+    await expect(zoom).not.toHaveValue('1')
+    await page.waitForTimeout(300)
+    await expectAccessible(page, { overlay: true })
+    await dialog.getByRole('button', { name: 'Usar esta foto' }).click()
+    await expect(dialog).toBeHidden()
+    // a square image goes up, not the original
+    await expect.poll(() => uploaded).toContain('avatar.')
+    expect(uploaded).not.toContain('wide.png')
+    await expect(page.getByRole('button', { name: 'Encadrar' })).toBeVisible()
+  })
+
   test('signed out, the home page has no recommendations', async ({ page }) => {
     await open(page, '/', { signedIn: false })
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()

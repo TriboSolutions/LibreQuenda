@@ -82,7 +82,15 @@
     "hint": "JPG, PNG o WebP, fins a 5 MB. També la pots deixar anar al requadre.",
     "tooLarge": "La imatge supera els 5 MB.",
     "wrongType": "Només imatges JPG, PNG o WebP.",
-    "empty": "Sense imatge"
+    "empty": "Sense imatge",
+    "crop": "Enquadrar",
+    "cropTitle": "Enquadra la teva foto",
+    "cropHelp": "Arrossega la foto o fes servir les fletxes per moure-la, i el control o + i − per apropar-la. Es desa el que es veu al cercle.",
+    "cropFrame": "Foto per enquadrar",
+    "zoom": "Apropar",
+    "cropCancel": "Cancel·lar",
+    "cropUse": "Fer servir aquesta foto",
+    "cropFailed": "No s’ha pogut obrir aquesta imatge."
   },
   "createAccount": "Crea un compte",
   "rateLimited": "Massa intents en poc temps. Espera un moment i torna-ho a provar.",
