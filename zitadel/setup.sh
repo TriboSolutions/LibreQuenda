@@ -5,6 +5,7 @@
 #  - keeps the app's redirect URIs in sync with the environment
 #  - enables "Sign in with Google" when GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET are set
 #  - signs up and in with a password (passkeys only with ZITADEL_PASSKEYS=true)
+#  - short access tokens (ZITADEL_ACCESS_TOKEN_MINUTES, 10 by default), renewed by the web
 #  - brands the login and console as LibreQuenda (logo, colours, no Zitadel links)
 #  - creates the "librequenda-api" service account (user manager only) and writes
 #    its token to /api-secrets, for /perfil (name, email, password)
@@ -140,6 +141,21 @@ if [ "${ZITADEL_PASSKEYS:-false}" = "true" ]; then PASSWORDLESS=PASSWORDLESS_TYP
 LOGIN_POLICY=$(call GET /admin/v1/policies/login | jq -c --arg pw "$PASSWORDLESS" '.policy | del(.details, .isDefault, .idps) | .passwordlessType = $pw')
 call PUT /admin/v1/policies/login "$LOGIN_POLICY" >/dev/null 2>&1 || true # "no changes" is reported as an error
 log "login: passkeys ${ZITADEL_PASSKEYS:-false}"
+
+# --- token lifetimes ---
+# Short access tokens, so a blocked account or a removed role stops working
+# within minutes; the web renews them silently with its refresh token
+# (offline_access), so residents stay signed in while they use it.
+ACCESS_MINUTES="${ZITADEL_ACCESS_TOKEN_MINUTES:-10}"
+REFRESH_IDLE_DAYS="${ZITADEL_REFRESH_IDLE_DAYS:-30}"
+REFRESH_DAYS="${ZITADEL_REFRESH_DAYS:-90}"
+call PUT /admin/v1/settings/oidc "$(jq -n \
+	--arg access "$((ACCESS_MINUTES * 60))s" \
+	--arg idle "$((REFRESH_IDLE_DAYS * 86400))s" \
+	--arg absolute "$((REFRESH_DAYS * 86400))s" \
+	'{accessTokenLifetime: $access, idTokenLifetime: $access, refreshTokenIdleExpiration: $idle, refreshTokenExpiration: $absolute}')" \
+	>/dev/null 2>&1 || true # "no changes" is reported as an error
+log "tokens: access ${ACCESS_MINUTES} min, refresh ${REFRESH_IDLE_DAYS} days idle, ${REFRESH_DAYS} days at most"
 
 # --- branding: residents see LibreQuenda, not Zitadel ---
 # Colours from web/src/globals.css (light and dark); no "powered by" watermark.
