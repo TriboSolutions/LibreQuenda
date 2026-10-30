@@ -52,5 +52,15 @@
     "filterBy_one": "Filter by {{category}}, {{count}} chosen",
     "filterBy_other": "Filter by {{category}}, {{count}} chosen",
     "clearCategory": "Clear these"
+  },
+  "forYou": {
+    "title": "For you",
+    "help": "From your bookings and what is still free today.",
+    "usual_one": "You usually book on {{weekday}}s at {{time}} ({{count}} time)",
+    "usual_other": "You usually book on {{weekday}}s at {{time}} ({{count}} times)",
+    "favourite_one": "You booked here {{count}} time",
+    "favourite_other": "You booked here {{count}} times",
+    "similar": "Like {{facility}}: {{tags}}",
+    "freeAt": "Free today at {{time}}"
   }
 }

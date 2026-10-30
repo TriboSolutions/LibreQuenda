@@ -155,7 +155,8 @@
     "staff_checkin_ended": "The turn has ended, so the entry can no longer be marked.",
     "staff_checkin_undo_expired": "This can no longer be undone: only for 5 minutes after marking it, and only if staff marked it.",
     "too_many_staff_contacts": "Up to 10 contact people can be added.",
-    "invalid_staff_contact": "Each contact person needs a name (up to 80 characters); the phone up to 30 and where to find them up to 120."
+    "invalid_staff_contact": "Each contact person needs a name (up to 80 characters); the phone up to 30 and where to find them up to 120.",
+    "recommendations_failed": "The recommendations could not be loaded."
   },
   "email": {
     "greeting": "Hello {{0}},",

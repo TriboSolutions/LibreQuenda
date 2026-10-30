@@ -2,6 +2,7 @@ package tenants
 
 import (
 	"database/sql"
+	"librequenda/auth"
 	"net/http"
 	"sync"
 
@@ -73,5 +74,21 @@ func (h *tenantsHandler) GetDay(w http.ResponseWriter, r *http.Request) {
 		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
 		return
 	}
+	helpers.SendSuccessResponse(w, response)
+}
+
+// Recommendations: the signed-in resident's "For you" on the home page.
+func (h *tenantsHandler) Recommendations(w http.ResponseWriter, r *http.Request) {
+	var session, ok = auth.SessionFromContext(r.Context())
+	if !ok {
+		helpers.SendI18NErrorResponse(w, r, http.StatusUnauthorized, "errors.unauthorized")
+		return
+	}
+	var response, err = GetTenantsService(h.db).Recommendations(r.Context(), session)
+	if err != nil {
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
+		return
+	}
+	w.Header().Set("Cache-Control", "no-store")
 	helpers.SendSuccessResponse(w, response)
 }

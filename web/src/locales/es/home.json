@@ -52,5 +52,15 @@
     "filterBy_one": "Filtrar por {{category}}, {{count}} elegida",
     "filterBy_other": "Filtrar por {{category}}, {{count}} elegidas",
     "clearCategory": "Quitar estas"
+  },
+  "forYou": {
+    "title": "Para ti",
+    "help": "A partir de tus reservas y de lo que queda libre hoy.",
+    "usual_one": "Sueles reservar los {{weekday}} a las {{time}} ({{count}} vez)",
+    "usual_other": "Sueles reservar los {{weekday}} a las {{time}} ({{count}} veces)",
+    "favourite_one": "Reservaste aquí {{count}} vez",
+    "favourite_other": "Reservaste aquí {{count}} veces",
+    "similar": "Como {{facility}}: {{tags}}",
+    "freeAt": "Libre hoy a las {{time}}"
   }
 }
