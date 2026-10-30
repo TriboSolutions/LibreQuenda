@@ -43,6 +43,10 @@ services:
       RUNTIME_CONFIG_PATH: /runtime/config.json
       # user-manager token: residents change their name, email and password from /perfil
       ZITADEL_USERS_PAT_FILE: /secrets/zitadel-users.pat
+      # administrators must sign in with a second factor (checked by token introspection);
+      # false only for a test installation where nobody has one set up
+      REQUIRE_ADMIN_MFA: ${REQUIRE_ADMIN_MFA:-true}
+      ZITADEL_INTROSPECTION_FILE: /secrets/zitadel-introspection.json
 
       # First superadministrator (creates councils); defaults to the Zitadel admin
       SUPERADMIN_EMAIL: ${SUPERADMIN_EMAIL:-${ZITADEL_ADMIN_EMAIL}}

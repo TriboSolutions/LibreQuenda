@@ -163,7 +163,9 @@
     "daily_limit_reached": "Ya tienes las reservas que se permiten por día en esta instalación.",
     "turns_in_a_row_limit": "No puedes reservar tantos turnos seguidos en esta instalación.",
     "no_show_blocked": "No puedes reservar en esta instalación hasta el {{0}}, por no presentarte a varias reservas.",
-    "slot_too_soon": "Ese turno empieza demasiado pronto para reservarlo desde la app."
+    "slot_too_soon": "Ese turno empieza demasiado pronto para reservarlo desde la app.",
+    "mfa_required": "La administración requiere entrar con un segundo factor (una app de autenticación o una llave de seguridad). Configúralo en tu cuenta y vuelve a iniciar sesión.",
+    "mfa_check_failed": "No se pudo comprobar el segundo factor. Inténtalo de nuevo en un momento."
   },
   "email": {
     "greeting": "Hola {{0}}:",

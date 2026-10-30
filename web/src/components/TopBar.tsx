@@ -8,6 +8,7 @@ import { InvitationReminder } from '@/components/InvitationReminder'
 import { LanguageMenu } from '@/components/LanguageMenu'
 import { NotificationBell } from '@/components/NotificationBell'
 import { FlashBookingDialog } from '@/components/PersonalQr'
+import { MfaRequiredNotice } from '@/components/MfaRequiredNotice'
 import { ProfileReminder } from '@/components/ProfileReminder'
 import { ThemeMenu } from '@/components/ThemeMenu'
 import { Button } from '@/components/ui/button'
@@ -140,6 +141,7 @@ export function TopBar({ tenants, tenantSlug }: Props) {
     </header>
     {auth.isAuthenticated && <FlashBookingDialog open={qrOpen} onOpenChange={setQrOpen} />}
     <InvitationReminder />
+    <MfaRequiredNotice />
     <ProfileReminder />
     </>
   )

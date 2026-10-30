@@ -110,5 +110,11 @@
     "days": "{{count}} d",
     "hours": "{{count}} h",
     "minutes": "{{count}} min"
+  },
+  "mfa": {
+    "title": "A administración precisa un segundo factor.",
+    "body": "Engade unha app de autenticación, unha chave de seguridade ou unha clave de acceso á túa conta e volve iniciar sesión con ela.",
+    "setUp": "Configurar o segundo factor",
+    "signInAgain": "Iniciar sesión de novo"
   }
 }

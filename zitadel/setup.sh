@@ -196,6 +196,29 @@ if [ ! -s "$API_PAT_FILE" ]; then
 	log "wrote the token of $API_USER"
 fi
 
+# --- token introspection for the API: is an administrator's sign-in two-factor? ---
+# Zitadel's JWT access tokens carry no "amr"; introspection does. The API checks
+# it on admin routes (REQUIRE_ADMIN_MFA) with this API application's credentials.
+INTROSPECTION_APP=api-introspection
+INTROSPECTION_FILE=/api-secrets/zitadel-introspection.json
+INTROSPECTION=$(call POST "/management/v1/projects/$PROJECT_ID/apps/_search" \
+	"{\"queries\":[{\"nameQuery\":{\"name\":\"$INTROSPECTION_APP\",\"method\":\"TEXT_QUERY_METHOD_EQUALS\"}}]}" \
+	| jq -c '.result[0] // empty')
+if [ -z "$INTROSPECTION" ]; then
+	call POST "/management/v1/projects/$PROJECT_ID/apps/api" \
+		"{\"name\":\"$INTROSPECTION_APP\",\"authMethodType\":\"API_AUTH_METHOD_TYPE_BASIC\"}" \
+		| jq '{clientId, clientSecret}' > "$INTROSPECTION_FILE.tmp"
+	mv "$INTROSPECTION_FILE.tmp" "$INTROSPECTION_FILE"
+	log "created API app $INTROSPECTION_APP for token introspection"
+elif [ ! -s "$INTROSPECTION_FILE" ]; then
+	# its secret is only shown once: a new one when the file is gone
+	INTROSPECTION_ID=$(echo "$INTROSPECTION" | jq -r '.id')
+	call POST "/management/v1/projects/$PROJECT_ID/apps/$INTROSPECTION_ID/api_config/_generate_client_secret" '{}' \
+		| jq --arg id "$(echo "$INTROSPECTION" | jq -r '.apiConfig.clientId')" '{clientId: $id, clientSecret}' > "$INTROSPECTION_FILE.tmp"
+	mv "$INTROSPECTION_FILE.tmp" "$INTROSPECTION_FILE"
+	log "new secret for API app $INTROSPECTION_APP"
+fi
+
 # --- runtime config for the SPA ---
 jq -n \
 	--arg authority "$ZITADEL_URL" \

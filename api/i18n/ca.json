@@ -163,7 +163,9 @@
     "daily_limit_reached": "Ja tens les reserves que es permeten per dia en aquesta instal·lació.",
     "turns_in_a_row_limit": "No pots reservar tants torns seguits en aquesta instal·lació.",
     "no_show_blocked": "No pots reservar en aquesta instal·lació fins al {{0}}, per no presentar-te a diverses reserves.",
-    "slot_too_soon": "Aquest torn comença massa aviat per reservar-lo des de l’app."
+    "slot_too_soon": "Aquest torn comença massa aviat per reservar-lo des de l’app.",
+    "mfa_required": "L’administració requereix entrar amb un segon factor (una app d’autenticació o una clau de seguretat). Configura’l al teu compte i torna a iniciar la sessió.",
+    "mfa_check_failed": "No s’ha pogut comprovar el segon factor. Torna-ho a provar d’aquí a un moment."
   },
   "email": {
     "greeting": "Hola {{0}},",
