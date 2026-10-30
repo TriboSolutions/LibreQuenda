@@ -35,7 +35,7 @@
   "rulePerDay_other": "At most {{count}} bookings per person and day.",
   "ruleInARow_one": "Slots cannot be booked back to back.",
   "ruleInARow_other": "At most {{count}} slots in a row per person.",
-  "ruleWeekly": "Next week’s turns open on {{weekday}} at {{time}}.",
+  "ruleWeekly": "Next week’s slots open on {{weekday}} at {{time}}.",
   "rulePerWeek_one": "At most {{count}} booking per person and week.",
   "rulePerWeek_other": "At most {{count}} bookings per person and week.",
   "issue": {
