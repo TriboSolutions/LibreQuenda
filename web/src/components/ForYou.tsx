@@ -1,8 +1,10 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import { Link } from 'react-router'
-import { CalendarClock, Repeat, Sparkles } from 'lucide-react'
+import { CalendarClock, ChevronDown, Repeat, Sparkles } from 'lucide-react'
 import { Mark } from '@/components/Mark'
+import { Button } from '@/components/ui/button'
 import { useAsync } from '@/hooks/useAsync'
 import { useMe } from '@/hooks/useMe'
 import { useTags } from '@/hooks/useTags'
@@ -13,6 +15,9 @@ import { formatTime } from '@/lib/time'
 const TIME_ZONE = 'Europe/Madrid'
 
 const ICONS = { usual_today: Repeat, favourite: CalendarClock, similar: Sparkles }
+
+// one row on a desktop; the rest on demand, so the list and the map keep their room
+const FIRST = 3
 
 /**
  * "For you" on the home page, signed in: their usual turn when it falls today
@@ -27,7 +32,9 @@ export function ForYou() {
   // GET /me (MeProvider) first creates the user's row
   const recommendations = useAsync(token && me ? () => api.recommendations(token) : null, `recommendations:${me?.id}`)
   const items = recommendations.data?.recommendations ?? []
+  const [all, setAll] = useState(false)
   if (items.length === 0) return null
+  const shown = all ? items : items.slice(0, FIRST)
 
   return (
     <section aria-labelledby="for-you-title" className="mt-6">
@@ -35,11 +42,17 @@ export function ForYou() {
         {t('forYou.title')}
       </h2>
       <p className="text-sm text-muted-foreground">{t('forYou.help')}</p>
-      <ul className="mt-3 flex snap-x gap-3 overflow-x-auto pb-2">
-        {items.map((item) => (
+      <ul id="for-you-list" className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {shown.map((item) => (
           <ForYouCard key={item.facility.id} item={item} />
         ))}
       </ul>
+      {items.length > FIRST && (
+        <Button variant="ghost" size="sm" className="mt-2" aria-expanded={all} aria-controls="for-you-list" onClick={() => setAll((v) => !v)}>
+          <ChevronDown className={all ? 'rotate-180' : ''} aria-hidden />
+          {all ? t('forYou.less') : t('forYou.more', { count: items.length - FIRST })}
+        </Button>
+      )}
     </section>
   )
 }
@@ -58,7 +71,7 @@ function ForYouCard({ item }: { item: Recommendation }) {
         : t('forYou.similar', { facility: item.because, tags: (item.shared_tags ?? []).map(catalogue.label).join(', ') })
 
   return (
-    <li className="relative flex w-72 shrink-0 snap-start gap-3 rounded-lg border bg-card p-3 focus-within:ring-2 focus-within:ring-ring hover:border-primary/60">
+    <li className="relative flex min-w-0 gap-3 rounded-lg border bg-card p-3 focus-within:ring-2 focus-within:ring-ring hover:border-primary/60">
       <span className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-md bg-muted">
         {f.image_url ? <img src={f.image_url} alt="" className="size-full object-cover" /> : <Mark className="size-8" />}
       </span>

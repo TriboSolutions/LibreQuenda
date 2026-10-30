@@ -61,6 +61,8 @@
     "favourite_one": "Has reservat aquí {{count}} vegada",
     "favourite_other": "Has reservat aquí {{count}} vegades",
     "similar": "Com {{facility}}: {{tags}}",
-    "freeAt": "Lliure avui a les {{time}}"
+    "freeAt": "Lliure avui a les {{time}}",
+    "more": "Veure’n {{count}} més",
+    "less": "Veure’n menys"
   }
 }

@@ -467,6 +467,13 @@ const recommendations = {
       because: facilityCards[0].name,
       shared_tags: ['cuberta'],
     },
+    {
+      kind: 'similar',
+      facility: { ...facilityCards[0], id: 'f5', slug: 'padel-3', name: 'Pista de pádel 3' },
+      starts_at: at(5),
+      because: facilityCards[0].name,
+      shared_tags: ['padel'],
+    },
   ],
 }
 
