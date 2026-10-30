@@ -460,12 +460,39 @@ test.describe('keyboard', () => {
     await open(page, '/')
     const forYou = page.getByRole('region', { name: 'Para ti' })
     await expect(forYou.getByRole('listitem')).toHaveCount(3) // one row; the rest on demand
-    await forYou.getByRole('button', { name: 'Ver 1 máis' }).click()
-    await expect(forYou.getByRole('listitem')).toHaveCount(4)
+    await forYou.getByRole('button', { name: 'Ver 2 máis' }).click()
+    await expect(forYou.getByRole('listitem')).toHaveCount(5)
     await expect(forYou.getByRole('button', { name: 'Ver menos' })).toHaveAttribute('aria-expanded', 'true')
     await expect(forYou).toContainText(/Adoitas reservar os venres ás \d\d:\d\d \(5 veces\)/)
     await expect(forYou).toContainText('Reservaches aquí 3 veces')
     await expect(forYou).toContainText('Como ')
+  })
+
+  test('a public booking can be joined from «For you», without an invite link', async ({ page }) => {
+    await open(page, '/')
+    const forYou = page.getByRole('region', { name: 'Para ti' })
+    await forYou.getByRole('button', { name: 'Ver 2 máis' }).click()
+    const card = forYou.getByRole('listitem').filter({ hasText: 'Reserva pública de Uxía' })
+    await expect(card).toContainText('Quedan 2 prazas')
+    const joined = page.waitForRequest((r) => r.method() === 'POST' && r.url().endsWith('/me/bookings/pb1/join'))
+    await card.getByRole('button', { name: 'Unirme' }).click()
+    await joined
+    await expect(card).toContainText('Xa estás dentro.')
+    await expect(card.getByRole('link', { name: 'Ver as miñas reservas' })).toBeVisible()
+  })
+
+  test('the owner books in public, and makes a booking public or private from My bookings', async ({ page }) => {
+    await open(page, '/lugo/padel-1')
+    await page.locator('[data-free=true]').first().click()
+    await expect(page.getByRole('dialog').getByRole('checkbox', { name: 'Facer pública a reserva' })).toBeVisible()
+
+    await open(page, '/reservas')
+    const toggle = page.getByRole('switch', { name: 'Pública' }).first()
+    await expect(toggle).not.toBeChecked()
+    const saved = page.waitForRequest((r) => r.method() === 'PUT' && /\/me\/bookings\/[^/]+\/public$/.test(r.url()))
+    await toggle.click()
+    expect((await saved).postDataJSON()).toEqual({ public: true })
+    await expect(toggle).toBeChecked()
   })
 
   test('"For you" can be turned off from the section and from the profile', async ({ page }) => {

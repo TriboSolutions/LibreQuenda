@@ -167,7 +167,9 @@
     "mfa_required": "A administración require entrar cun segundo factor (unha app de autenticación ou unha chave de seguridade). Configúrao na túa conta e volve iniciar sesión.",
     "mfa_check_failed": "Non se puido comprobar o segundo factor. Téntao de novo nun momento.",
     "weekly_limit_reached": "Xa tes as reservas que se permiten por semana nesta instalación.",
-    "invalid_weekly_opening": "A apertura semanal precisa un día da semana e unha hora válidos."
+    "invalid_weekly_opening": "A apertura semanal precisa un día da semana e unha hora válidos.",
+    "public_needs_capacity": "Só se poden facer públicas as reservas dunha instalación onde caben máis persoas.",
+    "public_booking_not_found": "Esta reserva xa non é pública ou xa non existe."
   },
   "email": {
     "greeting": "Ola {{0}},",

@@ -167,7 +167,9 @@
     "mfa_required": "Administration needs a sign-in with a second factor (an authenticator app or a security key). Set one up in your account and sign in again.",
     "mfa_check_failed": "The second factor could not be checked. Try again in a moment.",
     "weekly_limit_reached": "You already have the bookings allowed per week at this facility.",
-    "invalid_weekly_opening": "The weekly opening needs a valid weekday and time."
+    "invalid_weekly_opening": "The weekly opening needs a valid weekday and time.",
+    "public_needs_capacity": "Only bookings at a facility with room for more people can be public.",
+    "public_booking_not_found": "This booking is no longer public, or no longer exists."
   },
   "email": {
     "greeting": "Hello {{0}},",

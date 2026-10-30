@@ -15,7 +15,9 @@ import { SpotsMeter } from '@/components/SpotsMeter'
 import { TopBar } from '@/components/TopBar'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Switch } from '@/components/ui/switch'
 import { useAsync } from '@/hooks/useAsync'
 import { useLogin } from '@/hooks/useLogin'
 import { useMe } from '@/hooks/useMe'
@@ -158,6 +160,7 @@ export function MyBookingsPage() {
                   {booking.role === 'owner' ? (
                     <>
                       {booking.checkin_ways?.length ? <CheckinButton booking={booking} now={ticking} onOpen={() => setToCheckIn(booking)} /> : null}
+                      {booking.capacity > 0 && booking.starts_at > now && <PublicSwitch booking={booking} token={token} onChanged={bookings.reload} />}
                       {booking.capacity > 0 && booking.starts_at > now && (
                         <Button variant="outline" size="sm" onClick={() => setToInvite(booking)}>
                           <UserPlus aria-hidden />
@@ -254,6 +257,43 @@ type RowProps = {
   today: string
   now: number
   children?: React.ReactNode // actions
+}
+
+/** Public: anyone signed in finds the booking in «For you» and can join it; private: only by the invite link. */
+function PublicSwitch({ booking, token, onChanged }: { booking: Booking; token: string | undefined; onChanged: () => void }) {
+  const { t } = useTranslation('bookings')
+  const [on, setOn] = useState(!!booking.is_public)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const id = `public-${booking.id}`
+  const change = async (next: boolean) => {
+    if (!token) return
+    setBusy(true)
+    setError(null)
+    setOn(next)
+    try {
+      await api.setPublic(token, booking.id, next)
+      onChanged()
+    } catch (e) {
+      setOn(!next)
+      setError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setBusy(false)
+    }
+  }
+  return (
+    <span className="inline-flex items-center gap-2">
+      <Switch id={id} checked={on} disabled={busy} onCheckedChange={(next) => void change(next)} aria-describedby={error ? `${id}-error` : undefined} />
+      <Label htmlFor={id} className="text-sm font-normal" title={t('public.help')}>
+        {t('public.label')}
+      </Label>
+      {error && (
+        <span id={`${id}-error`} role="alert" className="text-sm text-destructive">
+          {error}
+        </span>
+      )}
+    </span>
+  )
 }
 
 /** Opens every way in the facility takes; usable from the early window until the turn ends. */

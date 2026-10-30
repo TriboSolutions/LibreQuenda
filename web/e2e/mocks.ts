@@ -112,6 +112,7 @@ function facility(id: string, name: string, slug: string): Facility {
     max_turns_in_a_row: 0,
     max_bookings_per_week: 3,
     weekly_opening: { weekday: 7, at: '20:00' },
+    capacity: 4,
     min_age: 16,
     usage_rules: 'Calzado deportivo obrigatorio.\nRespecta o horario.',
     windows: [{ opens_at: '08:00', closes_at: '22:00' }],
@@ -499,6 +500,13 @@ const recommendations = {
       because: facilityCards[0].name,
       shared_tags: ['padel'],
     },
+    // someone's public booking with spots left, to join from «For you»
+    {
+      kind: 'public_booking',
+      facility: facilityCards[0],
+      starts_at: at(5),
+      booking: { id: 'pb1', starts_at: at(5), ends_at: at(6), spots_left: 2, owner_first_name: 'Uxía' },
+    },
   ],
 }
 
@@ -573,6 +581,10 @@ export async function mockApp(page: Page, { signedIn = true, theme = 'light', la
     const url = new URL(route.request().url())
     const path = url.pathname.replace(/^\/api/, '')
     // flash booking with the entry code: the phone is at Lugo's padel court
+    // «For you» is asked for by POST, with the home page's position when «near me» is on
+    if (route.request().method() === 'POST' && path === '/me/recommendations') {
+      return fulfil(route, recommendations)
+    }
     if (route.request().method() === 'POST' && path === '/entrance/nearby') {
       return fulfil(route, {
         result: '',

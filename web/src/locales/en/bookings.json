@@ -40,7 +40,9 @@
     "acceptRules": "I have read and accept the rules of use.",
     "noRules": "This facility has no specific rules: the council's general rules apply.",
     "minAge": "Minimum age",
-    "minAgeValue": "{{count}} years"
+    "minAgeValue": "{{count}} years",
+    "public": "Make the booking public",
+    "publicHelp": "Anyone with an account can see it in “For you” and join while spots are left. Only your first name is shown."
   },
   "cancelDialog": {
     "title": "Cancel the booking?",
@@ -109,5 +111,9 @@
       "helpWithContacts": "Tell the facility’s staff your name and they will mark you in. You can find them here:"
     },
     "ways": "How you check in"
+  },
+  "public": {
+    "label": "Public",
+    "help": "Anyone with an account can see it in “For you” and join while spots are left."
   }
 }

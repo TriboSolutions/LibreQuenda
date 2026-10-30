@@ -3,6 +3,7 @@ package tenants
 import (
 	"context"
 	"librequenda/auth"
+	"librequenda/checkin"
 	"librequenda/core/me"
 	"librequenda/model"
 	"librequenda/schedule"
@@ -23,14 +24,18 @@ const (
 	maxUsualToday      = 3
 	maxFavourites      = 3
 	maxSimilar         = 3
-	maxRecommendations = 6
+	maxPublic          = 3
+	maxRecommendations = 8
+	publicAheadDays    = 14 // public bookings shown up to this far ahead
+	nearKm             = 10 // a public booking this close to the person counts as near
 )
 
 // Kinds of recommendation, most relevant first.
 const (
-	RecommendUsualToday = "usual_today" // what they book on this weekday at this time, free today
-	RecommendFavourite  = "favourite"   // a facility they book often, with free turns today
-	RecommendSimilar    = "similar"     // a facility they have not tried, alike in tags to theirs, free today
+	RecommendUsualToday = "usual_today"    // what they book on this weekday at this time, free today
+	RecommendFavourite  = "favourite"      // a facility they book often, with free turns today
+	RecommendSimilar    = "similar"        // a facility they have not tried, alike in tags to theirs, free today
+	RecommendPublic     = "public_booking" // someone's public booking with spots left, at a facility of theirs, alike or near
 )
 
 type RecommendationDto struct {
@@ -43,6 +48,24 @@ type RecommendationDto struct {
 	// similar: the facility of theirs it is like, and the tags they share
 	Because    string   `json:"because,omitempty"`
 	SharedTags []string `json:"shared_tags,omitempty"`
+	// public_booking: the booking to join; StartsAt is its start
+	Booking *PublicBookingDto `json:"booking,omitempty"`
+}
+
+// PublicBookingDto: what «For you» shows of someone's public booking: never who
+// they are beyond a first name.
+type PublicBookingDto struct {
+	Id             string    `json:"id"`
+	StartsAt       time.Time `json:"starts_at"`
+	EndsAt         time.Time `json:"ends_at"`
+	SpotsLeft      int       `json:"spots_left"`
+	OwnerFirstName string    `json:"owner_first_name"` // "" when unknown
+}
+
+// Position: where the person is, when the browser shares it; checked, never stored.
+type Position struct {
+	Latitude  *float64 `json:"latitude"`
+	Longitude *float64 `json:"longitude"`
 }
 
 type RecommendationsResponse struct {
@@ -56,7 +79,7 @@ type todayFacility struct {
 	loc   *time.Location
 }
 
-func (s *tenantsService) Recommendations(ctx context.Context, session auth.Session) (*RecommendationsResponse, *shared.ErrorResponse) {
+func (s *tenantsService) Recommendations(ctx context.Context, session auth.Session, position Position) (*RecommendationsResponse, *shared.ErrorResponse) {
 	var userId, userErr = me.CurrentUserId(ctx, s.db, session)
 	if userErr != nil {
 		return nil, userErr
@@ -74,11 +97,69 @@ func (s *tenantsService) Recommendations(ctx context.Context, session auth.Sessi
 	if err != nil {
 		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.recommendations_failed"}
 	}
-	if len(patterns) == 0 {
+	var public []model.ListJoinablePublicBookingsRow
+	public, err = model.New(s.db).ListJoinablePublicBookings(ctx, model.ListJoinablePublicBookingsParams{
+		UserID: uuid.NullUUID{UUID: userId, Valid: true},
+		Until:  now.AddDate(0, 0, publicAheadDays),
+	})
+	if err != nil {
+		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.recommendations_failed"}
+	}
+	if len(patterns) == 0 && len(public) == 0 {
 		return response, nil
 	}
-	response.Recommendations = recommend(patterns, s.today(ctx), now)
+	var today = s.today(ctx)
+	var out = append(recommend(patterns, today, now), publicBookings(public, patterns, today, position)...)
+	if len(out) > maxRecommendations {
+		out = out[:maxRecommendations]
+	}
+	response.Recommendations = out
 	return response, nil
+}
+
+// publicBookings: the public bookings at a facility the person books, one alike
+// in tags to theirs, or one near them; soonest first, one card per booking.
+func publicBookings(rows []model.ListJoinablePublicBookingsRow, patterns []model.ListUserBookingPatternsRow, today []todayFacility, position Position) []RecommendationDto {
+	var byId = make(map[string]todayFacility, len(today))
+	for _, f := range today {
+		byId[f.card.Id] = f
+	}
+	var theirs = make(map[string]bool)
+	for _, p := range patterns {
+		theirs[p.FacilityID.String()] = true
+	}
+	var relevant = func(f todayFacility) bool {
+		if theirs[f.card.Id] {
+			return true
+		}
+		for id := range theirs {
+			if mine, ok := byId[id]; ok && len(sharedTags(f.card.Tags, mine.card.Tags)) > 0 {
+				return true
+			}
+		}
+		if position.Latitude != nil && position.Longitude != nil && f.card.Latitude != nil && f.card.Longitude != nil {
+			return checkin.DistanceMetres(*position.Latitude, *position.Longitude, *f.card.Latitude, *f.card.Longitude) <= nearKm*1000
+		}
+		return false
+	}
+	var out = []RecommendationDto{}
+	for _, row := range rows { // soonest first
+		var f, ok = byId[row.FacilityID.String()]
+		var spots = int(row.Capacity.Int32) - 1 - int(row.ParticipantCount)
+		if !ok || spots <= 0 || !relevant(f) {
+			continue
+		}
+		out = append(out, RecommendationDto{
+			Kind:     RecommendPublic,
+			Facility: f.card,
+			StartsAt: row.StartsAt,
+			Booking:  &PublicBookingDto{Id: row.ID.String(), StartsAt: row.StartsAt, EndsAt: row.EndsAt, SpotsLeft: spots, OwnerFirstName: row.OwnerFirstName},
+		})
+		if len(out) == maxPublic {
+			break
+		}
+	}
+	return out
 }
 
 // today: every active facility with its turns today, as the home page's list
@@ -224,9 +305,6 @@ func recommend(patterns []model.ListUserBookingPatternsRow, today []todayFacilit
 		out = append(out, RecommendationDto{Kind: RecommendSimilar, Facility: c.f.card, StartsAt: c.slot.Start, Because: c.because, SharedTags: c.shared})
 	}
 
-	if len(out) > maxRecommendations {
-		out = out[:maxRecommendations]
-	}
 	if out == nil {
 		out = []RecommendationDto{}
 	}

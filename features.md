@@ -13,7 +13,7 @@ Status: **built** · **in progress** (open work) · **idea** (not started).
 | Day view of free, booked, closed and past turns | built |
 | Book a free turn, accepting the usage rules; change it to another time of the same facility; cancel it until the deadline | built |
 | Invite people to fill a booking's capacity by link, with an account or as a guest (name and age); leave a booking; the owner removes people | built |
-| Public bookings: make a booking public, and join others' public bookings from "For you" | in progress |
+| Public bookings: make a booking public, and join others' public bookings from "For you" | built |
 | My bookings: upcoming and history, countdown to each turn ("starts in 2 h", "you can go in now"), attendance of past ones | built |
 | "For you" on the home page: your usual turn when it falls today and is free, the facilities you book most with turns left today, similar ones you have not tried; can be turned off | built |
 | Notifications in the app (bell, refreshed every 30 s) and emails: confirmation, reminder 15 minutes before, change, cancellation by you or by the council (with the reason and the closure dates) | built |

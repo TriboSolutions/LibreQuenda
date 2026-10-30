@@ -179,3 +179,44 @@ func (h *invitesHandler) JoinAsGuest(w http.ResponseWriter, r *http.Request) {
 	}
 	helpers.SendNoContentResponse(w)
 }
+
+// JoinPublic: a signed-in person joins a public booking found in «For you».
+func (h *invitesHandler) JoinPublic(w http.ResponseWriter, r *http.Request) {
+	var bookingId, ok = uuidPath(w, r, "id")
+	if !ok {
+		return
+	}
+	var userId, signedIn = h.currentUser(w, r)
+	if !signedIn {
+		return
+	}
+	if err := GetInvitesService(h.db).JoinPublic(r.Context(), userId, bookingId); err != nil {
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
+		return
+	}
+	helpers.SendNoContentResponse(w)
+}
+
+// SetPublic: {"public": true} lets anyone signed in find and join the owner's booking.
+func (h *invitesHandler) SetPublic(w http.ResponseWriter, r *http.Request) {
+	var bookingId, ok = uuidPath(w, r, "id")
+	if !ok {
+		return
+	}
+	var userId, signedIn = h.currentUser(w, r)
+	if !signedIn {
+		return
+	}
+	var input struct {
+		Public bool `json:"public"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_request_body")
+		return
+	}
+	if err := GetInvitesService(h.db).SetPublic(r.Context(), userId, bookingId, input.Public); err != nil {
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
+		return
+	}
+	helpers.SendNoContentResponse(w)
+}

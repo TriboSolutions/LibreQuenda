@@ -34,6 +34,7 @@ SELECT
     f.no_show_limit,
     f.no_show_window_days,
     f.no_show_block_days,
+    f.capacity,
     f.min_age,
     t.timezone
 FROM
@@ -64,6 +65,7 @@ type GetFacilityForBookingRow struct {
 	NoShowLimit              int32         `json:"no_show_limit"`
 	NoShowWindowDays         int32         `json:"no_show_window_days"`
 	NoShowBlockDays          int32         `json:"no_show_block_days"`
+	Capacity                 sql.NullInt32 `json:"capacity"`
 	MinAge                   sql.NullInt32 `json:"min_age"`
 	Timezone                 string        `json:"timezone"`
 }
@@ -90,6 +92,7 @@ func (q *Queries) GetFacilityForBooking(ctx context.Context, id uuid.UUID) (GetF
 		&i.NoShowLimit,
 		&i.NoShowWindowDays,
 		&i.NoShowBlockDays,
+		&i.Capacity,
 		&i.MinAge,
 		&i.Timezone,
 	)
@@ -124,6 +127,7 @@ SELECT
     weekly_opening,
     opens_weekday,
     opens_minute,
+    capacity,
     min_age,
     usage_rules_text
 FROM
@@ -159,6 +163,7 @@ type ListActiveFacilitiesByTenantRow struct {
 	WeeklyOpening            bool            `json:"weekly_opening"`
 	OpensWeekday             int16           `json:"opens_weekday"`
 	OpensMinute              int32           `json:"opens_minute"`
+	Capacity                 sql.NullInt32   `json:"capacity"`
 	MinAge                   sql.NullInt32   `json:"min_age"`
 	UsageRulesText           sql.NullString  `json:"usage_rules_text"`
 }
@@ -196,6 +201,7 @@ func (q *Queries) ListActiveFacilitiesByTenant(ctx context.Context, tenantID uui
 			&i.WeeklyOpening,
 			&i.OpensWeekday,
 			&i.OpensMinute,
+			&i.Capacity,
 			&i.MinAge,
 			&i.UsageRulesText,
 		); err != nil {

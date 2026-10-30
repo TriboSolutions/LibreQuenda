@@ -2,6 +2,7 @@ package tenants
 
 import (
 	"database/sql"
+	"encoding/json"
 	"librequenda/auth"
 	"net/http"
 	"sync"
@@ -84,7 +85,15 @@ func (h *tenantsHandler) Recommendations(w http.ResponseWriter, r *http.Request)
 		helpers.SendI18NErrorResponse(w, r, http.StatusUnauthorized, "errors.unauthorized")
 		return
 	}
-	var response, err = GetTenantsService(h.db).Recommendations(r.Context(), session)
+	// POST may carry where the person is (the home page's «near me»), in the body so it stays out of the logs
+	var position Position
+	if r.Method == http.MethodPost {
+		if decodeErr := json.NewDecoder(r.Body).Decode(&position); decodeErr != nil {
+			helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_request_body")
+			return
+		}
+	}
+	var response, err = GetTenantsService(h.db).Recommendations(r.Context(), session, position)
 	if err != nil {
 		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
 		return

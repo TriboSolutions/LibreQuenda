@@ -371,6 +371,8 @@ CREATE TABLE booking (
     checked_in_by        UUID        NULL REFERENCES app_user(id) ON DELETE SET NULL, -- the staff member who confirmed it
     -- invite link: others fill the facility's capacity; a new token revokes the old link
     invite_token         UUID        NULL,
+    -- public: anyone signed in can find it in «For you» and join it while spots are left; private (the default) only by the invite link
+    is_public            BOOLEAN     NOT NULL DEFAULT FALSE,
     CHECK (ends_at > starts_at),
     CHECK ((status = 'cancelled') = (cancelled_by IS NOT NULL)),
     CHECK (holder_name IS NULL OR (user_id IS NULL AND channel = 'staff')),

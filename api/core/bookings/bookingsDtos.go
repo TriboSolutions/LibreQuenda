@@ -15,6 +15,7 @@ type CreateBookingDto struct {
 	FacilityId  uuid.UUID `json:"facility_id"`
 	StartsAt    time.Time `json:"starts_at"`
 	AcceptRules bool      `json:"accept_rules"` // the resident ticked "I have read the rules"; stored as rules_accepted_at
+	Public      bool      `json:"public"`       // anyone signed in may find it in «For you» and join it
 }
 
 func (d *CreateBookingDto) Validate() []string {
@@ -54,6 +55,7 @@ type BookingDto struct {
 	CanChange    bool       `json:"can_change"` // owner only: another time, on the same terms as cancelling
 	CancelUntil  time.Time  `json:"cancel_until"`
 	CheckinCode  string     `json:"checkin_code"` // QR content, upcoming confirmed bookings only
+	IsPublic     bool       `json:"is_public"`    // owner only: found and joined from «For you»
 	CheckedInAt  *time.Time `json:"checked_in_at"`
 	// owner only: the ways in the facility offers ("reader", "printed_qr", "entry_code", "staff")
 	CheckinWays []string `json:"checkin_ways"`
@@ -263,6 +265,7 @@ func mapBooking(row model.ListBookingsByUserRow, now time.Time) BookingDto {
 		CheckedInAt:    checkedInAt,
 		Attendance:     attendance(row.Status, row.EndsAt, row.CheckedInAt.Valid, row.CheckinAtStart, now),
 		Role:           RoleOwner,
+		IsPublic:       row.IsPublic,
 		CheckinWays:    checkinWays(row),
 		StaffContacts:  staffContacts(row),
 		CheckinRadiusM: int(row.CheckinRadiusM),

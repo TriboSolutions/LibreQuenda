@@ -25,7 +25,7 @@ WHERE
     AND user_id = $2
     AND status = 'confirmed'
 RETURNING
-    id, facility_id, user_id, starts_at, ends_at, status, rules_accepted_at, channel, booked_by, holder_name, holder_phone, cancelled_at, cancelled_by, created_at, updated_at, checkin_token, checked_in_at, checked_in_device_id, checked_in_method, checked_in_by, invite_token
+    id, facility_id, user_id, starts_at, ends_at, status, rules_accepted_at, channel, booked_by, holder_name, holder_phone, cancelled_at, cancelled_by, created_at, updated_at, checkin_token, checked_in_at, checked_in_device_id, checked_in_method, checked_in_by, invite_token, is_public
 `
 
 type CancelBookingParams struct {
@@ -58,6 +58,7 @@ func (q *Queries) CancelBooking(ctx context.Context, arg CancelBookingParams) (B
 		&i.CheckedInMethod,
 		&i.CheckedInBy,
 		&i.InviteToken,
+		&i.IsPublic,
 	)
 	return i, err
 }
@@ -73,7 +74,7 @@ WHERE
     AND user_id = $4
     AND status = 'confirmed'
 RETURNING
-    id, facility_id, user_id, starts_at, ends_at, status, rules_accepted_at, channel, booked_by, holder_name, holder_phone, cancelled_at, cancelled_by, created_at, updated_at, checkin_token, checked_in_at, checked_in_device_id, checked_in_method, checked_in_by, invite_token
+    id, facility_id, user_id, starts_at, ends_at, status, rules_accepted_at, channel, booked_by, holder_name, holder_phone, cancelled_at, cancelled_by, created_at, updated_at, checkin_token, checked_in_at, checked_in_device_id, checked_in_method, checked_in_by, invite_token, is_public
 `
 
 type ChangeBookingTimeParams struct {
@@ -115,6 +116,7 @@ func (q *Queries) ChangeBookingTime(ctx context.Context, arg ChangeBookingTimePa
 		&i.CheckedInMethod,
 		&i.CheckedInBy,
 		&i.InviteToken,
+		&i.IsPublic,
 	)
 	return i, err
 }
@@ -195,7 +197,7 @@ INSERT INTO booking (
     NOW()
 )
 RETURNING
-    id, facility_id, user_id, starts_at, ends_at, status, rules_accepted_at, channel, booked_by, holder_name, holder_phone, cancelled_at, cancelled_by, created_at, updated_at, checkin_token, checked_in_at, checked_in_device_id, checked_in_method, checked_in_by, invite_token
+    id, facility_id, user_id, starts_at, ends_at, status, rules_accepted_at, channel, booked_by, holder_name, holder_phone, cancelled_at, cancelled_by, created_at, updated_at, checkin_token, checked_in_at, checked_in_device_id, checked_in_method, checked_in_by, invite_token, is_public
 `
 
 type CreateBookingParams struct {
@@ -236,6 +238,7 @@ func (q *Queries) CreateBooking(ctx context.Context, arg CreateBookingParams) (B
 		&i.CheckedInMethod,
 		&i.CheckedInBy,
 		&i.InviteToken,
+		&i.IsPublic,
 	)
 	return i, err
 }
@@ -292,6 +295,7 @@ SELECT
     b.status,
     b.checkin_token,
     b.checked_in_at,
+    b.is_public,
     facility_took_checkin(f.id, b.starts_at)::BOOLEAN AS checkin_at_start,
     -- the ways in the facility offers now, for the check-in button
     (EXISTS (SELECT 1 FROM checkin_device d WHERE d.facility_id = f.id) AND COALESCE(c.qr_reader, TRUE))::BOOLEAN AS has_reader,
@@ -328,6 +332,7 @@ type ListBookingsByUserRow struct {
 	Status         BookingStatus   `json:"status"`
 	CheckinToken   uuid.UUID       `json:"checkin_token"`
 	CheckedInAt    sql.NullTime    `json:"checked_in_at"`
+	IsPublic       bool            `json:"is_public"`
 	CheckinAtStart bool            `json:"checkin_at_start"`
 	HasReader      bool            `json:"has_reader"`
 	PrintedQr      bool            `json:"printed_qr"`
@@ -365,6 +370,7 @@ func (q *Queries) ListBookingsByUser(ctx context.Context, userID uuid.NullUUID) 
 			&i.Status,
 			&i.CheckinToken,
 			&i.CheckedInAt,
+			&i.IsPublic,
 			&i.CheckinAtStart,
 			&i.HasReader,
 			&i.PrintedQr,

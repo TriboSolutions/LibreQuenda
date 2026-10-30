@@ -44,3 +44,6 @@ CREATE INDEX idx_checkin_period_facility ON facility_checkin_period (facility_id
 CREATE INDEX idx_audit_log_tenant_at ON audit_log (tenant_id, at DESC);
 CREATE INDEX idx_audit_log_at        ON audit_log (at DESC);
 CREATE INDEX idx_audit_log_action    ON audit_log (action);
+
+-- «For you»: the upcoming public bookings
+CREATE INDEX idx_booking_public ON booking (starts_at) WHERE is_public AND status = 'confirmed';

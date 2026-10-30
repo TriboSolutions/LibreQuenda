@@ -61,6 +61,7 @@ RELATIVE_COLUMN_TYPES = {
 HISTORY_SQL = Path(__file__).parent / "history.sql"
 CHECKIN_SQL = Path(__file__).parent / "checkin.sql"
 AUDIT_SQL = Path(__file__).parent / "audit.sql"
+PUBLIC_SQL = Path(__file__).parent / "public.sql"
 TESTER_SQL = Path(__file__).parent / "tester.sql"
 ENV_FILE = Path(__file__).parent.parent.parent.parent / ".env"
 
@@ -119,6 +120,10 @@ def generate_sql(csv_dir: Path, sql_file: Path) -> None:
         lines.append("")
 
         print(f"  [sql]     {table}  ({row_count} rows)")
+
+    lines.append("-- public bookings (public.sql)")
+    lines.append(PUBLIC_SQL.read_text(encoding="utf-8"))
+    print("  [sql]     public bookings  (every other upcoming one where others fit)")
 
     lines.append("-- ways to check in (checkin.sql)")
     lines.append(CHECKIN_SQL.read_text(encoding="utf-8"))

@@ -167,7 +167,9 @@
     "mfa_required": "L’administració requereix entrar amb un segon factor (una app d’autenticació o una clau de seguretat). Configura’l al teu compte i torna a iniciar la sessió.",
     "mfa_check_failed": "No s’ha pogut comprovar el segon factor. Torna-ho a provar d’aquí a un moment.",
     "weekly_limit_reached": "Ja tens les reserves que es permeten per setmana en aquesta instal·lació.",
-    "invalid_weekly_opening": "L’obertura setmanal necessita un dia de la setmana i una hora vàlids."
+    "invalid_weekly_opening": "L’obertura setmanal necessita un dia de la setmana i una hora vàlids.",
+    "public_needs_capacity": "Només es poden fer públiques les reserves d’una instal·lació on hi caben més persones.",
+    "public_booking_not_found": "Aquesta reserva ja no és pública o ja no existeix."
   },
   "email": {
     "greeting": "Hola {{0}},",

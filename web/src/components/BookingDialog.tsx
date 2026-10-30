@@ -16,7 +16,7 @@ type Props = {
   today: string
   authenticated: boolean
   onClose: () => void
-  onConfirm: (facility: Facility, slot: Slot) => Promise<string | null> // error message, or null when booked
+  onConfirm: (facility: Facility, slot: Slot, isPublic: boolean) => Promise<string | null> // error message, or null when booked
   onLogin: () => void
 }
 
@@ -27,6 +27,7 @@ export function BookingDialog({ pick, timeZone, today, authenticated, onClose, o
   const needsProfile = authenticated && me !== null && !me.profile_complete
   const [submitting, setSubmitting] = useState(false)
   const [accepted, setAccepted] = useState(false)
+  const [isPublic, setIsPublic] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const close = () => {
@@ -43,7 +44,7 @@ export function BookingDialog({ pick, timeZone, today, authenticated, onClose, o
   const confirm = async () => {
     setSubmitting(true)
     setError(null)
-    const message = await onConfirm(facility, slot)
+    const message = await onConfirm(facility, slot, isPublic && facility.capacity > 1)
     setSubmitting(false)
     if (message) setError(message)
   }
@@ -87,6 +88,20 @@ export function BookingDialog({ pick, timeZone, today, authenticated, onClose, o
             </div>
           )}
         </section>
+
+        {authenticated && !needsProfile && facility.capacity > 1 && (
+          <div className="flex items-start gap-2">
+            <Checkbox id="booking-public" checked={isPublic} onCheckedChange={(value) => setIsPublic(value === true)} aria-describedby="booking-public-help" className="mt-0.5" />
+            <div className="grid gap-1">
+              <Label htmlFor="booking-public" className="leading-5 font-normal">
+                {t('bookings:dialog.public')}
+              </Label>
+              <p id="booking-public-help" className="text-sm text-muted-foreground">
+                {t('bookings:dialog.publicHelp')}
+              </p>
+            </div>
+          </div>
+        )}
 
         {needsProfile && (
           <Alert className="border-0 bg-pill-accent-bg text-pill-accent-ink">

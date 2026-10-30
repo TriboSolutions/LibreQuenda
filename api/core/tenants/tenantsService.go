@@ -258,6 +258,7 @@ func (s *tenantsService) loadDay(ctx context.Context, slug string, dateParam str
 			MaxInARow:         f.MaxTurnsInARow,
 			MaxPerWeek:        f.MaxBookingsPerWeek,
 			WeeklyOpening:     weeklyOpening(f.WeeklyOpening, f.OpensWeekday, f.OpensMinute),
+			Capacity:          f.Capacity.Int32,
 			MinAge:            minAge(f.MinAge),
 			UsageRules:        f.UsageRulesText.String,
 			Windows:           windowDtos,
