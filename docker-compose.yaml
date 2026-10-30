@@ -146,16 +146,20 @@ services:
       ZITADEL_FIRSTINSTANCE_ORG_HUMAN_EMAIL_VERIFIED: true
       ZITADEL_FIRSTINSTANCE_ORG_HUMAN_PASSWORD: ${ZITADEL_ADMIN_PASSWORD:?set ZITADEL_ADMIN_PASSWORD in .env}
       ZITADEL_FIRSTINSTANCE_ORG_HUMAN_PASSWORDCHANGEREQUIRED: false
-      ZITADEL_FIRSTINSTANCE_LOGINCLIENTPATPATH: /zitadel/bootstrap/login-client.pat
+      # each token in its own volume: the login app only sees its own (login-client)
+      ZITADEL_FIRSTINSTANCE_LOGINCLIENTPATPATH: /zitadel/login-client/login-client.pat
       ZITADEL_FIRSTINSTANCE_ORG_LOGINCLIENT_MACHINE_USERNAME: login-client
       ZITADEL_FIRSTINSTANCE_ORG_LOGINCLIENT_MACHINE_NAME: Automatically Initialized IAM_LOGIN_CLIENT
       ZITADEL_FIRSTINSTANCE_ORG_LOGINCLIENT_PAT_EXPIRATIONDATE: "2099-01-01T00:00:00Z"
 
-      # Admin service account used by zitadel-setup (project + OIDC app)
-      ZITADEL_FIRSTINSTANCE_PATPATH: /zitadel/bootstrap/admin.pat
+      # Admin service account used by zitadel-setup only (project, apps, instance
+      # policies: an instance owner, the least role that sets them). Its token sits
+      # in the zitadel-admin volume, mounted by nothing else; ZITADEL_SETUP_REVOKE_TOKEN
+      # revokes it after a successful setup. Both only apply on the very first start.
+      ZITADEL_FIRSTINSTANCE_PATPATH: /zitadel/admin/admin.pat
       ZITADEL_FIRSTINSTANCE_ORG_MACHINE_MACHINE_USERNAME: librequenda-setup
       ZITADEL_FIRSTINSTANCE_ORG_MACHINE_MACHINE_NAME: LibreQuenda setup
-      ZITADEL_FIRSTINSTANCE_ORG_MACHINE_PAT_EXPIRATIONDATE: "2099-01-01T00:00:00Z"
+      ZITADEL_FIRSTINSTANCE_ORG_MACHINE_PAT_EXPIRATIONDATE: ${ZITADEL_ADMIN_PAT_EXPIRATION:-2099-01-01T00:00:00Z}
 
       ZITADEL_DEFAULTINSTANCE_FEATURES_LOGINV2_REQUIRED: true
       ZITADEL_DEFAULTINSTANCE_FEATURES_LOGINV2_BASEURI: ${PUBLIC_SCHEME}://${ZITADEL_DOMAIN}:${PUBLIC_PORT}/ui/v2/login/
@@ -178,7 +182,8 @@ services:
       retries: 12
       start_period: 20s
     volumes:
-      - zitadel-bootstrap:/zitadel/bootstrap:rw
+      - zitadel-admin:/zitadel/admin:rw
+      - zitadel-login-client:/zitadel/login-client:rw
     depends_on:
       db:
         condition: service_healthy
@@ -190,7 +195,7 @@ services:
     environment:
       ZITADEL_API_URL: http://zitadel-api:8080
       NEXT_PUBLIC_BASE_PATH: /ui/v2/login
-      ZITADEL_SERVICE_USER_TOKEN_FILE: /zitadel/bootstrap/login-client.pat
+      ZITADEL_SERVICE_USER_TOKEN_FILE: /zitadel/login-client/login-client.pat
       ZITADEL_SESSION_COOKIE_SECRET: ${LOGIN_SESSION_COOKIE_SECRET:?set LOGIN_SESSION_COOKIE_SECRET in .env}
       CUSTOM_REQUEST_HEADERS: Host:${ZITADEL_DOMAIN},X-Forwarded-Proto:${PUBLIC_SCHEME}
       # Sign-in and sign-up stop at "enter the code we emailed you" until the email
@@ -203,7 +208,7 @@ services:
       retries: 12
       start_period: 20s
     volumes:
-      - zitadel-bootstrap:/zitadel/bootstrap:ro
+      - zitadel-login-client:/zitadel/login-client:ro
     depends_on:
       zitadel-api:
         condition: service_healthy
@@ -222,8 +227,10 @@ services:
       ZITADEL_REFRESH_DAYS: ${ZITADEL_REFRESH_DAYS:-90}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      # true: revoke the admin token once the setup succeeds; later starts keep the configuration
+      ZITADEL_SETUP_REVOKE_TOKEN: ${ZITADEL_SETUP_REVOKE_TOKEN:-false}
     volumes:
-      - zitadel-bootstrap:/zitadel/bootstrap:ro
+      - zitadel-admin:/zitadel/bootstrap:ro
       - runtime-config:/runtime
       - api-secrets:/api-secrets
     depends_on:
@@ -255,7 +262,8 @@ services:
 
 volumes:
   postgres_data:
-  zitadel-bootstrap:
+  zitadel-admin: # the setup's admin token: Zitadel writes it, only zitadel-setup reads it
+  zitadel-login-client: # the login app's token
   caddy_data:
   caddy_config:
   runtime-config:

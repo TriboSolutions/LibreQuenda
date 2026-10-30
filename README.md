@@ -80,6 +80,19 @@ The first Zitadel admin (`ZITADEL_ADMIN_*`), Zitadel's email settings and the `Z
 
 **Second factor for administrators:** council administrators and superadministrators only get into the administration after signing in with a second factor (an authenticator app, a security key or a passkey), set up in their sign-in account. Zitadel's access tokens don't say how the person signed in, so the API asks Zitadel (token introspection, with an API application `zitadel-setup` creates) once per token. On by default (`REQUIRE_ADMIN_MFA=true` in `docker-compose.yaml`); the local development stack leaves it off. Residents are not affected. Before turning it on in an existing installation, ask the administrators to set up a second factor first.
 
+**Zitadel admin token:** on its very first start Zitadel creates the `librequenda-setup` service account and writes its token (`admin.pat`) to the `zitadel-admin` volume, which only `zitadel-setup` mounts (read-only); the login app's own token goes to `zitadel-login-client`, and the API only ever sees `api-secrets`. The account is an instance owner, the least role that can set the instance's login, token and branding policies. To leave no such token behind, set `ZITADEL_SETUP_REVOKE_TOKEN=true`: once the setup succeeds it revokes the token, and later starts keep the configuration as it is (to change it again, create a new token for `librequenda-setup` in Zitadel's console and put it in that volume). `ZITADEL_ADMIN_PAT_EXPIRATION` sets the token's expiry on the very first start.
+
+*Upgrading an installation that still has the single `zitadel-bootstrap` volume:* copy the two tokens to the new volumes once, then start as usual (replace `librequenda` with your compose project name):
+
+```sh
+docker run --rm -v librequenda_zitadel-bootstrap:/old:ro -v librequenda_zitadel-admin:/admin -v librequenda_zitadel-login-client:/login \
+  alpine sh -c 'cp /old/admin.pat /admin/ && cp /old/login-client.pat /login/'
+docker compose up -d
+docker volume rm librequenda_zitadel-bootstrap   # once everything works
+```
+
+A local `docker-compose.dev.yaml` keeps working as it is; to mirror production, mount `zitadel-admin` at `/zitadel/bootstrap` in `zitadel-setup` and `zitadel-login-client` at `/zitadel/login-client` in `zitadel-login` (with `ZITADEL_SERVICE_USER_TOKEN_FILE` and the `ZITADEL_FIRSTINSTANCE_*PATPATH` paths as in `docker-compose.yaml`).
+
 **TLS behind another proxy:** if a load balancer in front already terminates TLS, set `CADDY_AUTO_HTTPS=false` and keep `PUBLIC_SCHEME=https`; Caddy then serves plain HTTP to it.
 
 **Images from CI:** every push to `main` and every version tag builds the images and publishes them to `ghcr.io/<owner>/librequenda-<image>` (`.github/workflows/ci.yml`).
