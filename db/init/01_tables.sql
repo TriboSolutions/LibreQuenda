@@ -286,19 +286,36 @@ CREATE TABLE facility_checkin (
     staff_confirm BOOLEAN      NOT NULL DEFAULT FALSE,              -- staff mark the entry from the calendar
     qr_reader     BOOLEAN      NOT NULL DEFAULT TRUE,               -- off: the readers refuse every QR, but stay set up (broken, switched off)
     staff_contacts JSONB       NOT NULL DEFAULT '[]'::JSONB,        -- who residents ask on site: [{name, phone, place}], not accounts
-    checks_in_since TIMESTAMPTZ NULL,                                -- since the QR on the door, the code or staff took check-ins; NULL while all are off
     updated_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW()
 );
 
--- Since when the facility takes check-ins: its first QR reader, or the phone and
--- staff ways (facility_checkin.checks_in_since), whichever came first; NULL if
--- never. A booking that started before it says nothing about no-shows: nobody
--- could check in.
-CREATE FUNCTION facility_checkin_since(target UUID) RETURNS TIMESTAMPTZ
+-- When each facility could take check-ins (a QR reader switched on, the QR on
+-- the door, the entry code or staff): one row per stretch, the current one open
+-- (ends_at NULL). Kept by triggers on checkin_device and facility_checkin
+-- (03A_triggers.sql), never written by the API. A booking that began outside
+-- them says nothing about no-shows: nobody could check in.
+CREATE TABLE facility_checkin_period (
+    id          UUID        PRIMARY KEY DEFAULT uuidv7(),
+    facility_id UUID        NOT NULL REFERENCES facility(id) ON DELETE CASCADE,
+    starts_at   TIMESTAMPTZ NOT NULL,
+    ends_at     TIMESTAMPTZ NULL,
+    CHECK (ends_at IS NULL OR ends_at >= starts_at)
+);
+
+-- Whether the facility can take check-ins now, in any way.
+CREATE FUNCTION facility_can_check_in(target UUID) RETURNS BOOLEAN
 LANGUAGE sql STABLE AS $$
-    SELECT LEAST(
-        (SELECT MIN(d.created_at) FROM checkin_device d WHERE d.facility_id = target),
-        (SELECT c.checks_in_since FROM facility_checkin c WHERE c.facility_id = target)
+    SELECT (EXISTS (SELECT 1 FROM checkin_device d WHERE d.facility_id = target)
+            AND COALESCE((SELECT c.qr_reader FROM facility_checkin c WHERE c.facility_id = target), TRUE))
+        OR COALESCE((SELECT c.printed_qr OR c.entry_code OR c.staff_confirm FROM facility_checkin c WHERE c.facility_id = target), FALSE)
+$$;
+
+-- Whether the facility could take check-ins at `at` (a booking's start).
+CREATE FUNCTION facility_took_checkin(target UUID, at TIMESTAMPTZ) RETURNS BOOLEAN
+LANGUAGE sql STABLE AS $$
+    SELECT EXISTS (
+        SELECT 1 FROM facility_checkin_period p
+        WHERE p.facility_id = target AND p.starts_at <= at AND (p.ends_at IS NULL OR p.ends_at > at)
     )
 $$;
 

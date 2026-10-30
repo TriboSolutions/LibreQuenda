@@ -387,7 +387,7 @@ SELECT
     b.ends_at,
     b.status,
     b.checked_in_at,
-    COALESCE(facility_checkin_since(f.id) <= b.starts_at, FALSE)::BOOLEAN AS checkin_at_start,
+    facility_took_checkin(f.id, b.starts_at)::BOOLEAN AS checkin_at_start,
     f.id   AS facility_id,
     f.name AS facility_name,
     f.slug AS facility_slug,
