@@ -815,5 +815,23 @@
       "account.deleted": "Borró su cuenta",
       "other": "Otro cambio"
     }
+  },
+  "widget": {
+    "title": "Widget para tu web",
+    "help": "Inserta los turnos libres de las instalaciones en la web del ayuntamiento: copia este código y pégalo allí. Cada turno abre esta aplicación para reservarlo.",
+    "facility": "Instalación",
+    "allFacilities": "Todas las instalaciones",
+    "height": "Altura (píxeles)",
+    "theme": "Apariencia",
+    "themeAuto": "La del dispositivo",
+    "themeLight": "Clara",
+    "themeDark": "Oscura",
+    "language": "Idioma",
+    "languageAuto": "El del navegador",
+    "code": "Código para pegar en la web",
+    "copy": "Copiar el código",
+    "copied": "Código copiado",
+    "preview": "Vista previa",
+    "iframeTitle": "Turnos libres de las instalaciones deportivas"
   }
 }

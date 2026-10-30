@@ -41,6 +41,7 @@ func TestFacilityInputValidate(t *testing.T) {
 		{"no map pin", func(in *FacilityInput) { in.Latitude, in.Longitude = nil, nil }, ""},
 		{"half a pin", func(in *FacilityInput) { in.Longitude = nil }, "errors.invalid_coordinates"},
 		{"reserved slug", func(in *FacilityInput) { in.Slug = "admin" }, "errors.slug_reserved"},
+		{"the widget's address", func(in *FacilityInput) { in.Slug = "widget" }, "errors.slug_reserved"},
 		{"slot not a multiple of 5", func(in *FacilityInput) { in.SlotMinutes = 47 }, "errors.invalid_slot_minutes"},
 		{"image given as URL", func(in *FacilityInput) { in.ImageRef = "https://evil.example/a.png" }, "errors.invalid_image"},
 		{"image of a council", func(in *FacilityInput) { in.ImageRef = "councils/a.png" }, "errors.invalid_image"},

@@ -815,5 +815,23 @@
       "account.deleted": "Borrou a súa conta",
       "other": "Outro cambio"
     }
+  },
+  "widget": {
+    "title": "Widget para a túa web",
+    "help": "Insire as quendas libres das instalacións na web do concello: copia este código e pégao alí. Cada quenda abre esta aplicación para reservala.",
+    "facility": "Instalación",
+    "allFacilities": "Todas as instalacións",
+    "height": "Altura (píxeles)",
+    "theme": "Aparencia",
+    "themeAuto": "A do dispositivo",
+    "themeLight": "Clara",
+    "themeDark": "Escura",
+    "language": "Idioma",
+    "languageAuto": "O do navegador",
+    "code": "Código para pegar na web",
+    "copy": "Copiar o código",
+    "copied": "Código copiado",
+    "preview": "Vista previa",
+    "iframeTitle": "Quendas libres das instalacións deportivas"
   }
 }

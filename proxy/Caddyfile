@@ -41,10 +41,17 @@
 	}
 
 	# React SPA: unknown paths fall back to index.html, always revalidated so a
-	# new build is picked up on the next load
+	# new build is picked up on the next load. Only the free-turns widget
+	# (/<council>/widget[/<facility>]) may be framed by other sites; every
+	# other page only by itself (clickjacking).
 	handle {
 		root * /srv/web
 		header Cache-Control "no-cache"
+		@widget path_regexp ^/[^/]+/widget(/[^/]+)?/?$
+		header @widget Content-Security-Policy "frame-ancestors *"
+		@framed_by_self not path_regexp ^/[^/]+/widget(/[^/]+)?/?$
+		header @framed_by_self Content-Security-Policy "frame-ancestors 'self'"
+		header @framed_by_self X-Frame-Options "SAMEORIGIN"
 		try_files {path} /index.html
 		file_server
 	}

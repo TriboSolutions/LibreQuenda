@@ -51,6 +51,7 @@ Status: **built** · **in progress** (open work) · **idea** (not started).
 | Staff booking by phone or at the desk, for an account or just a name and phone; cancel any booking; print the entry QR | built |
 | Indicators: bookings, occupancy, cancellations, no-shows (counting every way to check in), busiest days and hours, comparison with another period, per facility; CSV and Excel export | built |
 | No-shows remember when check-in was off (history of the facility's ways to check in) | in progress |
+| Widget of free turns to embed in the council's own website (`/<council>/widget`, all or one facility, light or dark, any of the four languages), with the code to paste and a preview in the council settings | built |
 | Council settings page: details, administrators (invite, remove), booking window, own email relay (SMTP) with a test email, full data export (CSV + Frictionless datapackage + images, optionally with residents' personal data) | built |
 
 ## Platform
@@ -87,7 +88,6 @@ Grouped by who gains most; none of these is started.
 - **Fees and payment:** a price per turn or a pass, paid through the public administrations' payment gateway (Pasarela de Pagamentos), with exemptions.
 - **Limits across facilities:** e.g. at most two upcoming padel bookings across all the council's courts.
 - **Kiosk screen at the entrance:** today's turns and who is in, on the reader's tablet.
-- **Embeddable widget** of a facility's free turns for the council's own website.
 - **Open data:** publish anonymised occupancy as open data (DCAT-AP, datos.gob.es / abertos.xunta.gal) on a schedule.
 
 **Platform**
