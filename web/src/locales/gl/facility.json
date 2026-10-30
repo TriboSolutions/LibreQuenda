@@ -124,5 +124,7 @@
       "cold": "xeada ou moito frío",
       "alert": "aviso de MeteoGalicia"
     }
-  }
+  },
+  "ruleCouncilActive_one": "Como máximo {{count}} reserva activa por persoa en todo o concello.",
+  "ruleCouncilActive_other": "Como máximo {{count}} reservas activas por persoa en todo o concello."
 }

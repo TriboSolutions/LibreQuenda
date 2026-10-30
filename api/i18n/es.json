@@ -179,7 +179,10 @@
     "invalid_issue_note": "La nota puede tener hasta 1000 caracteres.",
     "issue_reject_reason": "Para rechazar un aviso, explica el motivo a quien lo envió.",
     "issue_not_found": "No encontramos ese aviso.",
-    "invalid_municipality_code": "El código INE del municipio tiene cinco cifras (por ejemplo, 36024 para Lalín)."
+    "invalid_municipality_code": "El código INE del municipio tiene cinco cifras (por ejemplo, 36024 para Lalín).",
+    "other_council_booking": "Ya tienes reservas en {{0}}: con una cuenta se reserva en un ayuntamiento cada vez. Podrás reservar aquí cuando terminen o las canceles.",
+    "council_limit_reached": "Ya tienes {{0}} reservas próximas en las instalaciones de este ayuntamiento, el máximo que permite.",
+    "booking_policy_failed": "No se pudieron guardar las normas de reserva de la plataforma."
   },
   "email": {
     "greeting": "Hola {{0}}:",

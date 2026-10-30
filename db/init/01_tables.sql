@@ -91,6 +91,7 @@ CREATE TABLE tenant_booking_rules (
     max_bookings_per_day INT         NOT NULL DEFAULT 0  CHECK (max_bookings_per_day >= 0),
     max_turns_in_a_row   INT         NOT NULL DEFAULT 0  CHECK (max_turns_in_a_row >= 0),
     max_bookings_per_week INT        NOT NULL DEFAULT 0  CHECK (max_bookings_per_week >= 0),
+    max_active_bookings_council INT  NOT NULL DEFAULT 0  CHECK (max_active_bookings_council >= 0), -- upcoming bookings per person across the council; 0 = no limit
     weekly_opening       BOOLEAN     NOT NULL DEFAULT FALSE,
     opens_weekday        SMALLINT    NOT NULL DEFAULT 7  CHECK (opens_weekday BETWEEN 1 AND 7),
     opens_minute         INT         NOT NULL DEFAULT 1200 CHECK (opens_minute BETWEEN 0 AND 1439),
@@ -145,6 +146,8 @@ CREATE TABLE app_settings (
     id         BOOLEAN     PRIMARY KEY DEFAULT TRUE CHECK (id),   -- a single row
     app_name   VARCHAR(60) NULL,
     logo_ref   TEXT        NULL,                                  -- storage reference, never a URL
+    -- a person holds upcoming bookings in one council at a time (own or joined)
+    one_council_per_account BOOLEAN NOT NULL DEFAULT TRUE,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 

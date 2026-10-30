@@ -124,5 +124,7 @@
       "cold": "frost or very cold",
       "alert": "MeteoGalicia warning"
     }
-  }
+  },
+  "ruleCouncilActive_one": "At most {{count}} upcoming booking per person across the council.",
+  "ruleCouncilActive_other": "At most {{count}} upcoming bookings per person across the council."
 }

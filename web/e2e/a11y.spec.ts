@@ -650,6 +650,21 @@ test.describe('keyboard', () => {
     expect((await saved).postDataJSON()).toEqual({ status: 'solved', staff_note: 'Rede nova colocada.' })
   })
 
+  test('a council caps bookings across its facilities, and the platform keeps one council per account', async ({ page }) => {
+    await open(page, '/lugo/padel-1')
+    await expect(page.getByText('Como máximo 4 reservas activas por persoa en todo o concello.')).toBeVisible()
+    await open(page, '/lugo/admin/axustes')
+    const rules = page.getByRole('region', { name: 'Ventá de reserva' })
+    await expect(rules.getByLabel('Reservas activas por persoa en todo o concello')).toHaveValue('4')
+    await open(page, '/admin')
+    await page.getByRole('tab', { name: 'Personalizar a aplicación' }).click()
+    const one = page.getByRole('switch', { name: 'Un concello de cada vez por conta' })
+    await expect(one).toBeChecked()
+    const saved = page.waitForRequest((r) => r.method() === 'PUT' && r.url().endsWith('/admin/booking-policy'))
+    await one.click()
+    expect((await saved).postDataJSON()).toEqual({ one_council_per_account: false })
+  })
+
   test('signed out, the home page has no recommendations', async ({ page }) => {
     await open(page, '/', { signedIn: false })
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()

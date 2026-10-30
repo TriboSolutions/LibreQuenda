@@ -50,6 +50,7 @@ Status: **built** · **in progress** (open work) · **idea** (not started).
 | Ways to check in per facility (Entrada tab) and printable QR and code sheets | built |
 | Booking window per council, inherited by its facilities or overridden in each one's Reserva tab: how far ahead (hours or days), how close to the start from the app, cancel and change deadline, upcoming bookings, bookings per day, turns in a row, optional no-show penalty | built |
 | Weekly limit per person and turns that open at a fixed hour (e.g. Sunday 20:00) | in progress |
+| A council-wide cap on each person's upcoming bookings across all its facilities; one council at a time per account (a platform setting, on by default); nobody can hold two bookings at the same time | built |
 | Staff booking by phone or at the desk, for an account or just a name and phone; cancel any booking; print the entry QR | built |
 | Indicators: bookings, occupancy, cancellations, no-shows (counting every way to check in), busiest days and hours, comparison with another period, per facility; CSV and Excel export | built |
 | No-shows remember when check-in was off (history of the facility's ways to check in) | in progress |
@@ -87,7 +88,7 @@ Grouped by who gains most; none of these is started.
 
 - **Recurring bookings for clubs and schools:** a season's slots booked in one go by staff, with their own limits, and priority windows for registered entities.
 - **Fees and payment:** a price per turn or a pass, paid through the public administrations' payment gateway (Pasarela de Pagamentos), with exemptions.
-- **Limits across facilities:** e.g. at most two upcoming padel bookings across all the council's courts.
+- **Limits per sport across facilities:** e.g. at most two upcoming padel bookings across all the council's courts (today the council-wide cap counts every facility).
 - **Kiosk screen at the entrance:** today's turns and who is in, on the reader's tablet.
 - **Open data:** publish anonymised occupancy as open data (DCAT-AP, datos.gob.es / abertos.xunta.gal) on a schedule.
 

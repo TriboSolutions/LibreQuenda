@@ -722,7 +722,11 @@
     "perWeek": "Bookings per person and week",
     "sumWeekly": "Next week’s slots open on {{weekday}} at {{time}}.",
     "sumPerWeek_one": "{{count}} booking per person and week.",
-    "sumPerWeek_other": "{{count}} bookings per person and week."
+    "sumPerWeek_other": "{{count}} bookings per person and week.",
+    "councilActive": "Upcoming bookings per person across the council",
+    "councilActiveHelp": "Counting every facility of the council. 0 = no limit.",
+    "sumCouncilActive_one": "{{count}} upcoming booking per person across the council.",
+    "sumCouncilActive_other": "{{count}} upcoming bookings per person across the council."
   },
   "councilSettings": {
     "title": "Council settings",
@@ -815,7 +819,8 @@
       "branding.changed": "Changed the app’s name or logo",
       "account.exported": "Downloaded their data",
       "account.deleted": "Deleted their account",
-      "other": "Other change"
+      "other": "Other change",
+      "booking_policy.changed": "Changed the platform's booking rules"
     }
   },
   "widget": {
@@ -864,5 +869,11 @@
     "close": "Close the facility or check its hours",
     "newCount_one": ", {{count}} new",
     "newCount_other": ", {{count}} new"
+  },
+  "bookingPolicy": {
+    "title": "Platform booking rules",
+    "oneCouncil": "One council at a time per account",
+    "oneCouncilHelp": "With upcoming bookings in one council (own or joined), a person cannot book or join in another until they are over. No council sees another's bookings.",
+    "saved": "Saved."
   }
 }

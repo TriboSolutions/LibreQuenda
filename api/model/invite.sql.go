@@ -638,7 +638,8 @@ SELECT
     b.status,
     f.capacity,
     f.min_age,
-    t.timezone
+    t.timezone,
+    t.id AS tenant_id
 FROM
     booking b
     JOIN facility f ON f.id = b.facility_id
@@ -657,6 +658,7 @@ type LockBookingByInviteTokenRow struct {
 	Capacity sql.NullInt32 `json:"capacity"`
 	MinAge   sql.NullInt32 `json:"min_age"`
 	Timezone string        `json:"timezone"`
+	TenantID uuid.UUID     `json:"tenant_id"`
 }
 
 // Inside the join transaction: joins to the same booking wait for each other,
@@ -673,6 +675,7 @@ func (q *Queries) LockBookingByInviteToken(ctx context.Context, inviteToken uuid
 		&i.Capacity,
 		&i.MinAge,
 		&i.Timezone,
+		&i.TenantID,
 	)
 	return i, err
 }
@@ -686,7 +689,8 @@ SELECT
     b.status,
     f.capacity,
     f.min_age,
-    t.timezone
+    t.timezone,
+    t.id AS tenant_id
 FROM
     booking b
     JOIN facility f ON f.id = b.facility_id
@@ -706,6 +710,7 @@ type LockPublicBookingRow struct {
 	Capacity sql.NullInt32 `json:"capacity"`
 	MinAge   sql.NullInt32 `json:"min_age"`
 	Timezone string        `json:"timezone"`
+	TenantID uuid.UUID     `json:"tenant_id"`
 }
 
 // Inside the join transaction of a public booking, like LockBookingByInviteToken.
@@ -721,6 +726,7 @@ func (q *Queries) LockPublicBooking(ctx context.Context, id uuid.UUID) (LockPubl
 		&i.Capacity,
 		&i.MinAge,
 		&i.Timezone,
+		&i.TenantID,
 	)
 	return i, err
 }

@@ -2,6 +2,8 @@ package bookings
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"librequenda/model"
 	"librequenda/schedule"
 	"librequenda/shared"
@@ -116,4 +118,49 @@ func noShowBlock(noShows []time.Time, limit, blockDays int, now time.Time) (time
 	}
 	var until = noShows[0].AddDate(0, 0, blockDays)
 	return until, now.Before(until)
+}
+
+// councilQueries: what CouncilLimits reads (*model.Queries, or a fake in tests).
+type councilQueries interface {
+	GetCouncilBookingPolicy(ctx context.Context, tenantID uuid.UUID) (model.GetCouncilBookingPolicyRow, error)
+	GetUserBookingInOtherCouncil(ctx context.Context, arg model.GetUserBookingInOtherCouncilParams) (string, error)
+	CountUserUpcomingInCouncil(ctx context.Context, arg model.CountUserUpcomingInCouncilParams) (int64, error)
+}
+
+// CouncilLimits: the rules beyond one facility, checked inside the transaction
+// that locks the person's bookings (LockUserBookings), so two requests at once
+// cannot both pass:
+//   - one council at a time (a platform setting, on by default): while they hold
+//     an upcoming booking, own or joined, in another council, they can neither
+//     book nor join here;
+//   - own: the council's cap on their own upcoming bookings across its facilities.
+//     Joining someone's booking does not count towards it, like the facility's cap.
+//
+// Staff booking for someone skip both, like the other per-person limits.
+func CouncilLimits(ctx context.Context, queries councilQueries, userId, tenantId uuid.UUID, own bool) *shared.ErrorResponse {
+	var failed = &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.booking_failed"}
+	var user = uuid.NullUUID{UUID: userId, Valid: true}
+	var policy, err = queries.GetCouncilBookingPolicy(ctx, tenantId)
+	if err != nil {
+		return failed
+	}
+	if policy.OneCouncilPerAccount {
+		var other, otherErr = queries.GetUserBookingInOtherCouncil(ctx, model.GetUserBookingInOtherCouncilParams{TenantID: tenantId, UserID: user})
+		switch {
+		case otherErr == nil:
+			return &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.other_council_booking", Args: []any{other}}
+		case !errors.Is(otherErr, sql.ErrNoRows):
+			return failed
+		}
+	}
+	if own && policy.CouncilMaxActive > 0 {
+		var count, countErr = queries.CountUserUpcomingInCouncil(ctx, model.CountUserUpcomingInCouncilParams{UserID: user, TenantID: tenantId})
+		if countErr != nil {
+			return failed
+		}
+		if count >= int64(policy.CouncilMaxActive) {
+			return &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.council_limit_reached", Args: []any{policy.CouncilMaxActive}}
+		}
+	}
+	return nil
 }

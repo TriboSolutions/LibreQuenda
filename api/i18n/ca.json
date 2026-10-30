@@ -179,7 +179,10 @@
     "invalid_issue_note": "La nota pot tenir fins a 1000 caràcters.",
     "issue_reject_reason": "Per rebutjar un avís, explica’n el motiu a qui l’ha enviat.",
     "issue_not_found": "No hem trobat aquest avís.",
-    "invalid_municipality_code": "El codi INE del municipi té cinc xifres (per exemple, 36024 per a Lalín)."
+    "invalid_municipality_code": "El codi INE del municipi té cinc xifres (per exemple, 36024 per a Lalín).",
+    "other_council_booking": "Ja tens reserves a {{0}}: amb un compte es reserva en un ajuntament cada vegada. Podràs reservar aquí quan acabin o les cancel·lis.",
+    "council_limit_reached": "Ja tens {{0}} reserves properes a les instal·lacions d’aquest ajuntament, el màxim que permet.",
+    "booking_policy_failed": "No s’han pogut desar les normes de reserva de la plataforma."
   },
   "email": {
     "greeting": "Hola {{0}},",

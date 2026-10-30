@@ -31,6 +31,7 @@ export type Facility = {
   max_bookings_per_day: number // per person and day; 0 = no limit
   max_turns_in_a_row: number // back-to-back turns per person; 0 = no limit
   max_bookings_per_week: number // per person and week; 0 = no limit
+  council_max_active_bookings: number // per person across the council's facilities; 0 = no limit
   weekly_opening: { weekday: number; at: string } | null // instead of max_advance_hours: next week opens then (ISO weekday, "20:00")
   capacity: number // people per booking, owner included; 0 without a limit
   min_age: number | null // age control: null = none
@@ -161,6 +162,9 @@ export type FacilityInput = {
   usage_rules: string
 }
 
+/** Booking rules across councils: a person holds upcoming bookings in one council at a time. */
+export type BookingPolicy = { one_council_per_account: boolean }
+
 /** The booking window: the council's, which its facilities inherit, or a facility's own. */
 export type BookingRules = {
   max_advance_hours: number // how far ahead, from now
@@ -170,6 +174,7 @@ export type BookingRules = {
   max_bookings_per_day: number // per person and day; 0 = no limit
   max_turns_in_a_row: number // back-to-back turns per person; 0 = no limit
   max_bookings_per_week: number // per person and ISO week; 0 = no limit
+  max_active_bookings_council?: number // council only: a person's own upcoming bookings across its facilities; 0 = no limit
   // instead of max_advance_hours: next week's turns open all at once on opens_weekday (ISO, 7 = Sunday) at opens_minute
   weekly_opening: boolean
   opens_weekday: number
@@ -1065,6 +1070,9 @@ export const api = {
   admin: {
     audit: (token: string, filters: AuditFilters) => request<AuditPage>(`/admin/audit?${auditParams(filters)}`, { token }),
     downloadAudit: (token: string, filters: AuditFilters) => downloadAudit(token, '/admin/audit', filters),
+    // platform-wide booking rules (superadministrators)
+    bookingPolicy: (token: string) => request<BookingPolicy>('/admin/booking-policy', { token }),
+    saveBookingPolicy: (token: string, policy: BookingPolicy) => request<BookingPolicy>('/admin/booking-policy', { token, method: 'PUT', body: policy }),
     councils: (token: string) => request<{ tenants: CouncilSummary[] }>('/admin/tenants', { token }),
     council: (token: string, slug: string) => request<CouncilDetail>(`/admin/tenants/${encodeURIComponent(slug)}`, { token }),
     createCouncil: (token: string, input: CouncilInput) =>

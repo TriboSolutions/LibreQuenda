@@ -53,6 +53,8 @@ func (r *platformRoutes) RegisterRoutes() {
 		{Path: "/admin/tags/{id}", Method: http.MethodDelete, Handler: h.DeleteTag},
 		{Path: "/admin/branding", Method: http.MethodPut, Handler: h.UpdateBranding},
 		{Path: "/admin/audit", Method: http.MethodGet, Handler: h.GetAudit},
+		{Path: "/admin/booking-policy", Method: http.MethodGet, Handler: h.GetBookingPolicy},
+		{Path: "/admin/booking-policy", Method: http.MethodPut, Handler: h.SaveBookingPolicy},
 	}
 	for _, route := range routes {
 		// every change is logged once it succeeded (audit), inside the authentication

@@ -182,6 +182,32 @@ func (q *Queries) CountUserBookingsInRange(ctx context.Context, arg CountUserBoo
 	return count, err
 }
 
+const countUserUpcomingInCouncil = `-- name: CountUserUpcomingInCouncil :one
+SELECT
+    COUNT(*)
+FROM
+    booking b
+    JOIN facility f ON f.id = b.facility_id
+WHERE
+    b.user_id = $1
+    AND b.status = 'confirmed'
+    AND b.ends_at > NOW()
+    AND f.tenant_id = $2
+`
+
+type CountUserUpcomingInCouncilParams struct {
+	UserID   uuid.NullUUID `json:"user_id"`
+	TenantID uuid.UUID     `json:"tenant_id"`
+}
+
+// The person's own upcoming confirmed bookings across the council's facilities.
+func (q *Queries) CountUserUpcomingInCouncil(ctx context.Context, arg CountUserUpcomingInCouncilParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countUserUpcomingInCouncil, arg.UserID, arg.TenantID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createBooking = `-- name: CreateBooking :one
 INSERT INTO booking (
     facility_id,
@@ -285,6 +311,61 @@ func (q *Queries) GetBookingForUser(ctx context.Context, arg GetBookingForUserPa
 		&i.MinCancelHours,
 	)
 	return i, err
+}
+
+const getCouncilBookingPolicy = `-- name: GetCouncilBookingPolicy :one
+SELECT
+    COALESCE((SELECT a.one_council_per_account FROM app_settings a WHERE a.id), TRUE)::BOOLEAN AS one_council_per_account,
+    COALESCE((SELECT r.max_active_bookings_council FROM tenant_booking_rules r WHERE r.tenant_id = $1), 0)::INT AS council_max_active
+`
+
+type GetCouncilBookingPolicyRow struct {
+	OneCouncilPerAccount bool  `json:"one_council_per_account"`
+	CouncilMaxActive     int32 `json:"council_max_active"`
+}
+
+// The rules beyond one facility: whether a person books in one council at a
+// time (platform setting, on without a row) and the council's cap on their
+// upcoming bookings across its facilities (0 = none).
+func (q *Queries) GetCouncilBookingPolicy(ctx context.Context, tenantID uuid.UUID) (GetCouncilBookingPolicyRow, error) {
+	row := q.db.QueryRowContext(ctx, getCouncilBookingPolicy, tenantID)
+	var i GetCouncilBookingPolicyRow
+	err := row.Scan(&i.OneCouncilPerAccount, &i.CouncilMaxActive)
+	return i, err
+}
+
+const getUserBookingInOtherCouncil = `-- name: GetUserBookingInOtherCouncil :one
+SELECT
+    t.name
+FROM
+    booking b
+    JOIN facility f ON f.id = b.facility_id
+    JOIN tenant   t ON t.id = f.tenant_id
+WHERE
+    b.status = 'confirmed'
+    AND b.ends_at > NOW()
+    AND f.tenant_id <> $1
+    AND (
+        b.user_id = $2
+        OR EXISTS (SELECT 1 FROM booking_participant p WHERE p.booking_id = b.id AND p.user_id = $2)
+    )
+ORDER BY
+    b.starts_at
+LIMIT 1
+`
+
+type GetUserBookingInOtherCouncilParams struct {
+	TenantID uuid.UUID     `json:"tenant_id"`
+	UserID   uuid.NullUUID `json:"user_id"`
+}
+
+// The council of the person's next upcoming booking (own or joined) outside
+// `tenant_id`, if any.
+func (q *Queries) GetUserBookingInOtherCouncil(ctx context.Context, arg GetUserBookingInOtherCouncilParams) (string, error) {
+	row := q.db.QueryRowContext(ctx, getUserBookingInOtherCouncil, arg.TenantID, arg.UserID)
+	var name string
+	err := row.Scan(&name)
+	return name, err
 }
 
 const listBookingsByUser = `-- name: ListBookingsByUser :many

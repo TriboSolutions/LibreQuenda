@@ -53,7 +53,7 @@ export function BookingRulesSettings({ slug, token }: { slug: string; token: str
         <Skeleton className="h-40 w-full" />
       ) : (
         <form onSubmit={(e) => void save(e)} className="grid gap-4">
-          <BookingRulesFields id="council-rules" value={form} onChange={setForm} />
+          <BookingRulesFields id="council-rules" value={form} onChange={setForm} council />
           <div aria-live="polite" className="empty:hidden">
             {notice && (
               <Alert className="border-0 bg-pill-positive-bg text-pill-positive-ink">

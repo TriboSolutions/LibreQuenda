@@ -54,6 +54,7 @@ var actions = map[string]action{
 	"PUT /admin/tags/{id}":                          {code: "tag.updated", target: "tag", param: "id"},
 	"DELETE /admin/tags/{id}":                       {code: "tag.deleted", target: "tag", param: "id"},
 	"PUT /admin/branding":                           {code: "branding.changed"},
+	"PUT /admin/booking-policy":                     {code: "booking_policy.changed"},
 	"GET /admin/audit":                              {code: ""},
 
 	// residents: only what concerns their account as a whole, without content

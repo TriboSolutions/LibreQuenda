@@ -67,7 +67,8 @@ SELECT
     b.status,
     f.capacity,
     f.min_age,
-    t.timezone
+    t.timezone,
+    t.id AS tenant_id
 FROM
     booking b
     JOIN facility f ON f.id = b.facility_id
@@ -222,7 +223,8 @@ SELECT
     b.status,
     f.capacity,
     f.min_age,
-    t.timezone
+    t.timezone,
+    t.id AS tenant_id
 FROM
     booking b
     JOIN facility f ON f.id = b.facility_id

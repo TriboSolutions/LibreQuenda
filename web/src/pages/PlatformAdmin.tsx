@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import { Link } from 'react-router'
 import { AuditLogPanel } from '@/components/admin/AuditLogPanel'
+import { BookingPolicyPanel } from '@/components/admin/BookingPolicyPanel'
 import { BrandingPanel } from '@/components/admin/BrandingPanel'
 import { CouncilsPanel } from '@/components/admin/CouncilsPanel'
 import { SuperadminsPanel } from '@/components/admin/SuperadminsPanel'
@@ -70,6 +71,7 @@ export function PlatformAdmin() {
         </TabsContent>
         <TabsContent value="branding">
           <BrandingPanel />
+          <BookingPolicyPanel />
         </TabsContent>
         <TabsContent value="audit">
           <PlatformAudit />

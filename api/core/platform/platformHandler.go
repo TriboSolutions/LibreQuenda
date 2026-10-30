@@ -434,3 +434,27 @@ func (h *platformHandler) GetAudit(w http.ResponseWriter, r *http.Request) {
 	}
 	audit.Serve(w, r, h.db, uuid.NullUUID{}, filters)
 }
+
+func (h *platformHandler) GetBookingPolicy(w http.ResponseWriter, r *http.Request) {
+	if _, ok := h.superadmin(w, r); !ok {
+		return
+	}
+	var response, err = GetPlatformService(h.db).GetBookingPolicy(r.Context())
+	send(w, r, response, err)
+}
+
+func (h *platformHandler) SaveBookingPolicy(w http.ResponseWriter, r *http.Request) {
+	if _, ok := h.superadmin(w, r); !ok {
+		return
+	}
+	var input BookingPolicyDto
+	if !decode(w, r, &input) {
+		return
+	}
+	var before, _ = GetPlatformService(h.db).GetBookingPolicy(r.Context())
+	var response, err = GetPlatformService(h.db).SaveBookingPolicy(r.Context(), input)
+	if err == nil && before != nil {
+		audit.Changed(r.Context(), "one council per account", before.OneCouncilPerAccount, response.OneCouncilPerAccount)
+	}
+	send(w, r, response, err)
+}
