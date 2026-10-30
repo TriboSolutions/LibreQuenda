@@ -30,7 +30,7 @@ func TestScheduleParse(t *testing.T) {
 func TestFacilityInputValidate(t *testing.T) {
 	var lat, lng = 42.66, -8.11
 	var valid = func() FacilityInput {
-		return FacilityInput{Slug: "pista-de-padel-1", Name: "Pista de pádel 1", SlotMinutes: 90, MaxAdvanceDays: 7, MinCancelHours: 4, MaxActiveBookingsPerUser: 2, Latitude: &lat, Longitude: &lng}
+		return FacilityInput{Slug: "pista-de-padel-1", Name: "Pista de pádel 1", SlotMinutes: 90, Latitude: &lat, Longitude: &lng}
 	}
 	var cases = []struct {
 		name   string
@@ -48,6 +48,17 @@ func TestFacilityInputValidate(t *testing.T) {
 		{"min age 16", func(in *FacilityInput) { var age int32 = 16; in.MinAge = &age }, ""},
 		{"min age 0", func(in *FacilityInput) { var age int32 = 0; in.MinAge = &age }, "errors.invalid_min_age"},
 		{"min age 81", func(in *FacilityInput) { var age int32 = 81; in.MinAge = &age }, "errors.invalid_min_age"},
+		// the council's window: its own values are not even looked at
+		{"council's window", func(in *FacilityInput) { in.Rules = BookingRulesDto{} }, ""},
+		{"own window", func(in *FacilityInput) { in.CustomRules, in.Rules = true, goodRules() }, ""},
+		{"own window, 0 hours ahead", func(in *FacilityInput) {
+			in.CustomRules, in.Rules = true, goodRules()
+			in.Rules.MaxAdvanceHours = 0
+		}, "errors.invalid_booking_window"},
+		{"own window, no-show block of 0 days", func(in *FacilityInput) {
+			in.CustomRules, in.Rules = true, goodRules()
+			in.Rules.NoShowBlockDays = 0
+		}, "errors.invalid_no_show_penalty"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -59,4 +70,9 @@ func TestFacilityInputValidate(t *testing.T) {
 			}
 		})
 	}
+}
+
+func goodRules() BookingRulesDto {
+	return BookingRulesDto{MaxAdvanceHours: 7 * 24, MinAdvanceMinutes: 30, MinCancelHours: 4, MaxActiveBookingsPerUser: 2,
+		MaxBookingsPerDay: 1, MaxTurnsInARow: 2, NoShowLimit: 3, NoShowWindowDays: 30, NoShowBlockDays: 7}
 }

@@ -33,6 +33,38 @@ func (q *Queries) AddFacilityTags(ctx context.Context, arg AddFacilityTagsParams
 	return result.RowsAffected()
 }
 
+const applyTenantBookingRules = `-- name: ApplyTenantBookingRules :execrows
+UPDATE facility f
+SET
+    max_advance_hours            = r.max_advance_hours,
+    min_advance_minutes          = r.min_advance_minutes,
+    min_cancel_hours             = r.min_cancel_hours,
+    max_active_bookings_per_user = r.max_active_bookings_per_user,
+    max_bookings_per_day         = r.max_bookings_per_day,
+    max_turns_in_a_row           = r.max_turns_in_a_row,
+    no_show_penalty              = r.no_show_penalty,
+    no_show_limit                = r.no_show_limit,
+    no_show_window_days          = r.no_show_window_days,
+    no_show_block_days           = r.no_show_block_days,
+    updated_at                   = NOW()
+FROM
+    tenant_booking_rules r
+WHERE
+    r.tenant_id = f.tenant_id
+    AND f.tenant_id = $1
+    AND f.custom_rules = FALSE
+`
+
+// Row-level security: runs as the council (db.WithTenant). The council's window
+// copied to each of its facilities that does not keep its own.
+func (q *Queries) ApplyTenantBookingRules(ctx context.Context, tenantID uuid.UUID) (int64, error) {
+	result, err := q.db.ExecContext(ctx, applyTenantBookingRules, tenantID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
 const clearFacilityTags = `-- name: ClearFacilityTags :exec
 DELETE FROM facility_tag WHERE facility_id = $1
 `
@@ -56,14 +88,18 @@ func (q *Queries) CountBookingsByFacility(ctx context.Context, facilityID uuid.U
 const createFacility = `-- name: CreateFacility :one
 INSERT INTO facility (
     tenant_id, slug, name, description, address, latitude, longitude, capacity,
-    accessibility_info, contact_phone, contact_email, image_ref, is_active, slot_minutes, max_advance_days, min_cancel_hours,
-    max_active_bookings_per_user, min_age, usage_rules_text
+    accessibility_info, contact_phone, contact_email, image_ref, is_active, slot_minutes,
+    custom_rules, max_advance_hours, min_advance_minutes, min_cancel_hours, max_active_bookings_per_user,
+    max_bookings_per_day, max_turns_in_a_row, no_show_penalty, no_show_limit, no_show_window_days, no_show_block_days,
+    min_age, usage_rules_text
 ) VALUES (
     $1, $2, $3, $4,
     $5, $6, $7, $8,
     $9, $10, $11, $12, $13, $14,
-    $15, $16, $17,
-    $18, $19
+    $15, $16, $17, $18,
+    $19, $20, $21,
+    $22, $23, $24, $25,
+    $26, $27
 )
 RETURNING
     id
@@ -84,9 +120,17 @@ type CreateFacilityParams struct {
 	ImageRef                 sql.NullString  `json:"image_ref"`
 	IsActive                 bool            `json:"is_active"`
 	SlotMinutes              int32           `json:"slot_minutes"`
-	MaxAdvanceDays           int32           `json:"max_advance_days"`
+	CustomRules              bool            `json:"custom_rules"`
+	MaxAdvanceHours          int32           `json:"max_advance_hours"`
+	MinAdvanceMinutes        int32           `json:"min_advance_minutes"`
 	MinCancelHours           int32           `json:"min_cancel_hours"`
 	MaxActiveBookingsPerUser int32           `json:"max_active_bookings_per_user"`
+	MaxBookingsPerDay        int32           `json:"max_bookings_per_day"`
+	MaxTurnsInARow           int32           `json:"max_turns_in_a_row"`
+	NoShowPenalty            bool            `json:"no_show_penalty"`
+	NoShowLimit              int32           `json:"no_show_limit"`
+	NoShowWindowDays         int32           `json:"no_show_window_days"`
+	NoShowBlockDays          int32           `json:"no_show_block_days"`
 	MinAge                   sql.NullInt32   `json:"min_age"`
 	UsageRulesText           sql.NullString  `json:"usage_rules_text"`
 }
@@ -107,9 +151,17 @@ func (q *Queries) CreateFacility(ctx context.Context, arg CreateFacilityParams) 
 		arg.ImageRef,
 		arg.IsActive,
 		arg.SlotMinutes,
-		arg.MaxAdvanceDays,
+		arg.CustomRules,
+		arg.MaxAdvanceHours,
+		arg.MinAdvanceMinutes,
 		arg.MinCancelHours,
 		arg.MaxActiveBookingsPerUser,
+		arg.MaxBookingsPerDay,
+		arg.MaxTurnsInARow,
+		arg.NoShowPenalty,
+		arg.NoShowLimit,
+		arg.NoShowWindowDays,
+		arg.NoShowBlockDays,
 		arg.MinAge,
 		arg.UsageRulesText,
 	)
@@ -147,9 +199,20 @@ func (q *Queries) DeleteOpeningHoursByFacility(ctx context.Context, facilityID u
 	return err
 }
 
+const ensureTenantBookingRules = `-- name: EnsureTenantBookingRules :exec
+INSERT INTO tenant_booking_rules (tenant_id) VALUES ($1) ON CONFLICT (tenant_id) DO NOTHING
+`
+
+// Row-level security: runs as the council (db.WithTenant). Its booking window
+// with the defaults, the first time it is needed.
+func (q *Queries) EnsureTenantBookingRules(ctx context.Context, tenantID uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, ensureTenantBookingRules, tenantID)
+	return err
+}
+
 const getFacilityForAdmin = `-- name: GetFacilityForAdmin :one
 SELECT
-    id, tenant_id, slug, name, description, address, latitude, longitude, capacity, accessibility_info, contact_phone, contact_email, image_ref, is_active, slot_minutes, max_advance_days, min_cancel_hours, max_active_bookings_per_user, min_age, usage_rules_text, created_at, updated_at
+    id, tenant_id, slug, name, description, address, latitude, longitude, capacity, accessibility_info, contact_phone, contact_email, image_ref, is_active, slot_minutes, custom_rules, max_advance_hours, min_advance_minutes, min_cancel_hours, max_active_bookings_per_user, max_bookings_per_day, max_turns_in_a_row, no_show_penalty, no_show_limit, no_show_window_days, no_show_block_days, min_age, usage_rules_text, created_at, updated_at
 FROM
     facility
 WHERE
@@ -181,12 +244,44 @@ func (q *Queries) GetFacilityForAdmin(ctx context.Context, arg GetFacilityForAdm
 		&i.ImageRef,
 		&i.IsActive,
 		&i.SlotMinutes,
-		&i.MaxAdvanceDays,
+		&i.CustomRules,
+		&i.MaxAdvanceHours,
+		&i.MinAdvanceMinutes,
 		&i.MinCancelHours,
 		&i.MaxActiveBookingsPerUser,
+		&i.MaxBookingsPerDay,
+		&i.MaxTurnsInARow,
+		&i.NoShowPenalty,
+		&i.NoShowLimit,
+		&i.NoShowWindowDays,
+		&i.NoShowBlockDays,
 		&i.MinAge,
 		&i.UsageRulesText,
 		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getTenantBookingRules = `-- name: GetTenantBookingRules :one
+SELECT tenant_id, max_advance_hours, min_advance_minutes, min_cancel_hours, max_active_bookings_per_user, max_bookings_per_day, max_turns_in_a_row, no_show_penalty, no_show_limit, no_show_window_days, no_show_block_days, updated_at FROM tenant_booking_rules WHERE tenant_id = $1
+`
+
+func (q *Queries) GetTenantBookingRules(ctx context.Context, tenantID uuid.UUID) (TenantBookingRule, error) {
+	row := q.db.QueryRowContext(ctx, getTenantBookingRules, tenantID)
+	var i TenantBookingRule
+	err := row.Scan(
+		&i.TenantID,
+		&i.MaxAdvanceHours,
+		&i.MinAdvanceMinutes,
+		&i.MinCancelHours,
+		&i.MaxActiveBookingsPerUser,
+		&i.MaxBookingsPerDay,
+		&i.MaxTurnsInARow,
+		&i.NoShowPenalty,
+		&i.NoShowLimit,
+		&i.NoShowWindowDays,
+		&i.NoShowBlockDays,
 		&i.UpdatedAt,
 	)
 	return i, err
@@ -363,14 +458,22 @@ SET
     image_ref                    = $11,
     is_active                    = $12,
     slot_minutes                 = $13,
-    max_advance_days             = $14,
-    min_cancel_hours             = $15,
-    max_active_bookings_per_user = $16,
-    min_age                      = $17,
-    usage_rules_text             = $18
+    custom_rules                 = $14,
+    max_advance_hours            = $15,
+    min_advance_minutes          = $16,
+    min_cancel_hours             = $17,
+    max_active_bookings_per_user = $18,
+    max_bookings_per_day         = $19,
+    max_turns_in_a_row           = $20,
+    no_show_penalty              = $21,
+    no_show_limit                = $22,
+    no_show_window_days          = $23,
+    no_show_block_days           = $24,
+    min_age                      = $25,
+    usage_rules_text             = $26
 WHERE
-    id = $19
-    AND tenant_id = $20
+    id = $27
+    AND tenant_id = $28
 RETURNING
     id
 `
@@ -389,9 +492,17 @@ type UpdateFacilityParams struct {
 	ImageRef                 sql.NullString  `json:"image_ref"`
 	IsActive                 bool            `json:"is_active"`
 	SlotMinutes              int32           `json:"slot_minutes"`
-	MaxAdvanceDays           int32           `json:"max_advance_days"`
+	CustomRules              bool            `json:"custom_rules"`
+	MaxAdvanceHours          int32           `json:"max_advance_hours"`
+	MinAdvanceMinutes        int32           `json:"min_advance_minutes"`
 	MinCancelHours           int32           `json:"min_cancel_hours"`
 	MaxActiveBookingsPerUser int32           `json:"max_active_bookings_per_user"`
+	MaxBookingsPerDay        int32           `json:"max_bookings_per_day"`
+	MaxTurnsInARow           int32           `json:"max_turns_in_a_row"`
+	NoShowPenalty            bool            `json:"no_show_penalty"`
+	NoShowLimit              int32           `json:"no_show_limit"`
+	NoShowWindowDays         int32           `json:"no_show_window_days"`
+	NoShowBlockDays          int32           `json:"no_show_block_days"`
 	MinAge                   sql.NullInt32   `json:"min_age"`
 	UsageRulesText           sql.NullString  `json:"usage_rules_text"`
 	ID                       uuid.UUID       `json:"id"`
@@ -413,9 +524,17 @@ func (q *Queries) UpdateFacility(ctx context.Context, arg UpdateFacilityParams) 
 		arg.ImageRef,
 		arg.IsActive,
 		arg.SlotMinutes,
-		arg.MaxAdvanceDays,
+		arg.CustomRules,
+		arg.MaxAdvanceHours,
+		arg.MinAdvanceMinutes,
 		arg.MinCancelHours,
 		arg.MaxActiveBookingsPerUser,
+		arg.MaxBookingsPerDay,
+		arg.MaxTurnsInARow,
+		arg.NoShowPenalty,
+		arg.NoShowLimit,
+		arg.NoShowWindowDays,
+		arg.NoShowBlockDays,
 		arg.MinAge,
 		arg.UsageRulesText,
 		arg.ID,
@@ -424,4 +543,54 @@ func (q *Queries) UpdateFacility(ctx context.Context, arg UpdateFacilityParams) 
 	var id uuid.UUID
 	err := row.Scan(&id)
 	return id, err
+}
+
+const updateTenantBookingRules = `-- name: UpdateTenantBookingRules :exec
+UPDATE tenant_booking_rules
+SET
+    max_advance_hours            = $1,
+    min_advance_minutes          = $2,
+    min_cancel_hours             = $3,
+    max_active_bookings_per_user = $4,
+    max_bookings_per_day         = $5,
+    max_turns_in_a_row           = $6,
+    no_show_penalty              = $7,
+    no_show_limit                = $8,
+    no_show_window_days          = $9,
+    no_show_block_days           = $10,
+    updated_at                   = NOW()
+WHERE
+    tenant_id = $11
+`
+
+type UpdateTenantBookingRulesParams struct {
+	MaxAdvanceHours          int32     `json:"max_advance_hours"`
+	MinAdvanceMinutes        int32     `json:"min_advance_minutes"`
+	MinCancelHours           int32     `json:"min_cancel_hours"`
+	MaxActiveBookingsPerUser int32     `json:"max_active_bookings_per_user"`
+	MaxBookingsPerDay        int32     `json:"max_bookings_per_day"`
+	MaxTurnsInARow           int32     `json:"max_turns_in_a_row"`
+	NoShowPenalty            bool      `json:"no_show_penalty"`
+	NoShowLimit              int32     `json:"no_show_limit"`
+	NoShowWindowDays         int32     `json:"no_show_window_days"`
+	NoShowBlockDays          int32     `json:"no_show_block_days"`
+	TenantID                 uuid.UUID `json:"tenant_id"`
+}
+
+// Row-level security: runs as the council (db.WithTenant).
+func (q *Queries) UpdateTenantBookingRules(ctx context.Context, arg UpdateTenantBookingRulesParams) error {
+	_, err := q.db.ExecContext(ctx, updateTenantBookingRules,
+		arg.MaxAdvanceHours,
+		arg.MinAdvanceMinutes,
+		arg.MinCancelHours,
+		arg.MaxActiveBookingsPerUser,
+		arg.MaxBookingsPerDay,
+		arg.MaxTurnsInARow,
+		arg.NoShowPenalty,
+		arg.NoShowLimit,
+		arg.NoShowWindowDays,
+		arg.NoShowBlockDays,
+		arg.TenantID,
+	)
+	return err
 }

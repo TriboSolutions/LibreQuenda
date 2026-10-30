@@ -56,6 +56,8 @@ func (r *counciladminRoutes) RegisterRoutes() {
 		{Path: "/tenants/{slug}/admin/indicators", Method: http.MethodGet, Handler: h.GetIndicators},
 		{Path: "/tenants/{slug}/admin/indicators/export", Method: http.MethodGet, Handler: h.ExportIndicators},
 		{Path: "/tenants/{slug}/admin/export", Method: http.MethodGet, Handler: middlewares.WithStrictRateLimit(h.ExportCouncil)},
+		{Path: "/tenants/{slug}/admin/booking-rules", Method: http.MethodGet, Handler: h.GetBookingRules},
+		{Path: "/tenants/{slug}/admin/booking-rules", Method: http.MethodPut, Handler: h.SaveBookingRules},
 		{Path: "/tenants/{slug}/admin/smtp", Method: http.MethodGet, Handler: h.GetSmtp},
 		{Path: "/tenants/{slug}/admin/smtp", Method: http.MethodPut, Handler: h.SaveSmtp},
 		{Path: "/tenants/{slug}/admin/smtp", Method: http.MethodDelete, Handler: h.DeleteSmtp},

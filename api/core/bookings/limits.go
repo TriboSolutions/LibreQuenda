@@ -1,0 +1,105 @@
+package bookings
+
+import (
+	"context"
+	"librequenda/model"
+	"librequenda/schedule"
+	"librequenda/shared"
+	"net/http"
+	"time"
+
+	"github.com/google/uuid"
+)
+
+// The booking window's limits per person, for a resident booking from the app
+// or at the door: bookings per day, turns in a row and the no-show block. Staff
+// booking for someone skip them. The cap on upcoming bookings is checked in book.
+
+// personalLimits refuses the turn when it would break one of them; exclude is
+// the booking being changed, which does not count against its own new time.
+func (s *bookingsService) personalLimits(ctx context.Context, queries *model.Queries, userId uuid.UUID, facility model.GetFacilityForBookingRow, slot *schedule.Slot, exclude uuid.NullUUID) *shared.ErrorResponse {
+	var failed = &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.booking_failed"}
+	var user = uuid.NullUUID{UUID: userId, Valid: true}
+	var loc, err = time.LoadLocation(facility.Timezone)
+	if err != nil {
+		return failed
+	}
+
+	if facility.NoShowPenalty {
+		var since = time.Now().AddDate(0, 0, -int(facility.NoShowWindowDays))
+		var noShows, listErr = queries.ListUserNoShows(ctx, model.ListUserNoShowsParams{UserID: user, FacilityID: facility.ID, Since: since})
+		if listErr != nil {
+			return failed
+		}
+		if until, blocked := noShowBlock(noShows, int(facility.NoShowLimit), int(facility.NoShowBlockDays), time.Now()); blocked {
+			return &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.no_show_blocked", Args: []any{until.In(loc).Format("02/01/2006")}}
+		}
+	}
+
+	if facility.MaxBookingsPerDay > 0 {
+		var day = startOfDay(slot.Start, loc)
+		var count, countErr = queries.CountUserBookingsInRange(ctx, model.CountUserBookingsInRangeParams{
+			UserID: user, FacilityID: facility.ID, RangeStart: day, RangeEnd: day.AddDate(0, 0, 1), Exclude: exclude,
+		})
+		if countErr != nil {
+			return failed
+		}
+		if count >= int64(facility.MaxBookingsPerDay) {
+			return &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.daily_limit_reached"}
+		}
+	}
+
+	if facility.MaxTurnsInARow > 0 {
+		var reach = time.Duration(facility.MaxTurnsInARow) * slot.End.Sub(slot.Start)
+		var near, nearErr = queries.ListUserBookingsNear(ctx, model.ListUserBookingsNearParams{
+			UserID: user, FacilityID: facility.ID, RangeStart: slot.Start.Add(-reach), RangeEnd: slot.End.Add(reach), Exclude: exclude,
+		})
+		if nearErr != nil {
+			return failed
+		}
+		if turnsInARow(near, *slot) > int(facility.MaxTurnsInARow) {
+			return &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.turns_in_a_row_limit"}
+		}
+	}
+	return nil
+}
+
+// turnsInARow: how many back-to-back turns the person would have with this one.
+func turnsInARow(theirs []model.ListUserBookingsNearRow, slot schedule.Slot) int {
+	var count = 1
+	for start := slot.Start; ; count++ {
+		var found = false
+		for _, b := range theirs {
+			if b.EndsAt.Equal(start) {
+				start, found = b.StartsAt, true
+				break
+			}
+		}
+		if !found {
+			break
+		}
+	}
+	for end := slot.End; ; count++ {
+		var found = false
+		for _, b := range theirs {
+			if b.StartsAt.Equal(end) {
+				end, found = b.EndsAt, true
+				break
+			}
+		}
+		if !found {
+			break
+		}
+	}
+	return count
+}
+
+// noShowBlock: with `limit` no-shows in the window counted (latest first), the
+// person cannot book until blockDays after the latest of them.
+func noShowBlock(noShows []time.Time, limit, blockDays int, now time.Time) (time.Time, bool) {
+	if len(noShows) < limit {
+		return time.Time{}, false
+	}
+	var until = noShows[0].AddDate(0, 0, blockDays)
+	return until, now.Before(until)
+}

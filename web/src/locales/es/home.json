@@ -34,7 +34,8 @@
     "past": "Pasado",
     "tooFar": "Aún no se puede reservar",
     "bookAria": "Reservar {{facility}}, {{time}}",
-    "closure": "Cierre puntual"
+    "closure": "Cierre puntual",
+    "tooSoon": "Ya no se puede reservar desde la app"
   },
   "contact": {
     "title": "Contacto del ayuntamiento",

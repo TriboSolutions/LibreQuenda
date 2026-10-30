@@ -1,7 +1,7 @@
 // Typed client for the LibreQuenda API (served by Caddy under /api)
 import i18n from '@/i18n'
 
-export type SlotStatus = 'free' | 'booked' | 'closed' | 'past' | 'too_far'
+export type SlotStatus = 'free' | 'booked' | 'closed' | 'past' | 'too_far' | 'too_soon' // too_soon: closer to the start than the app books
 
 export type Slot = {
   starts_at: string
@@ -23,9 +23,13 @@ export type Facility = {
   contact_phone: string // its own, "" when not given: show the council's instead (FacilityContact)
   contact_email: string
   slot_minutes: number
-  max_advance_days: number
+  // the booking window in force (the council's or the facility's own)
+  max_advance_hours: number
+  min_advance_minutes: number
   min_cancel_hours: number
   max_active_bookings_per_user: number
+  max_bookings_per_day: number // per person and day; 0 = no limit
+  max_turns_in_a_row: number // back-to-back turns per person; 0 = no limit
   min_age: number | null // age control: null = none
   usage_rules: string
   windows: { opens_at: string; closes_at: string }[]
@@ -128,14 +132,29 @@ export type FacilityInput = {
   image_ref: string // a storage reference, never a URL
   is_active: boolean
   slot_minutes: number
-  max_advance_days: number
-  min_cancel_hours: number
-  max_active_bookings_per_user: number
+  custom_rules: boolean // false: the council's booking window (rules is then ignored)
+  rules: BookingRules
   min_age: number | null // age control: null = none, else 1 to 80
   usage_rules: string
 }
 
+/** The booking window: the council's, which its facilities inherit, or a facility's own. */
+export type BookingRules = {
+  max_advance_hours: number // how far ahead, from now
+  min_advance_minutes: number // how close to the start the app still books
+  min_cancel_hours: number // cancel or change until this long before
+  max_active_bookings_per_user: number
+  max_bookings_per_day: number // per person and day; 0 = no limit
+  max_turns_in_a_row: number // back-to-back turns per person; 0 = no limit
+  // after no_show_limit no-shows in no_show_window_days, no booking for no_show_block_days
+  no_show_penalty: boolean
+  no_show_limit: number
+  no_show_window_days: number
+  no_show_block_days: number
+}
+
 export type AdminFacility = FacilityInput & {
+  council_rules: BookingRules // the council's window, to show what it inherits
   id: string
   image_url: string
   booking_count: number
@@ -854,6 +873,9 @@ export const api = {
       request<Indicators>(`/tenants/${encodeURIComponent(slug)}/admin/indicators?${indicatorsParams(query)}`, { token }),
     exportIndicators,
     exportData: exportCouncilData,
+    bookingRules: (token: string, slug: string) => request<BookingRules>(`/tenants/${encodeURIComponent(slug)}/admin/booking-rules`, { token }),
+    saveBookingRules: (token: string, slug: string, rules: BookingRules) =>
+      request<BookingRules>(`/tenants/${encodeURIComponent(slug)}/admin/booking-rules`, { token, method: 'PUT', body: rules }),
     smtp: (token: string, slug: string) => request<CouncilSmtp>(`/tenants/${encodeURIComponent(slug)}/admin/smtp`, { token }),
     saveSmtp: (token: string, slug: string, input: CouncilSmtpInput) =>
       request<CouncilSmtp>(`/tenants/${encodeURIComponent(slug)}/admin/smtp`, { token, method: 'PUT', body: input }),

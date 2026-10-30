@@ -219,7 +219,11 @@ func (s *tenantsService) loadDay(ctx context.Context, slug string, dateParam str
 		for _, w := range windows {
 			windowDtos = append(windowDtos, WindowDto{OpensAt: w.Opens.Format("15:04"), ClosesAt: w.Closes.Format("15:04")})
 		}
-		var slots = schedule.DaySlots(day, loc, schedule.Rules{SlotMinutes: int(f.SlotMinutes), MaxAdvanceDays: int(f.MaxAdvanceDays)}, windows, closureIntervals, busyByFacility[f.ID], now)
+		var slots = schedule.DaySlots(day, loc, schedule.Rules{
+			SlotMinutes: int(f.SlotMinutes),
+			MaxAdvance:  time.Duration(f.MaxAdvanceHours) * time.Hour,
+			MinAdvance:  time.Duration(f.MinAdvanceMinutes) * time.Minute,
+		}, windows, closureIntervals, busyByFacility[f.ID], now)
 		if slots == nil {
 			slots = []schedule.Slot{}
 		}
@@ -228,27 +232,30 @@ func (s *tenantsService) loadDay(ctx context.Context, slug string, dateParam str
 			latitude, longitude = &f.Latitude.Float64, &f.Longitude.Float64
 		}
 		response.Facilities = append(response.Facilities, FacilityDayDto{
-			Id:             f.ID.String(),
-			Slug:           f.Slug,
-			Name:           f.Name,
-			Description:    f.Description.String,
-			ImageUrl:       storage.URL(f.ImageRef.String),
-			Latitude:       latitude,
-			Longitude:      longitude,
-			Sport:          f.Sport,
-			Tags:           append([]string{}, f.Tags...),
-			Address:        f.Address.String,
-			ContactPhone:   f.ContactPhone.String,
-			ContactEmail:   f.ContactEmail.String,
-			SlotMinutes:    f.SlotMinutes,
-			MaxAdvanceDays: f.MaxAdvanceDays,
-			MinCancelHours: f.MinCancelHours,
-			MaxActive:      f.MaxActiveBookingsPerUser,
-			MinAge:         minAge(f.MinAge),
-			UsageRules:     f.UsageRulesText.String,
-			Windows:        windowDtos,
-			Closures:       closureDtos,
-			Slots:          slots,
+			Id:                f.ID.String(),
+			Slug:              f.Slug,
+			Name:              f.Name,
+			Description:       f.Description.String,
+			ImageUrl:          storage.URL(f.ImageRef.String),
+			Latitude:          latitude,
+			Longitude:         longitude,
+			Sport:             f.Sport,
+			Tags:              append([]string{}, f.Tags...),
+			Address:           f.Address.String,
+			ContactPhone:      f.ContactPhone.String,
+			ContactEmail:      f.ContactEmail.String,
+			SlotMinutes:       f.SlotMinutes,
+			MaxAdvanceHours:   f.MaxAdvanceHours,
+			MinAdvanceMinutes: f.MinAdvanceMinutes,
+			MinCancelHours:    f.MinCancelHours,
+			MaxActive:         f.MaxActiveBookingsPerUser,
+			MaxPerDay:         f.MaxBookingsPerDay,
+			MaxInARow:         f.MaxTurnsInARow,
+			MinAge:            minAge(f.MinAge),
+			UsageRules:        f.UsageRulesText.String,
+			Windows:           windowDtos,
+			Closures:          closureDtos,
+			Slots:             slots,
 		})
 	}
 	return response, tenant.ID, loc, nil

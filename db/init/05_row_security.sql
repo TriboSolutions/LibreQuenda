@@ -66,6 +66,12 @@ CREATE POLICY facility_tag_read   ON facility_tag FOR SELECT USING (TRUE);
 CREATE POLICY facility_tag_insert ON facility_tag FOR INSERT WITH CHECK (app_owns_facility(facility_id));
 CREATE POLICY facility_tag_delete ON facility_tag FOR DELETE USING (app_owns_facility(facility_id));
 
+-- tenant_booking_rules: the council's booking window, read when booking, written by the council
+ALTER TABLE tenant_booking_rules ENABLE ROW LEVEL SECURITY;
+CREATE POLICY tenant_booking_rules_read   ON tenant_booking_rules FOR SELECT USING (TRUE);
+CREATE POLICY tenant_booking_rules_insert ON tenant_booking_rules FOR INSERT WITH CHECK (tenant_id = app_tenant_id());
+CREATE POLICY tenant_booking_rules_update ON tenant_booking_rules FOR UPDATE USING (tenant_id = app_tenant_id()) WITH CHECK (tenant_id = app_tenant_id());
+
 -- tenant_smtp: read by the email job for every council; the row is sealed, and the API never sends the password back
 ALTER TABLE tenant_smtp ENABLE ROW LEVEL SECURITY;
 CREATE POLICY tenant_smtp_read   ON tenant_smtp FOR SELECT USING (TRUE);

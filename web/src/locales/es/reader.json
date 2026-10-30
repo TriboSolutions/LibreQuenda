@@ -59,6 +59,9 @@
     "facility_not_found": "Esta instalación no se puede reservar ahora.",
     "other": "Reserva en la aplicación o pregunta al personal.",
     "use_booking_qr": "Ya tienes una reserva aquí: entra con el QR de esa reserva.",
-    "flash_off": "Aquí el ayuntamiento no permite reservar un turno libre en la puerta. Reserva en la aplicación."
+    "flash_off": "Aquí el ayuntamiento no permite reservar un turno libre en la puerta. Reserva en la aplicación.",
+    "daily_limit_reached": "Ya tienes las reservas que se permiten por día aquí.",
+    "turns_in_a_row_limit": "No puedes reservar tantos turnos seguidos aquí.",
+    "no_show_blocked": "No puedes reservar aquí durante unos días, por no presentarte a varias reservas."
   }
 }

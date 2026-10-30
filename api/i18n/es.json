@@ -156,7 +156,14 @@
     "staff_checkin_undo_expired": "Ya no se puede deshacer: solo se puede durante 5 minutos después de marcarla, y solo si la marcó el personal.",
     "too_many_staff_contacts": "Se pueden añadir hasta 10 personas de contacto.",
     "invalid_staff_contact": "Cada persona de contacto necesita un nombre (hasta 80 caracteres); el teléfono hasta 30 y dónde encontrarla hasta 120.",
-    "recommendations_failed": "No se pudieron cargar las recomendaciones."
+    "recommendations_failed": "No se pudieron cargar las recomendaciones.",
+    "invalid_min_advance": "La antelación mínima tiene que estar entre 0 minutos y 24 horas.",
+    "invalid_no_show_penalty": "La penalización necesita entre 1 y 20 ausencias, contadas en un plazo de 1 a 365 días, y un bloqueo de 1 a 365 días.",
+    "booking_rules_failed": "No se pudo guardar la ventana de reserva.",
+    "daily_limit_reached": "Ya tienes las reservas que se permiten por día en esta instalación.",
+    "turns_in_a_row_limit": "No puedes reservar tantos turnos seguidos en esta instalación.",
+    "no_show_blocked": "No puedes reservar en esta instalación hasta el {{0}}, por no presentarte a varias reservas.",
+    "slot_too_soon": "Ese turno empieza demasiado pronto para reservarlo desde la app."
   },
   "email": {
     "greeting": "Hola {{0}}:",

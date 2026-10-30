@@ -26,5 +26,13 @@
   "notFoundTitle": "Instal·lació no trobada",
   "notFoundBody": "No hi ha cap instal·lació a «{{path}}».",
   "mapLabel": "Mapa amb la ubicació de la instal·lació",
-  "minAge": "Edat mínima: {{count}} anys."
+  "minAge": "Edat mínima: {{count}} anys.",
+  "ruleAdvanceHours_one": "Reserva fins amb {{count}} hora d’antelació.",
+  "ruleAdvanceHours_other": "Reserva fins amb {{count}} hores d’antelació.",
+  "ruleMinAdvance_one": "Des de l’app, reserva com a molt tard {{count}} minut abans del torn.",
+  "ruleMinAdvance_other": "Des de l’app, reserva com a molt tard {{count}} minuts abans del torn.",
+  "rulePerDay_one": "Com a màxim {{count}} reserva per persona i dia.",
+  "rulePerDay_other": "Com a màxim {{count}} reserves per persona i dia.",
+  "ruleInARow_one": "No es poden reservar torns seguits.",
+  "ruleInARow_other": "Com a màxim {{count}} torns seguits per persona."
 }

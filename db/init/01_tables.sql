@@ -59,6 +59,23 @@ CREATE TABLE tenant (
 -- A council's own SMTP relay for the emails LibreQuenda sends about it. Without
 -- one, they go through the relay in the environment (SMTP_*); with neither, they
 -- wait in the queue.
+-- The council's booking window, the default of its facilities: each one
+-- without custom_rules keeps a copy (see facility), refreshed when this changes.
+CREATE TABLE tenant_booking_rules (
+    tenant_id            UUID        PRIMARY KEY REFERENCES tenant(id) ON DELETE CASCADE,
+    max_advance_hours    INT         NOT NULL DEFAULT 336 CHECK (max_advance_hours > 0),
+    min_advance_minutes  INT         NOT NULL DEFAULT 0  CHECK (min_advance_minutes >= 0),
+    min_cancel_hours     INT         NOT NULL DEFAULT 2  CHECK (min_cancel_hours >= 0),
+    max_active_bookings_per_user INT NOT NULL DEFAULT 2  CHECK (max_active_bookings_per_user > 0),
+    max_bookings_per_day INT         NOT NULL DEFAULT 0  CHECK (max_bookings_per_day >= 0),
+    max_turns_in_a_row   INT         NOT NULL DEFAULT 0  CHECK (max_turns_in_a_row >= 0),
+    no_show_penalty      BOOLEAN     NOT NULL DEFAULT FALSE,
+    no_show_limit        INT         NOT NULL DEFAULT 3  CHECK (no_show_limit > 0),
+    no_show_window_days  INT         NOT NULL DEFAULT 30 CHECK (no_show_window_days > 0),
+    no_show_block_days   INT         NOT NULL DEFAULT 7  CHECK (no_show_block_days > 0),
+    updated_at           TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 CREATE TABLE tenant_smtp (
     tenant_id  UUID        PRIMARY KEY REFERENCES tenant(id) ON DELETE CASCADE,
     config     BYTEA       NOT NULL,   -- host, port, username, password and sender, sealed with SECRETS_KEY (api/secrets)
@@ -153,9 +170,20 @@ CREATE TABLE facility (
 
     -- usage rules
     slot_minutes                 INT          NOT NULL DEFAULT 60 CHECK (slot_minutes > 0),
-    max_advance_days             INT          NOT NULL DEFAULT 14 CHECK (max_advance_days > 0),
+    -- booking window: the council's (tenant_booking_rules), copied here while
+    -- custom_rules is off, or the facility's own. Staff booking for someone
+    -- skip the per-person limits (per day, active, in a row, no-show block).
+    custom_rules                 BOOLEAN      NOT NULL DEFAULT FALSE,
+    max_advance_hours            INT          NOT NULL DEFAULT 336 CHECK (max_advance_hours > 0),   -- how far ahead
+    min_advance_minutes          INT          NOT NULL DEFAULT 0  CHECK (min_advance_minutes >= 0), -- how close to the start, from the app
     min_cancel_hours             INT          NOT NULL DEFAULT 2  CHECK (min_cancel_hours >= 0),
     max_active_bookings_per_user INT          NOT NULL DEFAULT 2  CHECK (max_active_bookings_per_user > 0),
+    max_bookings_per_day         INT          NOT NULL DEFAULT 0  CHECK (max_bookings_per_day >= 0),  -- per person and day here; 0 = no limit
+    max_turns_in_a_row           INT          NOT NULL DEFAULT 0  CHECK (max_turns_in_a_row >= 0),    -- back-to-back turns per person; 0 = no limit
+    no_show_penalty              BOOLEAN      NOT NULL DEFAULT FALSE,  -- block bookings after too many no-shows here
+    no_show_limit                INT          NOT NULL DEFAULT 3  CHECK (no_show_limit > 0),          -- no-shows…
+    no_show_window_days          INT          NOT NULL DEFAULT 30 CHECK (no_show_window_days > 0),    -- …within these days…
+    no_show_block_days           INT          NOT NULL DEFAULT 7  CHECK (no_show_block_days > 0),     -- …block booking for these days
     min_age                      INT          NULL CHECK (min_age BETWEEN 1 AND 80),  -- age control: NULL = none
     usage_rules_text             TEXT         NULL,       -- free-text rules shown to residents
 

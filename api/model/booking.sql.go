@@ -143,6 +143,43 @@ func (q *Queries) CountActiveBookingsByUserFacility(ctx context.Context, arg Cou
 	return count, err
 }
 
+const countUserBookingsInRange = `-- name: CountUserBookingsInRange :one
+SELECT
+    COUNT(*)
+FROM
+    booking
+WHERE
+    user_id = $1
+    AND facility_id = $2
+    AND status = 'confirmed'
+    AND starts_at >= $3
+    AND starts_at < $4
+    AND ($5::UUID IS NULL OR id <> $5)
+`
+
+type CountUserBookingsInRangeParams struct {
+	UserID     uuid.NullUUID `json:"user_id"`
+	FacilityID uuid.UUID     `json:"facility_id"`
+	RangeStart time.Time     `json:"range_start"`
+	RangeEnd   time.Time     `json:"range_end"`
+	Exclude    uuid.NullUUID `json:"exclude"`
+}
+
+// The person's confirmed bookings here starting in [range_start, range_end), but
+// `exclude` (the one being changed): the booking window's limit per day.
+func (q *Queries) CountUserBookingsInRange(ctx context.Context, arg CountUserBookingsInRangeParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countUserBookingsInRange,
+		arg.UserID,
+		arg.FacilityID,
+		arg.RangeStart,
+		arg.RangeEnd,
+		arg.Exclude,
+	)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createBooking = `-- name: CreateBooking :one
 INSERT INTO booking (
     facility_id,
@@ -272,7 +309,7 @@ SELECT
     t.slug AS tenant_slug,
     t.name AS tenant_name,
     facility_sport(f.id)::TEXT AS facility_sport,
-    f.id, f.tenant_id, f.slug, f.name, f.description, f.address, f.latitude, f.longitude, f.capacity, f.accessibility_info, f.contact_phone, f.contact_email, f.image_ref, f.is_active, f.slot_minutes, f.max_advance_days, f.min_cancel_hours, f.max_active_bookings_per_user, f.min_age, f.usage_rules_text, f.created_at, f.updated_at -- what the booking details show: image, address, rules
+    f.id, f.tenant_id, f.slug, f.name, f.description, f.address, f.latitude, f.longitude, f.capacity, f.accessibility_info, f.contact_phone, f.contact_email, f.image_ref, f.is_active, f.slot_minutes, f.custom_rules, f.max_advance_hours, f.min_advance_minutes, f.min_cancel_hours, f.max_active_bookings_per_user, f.max_bookings_per_day, f.max_turns_in_a_row, f.no_show_penalty, f.no_show_limit, f.no_show_window_days, f.no_show_block_days, f.min_age, f.usage_rules_text, f.created_at, f.updated_at -- what the booking details show: image, address, rules
 FROM
     booking b
     JOIN facility f ON f.id = b.facility_id
@@ -359,9 +396,17 @@ func (q *Queries) ListBookingsByUser(ctx context.Context, userID uuid.NullUUID) 
 			&i.Facility.ImageRef,
 			&i.Facility.IsActive,
 			&i.Facility.SlotMinutes,
-			&i.Facility.MaxAdvanceDays,
+			&i.Facility.CustomRules,
+			&i.Facility.MaxAdvanceHours,
+			&i.Facility.MinAdvanceMinutes,
 			&i.Facility.MinCancelHours,
 			&i.Facility.MaxActiveBookingsPerUser,
+			&i.Facility.MaxBookingsPerDay,
+			&i.Facility.MaxTurnsInARow,
+			&i.Facility.NoShowPenalty,
+			&i.Facility.NoShowLimit,
+			&i.Facility.NoShowWindowDays,
+			&i.Facility.NoShowBlockDays,
 			&i.Facility.MinAge,
 			&i.Facility.UsageRulesText,
 			&i.Facility.CreatedAt,
@@ -558,6 +603,115 @@ func (q *Queries) ListUserBookingPatterns(ctx context.Context, arg ListUserBooki
 			return nil, err
 		}
 		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listUserBookingsNear = `-- name: ListUserBookingsNear :many
+SELECT
+    starts_at,
+    ends_at
+FROM
+    booking
+WHERE
+    user_id = $1
+    AND facility_id = $2
+    AND status = 'confirmed'
+    AND ends_at >= $3
+    AND starts_at <= $4
+    AND ($5::UUID IS NULL OR id <> $5)
+ORDER BY
+    starts_at
+`
+
+type ListUserBookingsNearParams struct {
+	UserID     uuid.NullUUID `json:"user_id"`
+	FacilityID uuid.UUID     `json:"facility_id"`
+	RangeStart time.Time     `json:"range_start"`
+	RangeEnd   time.Time     `json:"range_end"`
+	Exclude    uuid.NullUUID `json:"exclude"`
+}
+
+type ListUserBookingsNearRow struct {
+	StartsAt time.Time `json:"starts_at"`
+	EndsAt   time.Time `json:"ends_at"`
+}
+
+// The person's confirmed bookings here touching [range_start, range_end), but
+// `exclude`: to count the turns they would have in a row.
+func (q *Queries) ListUserBookingsNear(ctx context.Context, arg ListUserBookingsNearParams) ([]ListUserBookingsNearRow, error) {
+	rows, err := q.db.QueryContext(ctx, listUserBookingsNear,
+		arg.UserID,
+		arg.FacilityID,
+		arg.RangeStart,
+		arg.RangeEnd,
+		arg.Exclude,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListUserBookingsNearRow
+	for rows.Next() {
+		var i ListUserBookingsNearRow
+		if err := rows.Scan(&i.StartsAt, &i.EndsAt); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listUserNoShows = `-- name: ListUserNoShows :many
+SELECT
+    ends_at
+FROM
+    booking
+WHERE
+    user_id = $1
+    AND facility_id = $2
+    AND status = 'confirmed'
+    AND checked_in_at IS NULL
+    AND ends_at <= NOW()
+    AND ends_at >= $3
+    AND facility_checkin_since(facility_id) <= starts_at
+ORDER BY
+    ends_at DESC
+`
+
+type ListUserNoShowsParams struct {
+	UserID     uuid.NullUUID `json:"user_id"`
+	FacilityID uuid.UUID     `json:"facility_id"`
+	Since      time.Time     `json:"since"`
+}
+
+// The person's no-shows here since `since`, latest first: confirmed bookings
+// over without a check-in, while the facility took check-ins.
+func (q *Queries) ListUserNoShows(ctx context.Context, arg ListUserNoShowsParams) ([]time.Time, error) {
+	rows, err := q.db.QueryContext(ctx, listUserNoShows, arg.UserID, arg.FacilityID, arg.Since)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []time.Time
+	for rows.Next() {
+		var ends_at time.Time
+		if err := rows.Scan(&ends_at); err != nil {
+			return nil, err
+		}
+		items = append(items, ends_at)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err

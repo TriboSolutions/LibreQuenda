@@ -63,27 +63,30 @@ type ClosureDto struct {
 }
 
 type FacilityDayDto struct {
-	Id             string          `json:"id"`
-	Slug           string          `json:"slug"`
-	Name           string          `json:"name"`
-	Description    string          `json:"description"`
-	ImageUrl       string          `json:"image_url"`
-	Latitude       *float64        `json:"latitude"`
-	Longitude      *float64        `json:"longitude"`
-	Sport          string          `json:"sport"`
-	Tags           []string        `json:"tags"`
-	Address        string          `json:"address"`
-	ContactPhone   string          `json:"contact_phone"` // its own, "" when not given: the web shows the council's instead
-	ContactEmail   string          `json:"contact_email"`
-	SlotMinutes    int32           `json:"slot_minutes"`
-	MaxAdvanceDays int32           `json:"max_advance_days"`
-	MinCancelHours int32           `json:"min_cancel_hours"`
-	MaxActive      int32           `json:"max_active_bookings_per_user"`
-	MinAge         *int32          `json:"min_age"` // age control: null = none
-	UsageRules     string          `json:"usage_rules"`
-	Windows        []WindowDto     `json:"windows"`
-	Closures       []ClosureDto    `json:"closures"`
-	Slots          []schedule.Slot `json:"slots"`
+	Id                string          `json:"id"`
+	Slug              string          `json:"slug"`
+	Name              string          `json:"name"`
+	Description       string          `json:"description"`
+	ImageUrl          string          `json:"image_url"`
+	Latitude          *float64        `json:"latitude"`
+	Longitude         *float64        `json:"longitude"`
+	Sport             string          `json:"sport"`
+	Tags              []string        `json:"tags"`
+	Address           string          `json:"address"`
+	ContactPhone      string          `json:"contact_phone"` // its own, "" when not given: the web shows the council's instead
+	ContactEmail      string          `json:"contact_email"`
+	SlotMinutes       int32           `json:"slot_minutes"`
+	MaxAdvanceHours   int32           `json:"max_advance_hours"`   // the booking window, from now
+	MinAdvanceMinutes int32           `json:"min_advance_minutes"` // the app books no turn starting sooner
+	MinCancelHours    int32           `json:"min_cancel_hours"`
+	MaxActive         int32           `json:"max_active_bookings_per_user"`
+	MaxPerDay         int32           `json:"max_bookings_per_day"` // per person and day; 0 = no limit
+	MaxInARow         int32           `json:"max_turns_in_a_row"`   // back-to-back turns per person; 0 = no limit
+	MinAge            *int32          `json:"min_age"`              // age control: null = none
+	UsageRules        string          `json:"usage_rules"`
+	Windows           []WindowDto     `json:"windows"`
+	Closures          []ClosureDto    `json:"closures"`
+	Slots             []schedule.Slot `json:"slots"`
 }
 
 type DayResponse struct {

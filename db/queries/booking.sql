@@ -246,3 +246,54 @@ WHERE
     AND f.is_active = TRUE
 GROUP BY
     1, 2, 3;
+
+-- name: CountUserBookingsInRange :one
+-- The person's confirmed bookings here starting in [range_start, range_end), but
+-- `exclude` (the one being changed): the booking window's limit per day.
+SELECT
+    COUNT(*)
+FROM
+    booking
+WHERE
+    user_id = sqlc.arg('user_id')
+    AND facility_id = sqlc.arg('facility_id')
+    AND status = 'confirmed'
+    AND starts_at >= sqlc.arg('range_start')
+    AND starts_at < sqlc.arg('range_end')
+    AND (sqlc.narg('exclude')::UUID IS NULL OR id <> sqlc.narg('exclude'));
+
+-- name: ListUserBookingsNear :many
+-- The person's confirmed bookings here touching [range_start, range_end), but
+-- `exclude`: to count the turns they would have in a row.
+SELECT
+    starts_at,
+    ends_at
+FROM
+    booking
+WHERE
+    user_id = sqlc.arg('user_id')
+    AND facility_id = sqlc.arg('facility_id')
+    AND status = 'confirmed'
+    AND ends_at >= sqlc.arg('range_start')
+    AND starts_at <= sqlc.arg('range_end')
+    AND (sqlc.narg('exclude')::UUID IS NULL OR id <> sqlc.narg('exclude'))
+ORDER BY
+    starts_at;
+
+-- name: ListUserNoShows :many
+-- The person's no-shows here since `since`, latest first: confirmed bookings
+-- over without a check-in, while the facility took check-ins.
+SELECT
+    ends_at
+FROM
+    booking
+WHERE
+    user_id = sqlc.arg('user_id')
+    AND facility_id = sqlc.arg('facility_id')
+    AND status = 'confirmed'
+    AND checked_in_at IS NULL
+    AND ends_at <= NOW()
+    AND ends_at >= sqlc.arg('since')
+    AND facility_checkin_since(facility_id) <= starts_at
+ORDER BY
+    ends_at DESC;

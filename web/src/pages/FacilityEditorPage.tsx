@@ -5,6 +5,7 @@ import { useAuth } from 'react-oidc-context'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import { FacilityMap } from '@/components/FacilityMap'
 import { ImagePicker } from '@/components/ImagePicker'
+import { BookingRulesFields, BookingRulesSummary } from '@/components/admin/BookingRulesFields'
 import { CheckinMethods } from '@/components/admin/CheckinMethods'
 import { ClosuresEditor } from '@/components/admin/ClosuresEditor'
 import { ScheduleEditor } from '@/components/admin/ScheduleEditor'
@@ -23,6 +24,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { useAsync } from '@/hooks/useAsync'
 import { useCouncilAdmin } from '@/hooks/useCouncilAdmin'
 import { api, type AdminFacility, type FacilityInput, type GeocodeResult, type StoredImage, type WeeklyWindow, type Tenant } from '@/lib/api'
+import { DEFAULT_RULES } from '@/lib/bookingRules'
 import { slugify } from '@/lib/slug'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { SiteFooter } from '@/components/SiteFooter'
@@ -42,15 +44,24 @@ const EMPTY: FacilityInput = {
   image_ref: '',
   is_active: true,
   slot_minutes: 60,
-  max_advance_days: 7,
-  min_cancel_hours: 2,
-  max_active_bookings_per_user: 2,
+  custom_rules: false,
+  rules: DEFAULT_RULES,
   min_age: null,
   usage_rules: '',
 }
 
 function toInput(f: AdminFacility): FacilityInput {
-  const { id: _id, image_url: _url, booking_count: _count, bookings_to_cancel: _toCancel, schedule: _schedule, closures: _closures, timezone: _tz, ...input } = f
+  const {
+    id: _id,
+    image_url: _url,
+    booking_count: _count,
+    bookings_to_cancel: _toCancel,
+    schedule: _schedule,
+    closures: _closures,
+    timezone: _tz,
+    council_rules: _council,
+    ...input
+  } = f
   return input
 }
 
@@ -91,6 +102,9 @@ function Editor({ slug, facility, tenants, token }: { slug: string; facility: Ad
   const creating = facility === null
   const council = tenants.find((c) => c.slug === slug) // its contact is what an empty facility contact falls back to
   const [form, setForm] = useState<FacilityInput>(facility ? toInput(facility) : EMPTY)
+  // the council's booking window: what the facility inherits while it keeps none of its own
+  const councilRulesLoad = useAsync(creating ? () => api.council.bookingRules(token, slug) : null, `booking-rules:${slug}:${creating}`)
+  const councilRules = facility?.council_rules ?? councilRulesLoad.data ?? null
   const [image, setImage] = useState<StoredImage | null>(facility?.image_ref ? { ref: facility.image_ref, url: facility.image_url } : null)
   const [schedule, setSchedule] = useState<WeeklyWindow[]>(facility?.schedule ?? [])
   const [saving, setSaving] = useState(false)
@@ -307,12 +321,7 @@ function Editor({ slug, facility, tenants, token }: { slug: string; facility: Ad
             </h2>
             <div className="grid gap-4 sm:grid-cols-2">
               {(
-                [
-                  ['slot_minutes', 'admin:editor.slotMinutes', 15, 480, 5],
-                  ['max_advance_days', 'admin:editor.maxAdvanceDays', 1, 365, 1],
-                  ['min_cancel_hours', 'admin:editor.minCancelHours', 0, 720, 1],
-                  ['max_active_bookings_per_user', 'admin:editor.maxActive', 1, 50, 1],
-                ] as const
+                [['slot_minutes', 'admin:editor.slotMinutes', 15, 480, 5]] as const
               ).map(([field, label, min, max, step]) => (
                 <div key={field} className="grid gap-2">
                   <Label htmlFor={`f-${field}`}>{t(label)}</Label>
@@ -329,6 +338,32 @@ function Editor({ slug, facility, tenants, token }: { slug: string; facility: Ad
                   />
                 </div>
               ))}
+            </div>
+            <div className="grid gap-4 rounded-md border p-4">
+              <div className="flex items-start gap-3">
+                <Switch
+                  id="f-council-rules"
+                  checked={!form.custom_rules}
+                  aria-describedby="f-council-rules-help"
+                  // its own window starts from the council's, to change only what differs
+                  onCheckedChange={(inherit) =>
+                    setForm((f) => ({ ...f, custom_rules: !inherit, rules: inherit || f.custom_rules ? f.rules : (councilRules ?? f.rules) }))
+                  }
+                />
+                <div className="grid gap-1">
+                  <Label htmlFor="f-council-rules">{t('admin:rules.useCouncil')}</Label>
+                  <p id="f-council-rules-help" className="text-sm text-muted-foreground">
+                    {t('admin:rules.useCouncilHelp')}
+                  </p>
+                </div>
+              </div>
+              {form.custom_rules ? (
+                <BookingRulesFields id="f-own-rules" value={form.rules} onChange={(rules) => set('rules', rules)} />
+              ) : councilRules ? (
+                <BookingRulesSummary rules={councilRules} />
+              ) : (
+                <Skeleton className="h-24 w-full" />
+              )}
             </div>
             <div className="grid gap-2">
               <Label htmlFor="f-rules">{t('admin:editor.usageRules')}</Label>

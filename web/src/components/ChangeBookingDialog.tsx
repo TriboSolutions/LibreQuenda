@@ -105,7 +105,7 @@ function ChangeBookingDialogOpen({ booking, timeZone, today, onClose, onChanged,
               value={date}
               onChange={pickDate}
               min={today}
-              max={facility ? addDays(today, facility.max_advance_days) : undefined}
+              max={facility ? addDays(today, Math.ceil(facility.max_advance_hours / 24)) : undefined}
               className="w-full sm:w-64"
             />
           </div>

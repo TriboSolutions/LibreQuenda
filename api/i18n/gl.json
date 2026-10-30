@@ -156,7 +156,14 @@
     "staff_checkin_undo_expired": "Xa non se pode desfacer: só se pode durante 5 minutos despois de marcala, e só se a marcou o persoal.",
     "too_many_staff_contacts": "Pódense engadir ata 10 persoas de contacto.",
     "invalid_staff_contact": "Cada persoa de contacto precisa un nome (ata 80 caracteres); o teléfono ata 30 e onde atopala ata 120.",
-    "recommendations_failed": "Non se puideron cargar as recomendacións."
+    "recommendations_failed": "Non se puideron cargar as recomendacións.",
+    "invalid_min_advance": "A antelación mínima ten que estar entre 0 minutos e 24 horas.",
+    "invalid_no_show_penalty": "A penalización precisa entre 1 e 20 ausencias, contadas nun prazo de 1 a 365 días, e un bloqueo de 1 a 365 días.",
+    "booking_rules_failed": "Non se puido gardar a ventá de reserva.",
+    "daily_limit_reached": "Xa tes as reservas que se permiten por día nesta instalación.",
+    "turns_in_a_row_limit": "Non podes reservar tantas quendas seguidas nesta instalación.",
+    "no_show_blocked": "Non podes reservar nesta instalación ata o {{0}}, por non presentarte a varias reservas.",
+    "slot_too_soon": "Esa quenda comeza moi pronto para reservala dende a app."
   },
   "email": {
     "greeting": "Ola {{0}},",

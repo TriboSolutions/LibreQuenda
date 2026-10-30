@@ -11,7 +11,7 @@ Scope: bases §1.1 (minimum) + §1.2 (technical). See [architecture plan](docs/s
 - [x] Flash booking, like Enjoy: the personal QR (account menu → «Reserva flash») books a free turn at the reader, from now until the turn under way ends or the one about to start
 - [x] Change own booking (`PATCH /me/bookings/{id}`): another day or time of the same facility; the owner can remove people who joined
 - [x] Booking history (past and upcoming)
-- [ ] Ask Angel: what booking window should residents have? Nobody should be able to book, say, every Wednesday until 2028. Today each facility has `max_advance_days` (3–14 days in the seed, enforced for residents and staff) and `max_active_bookings_per_user`; decide whether that is enough or we need more (a council-wide maximum, a weekly cap per person, turns that open at a fixed hour, recurring bookings for staff only…)
+- [x] Booking window: the council sets a default every facility inherits, and a facility can keep its own: how far ahead (hours or days), how close to the start from the app, cancel/change deadline, upcoming bookings, bookings per person and day, turns in a row, and an optional no-show penalty. Staff booking for someone skip the per-person limits
 - [x] In-app notification list (`GET /me/notifications`)
 - [x] Decide if in-app notifications need real-time push (WebSockets, SSE) or if polling is enough: polling every 30 s
 - [x] Email notifications: booking confirmed / reminder (15 min before) / cancelled; owner only

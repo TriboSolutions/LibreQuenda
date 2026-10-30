@@ -23,7 +23,9 @@ def generate(context: dict) -> list:
                     "longitude": f["longitude"],
                     "capacity": f["capacity"],
                     "slot_minutes": f["slot_minutes"],
-                    "max_advance_days": f["max_advance_days"],
+                    # the seed sets each facility's own window (the council's stays at its defaults)
+                    "custom_rules": True,
+                    "max_advance_hours": f["max_advance_days"] * 24,
                     "min_cancel_hours": f["min_cancel_hours"],
                     "max_active_bookings_per_user": f["max_active_bookings_per_user"],
                     "usage_rules_text": f["usage_rules_text"],

@@ -159,38 +159,40 @@ func (s *counciladminService) GetFacility(ctx context.Context, tenantId uuid.UUI
 		tags = []string{}
 	}
 	var detail = &FacilityDetailDto{
-		Id:                       f.ID.String(),
-		Slug:                     f.Slug,
-		Name:                     f.Name,
-		Description:              f.Description.String,
-		Tags:                     tags,
-		Address:                  f.Address.String,
-		Latitude:                 floatPtr(f.Latitude),
-		Longitude:                floatPtr(f.Longitude),
-		Capacity:                 intPtr(f.Capacity),
-		AccessibilityInfo:        f.AccessibilityInfo.String,
-		ContactPhone:             f.ContactPhone.String,
-		ContactEmail:             f.ContactEmail.String,
-		ImageRef:                 f.ImageRef.String,
-		ImageUrl:                 storage.URL(f.ImageRef.String),
-		IsActive:                 f.IsActive,
-		SlotMinutes:              f.SlotMinutes,
-		MaxAdvanceDays:           f.MaxAdvanceDays,
-		MinCancelHours:           f.MinCancelHours,
-		MaxActiveBookingsPerUser: f.MaxActiveBookingsPerUser,
-		MinAge:                   intPtr(f.MinAge),
-		UsageRules:               f.UsageRulesText.String,
-		BookingCount:             bookings,
-		BookingsToCancel:         toCancel,
-		Schedule:                 make([]WindowDto, 0, len(hours)),
-		Closures:                 make([]ClosureDto, 0, len(closures)),
-		Timezone:                 timezone,
+		Id:                f.ID.String(),
+		Slug:              f.Slug,
+		Name:              f.Name,
+		Description:       f.Description.String,
+		Tags:              tags,
+		Address:           f.Address.String,
+		Latitude:          floatPtr(f.Latitude),
+		Longitude:         floatPtr(f.Longitude),
+		Capacity:          intPtr(f.Capacity),
+		AccessibilityInfo: f.AccessibilityInfo.String,
+		ContactPhone:      f.ContactPhone.String,
+		ContactEmail:      f.ContactEmail.String,
+		ImageRef:          f.ImageRef.String,
+		ImageUrl:          storage.URL(f.ImageRef.String),
+		IsActive:          f.IsActive,
+		SlotMinutes:       f.SlotMinutes,
+		CustomRules:       f.CustomRules,
+		Rules:             rulesOfFacility(f),
+		MinAge:            intPtr(f.MinAge),
+		UsageRules:        f.UsageRulesText.String,
+		BookingCount:      bookings,
+		BookingsToCancel:  toCancel,
+		Schedule:          make([]WindowDto, 0, len(hours)),
+		Closures:          make([]ClosureDto, 0, len(closures)),
+		Timezone:          timezone,
 	}
 	for _, c := range closures {
 		detail.Closures = append(detail.Closures, mapClosure(c.ID, c.StartsAt, c.EndsAt, c.Reason))
 	}
 	for _, h := range hours {
 		detail.Schedule = append(detail.Schedule, WindowDto{Weekday: h.Weekday, OpensAt: h.OpensAt.Format("15:04"), ClosesAt: h.ClosesAt.Format("15:04")})
+	}
+	if council, rulesErr := s.councilRules(ctx, tenantId); rulesErr == nil {
+		detail.CouncilRules = council
 	}
 	return detail, nil
 }
@@ -199,6 +201,10 @@ func (s *counciladminService) CreateFacility(ctx context.Context, tenantId uuid.
 	input.normalise()
 	if key := input.validate(); key != "" {
 		return nil, &shared.ErrorResponse{Code: http.StatusUnprocessableEntity, Message: key}
+	}
+	var rules, rulesErr = s.effectiveRules(ctx, tenantId, input)
+	if rulesErr != nil {
+		return nil, rulesErr
 	}
 	var windows []parsedWindow
 	if input.Schedule != nil {
@@ -225,9 +231,17 @@ func (s *counciladminService) CreateFacility(ctx context.Context, tenantId uuid.
 			ImageRef:                 nullString(input.ImageRef),
 			IsActive:                 input.IsActive,
 			SlotMinutes:              input.SlotMinutes,
-			MaxAdvanceDays:           input.MaxAdvanceDays,
-			MinCancelHours:           input.MinCancelHours,
-			MaxActiveBookingsPerUser: input.MaxActiveBookingsPerUser,
+			CustomRules:              input.CustomRules,
+			MaxAdvanceHours:          rules.MaxAdvanceHours,
+			MinAdvanceMinutes:        rules.MinAdvanceMinutes,
+			MinCancelHours:           rules.MinCancelHours,
+			MaxActiveBookingsPerUser: rules.MaxActiveBookingsPerUser,
+			MaxBookingsPerDay:        rules.MaxBookingsPerDay,
+			MaxTurnsInARow:           rules.MaxTurnsInARow,
+			NoShowPenalty:            rules.NoShowPenalty,
+			NoShowLimit:              rules.NoShowLimit,
+			NoShowWindowDays:         rules.NoShowWindowDays,
+			NoShowBlockDays:          rules.NoShowBlockDays,
 			MinAge:                   nullInt(input.MinAge),
 			UsageRulesText:           nullString(input.UsageRules),
 		})
@@ -256,6 +270,10 @@ func (s *counciladminService) UpdateFacility(ctx context.Context, tenantId uuid.
 	if key := input.validate(); key != "" {
 		return nil, &shared.ErrorResponse{Code: http.StatusUnprocessableEntity, Message: key}
 	}
+	var rules, rulesErr = s.effectiveRules(ctx, tenantId, input)
+	if rulesErr != nil {
+		return nil, rulesErr
+	}
 	var err = db.WithTenant(ctx, s.db, tenantId, func(queries *model.Queries) error {
 		var _, updateErr = queries.UpdateFacility(ctx, model.UpdateFacilityParams{
 			ID:                       id,
@@ -273,9 +291,17 @@ func (s *counciladminService) UpdateFacility(ctx context.Context, tenantId uuid.
 			ImageRef:                 nullString(input.ImageRef),
 			IsActive:                 input.IsActive,
 			SlotMinutes:              input.SlotMinutes,
-			MaxAdvanceDays:           input.MaxAdvanceDays,
-			MinCancelHours:           input.MinCancelHours,
-			MaxActiveBookingsPerUser: input.MaxActiveBookingsPerUser,
+			CustomRules:              input.CustomRules,
+			MaxAdvanceHours:          rules.MaxAdvanceHours,
+			MinAdvanceMinutes:        rules.MinAdvanceMinutes,
+			MinCancelHours:           rules.MinCancelHours,
+			MaxActiveBookingsPerUser: rules.MaxActiveBookingsPerUser,
+			MaxBookingsPerDay:        rules.MaxBookingsPerDay,
+			MaxTurnsInARow:           rules.MaxTurnsInARow,
+			NoShowPenalty:            rules.NoShowPenalty,
+			NoShowLimit:              rules.NoShowLimit,
+			NoShowWindowDays:         rules.NoShowWindowDays,
+			NoShowBlockDays:          rules.NoShowBlockDays,
 			MinAge:                   nullInt(input.MinAge),
 			UsageRulesText:           nullString(input.UsageRules),
 		})

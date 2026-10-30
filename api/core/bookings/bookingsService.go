@@ -110,6 +110,9 @@ func (s *bookingsService) book(ctx context.Context, queries *model.Queries, user
 	if active >= int64(facility.MaxActiveBookingsPerUser) {
 		return nil, &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.booking_limit_reached"}
 	}
+	if limitErr := s.personalLimits(ctx, queries, userId, facility, slot, uuid.NullUUID{}); limitErr != nil {
+		return nil, limitErr
+	}
 
 	var booking model.Booking
 	var overlapErr *shared.ErrorResponse
@@ -187,7 +190,7 @@ func (s *bookingsService) bookableSlot(ctx context.Context, queries *model.Queri
 	if ageErr := checkAge(ctx, queries, userId, facility, day); ageErr != nil {
 		return nil, ageErr
 	}
-	return s.findSlot(ctx, queries, facility, loc, day, day.AddDate(0, 0, 1), start)
+	return s.findSlot(ctx, queries, facility, loc, day, day.AddDate(0, 0, 1), start, true)
 }
 
 // checkAge: the person is old enough for the facility on that day, when it has a minimum age.
@@ -205,8 +208,8 @@ func checkAge(ctx context.Context, queries *model.Queries, userId uuid.UUID, fac
 	return nil
 }
 
-func (s *bookingsService) findSlot(ctx context.Context, queries *model.Queries, facility model.GetFacilityForBookingRow, loc *time.Location, day, dayEnd, start time.Time) (*schedule.Slot, *shared.ErrorResponse) {
-	var slots, err = s.daySlots(ctx, queries, facility, loc, day, dayEnd)
+func (s *bookingsService) findSlot(ctx context.Context, queries *model.Queries, facility model.GetFacilityForBookingRow, loc *time.Location, day, dayEnd, start time.Time, resident bool) (*schedule.Slot, *shared.ErrorResponse) {
+	var slots, err = s.daySlots(ctx, queries, facility, loc, day, dayEnd, resident)
 	if err != nil {
 		return nil, err
 	}
@@ -222,14 +225,24 @@ func (s *bookingsService) findSlot(ctx context.Context, queries *model.Queries, 
 	return nil, &shared.ErrorResponse{Code: http.StatusUnprocessableEntity, Message: "errors.slot_not_found"}
 }
 
-// daySlots: the facility's turns on one day, as the schedule reports them right now.
-func (s *bookingsService) daySlots(ctx context.Context, queries *model.Queries, facility model.GetFacilityForBookingRow, loc *time.Location, day, dayEnd time.Time) ([]schedule.Slot, *shared.ErrorResponse) {
+// daySlots: the facility's turns on one day, as the schedule reports them right
+// now. resident: booked from the app, so the window's minimum advance applies;
+// staff and the door book up to the start.
+func (s *bookingsService) daySlots(ctx context.Context, queries *model.Queries, facility model.GetFacilityForBookingRow, loc *time.Location, day, dayEnd time.Time, resident bool) ([]schedule.Slot, *shared.ErrorResponse) {
 	var inputs, err = s.dayInputs(ctx, queries, facility, day, dayEnd)
 	if err != nil {
 		return nil, err
 	}
-	var rules = schedule.Rules{SlotMinutes: int(facility.SlotMinutes), MaxAdvanceDays: int(facility.MaxAdvanceDays)}
-	return schedule.DaySlots(day, loc, rules, inputs.windows, inputs.closures, inputs.busy, time.Now()), nil
+	return schedule.DaySlots(day, loc, rulesOf(facility, resident), inputs.windows, inputs.closures, inputs.busy, time.Now()), nil
+}
+
+// rulesOf: the facility's turns and booking window for the schedule.
+func rulesOf(facility model.GetFacilityForBookingRow, resident bool) schedule.Rules {
+	var rules = schedule.Rules{SlotMinutes: int(facility.SlotMinutes), MaxAdvance: time.Duration(facility.MaxAdvanceHours) * time.Hour}
+	if resident {
+		rules.MinAdvance = time.Duration(facility.MinAdvanceMinutes) * time.Minute
+	}
+	return rules
 }
 
 // scheduleDay: what the schedule of one day is cut from.
@@ -309,12 +322,11 @@ func (s *bookingsService) QuickBook(ctx context.Context, userId uuid.UUID, facil
 		return nil, inputsErr
 	}
 	var current, inProgress = schedule.Current(today, loc, int(facility.SlotMinutes), inputs.windows, inputs.closures, inputs.busy, now)
-	var rules = schedule.Rules{SlotMinutes: int(facility.SlotMinutes), MaxAdvanceDays: int(facility.MaxAdvanceDays)}
-	var slots = schedule.DaySlots(today, loc, rules, inputs.windows, inputs.closures, inputs.busy, now)
+	var slots = schedule.DaySlots(today, loc, rulesOf(facility, false), inputs.windows, inputs.closures, inputs.busy, now)
 	// near midnight the turn may start on the next day
 	if tomorrow := startOfDay(now.Add(checkin.EarlyWindow), loc); tomorrow.After(today) {
 		var more []schedule.Slot
-		if more, inputsErr = s.daySlots(ctx, queries, facility, loc, tomorrow, tomorrow.AddDate(0, 0, 1)); inputsErr != nil {
+		if more, inputsErr = s.daySlots(ctx, queries, facility, loc, tomorrow, tomorrow.AddDate(0, 0, 1), false); inputsErr != nil {
 			return nil, inputsErr
 		}
 		slots = append(slots, more...)
@@ -405,6 +417,9 @@ func (s *bookingsService) ChangeBooking(ctx context.Context, userId uuid.UUID, b
 	var slot, slotErr = s.bookableSlot(ctx, queries, userId, facility, body.StartsAt)
 	if slotErr != nil {
 		return nil, slotErr
+	}
+	if limitErr := s.personalLimits(ctx, queries, userId, facility, slot, uuid.NullUUID{UUID: bookingId, Valid: true}); limitErr != nil {
+		return nil, limitErr
 	}
 
 	var booking model.Booking

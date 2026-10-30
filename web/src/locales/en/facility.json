@@ -26,5 +26,13 @@
   "notFoundTitle": "Facility not found",
   "notFoundBody": "There is no facility at “{{path}}”.",
   "mapLabel": "Map with the facility's location",
-  "minAge": "Minimum age: {{count}} years."
+  "minAge": "Minimum age: {{count}} years.",
+  "ruleAdvanceHours_one": "Book up to {{count}} hour ahead.",
+  "ruleAdvanceHours_other": "Book up to {{count}} hours ahead.",
+  "ruleMinAdvance_one": "From the app, book at least {{count}} minute before the turn.",
+  "ruleMinAdvance_other": "From the app, book at least {{count}} minutes before the turn.",
+  "rulePerDay_one": "At most {{count}} booking per person and day.",
+  "rulePerDay_other": "At most {{count}} bookings per person and day.",
+  "ruleInARow_one": "Turns cannot be booked back to back.",
+  "ruleInARow_other": "At most {{count}} turns in a row per person."
 }

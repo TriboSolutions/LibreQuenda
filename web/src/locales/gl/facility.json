@@ -26,5 +26,13 @@
   "notFoundTitle": "Instalación non atopada",
   "notFoundBody": "Non hai ningunha instalación en «{{path}}».",
   "mapLabel": "Mapa coa localización da instalación",
-  "minAge": "Idade mínima: {{count}} anos."
+  "minAge": "Idade mínima: {{count}} anos.",
+  "ruleAdvanceHours_one": "Reserva ata con {{count}} hora de antelación.",
+  "ruleAdvanceHours_other": "Reserva ata con {{count}} horas de antelación.",
+  "ruleMinAdvance_one": "Dende a app, reserva como moi tarde {{count}} minuto antes do turno.",
+  "ruleMinAdvance_other": "Dende a app, reserva como moi tarde {{count}} minutos antes do turno.",
+  "rulePerDay_one": "Como máximo {{count}} reserva por persoa e día.",
+  "rulePerDay_other": "Como máximo {{count}} reservas por persoa e día.",
+  "ruleInARow_one": "Non se poden reservar quendas seguidas.",
+  "ruleInARow_other": "Como máximo {{count}} quendas seguidas por persoa."
 }

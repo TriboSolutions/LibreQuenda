@@ -12,25 +12,25 @@ import (
 var reservedFacilitySlugs = map[string]bool{"admin": true, "reservas": true, "me": true}
 
 type FacilityInput struct {
-	Slug                     string   `json:"slug"`
-	Name                     string   `json:"name"`
-	Description              string   `json:"description"`
-	Tags                     []string `json:"tags"` // slugs from the platform's tag catalogue: its sports, kind of place…
-	Address                  string   `json:"address"`
-	Latitude                 *float64 `json:"latitude"`
-	Longitude                *float64 `json:"longitude"`
-	Capacity                 *int32   `json:"capacity"`
-	AccessibilityInfo        string   `json:"accessibility_info"`
-	ContactPhone             string   `json:"contact_phone"` // optional: without them, residents see the council's
-	ContactEmail             string   `json:"contact_email"`
-	ImageRef                 string   `json:"image_ref"` // a storage reference from POST /media, never a URL
-	IsActive                 bool     `json:"is_active"`
-	SlotMinutes              int32    `json:"slot_minutes"`
-	MaxAdvanceDays           int32    `json:"max_advance_days"`
-	MinCancelHours           int32    `json:"min_cancel_hours"`
-	MaxActiveBookingsPerUser int32    `json:"max_active_bookings_per_user"`
-	MinAge                   *int32   `json:"min_age"` // age control: null = none, else 1 to 80
-	UsageRules               string   `json:"usage_rules"`
+	Slug              string   `json:"slug"`
+	Name              string   `json:"name"`
+	Description       string   `json:"description"`
+	Tags              []string `json:"tags"` // slugs from the platform's tag catalogue: its sports, kind of place…
+	Address           string   `json:"address"`
+	Latitude          *float64 `json:"latitude"`
+	Longitude         *float64 `json:"longitude"`
+	Capacity          *int32   `json:"capacity"`
+	AccessibilityInfo string   `json:"accessibility_info"`
+	ContactPhone      string   `json:"contact_phone"` // optional: without them, residents see the council's
+	ContactEmail      string   `json:"contact_email"`
+	ImageRef          string   `json:"image_ref"` // a storage reference from POST /media, never a URL
+	IsActive          bool     `json:"is_active"`
+	SlotMinutes       int32    `json:"slot_minutes"`
+	// the booking window: the council's (custom_rules false: Rules is ignored) or its own
+	CustomRules bool            `json:"custom_rules"`
+	Rules       BookingRulesDto `json:"rules"`
+	MinAge      *int32          `json:"min_age"` // age control: null = none, else 1 to 80
+	UsageRules  string          `json:"usage_rules"`
 	// create only: the weekly hours, saved with it, so a new facility is set up in one go
 	Schedule *ScheduleInput `json:"schedule,omitempty"`
 }
@@ -74,12 +74,8 @@ func (in *FacilityInput) validate() string {
 		return "errors.invalid_image"
 	case in.SlotMinutes < 15 || in.SlotMinutes > 480 || in.SlotMinutes%5 != 0:
 		return "errors.invalid_slot_minutes"
-	case in.MaxAdvanceDays < 1 || in.MaxAdvanceDays > 365:
-		return "errors.invalid_booking_window"
-	case in.MinCancelHours < 0 || in.MinCancelHours > 720:
-		return "errors.invalid_cancel_hours"
-	case in.MaxActiveBookingsPerUser < 1 || in.MaxActiveBookingsPerUser > 50:
-		return "errors.invalid_booking_limit"
+	case in.CustomRules && in.Rules.validate() != "":
+		return in.Rules.validate()
 	case in.MinAge != nil && (*in.MinAge < 1 || *in.MinAge > 80):
 		return "errors.invalid_min_age"
 	}
@@ -184,32 +180,32 @@ type FacilitiesResponse struct {
 }
 
 type FacilityDetailDto struct {
-	Id                       string       `json:"id"`
-	Slug                     string       `json:"slug"`
-	Name                     string       `json:"name"`
-	Description              string       `json:"description"`
-	Tags                     []string     `json:"tags"`
-	Address                  string       `json:"address"`
-	Latitude                 *float64     `json:"latitude"`
-	Longitude                *float64     `json:"longitude"`
-	Capacity                 *int32       `json:"capacity"`
-	AccessibilityInfo        string       `json:"accessibility_info"`
-	ContactPhone             string       `json:"contact_phone"`
-	ContactEmail             string       `json:"contact_email"`
-	ImageRef                 string       `json:"image_ref"` // sent back unchanged when the form is saved
-	ImageUrl                 string       `json:"image_url"`
-	IsActive                 bool         `json:"is_active"`
-	SlotMinutes              int32        `json:"slot_minutes"`
-	MaxAdvanceDays           int32        `json:"max_advance_days"`
-	MinCancelHours           int32        `json:"min_cancel_hours"`
-	MaxActiveBookingsPerUser int32        `json:"max_active_bookings_per_user"`
-	MinAge                   *int32       `json:"min_age"`
-	UsageRules               string       `json:"usage_rules"`
-	BookingCount             int64        `json:"booking_count"`
-	BookingsToCancel         int64        `json:"bookings_to_cancel"` // upcoming bookings that deactivating could cancel
-	Schedule                 []WindowDto  `json:"schedule"`
-	Closures                 []ClosureDto `json:"closures"` // current and upcoming
-	Timezone                 string       `json:"timezone"` // the council's: closure dates are typed in it
+	Id                string          `json:"id"`
+	Slug              string          `json:"slug"`
+	Name              string          `json:"name"`
+	Description       string          `json:"description"`
+	Tags              []string        `json:"tags"`
+	Address           string          `json:"address"`
+	Latitude          *float64        `json:"latitude"`
+	Longitude         *float64        `json:"longitude"`
+	Capacity          *int32          `json:"capacity"`
+	AccessibilityInfo string          `json:"accessibility_info"`
+	ContactPhone      string          `json:"contact_phone"`
+	ContactEmail      string          `json:"contact_email"`
+	ImageRef          string          `json:"image_ref"` // sent back unchanged when the form is saved
+	ImageUrl          string          `json:"image_url"`
+	IsActive          bool            `json:"is_active"`
+	SlotMinutes       int32           `json:"slot_minutes"`
+	CustomRules       bool            `json:"custom_rules"`  // false: the council's window
+	Rules             BookingRulesDto `json:"rules"`         // the window in force
+	CouncilRules      BookingRulesDto `json:"council_rules"` // the council's, to show what it inherits
+	MinAge            *int32          `json:"min_age"`
+	UsageRules        string          `json:"usage_rules"`
+	BookingCount      int64           `json:"booking_count"`
+	BookingsToCancel  int64           `json:"bookings_to_cancel"` // upcoming bookings that deactivating could cancel
+	Schedule          []WindowDto     `json:"schedule"`
+	Closures          []ClosureDto    `json:"closures"` // current and upcoming
+	Timezone          string          `json:"timezone"` // the council's: closure dates are typed in it
 }
 
 type GeocodeResult struct {

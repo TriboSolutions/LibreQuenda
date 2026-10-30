@@ -16,7 +16,7 @@ func TestDaySlots(t *testing.T) {
 	var windows = []Window{{clock(9, 0), clock(12, 0)}, {clock(17, 0), clock(19, 30)}}
 	var closures = []Interval{{at(17, 0), at(18, 0)}}
 	var busy = []Interval{{at(11, 0), at(12, 0)}}
-	var rules = Rules{SlotMinutes: 60, MaxAdvanceDays: 14}
+	var rules = Rules{SlotMinutes: 60, MaxAdvance: 14 * 24 * time.Hour}
 
 	var slots = DaySlots(day, loc, rules, windows, closures, busy, now)
 
@@ -40,7 +40,7 @@ func TestDaySlots(t *testing.T) {
 func TestDaySlotsBookingWindow(t *testing.T) {
 	var loc, _ = time.LoadLocation("Europe/Madrid")
 	var now = time.Date(2026, 10, 27, 12, 0, 0, 0, loc)
-	var rules = Rules{SlotMinutes: 90, MaxAdvanceDays: 2}
+	var rules = Rules{SlotMinutes: 90, MaxAdvance: 48 * time.Hour}
 	var windows = []Window{{clock(9, 0), clock(12, 0)}}
 
 	var inWindow = DaySlots(time.Date(2026, 10, 29, 0, 0, 0, 0, loc), loc, rules, windows, nil, nil, now)
@@ -51,6 +51,18 @@ func TestDaySlotsBookingWindow(t *testing.T) {
 	}
 	if tooFar[0].Status != SlotTooFar {
 		t.Errorf("expected too_far three days ahead, got %s", tooFar[0].Status)
+	}
+}
+
+func TestDaySlotsMinAdvance(t *testing.T) {
+	var loc, _ = time.LoadLocation("Europe/Madrid")
+	var day = time.Date(2026, 10, 27, 0, 0, 0, 0, loc)
+	var now = time.Date(2026, 10, 27, 9, 40, 0, 0, loc)
+	var rules = Rules{SlotMinutes: 60, MaxAdvance: 24 * time.Hour, MinAdvance: 30 * time.Minute}
+	var slots = DaySlots(day, loc, rules, []Window{{clock(9, 0), clock(12, 0)}}, nil, nil, now)
+	// 10:00 starts in 20 minutes: too soon from the app; 11:00 is fine
+	if slots[1].Status != SlotTooSoon || slots[2].Status != SlotFree {
+		t.Errorf("expected too_soon then free, got %+v", slots)
 	}
 }
 

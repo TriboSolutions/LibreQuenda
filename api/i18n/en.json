@@ -156,7 +156,14 @@
     "staff_checkin_undo_expired": "This can no longer be undone: only for 5 minutes after marking it, and only if staff marked it.",
     "too_many_staff_contacts": "Up to 10 contact people can be added.",
     "invalid_staff_contact": "Each contact person needs a name (up to 80 characters); the phone up to 30 and where to find them up to 120.",
-    "recommendations_failed": "The recommendations could not be loaded."
+    "recommendations_failed": "The recommendations could not be loaded.",
+    "invalid_min_advance": "The minimum advance must be between 0 minutes and 24 hours.",
+    "invalid_no_show_penalty": "The penalty needs 1 to 20 no-shows, counted over 1 to 365 days, and a block of 1 to 365 days.",
+    "booking_rules_failed": "The booking window could not be saved.",
+    "daily_limit_reached": "You already have the bookings allowed per day at this facility.",
+    "turns_in_a_row_limit": "You cannot book that many turns in a row at this facility.",
+    "no_show_blocked": "You cannot book at this facility until {{0}}, after missing several bookings.",
+    "slot_too_soon": "That turn starts too soon to book it from the app."
   },
   "email": {
     "greeting": "Hello {{0}},",
