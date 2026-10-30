@@ -82,7 +82,15 @@
     "hint": "JPG, PNG or WebP, up to 5 MB. You can also drop it on the box.",
     "tooLarge": "The image is larger than 5 MB.",
     "wrongType": "Only JPG, PNG or WebP images.",
-    "empty": "No image"
+    "empty": "No image",
+    "crop": "Reframe",
+    "cropTitle": "Frame your photo",
+    "cropHelp": "Drag the photo or use the arrow keys to move it, and the slider or + and − to zoom. What the circle shows is saved.",
+    "cropFrame": "Photo to frame",
+    "zoom": "Zoom",
+    "cropCancel": "Cancel",
+    "cropUse": "Use this photo",
+    "cropFailed": "This image could not be opened."
   },
   "createAccount": "Create account",
   "rateLimited": "Too many attempts in a short time. Wait a moment and try again.",
