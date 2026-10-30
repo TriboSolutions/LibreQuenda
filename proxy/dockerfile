@@ -18,12 +18,21 @@ ENV VITE_APP_VERSION=$VITE_APP_VERSION
 RUN pnpm build
 
 
+# --- Caddy with the rate-limit module (per-IP limits on sign-up and sign-in) ---
+FROM caddy:2.11.7-builder-alpine AS caddy-builder
+
+# github.com/mholt/caddy-ratelimit (Apache-2.0) has no recent release: pinned to a commit
+RUN xcaddy build v2.11.7 \
+	--with github.com/mholt/caddy-ratelimit@5625512f24f6f59d6f64fb3aafe5eecff0b286db
+
+
 # --- Caddy: serves the SPA and proxies the API and Zitadel ---
 FROM caddy:2.11.7-alpine
 
 # security fixes released after the base image was built
 RUN apk upgrade --no-cache
 
+COPY --from=caddy-builder /usr/bin/caddy /usr/bin/caddy
 COPY proxy/Caddyfile /etc/caddy/Caddyfile
 COPY proxy/entrypoint.sh /entrypoint.sh
 COPY --from=web-builder /app/dist /srv/web
