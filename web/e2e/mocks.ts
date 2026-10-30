@@ -522,6 +522,7 @@ export async function mockApp(page: Page, { signedIn = true, theme = 'light', la
             tenant_name: 'Concello de Lugo',
             tenant_slug: 'lugo',
             entry_code: true,
+            printed_qr: true,
             staff_contacts: [{ name: 'Marta Rey', phone: '982 000 111', place: 'Conserxería, á entrada' }],
           },
         ],

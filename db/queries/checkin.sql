@@ -286,8 +286,9 @@ WHERE
     AND t.is_active = TRUE;
 
 -- name: ListNearbyFacilities :many
--- What the flash booking can find by the phone's location: the facilities that
--- book with their entry code, or have staff confirmation (someone to ask). The phone's
+-- What the phone can find by its location: the facilities that book with their
+-- entry code, have a QR on the door (checked before the camera opens), or have
+-- staff confirmation (someone to ask). The phone's
 -- distance to each is checked in the API.
 SELECT
     f.name,
@@ -298,6 +299,7 @@ SELECT
     t.slug AS tenant_slug,
     c.radius_m,
     (c.entry_code AND c.flash_booking)::BOOLEAN AS entry_code,
+    c.printed_qr,
     c.staff_confirm,
     c.staff_contacts,
     -- who to ask without staff contacts: the facility's, else the council's
@@ -310,7 +312,7 @@ FROM
     JOIN tenant t ON t.id = f.tenant_id
     JOIN facility_checkin c ON c.facility_id = f.id
 WHERE
-    ((c.entry_code AND c.flash_booking) OR c.staff_confirm)
+    ((c.entry_code AND c.flash_booking) OR c.printed_qr OR c.staff_confirm)
     AND f.latitude IS NOT NULL
     AND f.longitude IS NOT NULL
     AND f.is_active = TRUE

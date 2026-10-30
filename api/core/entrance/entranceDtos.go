@@ -73,6 +73,7 @@ type NearbyFacilityDto struct {
 	TenantName   string `json:"tenant_name"`
 	TenantSlug   string `json:"tenant_slug"`
 	EntryCode    bool   `json:"entry_code"` // books with its entry code
+	PrintedQr    bool   `json:"printed_qr"` // has a QR on the door
 	// staff to ask on site, when the facility has staff confirmation
 	StaffContacts []checkin.StaffContact `json:"staff_contacts"`
 }

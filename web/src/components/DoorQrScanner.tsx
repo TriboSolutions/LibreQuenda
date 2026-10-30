@@ -11,16 +11,19 @@ import { GRANTED, locate, parseEntranceUrl, type Position } from '@/lib/entrance
 
 type Props = {
   book: boolean // without a booking: book the free turn and check in (flash booking)
+  facility?: { slug: string; facility: string } // the booking's, when checking in one
   onCheckedIn?: () => void
 }
 
 /**
  * The QR printed on the door, read with the phone's own camera from the app.
- * The QR never changes, so the phone's location is asked for first: no
- * location, no camera. It is checked with the QR and never stored.
+ * The QR never changes, so the phone's location comes first: the camera only
+ * opens near a facility with a QR on the door (the booking's, when checking
+ * one in). The API checks it again with the QR read; it is never stored.
  */
-export function DoorQrScanner({ book, onCheckedIn }: Props) {
+export function DoorQrScanner({ book, facility, onCheckedIn }: Props) {
   const { t } = useTranslation('entrance')
+  const auth = useAuth()
   const [scanning, setScanning] = useState(false)
   const [position, setPosition] = useState<Position | null>(null)
   const [busy, setBusy] = useState(false)
@@ -38,10 +41,31 @@ export function DoorQrScanner({ book, onCheckedIn }: Props) {
     setProblem(null)
     setBusy(true)
     try {
-      setPosition(await locate())
+      let where: Position
+      try {
+        where = await locate()
+      } catch (e) {
+        setProblem(t(`location.${e instanceof Error ? e.message : 'unavailable'}`))
+        return
+      }
+      const token = auth.user?.access_token
+      if (!token) return
+      const near = await api.entrance.nearby(token, where)
+      if (near.result) {
+        setProblem(t(`result.${near.result}`))
+        return
+      }
+      const door = near.facilities.some(
+        (place) => place.printed_qr && (!facility || (place.tenant_slug === facility.slug && place.facility_slug === facility.facility)),
+      )
+      if (!door) {
+        setProblem(t('result.too_far'))
+        return
+      }
+      setPosition(where)
       setScanning(true)
     } catch (e) {
-      setProblem(t(`location.${e instanceof Error ? e.message : 'unavailable'}`))
+      setProblem(e instanceof Error ? e.message : String(e))
     } finally {
       setBusy(false)
     }
