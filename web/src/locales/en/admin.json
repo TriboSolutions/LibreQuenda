@@ -318,7 +318,7 @@
     "colCancellation": "Cancellations",
     "colNoShow": "No-shows",
     "percent": "{{value}}%",
-    "definitions": "Occupancy divides the booked hours by the hours that could be booked, leaving out closures. No-shows only count for turns that began while the facility took check-ins (QR reader switched on, code, QR at the door or staff). The figures are worked out live from the bookings.",
+    "definitions": "Occupancy divides the booked hours by the hours that could be booked, leaving out closures. No-shows only count for slots that began while the facility took check-ins (QR reader switched on, code, QR at the door or staff). The figures are worked out live from the bookings.",
     "kpiTitle": "Period summary",
     "fullscreen": "Full screen: {{board}}",
     "exitFullscreen": "Exit full screen",
