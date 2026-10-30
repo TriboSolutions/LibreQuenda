@@ -31,10 +31,10 @@ export function CouncilExport({ slug, token }: Props) {
   }
 
   return (
-    <section aria-labelledby="sheet-export" className="grid gap-3 border-t pt-5">
-      <h3 id="sheet-export" className="font-semibold">
+    <section aria-labelledby="sheet-export" className="grid content-start gap-3 rounded-lg border bg-card p-5">
+      <h2 id="sheet-export" className="text-lg font-semibold">
         {t('admin:councilExport.title')}
-      </h3>
+      </h2>
       <p className="max-w-[70ch] text-muted-foreground">{t('admin:councilExport.help', { app: branding.name })}</p>
       <p className="max-w-[70ch] text-xs text-muted-foreground">{t('admin:councilExport.privacy')}</p>
       <div className="flex items-start gap-2">

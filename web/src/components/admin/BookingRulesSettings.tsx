@@ -40,11 +40,11 @@ export function BookingRulesSettings({ slug, token }: { slug: string; token: str
   }
 
   return (
-    <section aria-labelledby="sheet-rules" className="grid gap-3 border-t pt-5">
+    <section aria-labelledby="sheet-rules" className="grid content-start gap-3 rounded-lg border bg-card p-5">
       <div>
-        <h3 id="sheet-rules" className="font-semibold">
+        <h2 id="sheet-rules" className="text-lg font-semibold">
           {t('rules.councilTitle')}
-        </h3>
+        </h2>
         <p className="text-sm text-muted-foreground">{t('rules.councilHelp')}</p>
       </div>
       {saved.error ? (

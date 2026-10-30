@@ -704,5 +704,9 @@
     "saved": "Finestra desada i aplicada a les instal·lacions que l’hereten.",
     "useCouncil": "Fer servir la finestra de reserva de l’ajuntament",
     "useCouncilHelp": "Apaga-ho perquè aquesta instal·lació tingui la seva pròpia antelació, límits i penalització."
+  },
+  "councilSettings": {
+    "title": "Configuració de l’ajuntament",
+    "back": "Tornar a l’administració de l’ajuntament"
   }
 }

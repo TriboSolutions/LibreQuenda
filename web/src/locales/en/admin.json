@@ -704,5 +704,9 @@
     "saved": "Window saved and applied to the facilities that inherit it.",
     "useCouncil": "Use the council’s booking window",
     "useCouncilHelp": "Turn it off to give this facility its own advance, limits and penalty."
+  },
+  "councilSettings": {
+    "title": "Council settings",
+    "back": "Back to the council’s administration"
   }
 }
