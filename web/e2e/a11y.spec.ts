@@ -54,6 +54,8 @@ const pages: { name: string; path: string; signedIn?: boolean }[] = [
   { name: 'entry code to print', path: '/lugo/admin/facilities/f1/imprimir?que=codigo' },
   { name: 'council settings', path: '/lugo/admin/axustes' },
   { name: 'council admin, activity log', path: '/lugo/admin?vista=rexistro' },
+  { name: 'free-turns widget', path: '/lugo/widget', signedIn: false },
+  { name: 'free-turns widget, one facility, dark', path: '/lugo/widget/padel-1?theme=dark&lang=es', signedIn: false },
   { name: 'facility editor, booking window', path: '/lugo/admin/facilities/f1?vista=reserva' },
   { name: 'entry code to print, in braille', path: '/lugo/admin/facilities/f1/imprimir?que=codigo&braille=1' },
   { name: 'check-in at the door, printed QR', path: '/lugo/padel-1/entrada?c=9a1f6c2e-3b4d-4e5f-8a7b-1c2d3e4f5a6b' },
@@ -587,6 +589,23 @@ test.describe('keyboard', () => {
     const more = page.waitForRequest((r) => r.url().includes('/admin/audit?') && r.url().includes('before='))
     await page.getByRole('button', { name: 'Ver máis' }).click()
     await more
+  })
+
+  test('the widget lists free turns that open LibreQuenda in a new tab', async ({ page }) => {
+    await open(page, '/lugo/widget/padel-1?theme=dark', { signedIn: false })
+    await expect(page.locator('html')).toHaveClass(/dark/)
+    const turn = page.getByRole('link', { name: /^Reservar Pista de pádel 1 ás \d\d:\d\d/ }).first()
+    await expect(turn).toHaveAttribute('target', '_blank')
+    await expect(turn).toHaveAttribute('href', /\/lugo\/padel-1\?dia=\d{4}-\d\d-\d\d$/)
+  })
+
+  test('the council settings give the widget code to paste', async ({ page }) => {
+    await open(page, '/lugo/admin/axustes')
+    const widget = page.getByRole('region', { name: 'Widget para a túa web' })
+    await expect(widget.getByLabel('Código para pegar na web')).toHaveValue(/<iframe src="http:\/\/localhost:5179\/lugo\/widget" /)
+    await widget.getByLabel('Aparencia').click()
+    await page.getByRole('option', { name: 'Escura' }).click()
+    await expect(widget.getByLabel('Código para pegar na web')).toHaveValue(/\/lugo\/widget\?theme=dark"/)
   })
 
   test('signed out, the home page has no recommendations', async ({ page }) => {

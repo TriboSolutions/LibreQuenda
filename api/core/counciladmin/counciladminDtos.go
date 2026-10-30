@@ -9,7 +9,7 @@ import (
 )
 
 // Paths under /<council>/ the web app uses itself.
-var reservedFacilitySlugs = map[string]bool{"admin": true, "reservas": true, "me": true}
+var reservedFacilitySlugs = map[string]bool{"admin": true, "reservas": true, "me": true, "widget": true}
 
 type FacilityInput struct {
 	Slug              string   `json:"slug"`

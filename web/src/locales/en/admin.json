@@ -815,5 +815,23 @@
       "account.deleted": "Deleted their account",
       "other": "Other change"
     }
+  },
+  "widget": {
+    "title": "Widget for your website",
+    "help": "Show the facilities' free turns on the council's website: copy this code and paste it there. Each turn opens this app to book it.",
+    "facility": "Facility",
+    "allFacilities": "All facilities",
+    "height": "Height (pixels)",
+    "theme": "Appearance",
+    "themeAuto": "The device’s",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "language": "Language",
+    "languageAuto": "The browser’s",
+    "code": "Code to paste on the website",
+    "copy": "Copy the code",
+    "copied": "Code copied",
+    "preview": "Preview",
+    "iframeTitle": "Free turns at the sports facilities"
   }
 }
