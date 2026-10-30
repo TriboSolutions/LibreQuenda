@@ -307,6 +307,7 @@ export type Nearby = {
     tenant_name: string
     tenant_slug: string
     entry_code: boolean // books with its entry code
+    printed_qr: boolean // has a QR on the door
     staff_contacts: StaffContact[] // staff to ask on site
   }[]
 }

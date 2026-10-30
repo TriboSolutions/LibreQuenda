@@ -331,6 +331,30 @@ test.describe('keyboard', () => {
     expect(cameraAsked).toBe(false)
   })
 
+  test('far from any door QR, the camera stays closed before scanning', async ({ page, context }) => {
+    let cameraAsked = false
+    await page.exposeFunction('cameraAsked', () => (cameraAsked = true))
+    await page.addInitScript(() => {
+      navigator.mediaDevices.getUserMedia = async () => {
+        await (window as unknown as { cameraAsked: () => Promise<void> }).cameraAsked()
+        throw new DOMException('no', 'NotAllowedError')
+      }
+    })
+    await context.grantPermissions(['geolocation'])
+    await context.setGeolocation({ latitude: 40.4, longitude: -3.7, accuracy: 10 })
+    await open(page, '/lugo')
+    // nothing with a QR on the door within reach
+    await page.route('**/api/entrance/nearby', (route) => route.fulfill({ json: { result: '', facilities: [] } }))
+    await page.getByRole('button', { name: /Ana Pérez/ }).click()
+    await page.getByRole('menuitem', { name: /Reserva flash/ }).click()
+    const dialog = page.getByRole('dialog')
+    await dialog.getByRole('tab', { name: 'QR da porta' }).click()
+    await dialog.getByRole('button', { name: 'Abrir a cámara' }).click()
+    await expect(dialog.getByRole('status')).toContainText('lonxe de máis')
+    await expect(dialog.getByRole('button', { name: 'Pechar a cámara' })).toBeHidden()
+    expect(cameraAsked).toBe(false)
+  })
+
   test('a flash booking reads the QR on the door with the phone camera', async ({ page, context }) => {
     // the camera films the door's printed QR: a canvas stream stands in for it
     const door = await QRCode.toDataURL('http://localhost:5179/lugo/padel-1/entrada?c=9a1f6c2e-3b4d-4e5f-8a7b-1c2d3e4f5a6b', { margin: 4, width: 480 })

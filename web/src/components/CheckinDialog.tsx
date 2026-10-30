@@ -94,7 +94,7 @@ export function CheckinDialog({ booking, token, timeZone, today, onClose, onChec
     printed_qr: (
       <div className="grid gap-4">
         <p className="text-muted-foreground">{t('checkin.printed_qr.help')}</p>
-        <DoorQrScanner book={false} onCheckedIn={onCheckedIn} />
+        <DoorQrScanner book={false} facility={{ slug: booking.tenant_slug, facility: booking.facility_slug }} onCheckedIn={onCheckedIn} />
       </div>
     ),
     reader: (
