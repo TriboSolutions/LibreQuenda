@@ -52,6 +52,7 @@ const pages: { name: string; path: string; signedIn?: boolean }[] = [
   { name: 'facility editor, check-in', path: '/lugo/admin/facilities/f1?vista=entrada' },
   { name: 'check-in QR to print', path: '/lugo/admin/facilities/f1/imprimir?que=qr' },
   { name: 'entry code to print', path: '/lugo/admin/facilities/f1/imprimir?que=codigo' },
+  { name: 'council settings', path: '/lugo/admin/axustes' },
   { name: 'entry code to print, in braille', path: '/lugo/admin/facilities/f1/imprimir?que=codigo&braille=1' },
   { name: 'check-in at the door, printed QR', path: '/lugo/padel-1/entrada?c=9a1f6c2e-3b4d-4e5f-8a7b-1c2d3e4f5a6b' },
   { name: 'check-in at the door, entry code', path: '/lugo/padel-1/entrada' },
@@ -178,13 +179,14 @@ for (const theme of ['light', 'dark'] as const) {
       await expect(dialog.getByText('Entrada desfeita.')).toBeVisible()
     })
 
-    test('council settings sheet', async ({ page }) => {
+    test('council settings, opened from the council administration', async ({ page }) => {
       await open(page, '/lugo/admin', { theme })
-      await page.getByRole('button', { name: /axustes|configuraci/i }).click()
-      await expect(page.getByRole('dialog')).toBeVisible()
+      await page.getByRole('link', { name: 'Axustes do concello' }).click()
+      await expect(page).toHaveURL(/\/lugo\/admin\/axustes$/)
+      await expect(page.getByRole('region', { name: 'Ventá de reserva' })).toBeVisible()
       await page.waitForLoadState('networkidle')
       await page.waitForTimeout(400)
-      await expectAccessible(page, { overlay: true })
+      await expectAccessible(page)
     })
 
     test('facility editor, check-in with every way on', async ({ page }) => {
@@ -532,8 +534,7 @@ test.describe('keyboard', () => {
   })
 
   test('the council booking window is set in the council settings', async ({ page }) => {
-    await open(page, '/lugo/admin')
-    await page.getByRole('button', { name: 'Axustes do concello' }).click()
+    await open(page, '/lugo/admin/axustes')
     const rules = page.getByRole('region', { name: 'Ventá de reserva' })
     await expect(rules.getByLabel('Antelación mínima (minutos)')).toHaveValue('30')
     await rules.getByRole('switch', { name: 'Penalizar a quen non se presenta' }).click()

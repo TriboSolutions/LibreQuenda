@@ -1,10 +1,9 @@
 import { ChevronRight, Plus, Settings } from 'lucide-react'
-import { lazy, Suspense, useState } from 'react'
+import { lazy, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
+import { Link, useParams, useSearchParams } from 'react-router'
 import { StaffBookingsPanel } from '@/components/admin/StaffBookingsPanel'
-import { CouncilSheet } from '@/components/admin/CouncilSheet'
 import { useVerifyEmail } from '@/hooks/useVerifyEmail'
 import { CouncilHeading } from '@/components/CouncilHeading'
 import { TopBar } from '@/components/TopBar'
@@ -44,8 +43,6 @@ export function CouncilAdminPage() {
   const viewParam: Record<string, string> = { indicators: 'indicadores', bookings: 'reservas' }
   const changeView = (value: string) => setSearchParams(viewParam[value] ? { vista: viewParam[value] } : {}, { replace: true })
   const bookingsFacility = searchParams.get('instalacion') ?? ''
-  const [settingsOpen, setSettingsOpen] = useState(false)
-  const navigate = useNavigate()
 
   let body
   if (auth.isLoading || (auth.isAuthenticated && (loading || !me))) {
@@ -150,8 +147,10 @@ export function CouncilAdminPage() {
       </section>
     )
     const settingsButton = (
-      <Button variant="outline" size="icon" onClick={() => setSettingsOpen(true)} aria-label={t('admin:councilAdmin.settings')} title={t('admin:councilAdmin.settings')}>
-        <Settings />
+      <Button asChild variant="outline" size="icon">
+        <Link to={`/${slug}/admin/axustes`} aria-label={t('admin:councilAdmin.settings')} title={t('admin:councilAdmin.settings')}>
+          <Settings />
+        </Link>
       </Button>
     )
     body = (
@@ -192,16 +191,6 @@ export function CouncilAdminPage() {
         {body}
       </main>
       <SiteFooter />
-      {settingsOpen && allowed && (
-        <CouncilSheet
-          slug={slug}
-          superadmin={me?.is_superadmin ?? false}
-          onClose={() => setSettingsOpen(false)}
-          onChanged={() => tenants.reload()}
-          onDeleted={() => navigate('/admin')}
-          onSlugChanged={(next) => navigate(`/${next}/admin${viewParam[view] ? `?vista=${viewParam[view]}` : ''}`, { replace: true })}
-        />
-      )}
     </div>
   )
 }

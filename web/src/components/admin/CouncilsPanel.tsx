@@ -1,9 +1,9 @@
 import { ChevronRight, Plus } from 'lucide-react'
 import { useState } from 'react'
+import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import { CouncilFormDialog } from '@/components/admin/CouncilFormDialog'
-import { CouncilSheet } from '@/components/admin/CouncilSheet'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -16,7 +16,6 @@ export function CouncilsPanel() {
   const token = auth.user?.access_token ?? ''
   const councils = useAsync(() => api.admin.councils(token), 'admin:councils')
   const [creating, setCreating] = useState(false)
-  const [open, setOpen] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
 
   const list = councils.data?.tenants ?? []
@@ -122,9 +121,11 @@ export function CouncilsPanel() {
                     </span>
                   </td>
                   <td className="py-3 pl-4 text-right">
-                    <Button variant="ghost" size="sm" onClick={() => setOpen(council.slug)} aria-label={`${t('admin:councils.manage')}: ${council.name}`}>
-                      {t('admin:councils.manage')}
-                      <ChevronRight />
+                    <Button asChild variant="ghost" size="sm">
+                      <Link to={`/${council.slug}/admin/axustes`} aria-label={`${t('admin:councils.manage')}: ${council.name}`}>
+                        {t('admin:councils.manage')}
+                        <ChevronRight />
+                      </Link>
                     </Button>
                   </td>
                 </tr>
@@ -141,22 +142,6 @@ export function CouncilsPanel() {
           onSaved={(saved, adminEmail) => {
             setCreating(false)
             setNotice(t('admin:notice.created', { name: saved.name, email: adminEmail }))
-            councils.reload()
-          }}
-        />
-      )}
-      {open && (
-        <CouncilSheet
-          key={open}
-          slug={open}
-          onClose={() => setOpen(null)}
-          onChanged={(message) => {
-            setNotice(message)
-            councils.reload()
-          }}
-          onDeleted={(message) => {
-            setOpen(null)
-            setNotice(message)
             councils.reload()
           }}
         />

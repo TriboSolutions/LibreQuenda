@@ -704,5 +704,9 @@
     "saved": "Ventá gardada e aplicada ás instalacións que a herdan.",
     "useCouncil": "Usar a ventá de reserva do concello",
     "useCouncilHelp": "Apágao para que esta instalación teña a súa propia antelación, límites e penalización."
+  },
+  "councilSettings": {
+    "title": "Axustes do concello",
+    "back": "Volver á administración do concello"
   }
 }

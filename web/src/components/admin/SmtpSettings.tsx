@@ -109,12 +109,12 @@ export function SmtpSettings({ slug, token }: Props) {
   }
 
   return (
-    <section aria-labelledby="sheet-smtp" className="grid gap-3 border-t pt-5">
+    <section aria-labelledby="sheet-smtp" className="grid content-start gap-3 rounded-lg border bg-card p-5">
       <div>
         <div className="flex flex-wrap items-center gap-3">
-          <h3 id="sheet-smtp" className="font-semibold">
+          <h2 id="sheet-smtp" className="text-lg font-semibold">
             {t('admin:smtp.title')}
-          </h3>
+          </h2>
           {status}
         </div>
         <p className="mt-1 max-w-[70ch] text-muted-foreground">{t('admin:smtp.help', { app: branding.name })}</p>

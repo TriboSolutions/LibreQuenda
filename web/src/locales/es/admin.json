@@ -704,5 +704,9 @@
     "saved": "Ventana guardada y aplicada a las instalaciones que la heredan.",
     "useCouncil": "Usar la ventana de reserva del ayuntamiento",
     "useCouncilHelp": "Apágalo para que esta instalación tenga su propia antelación, límites y penalización."
+  },
+  "councilSettings": {
+    "title": "Ajustes del ayuntamiento",
+    "back": "Volver a la administración del ayuntamiento"
   }
 }
