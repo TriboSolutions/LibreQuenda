@@ -182,7 +182,8 @@
     "invalid_municipality_code": "El codi INE del municipi té cinc xifres (per exemple, 36024 per a Lalín).",
     "other_council_booking": "Ja tens reserves a {{0}}: amb un compte es reserva en un ajuntament cada vegada. Podràs reservar aquí quan acabin o les cancel·lis.",
     "council_limit_reached": "Ja tens {{0}} reserves properes a les instal·lacions d’aquest ajuntament, el màxim que permet.",
-    "booking_policy_failed": "No s’han pogut desar les normes de reserva de la plataforma."
+    "booking_policy_failed": "No s’han pogut desar les normes de reserva de la plataforma.",
+    "email_unverified": "Confirma la teva adreça electrònica abans de reservar: al teu perfil pots demanar el codi i escriure’l."
   },
   "email": {
     "greeting": "Hola {{0}},",

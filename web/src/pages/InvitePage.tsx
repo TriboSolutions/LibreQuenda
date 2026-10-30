@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAsync } from '@/hooks/useAsync'
 import { useLogin } from '@/hooks/useLogin'
+import { useMe } from '@/hooks/useMe'
 import { api, ApiError, type PublicInvite } from '@/lib/api'
 import { formatBookingDay, formatTime, localDate } from '@/lib/time'
 import { usePageTitle } from '@/hooks/usePageTitle'
@@ -56,7 +57,7 @@ export function InvitePage() {
 }
 
 function InviteCard({ invite, inviteToken, onChanged }: { invite: PublicInvite; inviteToken: string; onChanged: () => void }) {
-  const { t } = useTranslation(['invites', 'common'])
+  const { t } = useTranslation(['invites', 'common', 'profile'])
   const auth = useAuth()
   const { login } = useLogin()
   const [joined, setJoined] = useState<string | null>(null)
@@ -101,12 +102,15 @@ function InviteCard({ invite, inviteToken, onChanged }: { invite: PublicInvite; 
 
   // signed in, the link joins straight away: once, also on coming back from signing in
   const autoJoined = useRef(false)
+  // joining with an account needs what booking needs: a birth date and a verified email
+  const { me } = useMe()
+  const notReady = auth.isAuthenticated && me !== null && (!me.profile_complete || !me.email_verified)
   useEffect(() => {
-    if (!auth.isAuthenticated || invite.state !== 'open' || autoJoined.current) return
+    if (!auth.isAuthenticated || !me || notReady || invite.state !== 'open' || autoJoined.current) return
     autoJoined.current = true
     void join('account', true)
     // eslint-disable-next-line react-hooks/exhaustive-deps -- once per page, when the session is there
-  }, [auth.isAuthenticated, invite.state])
+  }, [auth.isAuthenticated, me, notReady, invite.state])
 
   return (
     <div className="mt-6 grid max-w-[640px] gap-6">
@@ -199,7 +203,14 @@ function InviteCard({ invite, inviteToken, onChanged }: { invite: PublicInvite; 
             </h2>
             <p className="mt-1 text-muted-foreground">{t('invites:page.withAccountHint')}</p>
             <div className="mt-4">
-              {auth.isAuthenticated ? (
+              {notReady && me ? (
+                <div className="grid justify-items-start gap-2">
+                  <p className="text-sm">{me.profile_complete ? t('profile:unverifiedBody') : t('profile:incompleteBody')}</p>
+                  <Button asChild>
+                    <Link to="/perfil">{me.profile_complete ? t('profile:unverifiedAction') : t('profile:incompleteAction')}</Link>
+                  </Button>
+                </div>
+              ) : auth.isAuthenticated ? (
                 <Button onClick={() => void join('account')} disabled={submitting !== null}>
                   {submitting === 'account' ? t('invites:page.joining') : t('invites:page.withAccount')}
                 </Button>

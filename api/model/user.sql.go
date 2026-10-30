@@ -45,6 +45,30 @@ func (q *Queries) ClearCalendarToken(ctx context.Context, id uuid.UUID) error {
 	return err
 }
 
+const getBookingReadiness = `-- name: GetBookingReadiness :one
+SELECT
+    (birth_date IS NOT NULL)::BOOLEAN AS has_birth_date,
+    email_verified
+FROM
+    app_user
+WHERE
+    id = $1
+`
+
+type GetBookingReadinessRow struct {
+	HasBirthDate  bool `json:"has_birth_date"`
+	EmailVerified bool `json:"email_verified"`
+}
+
+// What a resident needs before booking from the app: the birth date (age
+// limits) and a verified email (synced from Zitadel on every sign-in by /me).
+func (q *Queries) GetBookingReadiness(ctx context.Context, id uuid.UUID) (GetBookingReadinessRow, error) {
+	row := q.db.QueryRowContext(ctx, getBookingReadiness, id)
+	var i GetBookingReadinessRow
+	err := row.Scan(&i.HasBirthDate, &i.EmailVerified)
+	return i, err
+}
+
 const getCalendarToken = `-- name: GetCalendarToken :one
 
 SELECT calendar_token FROM app_user WHERE id = $1
@@ -208,17 +232,6 @@ func (q *Queries) GetUserTenantRoles(ctx context.Context, userID uuid.UUID) ([]G
 		return nil, err
 	}
 	return items, nil
-}
-
-const hasBirthDate = `-- name: HasBirthDate :one
-SELECT (birth_date IS NOT NULL)::BOOLEAN AS complete FROM app_user WHERE id = $1
-`
-
-func (q *Queries) HasBirthDate(ctx context.Context, id uuid.UUID) (bool, error) {
-	row := q.db.QueryRowContext(ctx, hasBirthDate, id)
-	var complete bool
-	err := row.Scan(&complete)
-	return complete, err
 }
 
 const hasTenantRole = `-- name: HasTenantRole :one

@@ -65,6 +65,7 @@
     "no_show_blocked": "No puedes reservar aquí durante unos días, por no presentarte a varias reservas.",
     "weekly_limit_reached": "Ya tienes las reservas que se permiten por semana aquí.",
     "other_council_booking": "Ya tienes reservas en otro ayuntamiento: reservas en un ayuntamiento cada vez.",
-    "council_limit_reached": "Ya tienes las reservas próximas que permite este ayuntamiento."
+    "council_limit_reached": "Ya tienes las reservas próximas que permite este ayuntamiento.",
+    "email_unverified": "Confirma tu correo electrónico en el perfil de la app para reservar."
   }
 }

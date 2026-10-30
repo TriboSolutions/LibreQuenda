@@ -182,7 +182,8 @@
     "invalid_municipality_code": "The municipality’s INE code has five digits (e.g. 36024 for Lalín).",
     "other_council_booking": "You already have bookings at {{0}}: an account books in one council at a time. You can book here once they are over or cancelled.",
     "council_limit_reached": "You already have {{0}} upcoming bookings at this council's facilities, the most it allows.",
-    "booking_policy_failed": "The platform's booking rules could not be saved."
+    "booking_policy_failed": "The platform's booking rules could not be saved.",
+    "email_unverified": "Confirm your email address before booking: you can ask for the code and type it in your profile."
   },
   "email": {
     "greeting": "Hello {{0}},",
