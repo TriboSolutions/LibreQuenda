@@ -27,6 +27,7 @@ var actions = map[string]action{
 	"DELETE /tenants/{slug}/admin/facilities/{id}/closures/{closureId}": {code: "closure.deleted", target: "facility", param: "id"},
 	"PUT /tenants/{slug}/admin/facilities/{id}/booking-rules":           {code: "booking_window.facility_changed", target: "facility", param: "id"},
 	"PUT /tenants/{slug}/admin/booking-rules":                           {code: "booking_window.council_changed"},
+	"PUT /tenants/{slug}/admin/issues/{issueId}":                        {code: "issue.changed"},
 	"POST /tenants/{slug}/admin/bookings":                               {code: "staff.booking_created"},
 	"POST /tenants/{slug}/admin/bookings/{bookingId}/cancel":            {code: "staff.booking_cancelled", target: "booking", param: "bookingId"},
 	"POST /tenants/{slug}/admin/bookings/{bookingId}/checkin":           {code: "staff.checked_in", target: "booking", param: "bookingId"},
