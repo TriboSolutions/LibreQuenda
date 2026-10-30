@@ -138,10 +138,10 @@ type IndicatorCountsDto struct {
 }
 
 type FacilityIndicatorsDto struct {
-	ID        uuid.UUID `json:"id"`
-	Name      string    `json:"name"`
-	IsActive  bool      `json:"is_active"`
-	HasReader bool      `json:"has_reader"`
+	ID           uuid.UUID `json:"id"`
+	Name         string    `json:"name"`
+	IsActive     bool      `json:"is_active"`
+	TakesCheckin bool      `json:"takes_checkin"` // a reader, the code, the door QR or staff
 	IndicatorCountsDto
 }
 

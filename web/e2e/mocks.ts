@@ -309,8 +309,8 @@ function figures(daysBack: number, scale: number): PeriodFigures {
     to: series[series.length - 1].period,
     totals: { ...counts, bookings: Math.round(counts.bookings * scale), active_users: 42, avg_party_size: 2.4, median_lead_hours: 30 },
     facilities: [
-      { ...counts, id: 'f1', name: 'Pista de pádel 1', is_active: true, has_reader: true },
-      { ...counts, id: 'f2', name: 'Pavillón municipal', is_active: false, has_reader: false, occupancy: null, no_show_rate: null },
+      { ...counts, id: 'f1', name: 'Pista de pádel 1', is_active: true, takes_checkin: true },
+      { ...counts, id: 'f2', name: 'Pavillón municipal', is_active: false, takes_checkin: false, occupancy: null, no_show_rate: null },
     ],
     series,
     weekdays,

@@ -318,9 +318,8 @@
     "colOccupancy": "Ocupació",
     "colCancellation": "Cancel·lacions",
     "colNoShow": "No presentades",
-    "noReader": "sense lector QR",
     "percent": "{{value}} %",
-    "definitions": "L'ocupació divideix les hores reservades entre les hores en què es podia reservar, descomptant els tancaments. Les no presentades només es compten a les instal·lacions amb lector QR. Les xifres es calculen al moment a partir de les reserves.",
+    "definitions": "L’ocupació divideix les hores reservades entre les hores en què es podia reservar, descomptant els tancaments. Les no presentades només es compten des que la instal·lació registra l’entrada (lector QR, codi, QR de la porta o personal). Les xifres es calculen al moment a partir de les reserves.",
     "kpiTitle": "Resum del període",
     "fullscreen": "Pantalla completa: {{board}}",
     "exitFullscreen": "Surt de la pantalla completa",
@@ -380,7 +379,8 @@
     "facilityTitle": "Indicadors de {{name}}",
     "facilityDetail": "Detall de la instal·lació",
     "editFacility": "Edita la instal·lació",
-    "customInvalid": "Tria una data d'inici anterior a la de final, amb un any com a màxim entre elles."
+    "customInvalid": "Tria una data d'inici anterior a la de final, amb un any com a màxim entre elles.",
+    "noCheckin": "sense registre d’entrada"
   },
   "smtp": {
     "title": "Servidor de correu (SMTP)",

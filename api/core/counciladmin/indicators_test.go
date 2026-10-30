@@ -83,7 +83,7 @@ func TestFillSeries(t *testing.T) {
 
 func TestFacilityIndicatorRates(t *testing.T) {
 	var row = model.IndicatorsByFacilityRow{
-		ID: uuid.New(), Name: "Pavillón", SlotMinutes: 60, HasReader: true,
+		ID: uuid.New(), Name: "Pavillón", SlotMinutes: 60, TakesCheckin: true,
 		Bookings: 10, Confirmed: 8, CancelledByUser: 1, CancelledByCouncil: 1,
 		BookedMinutes: 8 * 60, Finished: 4, Attended: 3,
 	}
@@ -92,10 +92,10 @@ func TestFacilityIndicatorRates(t *testing.T) {
 		t.Errorf("cancellation %v occupancy %v no-show %v, want 0.2 0.2 0.25", *item.CancellationRate, *item.Occupancy, *item.NoShowRate)
 	}
 
-	row.HasReader = false
+	row.TakesCheckin = false
 	item = mapFacilityIndicators(row, 0)
 	if item.NoShowRate != nil || item.Occupancy != nil {
-		t.Errorf("no reader or no opening hours: the rates must be null, got %v %v", item.NoShowRate, item.Occupancy)
+		t.Errorf("no way to check in or no opening hours: the rates must be null, got %v %v", item.NoShowRate, item.Occupancy)
 	}
 
 	row.BookedMinutes = 50 * 60 // booked before the schedule was cut down
@@ -151,7 +151,7 @@ func TestSummaryCSVHidesSmallCounts(t *testing.T) {
 func TestDailyCSV(t *testing.T) {
 	var madrid, _ = time.LoadLocation("Europe/Madrid")
 	var r, _ = IndicatorsQuery{From: "2026-10-26", To: "2026-10-27"}.parse(madrid, time.Now())
-	var pavilion = model.IndicatorsByFacilityRow{ID: uuid.New(), Name: "Pavillón", HasReader: true}
+	var pavilion = model.IndicatorsByFacilityRow{ID: uuid.New(), Name: "Pavillón", TakesCheckin: true}
 	var pool = model.IndicatorsByFacilityRow{ID: uuid.New(), Name: "Piscina"}
 	var day = func(s string) time.Time { var d, _ = time.Parse(localDate, s); return d }
 	var open = map[uuid.UUID]map[string]int{
@@ -168,7 +168,7 @@ func TestDailyCSV(t *testing.T) {
 	var want = []string{
 		"Pavillón,2026-10-26,6,5,<3,0,5.00,10.00,0.5000,4,7",
 		"Pavillón,2026-10-27,0,0,0,0,0.00,10.00,0.0000,0,0", // empty days are listed too
-		"Piscina,2026-10-26,0,0,0,0,0.00,5.00,0.0000,,0",    // no reader: no check-in figure
+		"Piscina,2026-10-26,0,0,0,0,0.00,5.00,0.0000,,0",    // no way to check in: no check-in figure
 		"Piscina,2026-10-27,<3,<3,0,0,,5.00,,,0",            // one booking: nothing that gives it away
 	}
 	if len(lines) != len(want)+1 {

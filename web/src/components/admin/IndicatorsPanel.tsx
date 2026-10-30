@@ -899,7 +899,7 @@ function FacilityTable({ data, caption, onOpen }: { data: Indicators; caption: s
                   </td>
                   <td className="py-3 pl-4 text-right">{percent(f.cancellation_rate)}</td>
                   <td className="py-3 pl-4 text-right">
-                    {f.has_reader ? percent(f.no_show_rate) : <span className="text-muted-foreground">{t('indicators.noReader')}</span>}
+                    {f.takes_checkin ? percent(f.no_show_rate) : <span className="text-muted-foreground">{t('indicators.noCheckin')}</span>}
                   </td>
                 </tr>
               ))}

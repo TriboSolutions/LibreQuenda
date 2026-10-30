@@ -1,8 +1,8 @@
 -- Ways to check in for a few facilities, so the Entrada tab, the check-in dialog
 -- and the flash booking have something to show: staff confirmation with the
 -- people residents can ask on site (not accounts), and the entry code.
-INSERT INTO facility_checkin (facility_id, entry_code, staff_confirm, staff_contacts)
-SELECT f.id, v.entry_code, TRUE, v.contacts::JSONB
+INSERT INTO facility_checkin (facility_id, entry_code, staff_confirm, staff_contacts, checks_in_since)
+SELECT f.id, v.entry_code, TRUE, v.contacts::JSONB, NOW()
 FROM (VALUES
     ('lalin', 'pavillon-municipal-de-deportes', TRUE,
      '[{"name":"Marta Rey","phone":"986 787 061","place":"Conserxería, á entrada do pavillón"},{"name":"Xosé Lois Fraga","phone":"","place":"Almacén de material, xunto á pista"}]'),

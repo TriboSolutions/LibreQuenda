@@ -318,9 +318,8 @@
     "colOccupancy": "Ocupación",
     "colCancellation": "Cancelacións",
     "colNoShow": "Non presentadas",
-    "noReader": "sen lector QR",
     "percent": "{{value}} %",
-    "definitions": "A ocupación divide as horas reservadas entre as horas nas que se podía reservar, descontando os peches. As non presentadas só se contan nas instalacións con lector QR. As cifras calcúlanse ao momento a partir das reservas.",
+    "definitions": "A ocupación divide as horas reservadas entre as horas nas que se podía reservar, descontando os peches. As non presentadas só se contan desde que a instalación rexistra a entrada (lector QR, código, QR da porta ou persoal). As cifras calcúlanse ao momento a partir das reservas.",
     "kpiTitle": "Resumo do período",
     "fullscreen": "Pantalla completa: {{board}}",
     "exitFullscreen": "Saír da pantalla completa",
@@ -380,7 +379,8 @@
     "facilityTitle": "Indicadores de {{name}}",
     "facilityDetail": "Detalle da instalación",
     "editFacility": "Editar instalación",
-    "customInvalid": "Escolle unha data de comezo anterior á de fin, cun ano como moito entre elas."
+    "customInvalid": "Escolle unha data de comezo anterior á de fin, cun ano como moito entre elas.",
+    "noCheckin": "sen rexistro de entrada"
   },
   "smtp": {
     "title": "Servidor de correo (SMTP)",

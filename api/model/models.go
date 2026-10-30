@@ -382,6 +382,7 @@ type FacilityCheckin struct {
 	StaffConfirm  bool            `json:"staff_confirm"`
 	QrReader      bool            `json:"qr_reader"`
 	StaffContacts json.RawMessage `json:"staff_contacts"`
+	ChecksInSince sql.NullTime    `json:"checks_in_since"`
 	UpdatedAt     time.Time       `json:"updated_at"`
 }
 
