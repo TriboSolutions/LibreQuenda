@@ -521,6 +521,13 @@ test.describe('keyboard', () => {
     await expect(page.getByRole('list', { name: 'Persoas de contacto' })).toContainText('Marta Rey')
   })
 
+  test('the facility form has one button: create at the end, or save', async ({ page }) => {
+    await open(page, '/lugo/admin/facilities/new')
+    await expect(page.getByRole('button', { name: 'Crear instalación' })).toHaveCount(1)
+    await open(page, '/lugo/admin/facilities/f1')
+    await expect(page.locator('#facility-form').getByRole('button', { name: 'Gardar', exact: true })).toHaveCount(1)
+  })
+
   test('a facility inherits the council booking window until it keeps its own', async ({ page }) => {
     await open(page, '/lugo/admin/facilities/f1')
     await page.getByRole('tab', { name: 'Reserva' }).click()

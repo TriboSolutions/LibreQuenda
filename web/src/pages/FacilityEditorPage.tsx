@@ -306,11 +306,6 @@ function Editor({ slug, facility, tenants, token }: { slug: string; facility: Ad
                 </p>
               </div>
             </fieldset>
-            <div className="flex justify-end border-t pt-4">
-              <Button type="submit" disabled={saving}>
-                {saving ? t('admin:form.saving') : creating ? t('admin:editor.create') : t('admin:editor.save')}
-              </Button>
-            </div>
           </section>
 
           <section aria-labelledby="sec-booking" className="grid gap-4 rounded-lg border bg-card p-5">
@@ -362,11 +357,14 @@ function Editor({ slug, facility, tenants, token }: { slug: string; facility: Ad
                 {t('admin:editor.minAgeHelp')}
               </p>
             </div>
-            <div className="flex justify-end border-t pt-4">
-              <Button type="submit" disabled={saving}>
-                {saving ? t('admin:form.saving') : creating ? t('admin:editor.create') : t('admin:editor.save')}
-              </Button>
-            </div>
+            {/* creating: one button at the very end, after the weekly hours that are saved with it */}
+            {!creating && (
+              <div className="flex justify-end border-t pt-4">
+                <Button type="submit" disabled={saving}>
+                  {saving ? t('admin:form.saving') : t('admin:editor.save')}
+                </Button>
+              </div>
+            )}
           </section>
         </form>
 
@@ -383,6 +381,14 @@ function Editor({ slug, facility, tenants, token }: { slug: string; facility: Ad
             )}
           </div>
         </section>
+
+        {creating && (
+          <div className="flex justify-end">
+            <Button type="submit" form="facility-form" disabled={saving}>
+              {saving ? t('admin:form.saving') : t('admin:editor.create')}
+            </Button>
+          </div>
+        )}
 
         {!creating && saved && (
           <ClosuresEditor slug={slug} facilityId={saved.id} token={token} timeZone={saved.timezone} initial={saved.closures} />
