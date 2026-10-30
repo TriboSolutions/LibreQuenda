@@ -220,6 +220,9 @@ const me: Me = {
   pending_invitations: [],
 }
 
+/** The same person before confirming their email: booking and joining with the account point to the profile. */
+export const ME_UNVERIFIED: Me = { ...me, email_verified: false }
+
 const account: Account = {
   given_name: 'Ana',
   family_name: 'Pérez',

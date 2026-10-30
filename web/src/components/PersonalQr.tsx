@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
+import { Link } from 'react-router'
 import { LocateFixed } from 'lucide-react'
 import { DistanceNotice } from '@/components/DistanceNotice'
 import { DoorQrScanner } from '@/components/DoorQrScanner'
@@ -49,6 +50,16 @@ export function FlashBookingDialog({ open, onOpenChange }: { open: boolean; onOp
         {me && !me.profile_complete && (
           <Alert>
             <AlertDescription>{t('personalQr.incomplete')}</AlertDescription>
+          </Alert>
+        )}
+        {me && me.profile_complete && !me.email_verified && (
+          <Alert>
+            <AlertDescription>
+              {t('unverifiedBody')}{' '}
+              <Link to="/perfil" className="font-medium underline underline-offset-4" onClick={() => onOpenChange(false)}>
+                {t('unverifiedAction')}
+              </Link>
+            </AlertDescription>
           </Alert>
         )}
 

@@ -28,6 +28,8 @@ export function BookingDialog({ pick, tenantSlug, timeZone, today, authenticated
   const { t } = useTranslation(['bookings', 'common', 'home', 'profile'])
   const { me } = useMe()
   const needsProfile = authenticated && me !== null && !me.profile_complete
+  // a verified email too: the API refuses to book without one (errors.email_unverified)
+  const needsEmail = authenticated && me !== null && me.profile_complete && !me.email_verified
   const [submitting, setSubmitting] = useState(false)
   const [accepted, setAccepted] = useState(false)
   const [isPublic, setIsPublic] = useState(false)
@@ -118,6 +120,14 @@ export function BookingDialog({ pick, tenantSlug, timeZone, today, authenticated
           </Alert>
         )}
 
+        {needsEmail && (
+          <Alert className="border-0 bg-pill-accent-bg text-pill-accent-ink">
+            <AlertDescription className="text-pill-accent-ink">
+              <span className="font-medium">{t('profile:unverifiedTitle')}.</span> {t('profile:unverifiedBody')}
+            </AlertDescription>
+          </Alert>
+        )}
+
         {error && (
           <Alert variant="destructive" aria-live="assertive">
             <AlertDescription>{error}</AlertDescription>
@@ -128,9 +138,9 @@ export function BookingDialog({ pick, tenantSlug, timeZone, today, authenticated
           <Button variant="outline" onClick={close}>
             {t('common:back')}
           </Button>
-          {needsProfile ? (
+          {needsProfile || needsEmail ? (
             <Button asChild>
-              <Link to="/perfil">{t('profile:incompleteAction')}</Link>
+              <Link to="/perfil">{needsProfile ? t('profile:incompleteAction') : t('profile:unverifiedAction')}</Link>
             </Button>
           ) : authenticated ? (
             <Button onClick={() => void confirm()} disabled={submitting || !accepted}>

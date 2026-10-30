@@ -14,6 +14,7 @@ def generate(context: dict) -> list:
                 "idp_subject": f"seed-{r['key']}",
                 "email": r["email"],
                 "full_name": r["full_name"],
+                "email_verified": True,  # booking needs a verified email
             }
         )
     return rows

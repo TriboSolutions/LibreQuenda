@@ -79,8 +79,8 @@ func (s *bookingsService) GetMyBookings(ctx context.Context, userId uuid.UUID) (
 // so the rules shown on the day view and the rules enforced here are the same code.
 func (s *bookingsService) CreateBooking(ctx context.Context, userId uuid.UUID, body CreateBookingDto) (*BookingDto, *shared.ErrorResponse) {
 	var queries = model.New(s.db)
-	if complete, err := queries.HasBirthDate(ctx, userId); err != nil || !complete {
-		return nil, &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.profile_incomplete"}
+	if notReady := ReadyToBook(ctx, queries, userId); notReady != nil {
+		return nil, notReady
 	}
 	var facility, err = queries.GetFacilityForBooking(ctx, body.FacilityId)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -319,8 +319,8 @@ func (s *bookingsService) dayInputs(ctx context.Context, queries *model.Queries,
 func (s *bookingsService) QuickBook(ctx context.Context, userId uuid.UUID, facilityId uuid.UUID) (*BookingDto, *shared.ErrorResponse) {
 	var failed = &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.booking_failed"}
 	var queries = model.New(s.db)
-	if complete, err := queries.HasBirthDate(ctx, userId); err != nil || !complete {
-		return nil, &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.profile_incomplete"}
+	if notReady := ReadyToBook(ctx, queries, userId); notReady != nil {
+		return nil, notReady
 	}
 	var facility, err = queries.GetFacilityForBooking(ctx, facilityId)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -420,6 +420,9 @@ func (s *bookingsService) ChangeBooking(ctx context.Context, userId uuid.UUID, b
 	}
 	if changeErr := changeable(current.Status, current.StartsAt, current.MinCancelHours, time.Now()); changeErr != nil {
 		return nil, changeErr
+	}
+	if notReady := ReadyToBook(ctx, queries, userId); notReady != nil {
+		return nil, notReady
 	}
 	if body.StartsAt.Equal(current.StartsAt) {
 		return nil, &shared.ErrorResponse{Code: http.StatusUnprocessableEntity, Message: "errors.booking_same_time"}
@@ -609,4 +612,27 @@ func AgeOn(birth time.Time, day time.Time) int {
 		age--
 	}
 	return age
+}
+
+// ReadyToBook: a resident books from the app, at the door or by joining with
+// their account only with a birth date and a verified email (an address that
+// is really theirs, for the confirmations and for whoever was booked in their
+// name). Staff booking for someone and guests joining by name skip it.
+func ReadyToBook(ctx context.Context, queries *model.Queries, userId uuid.UUID) *shared.ErrorResponse {
+	var ready, err = queries.GetBookingReadiness(ctx, userId)
+	if err != nil {
+		return &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.profile_incomplete"}
+	}
+	return readiness(ready.HasBirthDate, ready.EmailVerified)
+}
+
+// readiness: the birth date first (the profile banner asks for it), then the email.
+func readiness(hasBirthDate, emailVerified bool) *shared.ErrorResponse {
+	switch {
+	case !hasBirthDate:
+		return &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.profile_incomplete"}
+	case !emailVerified:
+		return &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.email_unverified"}
+	}
+	return nil
 }
