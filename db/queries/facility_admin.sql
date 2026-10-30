@@ -77,17 +77,6 @@ SET
     image_ref                    = sqlc.narg('image_ref'),
     is_active                    = sqlc.arg('is_active'),
     slot_minutes                 = sqlc.arg('slot_minutes'),
-    custom_rules                 = sqlc.arg('custom_rules'),
-    max_advance_hours            = sqlc.arg('max_advance_hours'),
-    min_advance_minutes          = sqlc.arg('min_advance_minutes'),
-    min_cancel_hours             = sqlc.arg('min_cancel_hours'),
-    max_active_bookings_per_user = sqlc.arg('max_active_bookings_per_user'),
-    max_bookings_per_day         = sqlc.arg('max_bookings_per_day'),
-    max_turns_in_a_row           = sqlc.arg('max_turns_in_a_row'),
-    no_show_penalty              = sqlc.arg('no_show_penalty'),
-    no_show_limit                = sqlc.arg('no_show_limit'),
-    no_show_window_days          = sqlc.arg('no_show_window_days'),
-    no_show_block_days           = sqlc.arg('no_show_block_days'),
     min_age                      = sqlc.narg('min_age'),
     usage_rules_text             = sqlc.narg('usage_rules_text')
 WHERE
@@ -181,3 +170,24 @@ WHERE
     r.tenant_id = f.tenant_id
     AND f.tenant_id = sqlc.arg('tenant_id')
     AND f.custom_rules = FALSE;
+
+-- name: UpdateFacilityBookingRules :execrows
+-- Row-level security: runs as the council (db.WithTenant). The facility's
+-- booking window, saved from its own tab: its own, or the council's copied in.
+UPDATE facility
+SET
+    custom_rules                 = sqlc.arg('custom_rules'),
+    max_advance_hours            = sqlc.arg('max_advance_hours'),
+    min_advance_minutes          = sqlc.arg('min_advance_minutes'),
+    min_cancel_hours             = sqlc.arg('min_cancel_hours'),
+    max_active_bookings_per_user = sqlc.arg('max_active_bookings_per_user'),
+    max_bookings_per_day         = sqlc.arg('max_bookings_per_day'),
+    max_turns_in_a_row           = sqlc.arg('max_turns_in_a_row'),
+    no_show_penalty              = sqlc.arg('no_show_penalty'),
+    no_show_limit                = sqlc.arg('no_show_limit'),
+    no_show_window_days          = sqlc.arg('no_show_window_days'),
+    no_show_block_days           = sqlc.arg('no_show_block_days'),
+    updated_at                   = NOW()
+WHERE
+    id = sqlc.arg('id')
+    AND tenant_id = sqlc.arg('tenant_id');

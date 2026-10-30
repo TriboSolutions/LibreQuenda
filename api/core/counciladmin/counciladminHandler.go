@@ -480,3 +480,21 @@ func (h *counciladminHandler) SaveBookingRules(w http.ResponseWriter, r *http.Re
 	var response, err = GetCounciladminService(h.db).SaveBookingRules(r.Context(), tenantId, input)
 	send(w, r, response, err)
 }
+
+// SaveFacilityRules: the facility's booking window, from its Reserva tab.
+func (h *counciladminHandler) SaveFacilityRules(w http.ResponseWriter, r *http.Request) {
+	var tenantId, ok = h.councilAdmin(w, r)
+	if !ok {
+		return
+	}
+	var id uuid.UUID
+	if id, ok = facilityId(w, r); !ok {
+		return
+	}
+	var input FacilityRulesInput
+	if !decode(w, r, &input) {
+		return
+	}
+	var response, err = GetCounciladminService(h.db).SaveFacilityRules(r.Context(), tenantId, id, input)
+	send(w, r, response, err)
+}

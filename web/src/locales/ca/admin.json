@@ -186,7 +186,8 @@
     "tagsNone": "Cap",
     "tagsClear": "Treu-les totes",
     "tabDetails": "Dades",
-    "tabCheckin": "Entrada"
+    "tabCheckin": "Entrada",
+    "tabBooking": "Reserva"
   },
   "readers": {
     "title": "Lectors QR de l'entrada",
@@ -703,7 +704,10 @@
     "saving": "Desant…",
     "saved": "Finestra desada i aplicada a les instal·lacions que l’hereten.",
     "useCouncil": "Fer servir la finestra de reserva de l’ajuntament",
-    "useCouncilHelp": "Apaga-ho perquè aquesta instal·lació tingui la seva pròpia antelació, límits i penalització."
+    "useCouncilHelp": "Apaga-ho perquè aquesta instal·lació tingui la seva pròpia antelació, límits i penalització.",
+    "facilityHelp": "Fins a quan abans es pot reservar, els límits per persona i la penalització per absències en aquesta instal·lació.",
+    "facilitySaved": "Finestra desada.",
+    "openCouncil": "Veure la de l’ajuntament"
   },
   "councilSettings": {
     "title": "Configuració de l’ajuntament",

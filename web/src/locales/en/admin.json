@@ -186,7 +186,8 @@
     "tagsNone": "None",
     "tagsClear": "Clear all",
     "tabDetails": "Details",
-    "tabCheckin": "Check-in"
+    "tabCheckin": "Check-in",
+    "tabBooking": "Booking"
   },
   "readers": {
     "title": "Entrance QR readers",
@@ -703,7 +704,10 @@
     "saving": "Saving…",
     "saved": "Window saved and applied to the facilities that inherit it.",
     "useCouncil": "Use the council’s booking window",
-    "useCouncilHelp": "Turn it off to give this facility its own advance, limits and penalty."
+    "useCouncilHelp": "Turn it off to give this facility its own advance, limits and penalty.",
+    "facilityHelp": "How far ahead it can be booked, the limits per person and the no-show penalty at this facility.",
+    "facilitySaved": "Window saved.",
+    "openCouncil": "See the council’s"
   },
   "councilSettings": {
     "title": "Council settings",

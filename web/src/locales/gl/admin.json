@@ -186,7 +186,8 @@
     "tagsNone": "Ningunha",
     "tagsClear": "Quitar todas",
     "tabDetails": "Datos",
-    "tabCheckin": "Entrada"
+    "tabCheckin": "Entrada",
+    "tabBooking": "Reserva"
   },
   "readers": {
     "title": "Lectores QR da entrada",
@@ -703,7 +704,10 @@
     "saving": "Gardando…",
     "saved": "Ventá gardada e aplicada ás instalacións que a herdan.",
     "useCouncil": "Usar a ventá de reserva do concello",
-    "useCouncilHelp": "Apágao para que esta instalación teña a súa propia antelación, límites e penalización."
+    "useCouncilHelp": "Apágao para que esta instalación teña a súa propia antelación, límites e penalización.",
+    "facilityHelp": "Ata canto antes se pode reservar, os límites por persoa e a penalización por ausencias nesta instalación.",
+    "facilitySaved": "Ventá gardada.",
+    "openCouncil": "Ver a do concello"
   },
   "councilSettings": {
     "title": "Axustes do concello",

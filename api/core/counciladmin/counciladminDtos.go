@@ -26,11 +26,8 @@ type FacilityInput struct {
 	ImageRef          string   `json:"image_ref"` // a storage reference from POST /media, never a URL
 	IsActive          bool     `json:"is_active"`
 	SlotMinutes       int32    `json:"slot_minutes"`
-	// the booking window: the council's (custom_rules false: Rules is ignored) or its own
-	CustomRules bool            `json:"custom_rules"`
-	Rules       BookingRulesDto `json:"rules"`
-	MinAge      *int32          `json:"min_age"` // age control: null = none, else 1 to 80
-	UsageRules  string          `json:"usage_rules"`
+	MinAge            *int32   `json:"min_age"` // age control: null = none, else 1 to 80
+	UsageRules        string   `json:"usage_rules"`
 	// create only: the weekly hours, saved with it, so a new facility is set up in one go
 	Schedule *ScheduleInput `json:"schedule,omitempty"`
 }
@@ -74,8 +71,6 @@ func (in *FacilityInput) validate() string {
 		return "errors.invalid_image"
 	case in.SlotMinutes < 15 || in.SlotMinutes > 480 || in.SlotMinutes%5 != 0:
 		return "errors.invalid_slot_minutes"
-	case in.CustomRules && in.Rules.validate() != "":
-		return in.Rules.validate()
 	case in.MinAge != nil && (*in.MinAge < 1 || *in.MinAge > 80):
 		return "errors.invalid_min_age"
 	}
