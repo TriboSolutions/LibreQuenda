@@ -61,6 +61,8 @@
     "favourite_one": "Reservaches aquí {{count}} vez",
     "favourite_other": "Reservaches aquí {{count}} veces",
     "similar": "Como {{facility}}: {{tags}}",
-    "freeAt": "Libre hoxe ás {{time}}"
+    "freeAt": "Libre hoxe ás {{time}}",
+    "more": "Ver {{count}} máis",
+    "less": "Ver menos"
   }
 }

@@ -443,7 +443,10 @@ test.describe('keyboard', () => {
   test('signed in, the home page recommends from their bookings', async ({ page }) => {
     await open(page, '/')
     const forYou = page.getByRole('region', { name: 'Para ti' })
-    await expect(forYou.getByRole('listitem')).toHaveCount(3)
+    await expect(forYou.getByRole('listitem')).toHaveCount(3) // one row; the rest on demand
+    await forYou.getByRole('button', { name: 'Ver 1 máis' }).click()
+    await expect(forYou.getByRole('listitem')).toHaveCount(4)
+    await expect(forYou.getByRole('button', { name: 'Ver menos' })).toHaveAttribute('aria-expanded', 'true')
     await expect(forYou).toContainText(/Adoitas reservar os venres ás \d\d:\d\d \(5 veces\)/)
     await expect(forYou).toContainText('Reservaches aquí 3 veces')
     await expect(forYou).toContainText('Como ')
