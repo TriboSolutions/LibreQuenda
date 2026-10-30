@@ -97,14 +97,14 @@
     "empty": "Encara no hi ha instal·lacions. Crea'n la primera.",
     "count_one": "{{count}} instal·lació",
     "count_other": "{{count}} instal·lacions",
-    "colFacility": "Instal·lació",
-    "colSchedule": "Franges d'horari",
-    "colUpcoming": "Reserves properes",
     "edit": "Edita",
     "noSchedule": "sense horari",
     "back": "Totes les instal·lacions",
     "viewPage": "Obre la seva pàgina",
-    "actions": "Accions"
+    "windows_one": "{{count}} franja d’horari",
+    "windows_other": "{{count}} franges d’horari",
+    "upcoming_one": "{{count}} reserva propera",
+    "upcoming_other": "{{count}} reserves properes"
   },
   "editor": {
     "newTitle": "Nova instal·lació",
