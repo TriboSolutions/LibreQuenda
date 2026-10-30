@@ -533,6 +533,16 @@ test.describe('keyboard', () => {
     expect((await saved).postDataJSON()).toMatchObject({ custom_rules: true, rules: { max_advance_hours: 168, max_bookings_per_day: 2, no_show_penalty: true } })
   })
 
+  test('a superadministrator manages a council, opens its settings and goes back', async ({ page }) => {
+    await open(page, '/admin')
+    await page.getByRole('link', { name: /^Xestionar: Concello de Lugo/ }).click()
+    await expect(page).toHaveURL(/\/lugo\/admin$/)
+    await page.getByRole('link', { name: 'Axustes do concello' }).click()
+    await expect(page).toHaveURL(/\/lugo\/admin\/axustes$/)
+    await page.getByRole('link', { name: 'Volver' }).click()
+    await expect(page).toHaveURL(/\/lugo\/admin$/)
+  })
+
   test('the council booking window is set in the council settings', async ({ page }) => {
     await open(page, '/lugo/admin/axustes')
     const rules = page.getByRole('region', { name: 'Ventá de reserva' })
