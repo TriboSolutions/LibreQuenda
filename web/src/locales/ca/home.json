@@ -12,7 +12,7 @@
   "availability": {
     "title": "Disponibilitat",
     "loading": "Carregant instal·lacions",
-    "loadError": "No s'han pogut carregar les instal·lacions.",
+    "loadError": "No s’han pogut carregar les instal·lacions.",
     "empty": "Aquest ajuntament encara no ha publicat cap instal·lació.",
     "allClosed": "Totes les instal·lacions estan tancades aquest dia.",
     "closedDay": "Tancat aquest dia",
@@ -25,7 +25,7 @@
     "more": "+{{count}} més",
     "quickBook": "Reserva ràpida {{time}}",
     "book": "Reserva",
-    "afterHours": "Fora d'horari"
+    "afterHours": "Fora d’horari"
   },
   "slot": {
     "free": "Lliure",
@@ -69,10 +69,10 @@
     "settings": "Ho pots tornar a activar al teu perfil.",
     "public": "Reserva pública",
     "publicBy": "Reserva pública de {{name}}",
-    "join": "Unir-m’hi",
-    "joining": "Unint-me…",
+    "join": "Uneix-t’hi",
+    "joining": "T’hi estàs unint…",
     "joined": "Ja hi ets.",
-    "seeBookings": "Veure les meves reserves",
+    "seeBookings": "Mostra les meves reserves",
     "spots_one": "Queda {{count}} plaça",
     "spots_other": "Queden {{count}} places"
   }

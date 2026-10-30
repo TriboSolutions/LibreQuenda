@@ -34,7 +34,7 @@
     "email": "Email",
     "changeEmail": "Change email",
     "newEmail": "New email address",
-    "newEmailHelp": "We'll send a code to the new address. Until you enter it, the address shows as not verified.",
+    "newEmailHelp": "We’ll send a code to the new address. Until you enter it, the address shows as not verified.",
     "sendCode": "Send code",
     "code": "Verification code",
     "codeHelp": "Enter the code we emailed to {{email}}, or open the link in that email.",
@@ -46,7 +46,7 @@
     "currentPassword": "Current password",
     "newPassword": "New password",
     "repeatPassword": "Repeat the new password",
-    "mismatch": "The two passwords don't match.",
+    "mismatch": "The two passwords don’t match.",
     "savePassword": "Change password",
     "passwordSaved": "Password changed. Use it the next time you sign in.",
     "cancel": "Cancel",
@@ -74,7 +74,7 @@
     "deleteDialogTitle": "Delete your account?",
     "deleteDialogBody": "This cannot be undone. Download your data first if you want to keep a copy.",
     "deleteUpcoming": "Your upcoming bookings are cancelled and their invite links stop working.",
-    "deletePast": "Past bookings stay in the council's statistics, with nothing that identifies you.",
+    "deletePast": "Past bookings stay in the council’s statistics, with nothing that identifies you.",
     "deleteSignIn": "Your sign-in account, profile, photo, roles and notices are deleted.",
     "deleteConfirmLabel": "To confirm, type your email: {{email}}",
     "deleteConfirm": "Delete for good",
@@ -95,7 +95,7 @@
   },
   "calendar": {
     "title": "Calendar",
-    "help": "Your bookings in your phone's or computer's calendar, kept up to date.",
+    "help": "Your bookings in your phone’s or computer’s calendar, kept up to date.",
     "how": "Add it with one button to Google Calendar, Outlook or Apple Calendar, or copy the address into Thunderbird or any app that reads iCalendar (.ics). It has your bookings and the ones you joined, and updates by itself when you book, change or cancel.",
     "turnOn": "Turn on the calendar",
     "address": "Other apps: copy this address",
@@ -112,11 +112,11 @@
     "turnOff": "Turn off"
   },
   "flash": {
-    "help": "At a facility with a free turn? Book it on the spot and check in whichever way the facility takes.",
+    "help": "At a facility with a free slot? Book it on the spot and check in whichever way the facility takes.",
     "ways": "How you check in",
     "reader": {
       "tab": "QR reader",
-      "help": "Hold this QR up to the reader at the door: if the turn is free, it is booked and you are in."
+      "help": "Hold this QR up to the reader at the door: if the slot is free, it is booked and you are in."
     },
     "code": {
       "tab": "Code",
@@ -129,11 +129,11 @@
     },
     "door": {
       "tab": "QR at the door",
-      "help": "Open the camera and point it at the QR printed on the door: if the turn is free, it is booked and you are in. First we ask for your location, which is checked and never stored."
+      "help": "Open the camera and point it at the QR printed on the door: if the slot is free, it is booked and you are in. First we ask for your location, which is checked and never stored."
     },
     "staff": {
       "tab": "Staff",
-      "help": "Ask at the desk or the staff to book the free turn for you: they can do it with your account or just your name. We find the facility you are at by your location to show you who to ask.",
+      "help": "Ask at the desk or the staff to book the free slot for you: they can do it with your account or just your name. We find the facility you are at by your location to show you who to ask.",
       "locate": "Find who to ask",
       "none": "You are not near any facility with contact people."
     }

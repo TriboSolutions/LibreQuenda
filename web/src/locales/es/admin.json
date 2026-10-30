@@ -256,7 +256,7 @@
   "councilAdmin": {
     "title": "Gestión del ayuntamiento",
     "subtitle": "Instalaciones, horarios, normas, reservas e indicadores.",
-    "settings": "Ajustes del concello"
+    "settings": "Ajustes del ayuntamiento"
   },
   "indicators": {
     "title": "Indicadores",
@@ -293,8 +293,8 @@
       "activeUsers": "Personas activas",
       "activeUsersHint": "Con al menos una reserva, propia o por invitación",
       "noShows": "No presentadas",
-      "noShowsHint": "{{missed}} de {{finished}} reservas pasadas con lector QR",
-      "noShowsNone": "Sin reservas pasadas con lector QR"
+      "noShowsHint": "{{missed}} de {{finished}} reservas pasadas en las que se podía registrar la entrada",
+      "noShowsNone": "No hay reservas pasadas en las que se pudiera registrar la entrada"
     },
     "chartTitle": {
       "day": "Reservas por día",
@@ -383,31 +383,31 @@
   },
   "smtp": {
     "title": "Servidor de correo (SMTP)",
-    "help": "{{app}} envía las confirmaciones de reserva, los recordatorios, las cancelaciones y las invitaciones de administración de este concello. Configura el servidor propio del concello para enviarlos desde su dirección; si no, salen por el servidor de la plataforma.",
-    "statusCouncil": "Servidor del concello",
+    "help": "{{app}} envía las confirmaciones de reserva, los recordatorios, las cancelaciones y las invitaciones de administración de este ayuntamiento. Configura el servidor propio del ayuntamiento para enviarlos desde su dirección; si no, salen por el servidor de la plataforma.",
+    "statusCouncil": "Servidor del ayuntamiento",
     "statusPlatform": "Servidor de la plataforma",
     "statusNone": "Sin servidor",
-    "noneWarning": "No hay ningún servidor para enviar: los correos de este concello están en espera y saldrán cuando configures uno.",
+    "noneWarning": "No hay ningún servidor para enviar: los correos de este ayuntamiento están en espera y saldrán cuando configures uno.",
     "host": "Servidor",
     "port": "Puerto",
     "from": "Remitente",
     "fromPlaceholder": "Concello de Lalín <reservas@lalin.gal>",
-    "fromHelp": "La dirección que ve la vecindad. El servidor debe permitir enviar desde ella.",
+    "fromHelp": "La dirección que ven los vecinos. El servidor debe permitir enviar desde ella.",
     "username": "Usuario",
     "password": "Contraseña",
     "passwordKept": "Guardada: déjala vacía para mantenerla",
     "tlsHelp": "La conexión se cifra con STARTTLS (normalmente el puerto 587). No se admite TLS implícito en el puerto 465.",
     "save": "Guardar",
     "saving": "Guardando…",
-    "saved": "Guardado. Los correos del concello salen ahora por este servidor.",
+    "saved": "Guardado. Los correos del ayuntamiento salen ahora por este servidor.",
     "test": "Enviar un correo de prueba",
     "testing": "Enviando…",
-    "testSentCouncil": "Correo de prueba enviado a {{email}} por el servidor del concello.",
+    "testSentCouncil": "Correo de prueba enviado a {{email}} por el servidor del ayuntamiento.",
     "testSentPlatform": "Correo de prueba enviado a {{email}} por el servidor de la plataforma.",
     "remove": "Usar el servidor de la plataforma",
-    "removeTitle": "¿Dejar de usar el servidor del concello?",
-    "removeBodyPlatform": "Se borra la configuración guardada y los correos del concello salen por el servidor de la plataforma.",
-    "removeBodyNone": "Se borra la configuración guardada. La plataforma no tiene servidor, así que los correos del concello esperarán hasta que se configure uno.",
+    "removeTitle": "¿Dejar de usar el servidor del ayuntamiento?",
+    "removeBodyPlatform": "Se borra la configuración guardada y los correos del ayuntamiento salen por el servidor de la plataforma.",
+    "removeBodyNone": "Se borra la configuración guardada. La plataforma no tiene servidor, así que los correos del ayuntamiento esperarán hasta que se configure uno.",
     "removeConfirm": "Borrar configuración",
     "removed": "Configuración borrada.",
     "unreadable": "No se puede leer la configuración guardada porque cambió la clave de cifrado del servidor. Escríbela de nuevo, contraseña incluida, y guarda."
@@ -423,7 +423,7 @@
   },
   "staff": {
     "tab": "Reserva manual",
-    "title": "Reservas por teléfono o en ventanilla",
+    "title": "Reservas por teléfono o en el mostrador",
     "help": "Para quien llama o viene en persona: resérvale un turno libre, con su cuenta o solo con su nombre, y cancela cualquier reserva antes de que empiece.",
     "noFacilities": "No hay instalaciones activas que reservar.",
     "facility": "Instalación",
@@ -445,7 +445,7 @@
       "free": "Libre",
       "booked": "Reservado",
       "closed": "Cerrado",
-      "past": "Ya empezó",
+      "past": "Ya ha empezado",
       "too_far": "Aún no se puede reservar"
     },
     "noName": "Sin nombre (cuenta eliminada o borrado a los 30 días)",
@@ -479,12 +479,12 @@
     "bookedAccount": "Reservado para {{name}}. Recibe la confirmación y el QR por correo.",
     "bookedName": "Reservado para {{name}}.",
     "qrAlt": "QR de entrada de {{name}}",
-    "qrHint": "Imprímelo o deja que le saque una foto: el lector de la entrada le deja pasar con él.",
+    "qrHint": "Imprímelo o deja que le haga una foto: el lector de la entrada le deja pasar con él.",
     "ticketTitle": "QR de entrada",
     "ticketHint": "Muestra este QR en el lector de la entrada, desde 15 minutos antes del comienzo.",
     "cancelTitle": "¿Cancelar esta reserva?",
     "cancelWhat": "{{name}} · {{facility}}, {{start}}–{{end}}",
-    "cancelNotice": "Recibe un aviso y un correo de que el concello la ha cancelado.",
+    "cancelNotice": "Recibe un aviso y un correo de que el ayuntamiento la ha cancelado.",
     "cancelCall": "No tiene cuenta y no recibe aviso: llámale al {{phone}} si aún no lo sabe.",
     "cancelNoContact": "No tiene cuenta ni dejó teléfono, así que nadie recibirá aviso.",
     "reason": "Motivo para la persona",
@@ -502,7 +502,7 @@
     "checkedInMethod": {
       "reader": "Entró con el lector QR.",
       "printed_qr": "Entró con el QR impreso.",
-      "turn_code": "Entró con el código del turno.",
+      "turn_code": "Entró con el código de entrada.",
       "staff": "Marcada por el personal."
     },
     "checkinTooEarly": "La entrada se puede marcar desde las {{time}}.",
@@ -625,7 +625,7 @@
       "help": "El QR impreso y el código de entrada solo funcionan con el móvil a esta distancia del punto de la instalación en el mapa. El vecino tiene que permitir la ubicación, que se comprueba y nunca se guarda.",
       "radius": "Distancia al punto, en metros",
       "noPin": "Sitúa la instalación en el mapa, en la pestaña Datos, para usar el QR impreso o el código de entrada: la ubicación del móvil se compara con ese punto.",
-      "required": "Quien entre con el QR impreso o un código de turno tiene que estar a menos de {{metres}} m de la instalación."
+      "required": "Quien entre con el QR impreso o con el código de entrada tiene que estar a menos de {{metres}} m de la instalación."
     },
     "loadError": "No se pudo cargar la configuración de entrada.",
     "save": "Guardar",

@@ -28,7 +28,7 @@
       "title": "Beyond level AA",
       "body": "The site also meets most of the level AAA criteria that apply to it: 7:1 contrast, controls of at least 44 × 44 pixels, animations that can be turned off, a title on every page and links that say where they go. Not yet met:",
       "items": [
-        "On the desktop day strip, short turns can be narrower than 44 pixels. Every turn can also be booked from the facility page, with full-size buttons.",
+        "On the desktop day strip, short slots can be narrower than 44 pixels. Every slot can also be booked from the facility page, with full-size buttons.",
         "There is no easy-to-read version of the texts (criterion 3.1.5).",
         "There is no context-sensitive help on each form (criterion 3.3.5).",
         "The session expires according to the sign-in service, without warning (criterion 2.2.6)."
@@ -39,7 +39,7 @@
     "title": "How you can adapt the site",
     "items": [
       "It can be used with the keyboard alone. The first press of the Tab key offers “Skip to content”.",
-      "Light theme, dark theme or the system's, from the appearance button in the top bar.",
+      "Light theme, dark theme or the system’s, from the appearance button in the top bar.",
       "Four languages: Galician, Spanish, English and Catalan.",
       "Text can be enlarged with the browser up to 200%, and the content fits screens 320 pixels wide without horizontal scrolling.",
       "If the system asks for reduced motion, animations are turned off.",
@@ -61,12 +61,12 @@
       "Send any other question or suggestion for improvement."
     ],
     "response": "The council will reply within 20 working days.",
-    "councils": "Each council's contact",
+    "councils": "Each council’s contact",
     "email": "Email",
     "phone": "Phone",
     "noDetails": "This council has not given a contact yet: use its online office (sede electrónica).",
     "noCouncils": "No council has been set up yet.",
-    "loadError": "The councils' contact details could not be loaded."
+    "loadError": "The councils’ contact details could not be loaded."
   },
   "complaints": {
     "title": "Complaints procedure",

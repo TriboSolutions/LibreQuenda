@@ -139,7 +139,7 @@
     "invalid_smtp_from": "El remitente no es una dirección válida. Escríbelo como reservas@concello.gal o Concello <reservas@concello.gal>.",
     "smtp_load_failed": "No se pudo cargar la configuración del correo. Inténtalo de nuevo.",
     "smtp_save_failed": "No se pudo guardar la configuración del correo. Inténtalo de nuevo.",
-    "smtp_not_configured": "No hay ningún servidor SMTP para enviar: configura el del concello o pide a la administración de la plataforma que configure uno común.",
+    "smtp_not_configured": "No hay ningún servidor SMTP para enviar: configura el del ayuntamiento o pide a la administración de la plataforma que configure uno común.",
     "smtp_test_failed": "El servidor SMTP no aceptó el correo de prueba: {{0}}",
     "secrets_key_missing": "El servidor no tiene clave de cifrado (SECRETS_KEY), así que la contraseña no se puede guardar de forma segura. Avisa a la administración de la plataforma.",
     "smtp_password_unreadable": "No se puede leer la configuración SMTP guardada (cambió la clave de cifrado). Escríbela de nuevo y guarda.",
@@ -231,7 +231,7 @@
     },
     "smtp_test": {
       "subject": "Correo de prueba de {{1}} ({{0}})",
-      "body": "Este es un correo de prueba de {{0}}, enviado a través de {{1}}. Si lo estás leyendo, {{2}} puede enviar los correos de reservas del concello."
+      "body": "Este es un correo de prueba de {{0}}, enviado a través de {{1}}. Si lo estás leyendo, {{2}} puede enviar los correos de reservas del ayuntamiento."
     },
     "issue_solved": {
       "subject": "Arreglado: el problema que avisaste en {{0}}",

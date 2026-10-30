@@ -44,7 +44,7 @@ Scope: bases §1.1 (minimum) + §1.2 (technical). See [architecture plan](docs/s
 
 - [ ] Decide how to produce the OpenAPI spec, then write it into `docs/openapi/`
 - [x] Translations complete in gl / es / en / ca: same keys in all four, web and API (checked 30 Oct)
-- [ ] Native review of the es / en / ca wording (written alongside the Galician)
+- [x] Native review of the es / en / ca wording (30 Oct): en «slot» instead of the «turn» calque, es «ayuntamiento» everywhere, ca imperative buttons, typographic apostrophes; strings added after it get the same review
 
 ## Deployment and security
 
