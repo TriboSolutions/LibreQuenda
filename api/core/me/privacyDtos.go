@@ -22,6 +22,7 @@ type ExportResponse struct {
 	Bookings       []ExportBooking       `json:"bookings"`
 	Participations []ExportParticipation `json:"participations"` // bookings of someone else the user joined
 	Notifications  []ExportNotification  `json:"notifications"`
+	Issues         []ExportIssue         `json:"issues"` // problems the user reported at facilities
 }
 
 type ExportAccount struct {
@@ -62,6 +63,31 @@ type ExportParticipation struct {
 	EndsAt    time.Time `json:"ends_at"`
 	Status    string    `json:"status"`
 	JoinedAt  time.Time `json:"joined_at"`
+}
+
+type ExportIssue struct {
+	Id           string     `json:"id"`
+	Facility     string     `json:"facility"`
+	Category     string     `json:"category"`
+	Description  string     `json:"description"`
+	Urgent       bool       `json:"urgent"`
+	ShareContact bool       `json:"share_contact"` // the council's staff could see the email
+	Status       string     `json:"status"`
+	StaffNote    string     `json:"staff_note"`
+	CreatedAt    time.Time  `json:"created_at"`
+	ResolvedAt   *time.Time `json:"resolved_at"`
+}
+
+func mapExportIssues(rows []model.ListIssuesByReporterRow) []ExportIssue {
+	var issues = make([]ExportIssue, 0, len(rows))
+	for _, i := range rows {
+		issues = append(issues, ExportIssue{
+			Id: i.ID.String(), Facility: i.FacilityName, Category: string(i.Category), Description: i.Description,
+			Urgent: i.Urgent, ShareContact: i.ShareContact, Status: string(i.Status), StaffNote: i.StaffNote.String,
+			CreatedAt: i.CreatedAt, ResolvedAt: optionalTime(i.ResolvedAt),
+		})
+	}
+	return issues
 }
 
 type ExportNotification struct {
@@ -221,6 +247,13 @@ func writeExportCSV(w io.Writer, data *ExportResponse) error {
 	out.Write([]string{"type", "created_at", "read_at", "emailed_at", "payload"})
 	for _, n := range data.Notifications {
 		out.Write([]string{n.Type, csvTime(n.CreatedAt), csvOptionalTime(n.ReadAt), csvOptionalTime(n.EmailedAt), string(n.Payload)})
+	}
+
+	out.Write(nil)
+	out.Write([]string{"issues"})
+	out.Write([]string{"id", "facility", "category", "description", "urgent", "share_contact", "status", "staff_note", "created_at", "resolved_at"})
+	for _, i := range data.Issues {
+		out.Write([]string{i.Id, i.Facility, i.Category, i.Description, strconv.FormatBool(i.Urgent), strconv.FormatBool(i.ShareContact), i.Status, i.StaffNote, csvTime(i.CreatedAt), csvOptionalTime(i.ResolvedAt)})
 	}
 	out.Flush()
 	return out.Error()

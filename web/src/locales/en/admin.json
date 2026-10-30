@@ -833,5 +833,34 @@
     "copied": "Code copied",
     "preview": "Preview",
     "iframeTitle": "Free turns at the sports facilities"
+  },
+  "issues": {
+    "tab": "Maintenance",
+    "title": "Maintenance list",
+    "help": "Problems residents reported at the facilities, newest first. When you mark one fixed or rejected, the person gets a notice and an email with your note.",
+    "facility": "Facility",
+    "allFacilities": "All",
+    "status": "Status",
+    "allStatuses": "All",
+    "statuses": {
+      "new": "New",
+      "in_progress": "In progress",
+      "solved": "Fixed",
+      "rejected": "Rejected"
+    },
+    "empty": "No reports with these filters.",
+    "reported": "Reported by {{name}} on {{date}}",
+    "someone": "someone",
+    "booking": "booking on {{date}}",
+    "urgent": "Urgent",
+    "photo": "Photo of the problem",
+    "note": "Note for the reporter",
+    "noteHelp": "What was done, or why it will not be (required to reject).",
+    "save": "Save",
+    "saving": "Saving…",
+    "saved": "Saved.",
+    "close": "Close the facility or check its hours",
+    "newCount_one": ", {{count}} new",
+    "newCount_other": ", {{count}} new"
   }
 }

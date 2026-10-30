@@ -833,5 +833,34 @@
     "copied": "Codi copiat",
     "preview": "Previsualització",
     "iframeTitle": "Torns lliures de les instal·lacions esportives"
+  },
+  "issues": {
+    "tab": "Incidències",
+    "title": "Llista de manteniment",
+    "help": "Els problemes que els veïns han avisat a les instal·lacions, primer els més recents. Quan el marquis com a arreglat o rebutjat, la persona rep un avís i un correu amb la teva nota.",
+    "facility": "Instal·lació",
+    "allFacilities": "Totes",
+    "status": "Estat",
+    "allStatuses": "Tots",
+    "statuses": {
+      "new": "Nou",
+      "in_progress": "En curs",
+      "solved": "Arreglat",
+      "rejected": "Rebutjat"
+    },
+    "empty": "No hi ha avisos amb aquests filtres.",
+    "reported": "Ho va avisar {{name}} el {{date}}",
+    "someone": "una persona",
+    "booking": "reserva del {{date}}",
+    "urgent": "Urgent",
+    "photo": "Foto del problema",
+    "note": "Nota per a qui ha avisat",
+    "noteHelp": "Què s’ha fet, o per què no es farà (obligatòria per rebutjar).",
+    "save": "Desar",
+    "saving": "Desant…",
+    "saved": "Desat.",
+    "close": "Tancar la instal·lació o mirar-ne l’horari",
+    "newCount_one": ", {{count}} nova",
+    "newCount_other": ", {{count}} noves"
   }
 }

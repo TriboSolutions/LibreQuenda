@@ -62,6 +62,7 @@ HISTORY_SQL = Path(__file__).parent / "history.sql"
 CHECKIN_SQL = Path(__file__).parent / "checkin.sql"
 AUDIT_SQL = Path(__file__).parent / "audit.sql"
 PUBLIC_SQL = Path(__file__).parent / "public.sql"
+ISSUES_SQL = Path(__file__).parent / "issues.sql"
 TESTER_SQL = Path(__file__).parent / "tester.sql"
 ENV_FILE = Path(__file__).parent.parent.parent.parent / ".env"
 
@@ -132,6 +133,10 @@ def generate_sql(csv_dir: Path, sql_file: Path) -> None:
     lines.append("-- audit log (audit.sql)")
     lines.append(AUDIT_SQL.read_text(encoding="utf-8"))
     print("  [sql]     audit log  (a few entries)")
+
+    lines.append("-- reported problems (issues.sql)")
+    lines.append(ISSUES_SQL.read_text(encoding="utf-8"))
+    print("  [sql]     reported problems  (the councils' maintenance lists)")
 
     email = tester_email()
     if email:

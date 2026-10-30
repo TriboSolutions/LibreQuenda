@@ -59,6 +59,7 @@ type councilExport struct {
 	devices      []model.ExportCheckinDevicesRow
 	bookings     []model.ExportBookingsRow
 	participants []model.ExportBookingParticipantsRow
+	issues       []model.FacilityIssue
 	people       []model.ExportPeopleRow
 }
 
@@ -86,7 +87,10 @@ func (s *counciladminService) ExportCouncil(ctx context.Context, tenantId uuid.U
 		if data.bookings, err = q.ExportBookings(ctx, tenantId); err != nil {
 			return err
 		}
-		if data.participants, err = q.ExportBookingParticipants(ctx, tenantId); err != nil || !personal {
+		if data.participants, err = q.ExportBookingParticipants(ctx, tenantId); err != nil {
+			return err
+		}
+		if data.issues, err = q.ExportIssues(ctx, tenantId); err != nil || !personal {
 			return err
 		}
 		data.people, err = q.ExportPeople(ctx, tenantId)
@@ -152,6 +156,11 @@ func (data *councilExport) mediaRefs() []string {
 	}
 	for _, row := range data.facilities {
 		if ref := row.Facility.ImageRef; ref.Valid && storage.ValidRef(ref.String) {
+			refs = append(refs, ref.String)
+		}
+	}
+	for _, row := range data.issues {
+		if ref := row.PhotoRef; ref.Valid && storage.ValidRef(ref.String) {
 			refs = append(refs, ref.String)
 		}
 	}
@@ -478,7 +487,42 @@ func (data *councilExport) tables(media map[string]string) []exportTable {
 		participants.rows = append(participants.rows, row)
 	}
 
-	var tables = []exportTable{council, facilities, hours, closures, devices, bookings, participants}
+	var issues = exportTable{
+		name:        "facility_issues",
+		description: "Problems residents reported at the facilities (the maintenance list). Without the personal data, the reporter is only their account id.",
+		fields: []exportField{
+			{"id", "string", "Report id (UUID)"},
+			{"facility_id", "string", "Facility"},
+			{"person_id", "string", "Account id of the reporter; empty after their account was deleted"},
+			{"booking_id", "string", "The booking it was reported from, if any"},
+			{"category", "string", "equipment, lighting, cleaning, changing_rooms, accessibility, safety or other"},
+			{"description", "string", "What the reporter wrote"},
+			{"photo", "string", "Path of the photo inside this ZIP"},
+			{"urgent", "boolean", "Marked urgent by the reporter"},
+			{"share_contact", "boolean", "The reporter let the council's staff see their email"},
+			{"status", "string", "new, in_progress, solved or rejected"},
+			{"staff_note", "string", "The council's note for the reporter"},
+			{"resolved_by", "string", "Account id of the staff member who solved or rejected it"},
+			{"resolved_at", "datetime", "Solved or rejected"},
+			{"created_at", "datetime", "Reported"},
+			{"updated_at", "datetime", "Last changed"},
+		},
+		foreignKeys: []exportForeignKey{{"facility_id", "facilities"}, {"booking_id", "bookings"}},
+		rows:        make([][]string, 0, len(data.issues)),
+	}
+	if data.personal {
+		issues.foreignKeys = append(issues.foreignKeys, exportForeignKey{"person_id", "people"})
+	}
+	for _, i := range data.issues {
+		issues.rows = append(issues.rows, []string{
+			i.ID.String(), i.FacilityID.String(), exportNullUUID(i.ReporterID), exportNullUUID(i.BookingID), string(i.Category),
+			i.Description, exportMedia(i.PhotoRef, media), strconv.FormatBool(i.Urgent), strconv.FormatBool(i.ShareContact),
+			string(i.Status), exportNullString(i.StaffNote), exportNullUUID(i.ResolvedBy), exportNullTime(i.ResolvedAt),
+			exportTime(i.CreatedAt), exportTime(i.UpdatedAt),
+		})
+	}
+
+	var tables = []exportTable{council, facilities, hours, closures, devices, bookings, participants, issues}
 	if !data.personal {
 		return tables
 	}

@@ -1,4 +1,4 @@
-import { ArrowLeft, ExternalLink, MapPin } from 'lucide-react'
+import { ArrowLeft, ExternalLink, MapPin, Wrench } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
@@ -7,6 +7,7 @@ import { BookingDialog } from '@/components/BookingDialog'
 import { DayPicker } from '@/components/DayPicker'
 import { CouncilContact, FacilityContact } from '@/components/CouncilContact'
 import { FacilityMap } from '@/components/FacilityMap'
+import { ReportIssueDialog } from '@/components/ReportIssueDialog'
 import { TopBar } from '@/components/TopBar'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -41,6 +42,7 @@ export function FacilityPage() {
   const page = useAsync(() => api.facilityPage(slug, facilitySlug, date), `facility:${key}:${date ?? 'today'}`)
   const [pick, setPick] = useState<{ facility: Facility; slot: Slot } | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
+  const [reporting, setReporting] = useState(false)
   usePageTitle(page.data?.facility.name, page.data?.tenant.name)
 
   const data = page.data
@@ -218,6 +220,21 @@ export function FacilityPage() {
             <p className="whitespace-pre-line">{f.usage_rules || t('facility:noRules')}</p>
           </section>
 
+          {auth.isAuthenticated && (
+            <section aria-labelledby="issue-title" className="grid gap-2 rounded-lg border bg-card p-5">
+              <h2 id="issue-title" className="text-lg font-semibold">
+                {t('facility:issue.sectionTitle')}
+              </h2>
+              <p className="text-muted-foreground">{t('facility:issue.sectionHelp')}</p>
+              <div>
+                <Button variant="outline" onClick={() => setReporting(true)}>
+                  <Wrench aria-hidden />
+                  {t('facility:issue.report')}
+                </Button>
+              </div>
+            </section>
+          )}
+
           <section aria-labelledby="schedule-title" className="grid gap-2 rounded-lg border bg-card p-5">
             <h2 id="schedule-title" className="text-lg font-semibold">
               {t('facility:schedule')}
@@ -249,6 +266,7 @@ export function FacilityPage() {
         onConfirm={confirm}
         onLogin={login}
       />
+      <ReportIssueDialog key={String(reporting)} facility={reporting ? { id: f.id, name: f.name } : null} onClose={() => setReporting(false)} />
     </>,
   )
 }

@@ -37,5 +37,34 @@
   "ruleInARow_other": "Com a màxim {{count}} torns seguits per persona.",
   "ruleWeekly": "Els torns de la setmana següent s’obren el {{weekday}} a les {{time}}.",
   "rulePerWeek_one": "Com a màxim {{count}} reserva per persona i setmana.",
-  "rulePerWeek_other": "Com a màxim {{count}} reserves per persona i setmana."
+  "rulePerWeek_other": "Com a màxim {{count}} reserves per persona i setmana.",
+  "issue": {
+    "report": "Avisar d’un problema",
+    "title": "Avisar d’un problema",
+    "description": "L’ajuntament rep l’avís sobre {{facility}} a la seva llista de manteniment.",
+    "category": "Quin tipus de problema és",
+    "chooseCategory": "Tria un tipus",
+    "what": "Què passa",
+    "whatHelp": "On és i què es veu: per exemple, «la xarxa de la pista 2 està trencada pel mig». Fins a 1000 caràcters.",
+    "photo": "Foto (opcional)",
+    "urgent": "És urgent",
+    "urgentHelp": "Per exemple, si és perillós o impedeix fer servir la instal·lació.",
+    "shareContact": "Deixar que el personal de l’ajuntament vegi el meu correu per preguntar-me",
+    "send": "Enviar l’avís",
+    "sending": "Enviant…",
+    "cancel": "Cancel·lar",
+    "sent": "Gràcies. L’ajuntament ha rebut l’avís i t’avisarem quan el resolgui.",
+    "close": "Tancar",
+    "sectionTitle": "Alguna cosa no va bé?",
+    "sectionHelp": "Si veus una avaria, manca de neteja o un perill, avisa l’ajuntament.",
+    "categories": {
+      "equipment": "Material (xarxes, cistelles, porteries…)",
+      "lighting": "Il·luminació",
+      "cleaning": "Neteja",
+      "changing_rooms": "Vestidors i dutxes",
+      "accessibility": "Accessibilitat",
+      "safety": "Seguretat",
+      "other": "Altres"
+    }
+  }
 }

@@ -415,6 +415,11 @@ WHERE
         JOIN booking  b ON b.id = p.booking_id
         JOIN facility f ON f.id = b.facility_id
         WHERE f.tenant_id = $1
+        UNION
+        SELECT i.reporter_id
+        FROM facility_issue i
+        JOIN facility f ON f.id = i.facility_id
+        WHERE f.tenant_id = $1
     )
 ORDER BY
     u.id ASC
@@ -431,7 +436,8 @@ type ExportPeopleRow struct {
 	CreatedAt         time.Time      `json:"created_at"`
 }
 
-// Everyone who booked at the council or joined one of its bookings (?personal=1).
+// Everyone who booked at the council, joined one of its bookings or reported
+// a problem at one of its facilities (?personal=1).
 func (q *Queries) ExportPeople(ctx context.Context, tenantID uuid.UUID) ([]ExportPeopleRow, error) {
 	rows, err := q.db.QueryContext(ctx, exportPeople, tenantID)
 	if err != nil {

@@ -169,7 +169,16 @@
     "weekly_limit_reached": "Ya tienes las reservas que se permiten por semana en esta instalación.",
     "invalid_weekly_opening": "La apertura semanal necesita un día de la semana y una hora válidos.",
     "public_needs_capacity": "Solo se pueden hacer públicas las reservas de una instalación donde caben más personas.",
-    "public_booking_not_found": "Esta reserva ya no es pública o ya no existe."
+    "public_booking_not_found": "Esta reserva ya no es pública o ya no existe.",
+    "invalid_issue_category": "Elige de qué tipo es el problema.",
+    "invalid_issue_description": "Describe el problema (hasta 1000 caracteres).",
+    "issue_failed": "No se pudo guardar el aviso. Inténtalo de nuevo.",
+    "issue_booking_too_old": "Esa reserva terminó hace más de una semana: avisa desde la página de la instalación.",
+    "too_many_open_issues": "Ya tienes 5 avisos abiertos. Espera a que el ayuntamiento los revise.",
+    "invalid_issue_status": "Ese estado no existe.",
+    "invalid_issue_note": "La nota puede tener hasta 1000 caracteres.",
+    "issue_reject_reason": "Para rechazar un aviso, explica el motivo a quien lo envió.",
+    "issue_not_found": "No encontramos ese aviso."
   },
   "email": {
     "greeting": "Hola {{0}}:",
@@ -223,6 +232,16 @@
     "smtp_test": {
       "subject": "Correo de prueba de {{1}} ({{0}})",
       "body": "Este es un correo de prueba de {{0}}, enviado a través de {{1}}. Si lo estás leyendo, {{2}} puede enviar los correos de reservas del concello."
-    }
+    },
+    "issue_solved": {
+      "subject": "Arreglado: el problema que avisaste en {{0}}",
+      "intro": "El ayuntamiento marcó como arreglado el problema que avisaste en {{0}} ({{1}}). Gracias por avisar."
+    },
+    "issue_rejected": {
+      "subject": "Tu aviso sobre {{0}}",
+      "intro": "El ayuntamiento revisó el problema que avisaste en {{0}} ({{1}}) y no lo va a tramitar."
+    },
+    "issue_note": "Nota del ayuntamiento: {{0}}",
+    "issue_footer": "Recibes este correo porque avisaste de un problema en una instalación en {{0}}."
   }
 }

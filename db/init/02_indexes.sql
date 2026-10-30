@@ -47,3 +47,7 @@ CREATE INDEX idx_audit_log_action    ON audit_log (action);
 
 -- «For you»: the upcoming public bookings
 CREATE INDEX idx_booking_public ON booking (starts_at) WHERE is_public AND status = 'confirmed';
+
+-- reported problems: the council's list by facility and status, and the open ones per person
+CREATE INDEX idx_facility_issue_facility  ON facility_issue (facility_id, status, created_at DESC);
+CREATE INDEX idx_facility_issue_reporter  ON facility_issue (reporter_id, status);

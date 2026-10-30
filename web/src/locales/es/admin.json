@@ -833,5 +833,34 @@
     "copied": "Código copiado",
     "preview": "Vista previa",
     "iframeTitle": "Turnos libres de las instalaciones deportivas"
+  },
+  "issues": {
+    "tab": "Incidencias",
+    "title": "Lista de mantenimiento",
+    "help": "Los problemas que los vecinos avisaron en las instalaciones, primero los más recientes. Cuando lo marques como arreglado o rechazado, la persona recibe un aviso y un correo con tu nota.",
+    "facility": "Instalación",
+    "allFacilities": "Todas",
+    "status": "Estado",
+    "allStatuses": "Todos",
+    "statuses": {
+      "new": "Nuevo",
+      "in_progress": "En curso",
+      "solved": "Arreglado",
+      "rejected": "Rechazado"
+    },
+    "empty": "No hay avisos con estos filtros.",
+    "reported": "Avisó {{name}} el {{date}}",
+    "someone": "una persona",
+    "booking": "reserva del {{date}}",
+    "urgent": "Urgente",
+    "photo": "Foto del problema",
+    "note": "Nota para quien avisó",
+    "noteHelp": "Qué se hizo, o por qué no se va a hacer (obligatoria para rechazar).",
+    "save": "Guardar",
+    "saving": "Guardando…",
+    "saved": "Guardado.",
+    "close": "Cerrar la instalación o mirar su horario",
+    "newCount_one": ", {{count}} nueva",
+    "newCount_other": ", {{count}} nuevas"
   }
 }

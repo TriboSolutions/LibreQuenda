@@ -37,5 +37,34 @@
   "ruleInARow_other": "Como máximo {{count}} quendas seguidas por persoa.",
   "ruleWeekly": "As quendas da semana seguinte ábrense o {{weekday}} ás {{time}}.",
   "rulePerWeek_one": "Como máximo {{count}} reserva por persoa e semana.",
-  "rulePerWeek_other": "Como máximo {{count}} reservas por persoa e semana."
+  "rulePerWeek_other": "Como máximo {{count}} reservas por persoa e semana.",
+  "issue": {
+    "report": "Avisar dun problema",
+    "title": "Avisar dun problema",
+    "description": "O concello recibe o aviso sobre {{facility}} na súa lista de mantemento.",
+    "category": "Que tipo de problema é",
+    "chooseCategory": "Escolle un tipo",
+    "what": "Que pasa",
+    "whatHelp": "Onde está e que se ve: por exemplo, «a rede da pista 2 está rota polo medio». Ata 1000 caracteres.",
+    "photo": "Foto (opcional)",
+    "urgent": "É urxente",
+    "urgentHelp": "Por exemplo, se é perigoso ou impide usar a instalación.",
+    "shareContact": "Deixar que o persoal do concello vexa o meu correo para preguntarme",
+    "send": "Enviar o aviso",
+    "sending": "Enviando…",
+    "cancel": "Cancelar",
+    "sent": "Grazas. O concello recibiu o aviso e avisarémoste cando o resolva.",
+    "close": "Pechar",
+    "sectionTitle": "Algo non está ben?",
+    "sectionHelp": "Se ves unha avaría, falta de limpeza ou un perigo, avisa ao concello.",
+    "categories": {
+      "equipment": "Material (redes, canastras, porterías…)",
+      "lighting": "Iluminación",
+      "cleaning": "Limpeza",
+      "changing_rooms": "Vestiarios e duchas",
+      "accessibility": "Accesibilidade",
+      "safety": "Seguridade",
+      "other": "Outro"
+    }
+  }
 }

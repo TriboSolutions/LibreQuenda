@@ -169,7 +169,16 @@
     "weekly_limit_reached": "You already have the bookings allowed per week at this facility.",
     "invalid_weekly_opening": "The weekly opening needs a valid weekday and time.",
     "public_needs_capacity": "Only bookings at a facility with room for more people can be public.",
-    "public_booking_not_found": "This booking is no longer public, or no longer exists."
+    "public_booking_not_found": "This booking is no longer public, or no longer exists.",
+    "invalid_issue_category": "Choose what kind of problem it is.",
+    "invalid_issue_description": "Describe the problem (up to 1000 characters).",
+    "issue_failed": "The report could not be saved. Try again.",
+    "issue_booking_too_old": "That booking ended over a week ago: report it from the facility’s page.",
+    "too_many_open_issues": "You already have 5 open reports. Wait for the council to look at them.",
+    "invalid_issue_status": "That status does not exist.",
+    "invalid_issue_note": "The note can be up to 1000 characters.",
+    "issue_reject_reason": "To reject a report, explain why to the person who sent it.",
+    "issue_not_found": "That report was not found."
   },
   "email": {
     "greeting": "Hello {{0}},",
@@ -223,6 +232,16 @@
     "smtp_test": {
       "subject": "Test email from {{1}} ({{0}})",
       "body": "This is a test email for {{0}}, sent through {{1}}. If you are reading it, {{2}} can send the council's booking emails."
-    }
+    },
+    "issue_solved": {
+      "subject": "Fixed: the problem you reported at {{0}}",
+      "intro": "The council marked the problem you reported at {{0}} ({{1}}) as fixed. Thank you for telling them."
+    },
+    "issue_rejected": {
+      "subject": "Your report about {{0}}",
+      "intro": "The council looked at the problem you reported at {{0}} ({{1}}) and will not take it further."
+    },
+    "issue_note": "Note from the council: {{0}}",
+    "issue_footer": "You get this email because you reported a problem at a facility on {{0}}."
   }
 }

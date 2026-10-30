@@ -37,5 +37,34 @@
   "ruleInARow_other": "At most {{count}} turns in a row per person.",
   "ruleWeekly": "Next week’s turns open on {{weekday}} at {{time}}.",
   "rulePerWeek_one": "At most {{count}} booking per person and week.",
-  "rulePerWeek_other": "At most {{count}} bookings per person and week."
+  "rulePerWeek_other": "At most {{count}} bookings per person and week.",
+  "issue": {
+    "report": "Report a problem",
+    "title": "Report a problem",
+    "description": "The council gets the report about {{facility}} in its maintenance list.",
+    "category": "What kind of problem",
+    "chooseCategory": "Choose a kind",
+    "what": "What is wrong",
+    "whatHelp": "Where it is and what you see: for example, “the net of court 2 is torn in the middle”. Up to 1000 characters.",
+    "photo": "Photo (optional)",
+    "urgent": "It is urgent",
+    "urgentHelp": "For example, if it is dangerous or the facility cannot be used.",
+    "shareContact": "Let the council’s staff see my email to ask me about it",
+    "send": "Send the report",
+    "sending": "Sending…",
+    "cancel": "Cancel",
+    "sent": "Thank you. The council got your report, and we will tell you when it is dealt with.",
+    "close": "Close",
+    "sectionTitle": "Something wrong?",
+    "sectionHelp": "If you see something broken, dirty or dangerous, tell the council.",
+    "categories": {
+      "equipment": "Equipment (nets, hoops, goals…)",
+      "lighting": "Lighting",
+      "cleaning": "Cleaning",
+      "changing_rooms": "Changing rooms and showers",
+      "accessibility": "Accessibility",
+      "safety": "Safety",
+      "other": "Other"
+    }
+  }
 }

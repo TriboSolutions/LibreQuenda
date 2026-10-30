@@ -169,7 +169,16 @@
     "weekly_limit_reached": "Xa tes as reservas que se permiten por semana nesta instalación.",
     "invalid_weekly_opening": "A apertura semanal precisa un día da semana e unha hora válidos.",
     "public_needs_capacity": "Só se poden facer públicas as reservas dunha instalación onde caben máis persoas.",
-    "public_booking_not_found": "Esta reserva xa non é pública ou xa non existe."
+    "public_booking_not_found": "Esta reserva xa non é pública ou xa non existe.",
+    "invalid_issue_category": "Escolle de que tipo é o problema.",
+    "invalid_issue_description": "Describe o problema (ata 1000 caracteres).",
+    "issue_failed": "Non se puido gardar o aviso. Téntao de novo.",
+    "issue_booking_too_old": "Esa reserva rematou hai máis dunha semana: avisa dende a páxina da instalación.",
+    "too_many_open_issues": "Xa tes 5 avisos abertos. Agarda a que o concello os revise.",
+    "invalid_issue_status": "Ese estado non existe.",
+    "invalid_issue_note": "A nota pode ter ata 1000 caracteres.",
+    "issue_reject_reason": "Para rexeitar un aviso, explica o motivo a quen o enviou.",
+    "issue_not_found": "Non atopamos ese aviso."
   },
   "email": {
     "greeting": "Ola {{0}},",
@@ -223,6 +232,16 @@
     "smtp_test": {
       "subject": "Correo de proba de {{1}} ({{0}})",
       "body": "Este é un correo de proba de {{0}}, enviado a través de {{1}}. Se o estás a ler, {{2}} pode enviar os correos de reservas do concello."
-    }
+    },
+    "issue_solved": {
+      "subject": "Arranxado: o problema que avisaches en {{0}}",
+      "intro": "O concello marcou como arranxado o problema que avisaches en {{0}} ({{1}}). Grazas por avisar."
+    },
+    "issue_rejected": {
+      "subject": "O teu aviso sobre {{0}}",
+      "intro": "O concello revisou o problema que avisaches en {{0}} ({{1}}) e non o vai tramitar."
+    },
+    "issue_note": "Nota do concello: {{0}}",
+    "issue_footer": "Recibes este correo porque avisaches dun problema nunha instalación en {{0}}."
   }
 }

@@ -45,11 +45,12 @@ type UploadResponse struct {
 	Url string `json:"url"` // what screens show
 }
 
-// canUpload: anyone signed in may upload their own photo (users/); council and facility
+// canUpload: anyone signed in may upload their own photo (users/) or a photo of a
+// problem they report (issues/); council and facility
 // images (councils/, facilities/) need a superadministrator or a council administrator,
 // and the installation's logo (branding/) a superadministrator.
 func (h *mediaHandler) canUpload(r *http.Request, folder string) (bool, error) {
-	if folder == "users" {
+	if folder == "users" || folder == "issues" {
 		return true, nil
 	}
 	var session, _ = auth.SessionFromContext(r.Context())

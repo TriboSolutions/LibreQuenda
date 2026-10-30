@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import { Link, useParams, useSearchParams } from 'react-router'
 import { AuditLogPanel } from '@/components/admin/AuditLogPanel'
+import { IssuesPanel } from '@/components/admin/IssuesPanel'
 import { StaffBookingsPanel } from '@/components/admin/StaffBookingsPanel'
 import { useVerifyEmail } from '@/hooks/useVerifyEmail'
 import { CouncilHeading } from '@/components/CouncilHeading'
@@ -37,11 +38,15 @@ export function CouncilAdminPage() {
   const tenants = useAsync(() => api.tenants(), 'tenants')
   usePageTitle(t('admin:councilAdmin.title'), tenants.data?.tenants.find((c) => c.slug === slug)?.name)
   const facilities = useAsync(allowed ? () => api.council.facilities(token, slug) : null, `council-admin:${slug}:${allowed}`)
+  // the badge on the Maintenance tab: reports nobody has looked at yet
+  const newIssues = useAsync(allowed ? () => api.council.newIssueCount(token, slug) : null, `issue-count:${slug}:${allowed}`)
+  const newIssueCount = newIssues.data?.new ?? 0
   const council = tenants.data?.tenants.find((c) => c.slug === slug)
   const [searchParams, setSearchParams] = useSearchParams()
   const vista = searchParams.get('vista')
-  const view = vista === 'indicadores' ? 'indicators' : vista === 'reservas' ? 'bookings' : vista === 'rexistro' ? 'audit' : 'facilities'
-  const viewParam: Record<string, string> = { indicators: 'indicadores', bookings: 'reservas', audit: 'rexistro' }
+  const view =
+    vista === 'indicadores' ? 'indicators' : vista === 'reservas' ? 'bookings' : vista === 'rexistro' ? 'audit' : vista === 'incidencias' ? 'issues' : 'facilities'
+  const viewParam: Record<string, string> = { indicators: 'indicadores', bookings: 'reservas', audit: 'rexistro', issues: 'incidencias' }
   const changeView = (value: string) => setSearchParams(viewParam[value] ? { vista: viewParam[value] } : {}, { replace: true })
   const bookingsFacility = searchParams.get('instalacion') ?? ''
 
@@ -188,6 +193,17 @@ export function CouncilAdminPage() {
             <TabsTrigger value="facilities">{t('admin:facilities.title')}</TabsTrigger>
             <TabsTrigger value="bookings">{t('admin:staff.tab')}</TabsTrigger>
             <TabsTrigger value="indicators">{t('admin:indicators.title')}</TabsTrigger>
+            <TabsTrigger value="issues">
+              {t('admin:issues.tab')}
+              {newIssueCount > 0 && (
+                <>
+                  <span aria-hidden="true" className="num ml-1.5 rounded-full bg-destructive px-1.5 text-xs leading-5 font-semibold text-background">
+                    {newIssueCount}
+                  </span>
+                  <span className="sr-only">{t('admin:issues.newCount', { count: newIssueCount })}</span>
+                </>
+              )}
+            </TabsTrigger>
             <TabsTrigger value="audit">{t('admin:tabs.audit')}</TabsTrigger>
           </TabsList>
           {/* the council's settings belong with its facilities and figures, not with the desk's calendar */}
@@ -201,6 +217,9 @@ export function CouncilAdminPage() {
             facilityId={bookingsFacility}
             onFacilityChange={(id) => setSearchParams({ vista: 'reservas', instalacion: id }, { replace: true })}
           />
+        </TabsContent>
+        <TabsContent value="issues">
+          <IssuesPanel slug={slug} facilities={list} onChanged={newIssues.reload} />
         </TabsContent>
         <TabsContent value="audit">
           <AuditLogPanel load={(filters) => api.council.audit(token, slug, filters)} download={(filters) => api.council.downloadAudit(token, slug, filters)} />
