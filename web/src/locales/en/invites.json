@@ -9,7 +9,7 @@
     "emptyUpcoming": "No upcoming bookings.",
     "emptyHistory": "No past bookings yet.",
     "signIn": "Sign in to see your bookings.",
-    "findTurn": "Find a free turn"
+    "bookNow": "Book now"
   },
   "role": {
     "owner": "Yours",

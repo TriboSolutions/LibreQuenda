@@ -8,7 +8,9 @@
 #  - brands the login and console as LibreQuenda (logo, colours, no Zitadel links)
 #  - creates the "librequenda-api" service account (user manager only) and writes
 #    its token to /api-secrets, for /perfil (name, email, password)
-#  - writes /runtime/config.json, served by Caddy to the SPA
+#  - writes /runtime/config.json, served by Caddy to the SPA; its scope also asks
+#    for Zitadel's own audience, so the API can copy the profile photo to the
+#    person's account with their token (api/zitadel/avatar.go)
 # ============================================================
 set -eu
 # a failed API call inside a pipe must stop the script, never read as "not found"
@@ -187,7 +189,7 @@ jq -n \
 		authority: $authority,
 		clientId: $clientId,
 		projectId: $projectId,
-		scope: ("openid profile email offline_access urn:zitadel:iam:org:project:id:" + $projectId + ":aud")
+		scope: ("openid profile email offline_access urn:zitadel:iam:org:project:id:" + $projectId + ":aud urn:zitadel:iam:org:project:id:zitadel:aud")
 	}' > /runtime/config.json.tmp
 mv /runtime/config.json.tmp /runtime/config.json
 log "wrote /runtime/config.json"

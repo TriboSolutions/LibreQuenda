@@ -9,7 +9,7 @@
     "emptyUpcoming": "Non tes reservas próximas.",
     "emptyHistory": "Aínda non tes reservas pasadas.",
     "signIn": "Inicia sesión para ver as túas reservas.",
-    "findTurn": "Buscar un turno libre"
+    "bookNow": "Reservar agora"
   },
   "role": {
     "owner": "Túa",

@@ -9,7 +9,7 @@
     "emptyUpcoming": "No tienes reservas próximas.",
     "emptyHistory": "Aún no tienes reservas pasadas.",
     "signIn": "Inicia sesión para ver tus reservas.",
-    "findTurn": "Buscar un turno libre"
+    "bookNow": "Reservar ahora"
   },
   "role": {
     "owner": "Tuya",
