@@ -178,7 +178,8 @@
     "invalid_issue_status": "That status does not exist.",
     "invalid_issue_note": "The note can be up to 1000 characters.",
     "issue_reject_reason": "To reject a report, explain why to the person who sent it.",
-    "issue_not_found": "That report was not found."
+    "issue_not_found": "That report was not found.",
+    "invalid_municipality_code": "The municipality’s INE code has five digits (e.g. 36024 for Lalín)."
   },
   "email": {
     "greeting": "Hello {{0}},",

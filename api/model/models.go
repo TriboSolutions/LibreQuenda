@@ -578,16 +578,17 @@ type TagCategory struct {
 }
 
 type Tenant struct {
-	ID           uuid.UUID      `json:"id"`
-	Slug         string         `json:"slug"`
-	Name         string         `json:"name"`
-	Timezone     string         `json:"timezone"`
-	ContactEmail sql.NullString `json:"contact_email"`
-	ContactPhone sql.NullString `json:"contact_phone"`
-	LogoRef      sql.NullString `json:"logo_ref"`
-	IsActive     bool           `json:"is_active"`
-	CreatedAt    time.Time      `json:"created_at"`
-	UpdatedAt    time.Time      `json:"updated_at"`
+	ID               uuid.UUID      `json:"id"`
+	Slug             string         `json:"slug"`
+	Name             string         `json:"name"`
+	Timezone         string         `json:"timezone"`
+	ContactEmail     sql.NullString `json:"contact_email"`
+	ContactPhone     sql.NullString `json:"contact_phone"`
+	MunicipalityCode sql.NullString `json:"municipality_code"`
+	LogoRef          sql.NullString `json:"logo_ref"`
+	IsActive         bool           `json:"is_active"`
+	CreatedAt        time.Time      `json:"created_at"`
+	UpdatedAt        time.Time      `json:"updated_at"`
 }
 
 type TenantBookingRule struct {

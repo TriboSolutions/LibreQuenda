@@ -69,6 +69,7 @@ CREATE TABLE tenant (
     timezone      VARCHAR(64)  NOT NULL DEFAULT 'Europe/Madrid',
     contact_email VARCHAR(255) NULL,
     contact_phone VARCHAR(50)  NULL,
+    municipality_code CHAR(5)  NULL CHECK (municipality_code ~ '^[0-9]{5}$'), -- INE code: MeteoGalicia's forecast for its outdoor facilities
     logo_ref      TEXT         NULL,              -- storage reference, never a URL
     is_active     BOOLEAN      NOT NULL DEFAULT TRUE,
     created_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW(),

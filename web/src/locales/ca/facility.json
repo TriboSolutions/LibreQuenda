@@ -66,5 +66,63 @@
       "safety": "Seguretat",
       "other": "Altres"
     }
+  },
+  "weather": {
+    "title": "Temps previst",
+    "source": "Dades:",
+    "range": "{{min}}–{{max}} °C",
+    "temperature": "{{value}} °C",
+    "rainChance": "{{value}} % de pluja",
+    "unknown": "Sense dades",
+    "forTurn": "Temps a les {{time}}",
+    "dayWarning": "Atenció al temps: {{list}}.",
+    "turnWarning": "Atenció al temps a les {{time}}: {{list}}. Pots cancel·lar fins al {{date}}.",
+    "period": {
+      "morning": "Matí",
+      "afternoon": "Tarda",
+      "night": "Nit"
+    },
+    "sky": {
+      "clear": "Serè",
+      "partly_cloudy": "Núvols i clarianes",
+      "cloudy": "Ennuvolat",
+      "overcast": "Cobert",
+      "fog": "Boira",
+      "haze": "Calitja",
+      "drizzle": "Plugim",
+      "rain": "Pluja",
+      "showers": "Ruixats",
+      "storm": "Tempesta",
+      "snow": "Neu",
+      "sleet": "Aiguaneu",
+      "hail": "Calamarsa"
+    },
+    "wind": {
+      "calm": "Calma",
+      "variable": "vent variable",
+      "light": "vent fluix",
+      "moderate": "vent moderat",
+      "strong": "vent fort",
+      "very_strong": "vent molt fort"
+    },
+    "from": {
+      "n": "del nord",
+      "ne": "del nord-est",
+      "e": "de l’est",
+      "se": "del sud-est",
+      "s": "del sud",
+      "sw": "del sud-oest",
+      "w": "de l’oest",
+      "nw": "del nord-oest"
+    },
+    "warning": {
+      "rain": "pluja probable",
+      "storm": "tempesta",
+      "snow": "neu o calamarsa",
+      "wind": "vent fort",
+      "heat": "molta calor",
+      "cold": "glaçada o molt de fred",
+      "alert": "avís de MeteoGalicia"
+    }
   }
 }

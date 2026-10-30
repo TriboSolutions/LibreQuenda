@@ -52,7 +52,9 @@
     "saving": "Guardando…",
     "cancel": "Cancelar",
     "logo": "Escudo o logotipo",
-    "pageUrl": "Su página: {{url}}"
+    "pageUrl": "Su página: {{url}}",
+    "municipalityCode": "Código INE del municipio",
+    "municipalityCodeHelp": "Cinco cifras (por ejemplo, 36024 para Lalín): la previsión de MeteoGalicia en las instalaciones al aire libre."
   },
   "manage": {
     "details": "Datos",

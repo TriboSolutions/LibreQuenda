@@ -92,6 +92,16 @@ for (const theme of ['light', 'dark'] as const) {
       await expectAccessible(page, { overlay: true })
     })
 
+    test('outdoor facility page with the forecast, and its booking dialog', async ({ page }) => {
+      await open(page, '/lugo/padel-1', { theme, outdoor: true })
+      await expect(page.getByRole('region', { name: /^Tempo previsto/ })).toBeVisible()
+      await expectAccessible(page)
+      await page.getByRole('button', { name: /^\d\d:\d\d–\d\d:\d\d$/ }).and(page.locator(':not([disabled])')).first().click()
+      await expect(page.getByRole('dialog').getByRole('region', { name: /^Tempo ás/ })).toBeVisible()
+      await page.waitForTimeout(300)
+      await expectAccessible(page, { overlay: true })
+    })
+
     test('flash booking dialog', async ({ page }) => {
       await open(page, '/lugo', { theme })
       await page.getByRole('button', { name: /Ana Pérez/ }).click()
@@ -676,6 +686,18 @@ test.describe('keyboard', () => {
     await page.getByRole('button', { name: 'Buscar a quen preguntar' }).click()
     await expect(page.getByRole('heading', { name: /Pista de pádel 1/ })).toBeVisible()
     await expect(page.getByRole('list', { name: 'Persoas de contacto' })).toContainText('Marta Rey')
+  })
+
+  test('the forecast only shows outdoors, with MeteoGalicia credited and a warning in words', async ({ page }) => {
+    await open(page, '/lugo/padel-1')
+    await expect(page.getByRole('heading', { name: 'Reservar un turno' })).toBeVisible()
+    await expect(page.getByRole('region', { name: /^Tempo previsto/ })).toHaveCount(0) // indoors
+    await open(page, '/lugo/padel-1', { outdoor: true })
+    const strip = page.getByRole('region', { name: /^Tempo previsto/ })
+    await expect(strip).toContainText('Chuvascos')
+    await expect(strip).toContainText('80 % de choiva')
+    await expect(strip).toContainText('Atención ao tempo: choiva probable, vento forte.')
+    await expect(strip.getByRole('link', { name: 'MeteoGalicia' })).toHaveAttribute('href', 'https://www.meteogalicia.gal')
   })
 
   test('the facility form has one button: create at the end, or save', async ({ page }) => {

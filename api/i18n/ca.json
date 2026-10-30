@@ -178,7 +178,8 @@
     "invalid_issue_status": "Aquest estat no existeix.",
     "invalid_issue_note": "La nota pot tenir fins a 1000 caràcters.",
     "issue_reject_reason": "Per rebutjar un avís, explica’n el motiu a qui l’ha enviat.",
-    "issue_not_found": "No hem trobat aquest avís."
+    "issue_not_found": "No hem trobat aquest avís.",
+    "invalid_municipality_code": "El codi INE del municipi té cinc xifres (per exemple, 36024 per a Lalín)."
   },
   "email": {
     "greeting": "Hola {{0}},",

@@ -66,5 +66,63 @@
       "safety": "Safety",
       "other": "Other"
     }
+  },
+  "weather": {
+    "title": "Weather forecast",
+    "source": "Data:",
+    "range": "{{min}}–{{max}} °C",
+    "temperature": "{{value}} °C",
+    "rainChance": "{{value}}% chance of rain",
+    "unknown": "No data",
+    "forTurn": "Weather at {{time}}",
+    "dayWarning": "Mind the weather: {{list}}.",
+    "turnWarning": "Mind the weather at {{time}}: {{list}}. You can cancel until {{date}}.",
+    "period": {
+      "morning": "Morning",
+      "afternoon": "Afternoon",
+      "night": "Night"
+    },
+    "sky": {
+      "clear": "Clear",
+      "partly_cloudy": "Sun and clouds",
+      "cloudy": "Cloudy",
+      "overcast": "Overcast",
+      "fog": "Fog",
+      "haze": "Haze",
+      "drizzle": "Drizzle",
+      "rain": "Rain",
+      "showers": "Showers",
+      "storm": "Thunderstorm",
+      "snow": "Snow",
+      "sleet": "Sleet",
+      "hail": "Hail"
+    },
+    "wind": {
+      "calm": "Calm",
+      "variable": "variable wind",
+      "light": "light wind",
+      "moderate": "moderate wind",
+      "strong": "strong wind",
+      "very_strong": "very strong wind"
+    },
+    "from": {
+      "n": "from the north",
+      "ne": "from the north-east",
+      "e": "from the east",
+      "se": "from the south-east",
+      "s": "from the south",
+      "sw": "from the south-west",
+      "w": "from the west",
+      "nw": "from the north-west"
+    },
+    "warning": {
+      "rain": "rain likely",
+      "storm": "thunderstorm",
+      "snow": "snow or hail",
+      "wind": "strong wind",
+      "heat": "very hot",
+      "cold": "frost or very cold",
+      "alert": "MeteoGalicia warning"
+    }
   }
 }

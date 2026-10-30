@@ -22,6 +22,7 @@ COUNCILS = [
         "name": "Concello de Lalín",
         "contact_email": "lalin@lalin.org",
         "contact_phone": "986 787 060",
+        "municipality_code": "36024",  # INE: MeteoGalicia's forecast
         # files in db/init/seed_media, uploaded by the storage-seed service; the database keeps the reference
         "logo_ref": "councils/lalin.png",
         "facilities": [
@@ -71,6 +72,7 @@ COUNCILS = [
         "name": "Concello de Lugo",
         "contact_email": None,
         "contact_phone": "982 297 100",
+        "municipality_code": "27028",  # INE: MeteoGalicia's forecast
         "logo_ref": "councils/lugo.png",
         "facilities": [
             {
@@ -112,6 +114,7 @@ COUNCILS = [
         "contact_email": None,
         # Consello Municipal de Deportes, Avenida de Pardo de Cela 2
         "contact_phone": "988 370 539",
+        "municipality_code": "32054",  # INE: MeteoGalicia's forecast
         "logo_ref": "councils/ourense.png",
         "facilities": [
             {

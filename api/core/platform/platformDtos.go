@@ -20,9 +20,11 @@ type TenantInput struct {
 	Timezone     string `json:"timezone"`
 	ContactEmail string `json:"contact_email"`
 	ContactPhone string `json:"contact_phone"`
-	LogoRef      string `json:"logo_ref"`    // a storage reference from POST /media, never a URL
-	IsActive     *bool  `json:"is_active"`   // update only
-	AdminEmail   string `json:"admin_email"` // create only: the first council administrator
+	// INE code of the municipality (5 digits), for MeteoGalicia's forecast; "" = none
+	MunicipalityCode string `json:"municipality_code"`
+	LogoRef          string `json:"logo_ref"`    // a storage reference from POST /media, never a URL
+	IsActive         *bool  `json:"is_active"`   // update only
+	AdminEmail       string `json:"admin_email"` // create only: the first council administrator
 }
 
 func (in *TenantInput) normalise() {
@@ -31,6 +33,7 @@ func (in *TenantInput) normalise() {
 	in.Timezone = strings.TrimSpace(in.Timezone)
 	in.ContactEmail = strings.ToLower(strings.TrimSpace(in.ContactEmail))
 	in.ContactPhone = strings.TrimSpace(in.ContactPhone)
+	in.MunicipalityCode = strings.TrimSpace(in.MunicipalityCode)
 	in.LogoRef = strings.TrimSpace(in.LogoRef)
 	in.AdminEmail = strings.ToLower(strings.TrimSpace(in.AdminEmail))
 }
@@ -50,6 +53,8 @@ func (in *TenantInput) validate(creating bool) string {
 		return "errors.invalid_email"
 	case len(in.ContactPhone) > 50:
 		return "errors.invalid_phone"
+	case in.MunicipalityCode != "" && !validMunicipalityCode(in.MunicipalityCode):
+		return "errors.invalid_municipality_code"
 	case in.LogoRef != "" && (!storage.ValidRef(in.LogoRef) || !strings.HasPrefix(in.LogoRef, "councils/")):
 		return "errors.invalid_image"
 	case creating && !validEmail(in.AdminEmail):
@@ -109,17 +114,18 @@ type InvitationDto struct {
 }
 
 type TenantDetailDto struct {
-	Slug         string          `json:"slug"`
-	Name         string          `json:"name"`
-	Timezone     string          `json:"timezone"`
-	ContactEmail string          `json:"contact_email"`
-	ContactPhone string          `json:"contact_phone"`
-	LogoRef      string          `json:"logo_ref"` // sent back unchanged when the form is saved
-	LogoUrl      string          `json:"logo_url"`
-	IsActive     bool            `json:"is_active"`
-	BookingCount int64           `json:"booking_count"`
-	Admins       []MemberDto     `json:"admins"`
-	Invitations  []InvitationDto `json:"invitations"`
+	Slug             string          `json:"slug"`
+	Name             string          `json:"name"`
+	Timezone         string          `json:"timezone"`
+	ContactEmail     string          `json:"contact_email"`
+	ContactPhone     string          `json:"contact_phone"`
+	MunicipalityCode string          `json:"municipality_code"`
+	LogoRef          string          `json:"logo_ref"` // sent back unchanged when the form is saved
+	LogoUrl          string          `json:"logo_url"`
+	IsActive         bool            `json:"is_active"`
+	BookingCount     int64           `json:"booking_count"`
+	Admins           []MemberDto     `json:"admins"`
+	Invitations      []InvitationDto `json:"invitations"`
 }
 
 type SuperadminDto struct {
@@ -132,4 +138,17 @@ type SuperadminDto struct {
 
 type SuperadminsResponse struct {
 	Superadmins []SuperadminDto `json:"superadmins"`
+}
+
+// validMunicipalityCode: an INE municipality code, five digits.
+func validMunicipalityCode(code string) bool {
+	if len(code) != 5 {
+		return false
+	}
+	for _, r := range code {
+		if r < '0' || r > '9' {
+			return false
+		}
+	}
+	return true
 }

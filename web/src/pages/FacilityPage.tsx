@@ -12,7 +12,9 @@ import { TopBar } from '@/components/TopBar'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { WeatherStrip } from '@/components/Weather'
 import { useAsync } from '@/hooks/useAsync'
+import { useForecast } from '@/hooks/useForecast'
 import { useLogin } from '@/hooks/useLogin'
 import { api, ApiError, type Facility, type Slot } from '@/lib/api'
 import { directionsUrl } from '@/lib/maps'
@@ -47,6 +49,8 @@ export function FacilityPage() {
 
   const data = page.data
   const timeZone = data?.timezone ?? 'Europe/Madrid'
+  // the day's forecast, for an outdoor facility (MeteoGalicia)
+  const forecast = useForecast(slug, facilitySlug, data?.facility.tags ?? [], data?.date ?? null)
   const today = data ? localDate(data.now, data.timezone) : ''
 
   const confirm = async (facility: Facility, slot: Slot, isPublic: boolean) => {
@@ -124,6 +128,7 @@ export function FacilityPage() {
               </h2>
               <DayPicker today={today} value={data.date} onChange={(value) => setPicked({ key, date: value })} />
             </div>
+            {forecast && <WeatherStrip forecast={forecast} />}
             <div aria-live="polite">
               {notice && (
                 <Alert className="border-0 bg-pill-positive-bg text-pill-positive-ink">
@@ -259,6 +264,7 @@ export function FacilityPage() {
       <BookingDialog
         key={pick ? pick.slot.starts_at : 'none'}
         pick={pick}
+        tenantSlug={slug}
         timeZone={timeZone}
         today={today}
         authenticated={auth.isAuthenticated}
