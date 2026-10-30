@@ -282,7 +282,7 @@ func (q *Queries) GetFacilityForAdmin(ctx context.Context, arg GetFacilityForAdm
 }
 
 const getTenantBookingRules = `-- name: GetTenantBookingRules :one
-SELECT tenant_id, max_advance_hours, min_advance_minutes, min_cancel_hours, max_active_bookings_per_user, max_bookings_per_day, max_turns_in_a_row, max_bookings_per_week, weekly_opening, opens_weekday, opens_minute, no_show_penalty, no_show_limit, no_show_window_days, no_show_block_days, updated_at FROM tenant_booking_rules WHERE tenant_id = $1
+SELECT tenant_id, max_advance_hours, min_advance_minutes, min_cancel_hours, max_active_bookings_per_user, max_bookings_per_day, max_turns_in_a_row, max_bookings_per_week, max_active_bookings_council, weekly_opening, opens_weekday, opens_minute, no_show_penalty, no_show_limit, no_show_window_days, no_show_block_days, updated_at FROM tenant_booking_rules WHERE tenant_id = $1
 `
 
 func (q *Queries) GetTenantBookingRules(ctx context.Context, tenantID uuid.UUID) (TenantBookingRule, error) {
@@ -297,6 +297,7 @@ func (q *Queries) GetTenantBookingRules(ctx context.Context, tenantID uuid.UUID)
 		&i.MaxBookingsPerDay,
 		&i.MaxTurnsInARow,
 		&i.MaxBookingsPerWeek,
+		&i.MaxActiveBookingsCouncil,
 		&i.WeeklyOpening,
 		&i.OpensWeekday,
 		&i.OpensMinute,
@@ -616,16 +617,17 @@ SET
     max_bookings_per_day         = $5,
     max_turns_in_a_row           = $6,
     max_bookings_per_week        = $7,
-    weekly_opening               = $8,
-    opens_weekday                = $9,
-    opens_minute                 = $10,
-    no_show_penalty              = $11,
-    no_show_limit                = $12,
-    no_show_window_days          = $13,
-    no_show_block_days           = $14,
+    max_active_bookings_council  = $8,
+    weekly_opening               = $9,
+    opens_weekday                = $10,
+    opens_minute                 = $11,
+    no_show_penalty              = $12,
+    no_show_limit                = $13,
+    no_show_window_days          = $14,
+    no_show_block_days           = $15,
     updated_at                   = NOW()
 WHERE
-    tenant_id = $15
+    tenant_id = $16
 `
 
 type UpdateTenantBookingRulesParams struct {
@@ -636,6 +638,7 @@ type UpdateTenantBookingRulesParams struct {
 	MaxBookingsPerDay        int32     `json:"max_bookings_per_day"`
 	MaxTurnsInARow           int32     `json:"max_turns_in_a_row"`
 	MaxBookingsPerWeek       int32     `json:"max_bookings_per_week"`
+	MaxActiveBookingsCouncil int32     `json:"max_active_bookings_council"`
 	WeeklyOpening            bool      `json:"weekly_opening"`
 	OpensWeekday             int16     `json:"opens_weekday"`
 	OpensMinute              int32     `json:"opens_minute"`
@@ -656,6 +659,7 @@ func (q *Queries) UpdateTenantBookingRules(ctx context.Context, arg UpdateTenant
 		arg.MaxBookingsPerDay,
 		arg.MaxTurnsInARow,
 		arg.MaxBookingsPerWeek,
+		arg.MaxActiveBookingsCouncil,
 		arg.WeeklyOpening,
 		arg.OpensWeekday,
 		arg.OpensMinute,

@@ -86,7 +86,8 @@ Scope: bases §1.1 (minimum) + §1.2 (technical). See [architecture plan](docs/s
 - [ ] Profile photo: removing a photo that only exists in Zitadel (none in the app) does not remove it there
 - [ ] Try the camera and location flows on a real phone over HTTPS (door QR, entry code, reader)
 - [x] Booking window: bookings per person and week, and next week's turns opening all at once at a fixed weekday and time instead of the rolling window
-- [ ] Booking window, later if wanted: limits across all the council's facilities
+- [x] Booking limits across facilities: a council-wide cap per person, and one council at a time per account (platform setting)
+- [ ] Booking window, later if wanted: a cap per sport across the council's facilities
 - [ ] «For you» as the full signed-in feed of the README proposal (search on its own page, invitations, quiet hours, new facilities)
 
 ## Weather (30 Oct)

@@ -80,10 +80,11 @@ type FacilityDayDto struct {
 	MinAdvanceMinutes int32    `json:"min_advance_minutes"` // the app books no turn starting sooner
 	MinCancelHours    int32    `json:"min_cancel_hours"`
 	MaxActive         int32    `json:"max_active_bookings_per_user"`
-	MaxPerDay         int32    `json:"max_bookings_per_day"`  // per person and day; 0 = no limit
-	MaxInARow         int32    `json:"max_turns_in_a_row"`    // back-to-back turns per person; 0 = no limit
-	MaxPerWeek        int32    `json:"max_bookings_per_week"` // per person and week; 0 = no limit
-	Capacity          int32    `json:"capacity"`              // people per booking, owner included; 0 without a limit
+	MaxPerDay         int32    `json:"max_bookings_per_day"`        // per person and day; 0 = no limit
+	MaxInARow         int32    `json:"max_turns_in_a_row"`          // back-to-back turns per person; 0 = no limit
+	MaxPerWeek        int32    `json:"max_bookings_per_week"`       // per person and week; 0 = no limit
+	Capacity          int32    `json:"capacity"`                    // people per booking, owner included; 0 without a limit
+	CouncilMaxActive  int32    `json:"council_max_active_bookings"` // per person across the council's facilities; 0 = no limit
 	// instead of max_advance_hours: next week's turns open all at once; null with a rolling window
 	WeeklyOpening *WeeklyOpeningDto `json:"weekly_opening"`
 	MinAge        *int32            `json:"min_age"` // age control: null = none

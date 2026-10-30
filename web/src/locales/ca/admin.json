@@ -722,7 +722,11 @@
     "perWeek": "Reserves per persona i setmana",
     "sumWeekly": "Els torns de la setmana següent s’obren el {{weekday}} a les {{time}}.",
     "sumPerWeek_one": "{{count}} reserva per persona i setmana.",
-    "sumPerWeek_other": "{{count}} reserves per persona i setmana."
+    "sumPerWeek_other": "{{count}} reserves per persona i setmana.",
+    "councilActive": "Reserves actives per persona a tot l’ajuntament",
+    "councilActiveHelp": "Comptant totes les instal·lacions de l’ajuntament. 0 = sense límit.",
+    "sumCouncilActive_one": "{{count}} reserva activa per persona a tot l’ajuntament.",
+    "sumCouncilActive_other": "{{count}} reserves actives per persona a tot l’ajuntament."
   },
   "councilSettings": {
     "title": "Configuració de l’ajuntament",
@@ -815,7 +819,8 @@
       "branding.changed": "Ha canviat el nom o el logotip de l’aplicació",
       "account.exported": "Ha baixat les seves dades",
       "account.deleted": "Ha esborrat el seu compte",
-      "other": "Un altre canvi"
+      "other": "Un altre canvi",
+      "booking_policy.changed": "Ha canviat les normes de reserva de la plataforma"
     }
   },
   "widget": {
@@ -864,5 +869,11 @@
     "close": "Tanca la instal·lació o mira’n l’horari",
     "newCount_one": ", {{count}} nova",
     "newCount_other": ", {{count}} noves"
+  },
+  "bookingPolicy": {
+    "title": "Normes de reserva de la plataforma",
+    "oneCouncil": "Un ajuntament cada vegada per compte",
+    "oneCouncilHelp": "Amb reserves properes en un ajuntament (pròpies o a les quals s’ha unit), una persona no pot reservar ni unir-se en un altre fins que acabin. Cap ajuntament no veu les reserves d’un altre.",
+    "saved": "Desat."
   }
 }

@@ -200,6 +200,9 @@ func addUser(ctx context.Context, userId uuid.UUID) func(*model.Queries, model.L
 		if overlaps {
 			return &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.booking_overlaps"}
 		}
+		if limitErr := bookings.CouncilLimits(ctx, queries, userId, booking.TenantID, false); limitErr != nil {
+			return limitErr
+		}
 		if booking.MinAge.Valid {
 			var birth, err = queries.GetUserBirthDate(ctx, userId)
 			if err != nil || !birth.Valid {

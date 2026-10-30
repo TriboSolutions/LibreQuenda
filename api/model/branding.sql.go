@@ -38,6 +38,19 @@ func (q *Queries) GetAppSettings(ctx context.Context) (GetAppSettingsRow, error)
 	return i, err
 }
 
+const getBookingPolicy = `-- name: GetBookingPolicy :one
+SELECT
+    COALESCE((SELECT a.one_council_per_account FROM app_settings a WHERE a.id), TRUE)::BOOLEAN AS one_council_per_account
+`
+
+// Platform-wide booking rules: one council at a time per person (on without a row).
+func (q *Queries) GetBookingPolicy(ctx context.Context) (bool, error) {
+	row := q.db.QueryRowContext(ctx, getBookingPolicy)
+	var one_council_per_account bool
+	err := row.Scan(&one_council_per_account)
+	return one_council_per_account, err
+}
+
 const saveAppSettings = `-- name: SaveAppSettings :exec
 INSERT INTO app_settings (id, app_name, logo_ref, updated_at)
 VALUES (TRUE, $1, $2, NOW())
@@ -54,5 +67,18 @@ type SaveAppSettingsParams struct {
 
 func (q *Queries) SaveAppSettings(ctx context.Context, arg SaveAppSettingsParams) error {
 	_, err := q.db.ExecContext(ctx, saveAppSettings, arg.AppName, arg.LogoRef)
+	return err
+}
+
+const saveBookingPolicy = `-- name: SaveBookingPolicy :exec
+INSERT INTO app_settings (id, one_council_per_account, updated_at)
+VALUES (TRUE, $1, NOW())
+ON CONFLICT (id) DO UPDATE SET
+    one_council_per_account = EXCLUDED.one_council_per_account,
+    updated_at = NOW()
+`
+
+func (q *Queries) SaveBookingPolicy(ctx context.Context, oneCouncilPerAccount bool) error {
+	_, err := q.db.ExecContext(ctx, saveBookingPolicy, oneCouncilPerAccount)
 	return err
 }

@@ -365,10 +365,11 @@ func (ns NullTenantRole) Value() (driver.Value, error) {
 }
 
 type AppSetting struct {
-	ID        bool           `json:"id"`
-	AppName   sql.NullString `json:"app_name"`
-	LogoRef   sql.NullString `json:"logo_ref"`
-	UpdatedAt time.Time      `json:"updated_at"`
+	ID                   bool           `json:"id"`
+	AppName              sql.NullString `json:"app_name"`
+	LogoRef              sql.NullString `json:"logo_ref"`
+	OneCouncilPerAccount bool           `json:"one_council_per_account"`
+	UpdatedAt            time.Time      `json:"updated_at"`
 }
 
 type AppUser struct {
@@ -600,6 +601,7 @@ type TenantBookingRule struct {
 	MaxBookingsPerDay        int32     `json:"max_bookings_per_day"`
 	MaxTurnsInARow           int32     `json:"max_turns_in_a_row"`
 	MaxBookingsPerWeek       int32     `json:"max_bookings_per_week"`
+	MaxActiveBookingsCouncil int32     `json:"max_active_bookings_council"`
 	WeeklyOpening            bool      `json:"weekly_opening"`
 	OpensWeekday             int16     `json:"opens_weekday"`
 	OpensMinute              int32     `json:"opens_minute"`

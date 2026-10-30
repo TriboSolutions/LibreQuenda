@@ -143,6 +143,7 @@ SET
     max_bookings_per_day         = sqlc.arg('max_bookings_per_day'),
     max_turns_in_a_row           = sqlc.arg('max_turns_in_a_row'),
     max_bookings_per_week        = sqlc.arg('max_bookings_per_week'),
+    max_active_bookings_council  = sqlc.arg('max_active_bookings_council'),
     weekly_opening               = sqlc.arg('weekly_opening'),
     opens_weekday                = sqlc.arg('opens_weekday'),
     opens_minute                 = sqlc.arg('opens_minute'),

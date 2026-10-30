@@ -124,5 +124,7 @@
       "cold": "glaçada o molt de fred",
       "alert": "avís de MeteoGalicia"
     }
-  }
+  },
+  "ruleCouncilActive_one": "Com a màxim {{count}} reserva activa per persona a tot l’ajuntament.",
+  "ruleCouncilActive_other": "Com a màxim {{count}} reserves actives per persona a tot l’ajuntament."
 }

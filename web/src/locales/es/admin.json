@@ -722,7 +722,11 @@
     "perWeek": "Reservas por persona y semana",
     "sumWeekly": "Los turnos de la semana siguiente se abren el {{weekday}} a las {{time}}.",
     "sumPerWeek_one": "{{count}} reserva por persona y semana.",
-    "sumPerWeek_other": "{{count}} reservas por persona y semana."
+    "sumPerWeek_other": "{{count}} reservas por persona y semana.",
+    "councilActive": "Reservas activas por persona en todo el ayuntamiento",
+    "councilActiveHelp": "Contando todas las instalaciones del ayuntamiento. 0 = sin límite.",
+    "sumCouncilActive_one": "{{count}} reserva activa por persona en todo el ayuntamiento.",
+    "sumCouncilActive_other": "{{count}} reservas activas por persona en todo el ayuntamiento."
   },
   "councilSettings": {
     "title": "Ajustes del ayuntamiento",
@@ -815,7 +819,8 @@
       "branding.changed": "Cambió el nombre o el logo de la aplicación",
       "account.exported": "Descargó sus datos",
       "account.deleted": "Borró su cuenta",
-      "other": "Otro cambio"
+      "other": "Otro cambio",
+      "booking_policy.changed": "Cambió las normas de reserva de la plataforma"
     }
   },
   "widget": {
@@ -864,5 +869,11 @@
     "close": "Cerrar la instalación o mirar su horario",
     "newCount_one": ", {{count}} nueva",
     "newCount_other": ", {{count}} nuevas"
+  },
+  "bookingPolicy": {
+    "title": "Normas de reserva de la plataforma",
+    "oneCouncil": "Un ayuntamiento cada vez por cuenta",
+    "oneCouncilHelp": "Con reservas próximas en un ayuntamiento (propias o a las que se unió), una persona no puede reservar ni unirse en otro hasta que terminen. Ningún ayuntamiento ve las reservas de otro.",
+    "saved": "Guardado."
   }
 }

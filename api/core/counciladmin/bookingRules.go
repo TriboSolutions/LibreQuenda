@@ -22,6 +22,8 @@ type BookingRulesDto struct {
 	MaxBookingsPerDay        int32 `json:"max_bookings_per_day"`         // per person and day; 0 = no limit
 	MaxTurnsInARow           int32 `json:"max_turns_in_a_row"`           // back-to-back turns per person; 0 = no limit
 	MaxBookingsPerWeek       int32 `json:"max_bookings_per_week"`        // per person and ISO week; 0 = no limit
+	// council only: a person's own upcoming bookings across all its facilities; 0 = no limit
+	MaxActiveBookingsCouncil int32 `json:"max_active_bookings_council"`
 	// instead of MaxAdvanceHours: next week's turns open all at once on OpensWeekday (ISO, 7 = Sunday) at OpensMinute
 	WeeklyOpening bool  `json:"weekly_opening"`
 	OpensWeekday  int16 `json:"opens_weekday"`
@@ -44,7 +46,8 @@ func (r BookingRulesDto) validate() string {
 		return "errors.invalid_cancel_hours"
 	case r.MaxActiveBookingsPerUser < 1 || r.MaxActiveBookingsPerUser > 50:
 		return "errors.invalid_booking_limit"
-	case r.MaxBookingsPerDay < 0 || r.MaxBookingsPerDay > 24, r.MaxTurnsInARow < 0 || r.MaxTurnsInARow > 24, r.MaxBookingsPerWeek < 0 || r.MaxBookingsPerWeek > 100:
+	case r.MaxBookingsPerDay < 0 || r.MaxBookingsPerDay > 24, r.MaxTurnsInARow < 0 || r.MaxTurnsInARow > 24, r.MaxBookingsPerWeek < 0 || r.MaxBookingsPerWeek > 100,
+		r.MaxActiveBookingsCouncil < 0 || r.MaxActiveBookingsCouncil > 100:
 		return "errors.invalid_booking_limit"
 	case r.OpensWeekday < 1 || r.OpensWeekday > 7 || r.OpensMinute < 0 || r.OpensMinute > 24*60-1:
 		return "errors.invalid_weekly_opening"
@@ -69,6 +72,7 @@ func rulesOfCouncil(r model.TenantBookingRule) BookingRulesDto {
 		MaxActiveBookingsPerUser: r.MaxActiveBookingsPerUser, MaxBookingsPerDay: r.MaxBookingsPerDay, MaxTurnsInARow: r.MaxTurnsInARow,
 		NoShowPenalty: r.NoShowPenalty, NoShowLimit: r.NoShowLimit, NoShowWindowDays: r.NoShowWindowDays, NoShowBlockDays: r.NoShowBlockDays,
 		MaxBookingsPerWeek: r.MaxBookingsPerWeek, WeeklyOpening: r.WeeklyOpening, OpensWeekday: r.OpensWeekday, OpensMinute: r.OpensMinute,
+		MaxActiveBookingsCouncil: r.MaxActiveBookingsCouncil,
 	}
 }
 
@@ -111,7 +115,8 @@ func (s *counciladminService) SaveBookingRules(ctx context.Context, tenantId uui
 			MinCancelHours: input.MinCancelHours, MaxActiveBookingsPerUser: input.MaxActiveBookingsPerUser,
 			MaxBookingsPerDay: input.MaxBookingsPerDay, MaxTurnsInARow: input.MaxTurnsInARow, NoShowPenalty: input.NoShowPenalty,
 			MaxBookingsPerWeek: input.MaxBookingsPerWeek, WeeklyOpening: input.WeeklyOpening, OpensWeekday: input.OpensWeekday, OpensMinute: input.OpensMinute,
-			NoShowLimit: input.NoShowLimit, NoShowWindowDays: input.NoShowWindowDays, NoShowBlockDays: input.NoShowBlockDays,
+			MaxActiveBookingsCouncil: input.MaxActiveBookingsCouncil,
+			NoShowLimit:              input.NoShowLimit, NoShowWindowDays: input.NoShowWindowDays, NoShowBlockDays: input.NoShowBlockDays,
 		}); updateErr != nil {
 			return updateErr
 		}

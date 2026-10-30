@@ -127,7 +127,7 @@ func (s *bookingsService) book(ctx context.Context, queries *model.Queries, user
 
 	var booking model.Booking
 	var overlapErr *shared.ErrorResponse
-	booking, overlapErr, err = s.insertBooking(ctx, userId, facility.ID, slot)
+	booking, overlapErr, err = s.insertBooking(ctx, userId, facility, slot)
 	if overlapErr != nil {
 		return nil, overlapErr
 	}
@@ -158,8 +158,10 @@ func (s *bookingsService) book(ctx context.Context, queries *model.Queries, user
 }
 
 // insertBooking creates the booking unless the person is already somewhere else
-// at that time, in any facility or council, as owner or invited (UserHasOverlappingBooking).
-func (s *bookingsService) insertBooking(ctx context.Context, userId uuid.UUID, facilityId uuid.UUID, slot *schedule.Slot) (model.Booking, *shared.ErrorResponse, error) {
+// at that time, in any facility or council, as owner or invited (UserHasOverlappingBooking),
+// or it breaks the rules beyond the facility (CouncilLimits).
+func (s *bookingsService) insertBooking(ctx context.Context, userId uuid.UUID, facility model.GetFacilityForBookingRow, slot *schedule.Slot) (model.Booking, *shared.ErrorResponse, error) {
+	var facilityId = facility.ID
 	var tx, err = s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return model.Booking{}, nil, err
@@ -178,6 +180,9 @@ func (s *bookingsService) insertBooking(ctx context.Context, userId uuid.UUID, f
 	}
 	if overlaps {
 		return model.Booking{}, &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.booking_overlaps"}, nil
+	}
+	if limitErr := CouncilLimits(ctx, queries, userId, facility.TenantID, true); limitErr != nil {
+		return model.Booking{}, limitErr, nil
 	}
 
 	var booking model.Booking

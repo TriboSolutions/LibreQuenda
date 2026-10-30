@@ -179,7 +179,10 @@
     "invalid_issue_note": "The note can be up to 1000 characters.",
     "issue_reject_reason": "To reject a report, explain why to the person who sent it.",
     "issue_not_found": "That report was not found.",
-    "invalid_municipality_code": "The municipality’s INE code has five digits (e.g. 36024 for Lalín)."
+    "invalid_municipality_code": "The municipality’s INE code has five digits (e.g. 36024 for Lalín).",
+    "other_council_booking": "You already have bookings at {{0}}: an account books in one council at a time. You can book here once they are over or cancelled.",
+    "council_limit_reached": "You already have {{0}} upcoming bookings at this council's facilities, the most it allows.",
+    "booking_policy_failed": "The platform's booking rules could not be saved."
   },
   "email": {
     "greeting": "Hello {{0}},",
