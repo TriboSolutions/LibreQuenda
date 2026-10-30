@@ -97,14 +97,14 @@
     "empty": "No facilities yet. Create the first one.",
     "count_one": "{{count}} facility",
     "count_other": "{{count}} facilities",
+    "colFacility": "Facility",
+    "colSchedule": "Opening windows",
+    "colUpcoming": "Upcoming bookings",
     "edit": "Edit",
     "noSchedule": "no hours",
     "back": "All facilities",
     "viewPage": "Open its page",
-    "windows_one": "{{count}} opening window",
-    "windows_other": "{{count}} opening windows",
-    "upcoming_one": "{{count}} upcoming booking",
-    "upcoming_other": "{{count}} upcoming bookings"
+    "actions": "Actions"
   },
   "editor": {
     "newTitle": "New facility",
