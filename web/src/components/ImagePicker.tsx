@@ -1,7 +1,8 @@
-import { ImageIcon, Loader2 } from 'lucide-react'
+import { Crop, ImageIcon, Loader2 } from 'lucide-react'
 import { useId, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
+import { AvatarCropDialog } from '@/components/AvatarCropDialog'
 import { Button } from '@/components/ui/button'
 import { api, type MediaFolder, type StoredImage } from '@/lib/api'
 import { cn } from '@/lib/utils'
@@ -21,6 +22,8 @@ type Props = {
 /**
  * Picks an image, uploads it to the storage (POST /media) and hands back
  * { ref, url }. Forms save the ref; the url is only ever used to show it.
+ * An avatar is framed in a circle first (AvatarCropDialog), and can be
+ * reframed later, so what is stored is what the circle shows.
  */
 export function ImagePicker({ label, folder, value, onChange, shape = 'square', hideLabel = false }: Props) {
   const { t } = useTranslation()
@@ -30,12 +33,26 @@ export function ImagePicker({ label, folder, value, onChange, shape = 'square', 
   const [uploading, setUploading] = useState(false)
   const [dragging, setDragging] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // the avatar being framed: a picked file (an object URL, revoked after) or the stored photo
+  const [cropping, setCropping] = useState<{ url: string; picked: boolean } | null>(null)
 
-  const upload = async (file: File | undefined) => {
+  const closeCrop = () => {
+    if (cropping?.picked) URL.revokeObjectURL(cropping.url)
+    setCropping(null)
+    if (input.current) input.current.value = ''
+  }
+
+  const pick = (file: File | undefined) => {
     if (!file) return
     setError(null)
     if (!TYPES.includes(file.type)) return setError(t('imagePicker.wrongType'))
     if (file.size > MAX_SIZE) return setError(t('imagePicker.tooLarge'))
+    if (shape === 'avatar') setCropping({ url: URL.createObjectURL(file), picked: true })
+    else void upload(file)
+  }
+
+  const upload = async (file: File) => {
+    setError(null)
     const token = auth.user?.access_token
     if (!token) return
     setUploading(true)
@@ -69,7 +86,7 @@ export function ImagePicker({ label, folder, value, onChange, shape = 'square', 
           onDrop={(e) => {
             e.preventDefault()
             setDragging(false)
-            void upload(e.dataTransfer.files[0])
+            pick(e.dataTransfer.files[0])
           }}
           className={cn(
             'relative flex shrink-0 items-center justify-center overflow-hidden border bg-muted text-muted-foreground transition-colors',
@@ -97,6 +114,13 @@ export function ImagePicker({ label, folder, value, onChange, shape = 'square', 
             <Button type="button" variant="outline" size="sm" disabled={uploading} onClick={() => input.current?.click()}>
               {uploading ? t('imagePicker.uploading') : value ? t('imagePicker.change') : t('imagePicker.upload')}
             </Button>
+            {/* the stored photo can be reframed; one from the sign-in account (no ref) cannot be read back */}
+            {shape === 'avatar' && value?.ref && !uploading && (
+              <Button type="button" variant="ghost" size="sm" onClick={() => setCropping({ url: value.url, picked: false })}>
+                <Crop aria-hidden />
+                {t('imagePicker.crop')}
+              </Button>
+            )}
             {value && !uploading && (
               <Button type="button" variant="ghost" size="sm" onClick={() => onChange(null)}>
                 {t('imagePicker.remove')}
@@ -113,13 +137,23 @@ export function ImagePicker({ label, folder, value, onChange, shape = 'square', 
           {error}
         </p>
       )}
+      {cropping && (
+        <AvatarCropDialog
+          source={cropping.url}
+          onCancel={closeCrop}
+          onCrop={(photo) => {
+            closeCrop()
+            void upload(photo)
+          }}
+        />
+      )}
       <input
         ref={input}
         type="file"
         accept={TYPES.join(',')}
         className="hidden"
         tabIndex={-1}
-        onChange={(e) => void upload(e.target.files?.[0])}
+        onChange={(e) => pick(e.target.files?.[0])}
       />
     </div>
   )

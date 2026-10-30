@@ -82,7 +82,15 @@
     "hint": "JPG, PNG o WebP, hasta 5 MB. También puedes soltarla en el recuadro.",
     "tooLarge": "La imagen supera los 5 MB.",
     "wrongType": "Solo imágenes JPG, PNG o WebP.",
-    "empty": "Sin imagen"
+    "empty": "Sin imagen",
+    "crop": "Encuadrar",
+    "cropTitle": "Encuadra tu foto",
+    "cropHelp": "Arrastra la foto o usa las flechas para moverla, y el control o + y − para acercarla. Se guarda lo que se ve en el círculo.",
+    "cropFrame": "Foto para encuadrar",
+    "zoom": "Acercar",
+    "cropCancel": "Cancelar",
+    "cropUse": "Usar esta foto",
+    "cropFailed": "No se pudo abrir esta imagen."
   },
   "createAccount": "Crear cuenta",
   "rateLimited": "Demasiados intentos en poco tiempo. Espera un momento y vuelve a intentarlo.",
