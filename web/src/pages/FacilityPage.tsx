@@ -214,6 +214,7 @@ export function FacilityPage() {
               {f.max_bookings_per_day > 0 && <li>{t('facility:rulePerDay', { count: f.max_bookings_per_day })}</li>}
               {f.max_turns_in_a_row > 0 && <li>{t('facility:ruleInARow', { count: f.max_turns_in_a_row })}</li>}
               {f.max_bookings_per_week > 0 && <li>{t('facility:rulePerWeek', { count: f.max_bookings_per_week })}</li>}
+              {f.council_max_active_bookings > 0 && <li>{t('facility:ruleCouncilActive', { count: f.council_max_active_bookings })}</li>}
               {f.min_age !== null && <li className="font-medium">{t('facility:minAge', { count: f.min_age })}</li>}
             </ul>
           </section>

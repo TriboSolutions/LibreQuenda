@@ -10,6 +10,7 @@ type Props = {
   id: string // prefix for the fields' ids, so two forms can share a page
   value: BookingRules
   onChange: (rules: BookingRules) => void
+  council?: boolean // the council's own window: also its cap across all its facilities
 }
 
 const number = (value: string) => Math.max(0, Math.round(Number(value) || 0))
@@ -19,7 +20,7 @@ const WEEKDAYS = [1, 2, 3, 4, 5, 6, 7] // ISO; common:date.weekdays counts from 
 
 const clock = (minute: number) => `${String(Math.floor(minute / 60)).padStart(2, '0')}:${String(minute % 60).padStart(2, '0')}`
 
-export function BookingRulesFields({ id, value, onChange }: Props) {
+export function BookingRulesFields({ id, value, onChange, council = false }: Props) {
   const { t } = useTranslation(['admin', 'common'])
   const set = <K extends keyof BookingRules>(key: K, v: BookingRules[K]) => onChange({ ...value, [key]: v })
   // days when it is a whole number of them; the value itself is kept in hours
@@ -35,7 +36,7 @@ export function BookingRulesFields({ id, value, onChange }: Props) {
         required
         min={min}
         max={max}
-        value={value[key] as number}
+        value={(value[key] as number | undefined) ?? 0}
         aria-describedby={help ? `${id}-${key}-help` : undefined}
         onChange={(e) => set(key, number(e.target.value))}
         className="num"
@@ -140,6 +141,7 @@ export function BookingRulesFields({ id, value, onChange }: Props) {
         {field('max_bookings_per_day', t('rules.perDay'), 0, 24, t('rules.zeroNoLimit'))}
         {field('max_turns_in_a_row', t('rules.inARow'), 0, 24, t('rules.zeroNoLimit'))}
         {field('max_bookings_per_week', t('rules.perWeek'), 0, 100, t('rules.zeroNoLimit'))}
+        {council && field('max_active_bookings_council', t('rules.councilActive'), 0, 100, t('rules.councilActiveHelp'))}
       </div>
 
       <div className="grid gap-4 rounded-md border p-4">
@@ -186,6 +188,7 @@ export function BookingRulesSummary({ rules }: { rules: BookingRules }) {
       {rules.max_bookings_per_day > 0 && <li>{t('rules.sumPerDay', { count: rules.max_bookings_per_day })}</li>}
       {rules.max_turns_in_a_row > 0 && <li>{t('rules.sumInARow', { count: rules.max_turns_in_a_row })}</li>}
       {rules.max_bookings_per_week > 0 && <li>{t('rules.sumPerWeek', { count: rules.max_bookings_per_week })}</li>}
+      {(rules.max_active_bookings_council ?? 0) > 0 && <li>{t('rules.sumCouncilActive', { count: rules.max_active_bookings_council })}</li>}
       <li>
         {rules.no_show_penalty
           ? t('rules.sumPenalty', { limit: rules.no_show_limit, window: rules.no_show_window_days, block: rules.no_show_block_days })

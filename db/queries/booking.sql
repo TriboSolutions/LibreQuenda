@@ -298,3 +298,45 @@ WHERE
     AND facility_took_checkin(facility_id, starts_at)
 ORDER BY
     ends_at DESC;
+
+-- name: GetCouncilBookingPolicy :one
+-- The rules beyond one facility: whether a person books in one council at a
+-- time (platform setting, on without a row) and the council's cap on their
+-- upcoming bookings across its facilities (0 = none).
+SELECT
+    COALESCE((SELECT a.one_council_per_account FROM app_settings a WHERE a.id), TRUE)::BOOLEAN AS one_council_per_account,
+    COALESCE((SELECT r.max_active_bookings_council FROM tenant_booking_rules r WHERE r.tenant_id = sqlc.arg('tenant_id')), 0)::INT AS council_max_active;
+
+-- name: GetUserBookingInOtherCouncil :one
+-- The council of the person's next upcoming booking (own or joined) outside
+-- `tenant_id`, if any.
+SELECT
+    t.name
+FROM
+    booking b
+    JOIN facility f ON f.id = b.facility_id
+    JOIN tenant   t ON t.id = f.tenant_id
+WHERE
+    b.status = 'confirmed'
+    AND b.ends_at > NOW()
+    AND f.tenant_id <> sqlc.arg('tenant_id')
+    AND (
+        b.user_id = sqlc.arg('user_id')
+        OR EXISTS (SELECT 1 FROM booking_participant p WHERE p.booking_id = b.id AND p.user_id = sqlc.arg('user_id'))
+    )
+ORDER BY
+    b.starts_at
+LIMIT 1;
+
+-- name: CountUserUpcomingInCouncil :one
+-- The person's own upcoming confirmed bookings across the council's facilities.
+SELECT
+    COUNT(*)
+FROM
+    booking b
+    JOIN facility f ON f.id = b.facility_id
+WHERE
+    b.user_id = sqlc.arg('user_id')
+    AND b.status = 'confirmed'
+    AND b.ends_at > NOW()
+    AND f.tenant_id = sqlc.arg('tenant_id');

@@ -23,6 +23,8 @@ SELECT
     max_bookings_per_day,
     max_turns_in_a_row,
     max_bookings_per_week,
+    -- the council's cap across its facilities (tenant_booking_rules; 0 = none)
+    COALESCE((SELECT r.max_active_bookings_council FROM tenant_booking_rules r WHERE r.tenant_id = facility.tenant_id), 0)::INT AS council_max_active,
     weekly_opening,
     opens_weekday,
     opens_minute,
@@ -32,10 +34,10 @@ SELECT
 FROM
     facility
 WHERE
-    tenant_id = sqlc.arg('tenant_id')
-    AND is_active = TRUE
+    facility.tenant_id = sqlc.arg('tenant_id')
+    AND facility.is_active = TRUE
 ORDER BY
-    name ASC;
+    facility.name ASC;
 
 -- name: ListOpeningHoursByTenantWeekday :many
 SELECT

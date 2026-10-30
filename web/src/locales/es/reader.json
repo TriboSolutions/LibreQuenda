@@ -63,6 +63,8 @@
     "daily_limit_reached": "Ya tienes las reservas que se permiten por día aquí.",
     "turns_in_a_row_limit": "No puedes reservar tantos turnos seguidos aquí.",
     "no_show_blocked": "No puedes reservar aquí durante unos días, por no presentarte a varias reservas.",
-    "weekly_limit_reached": "Ya tienes las reservas que se permiten por semana aquí."
+    "weekly_limit_reached": "Ya tienes las reservas que se permiten por semana aquí.",
+    "other_council_booking": "Ya tienes reservas en otro ayuntamiento: reservas en un ayuntamiento cada vez.",
+    "council_limit_reached": "Ya tienes las reservas próximas que permite este ayuntamiento."
   }
 }

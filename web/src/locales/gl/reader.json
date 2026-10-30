@@ -63,6 +63,8 @@
     "daily_limit_reached": "Xa tes as reservas que se permiten por día aquí.",
     "turns_in_a_row_limit": "Non podes reservar tantas quendas seguidas aquí.",
     "no_show_blocked": "Non podes reservar aquí durante uns días, por non presentarte a varias reservas.",
-    "weekly_limit_reached": "Xa tes as reservas que se permiten por semana aquí."
+    "weekly_limit_reached": "Xa tes as reservas que se permiten por semana aquí.",
+    "other_council_booking": "Xa tes reservas noutro concello: reservas nun concello de cada vez.",
+    "council_limit_reached": "Xa tes as reservas próximas que permite este concello."
   }
 }

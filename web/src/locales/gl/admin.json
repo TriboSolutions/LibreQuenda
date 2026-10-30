@@ -722,7 +722,11 @@
     "perWeek": "Reservas por persoa e semana",
     "sumWeekly": "As quendas da semana seguinte ábrense o {{weekday}} ás {{time}}.",
     "sumPerWeek_one": "{{count}} reserva por persoa e semana.",
-    "sumPerWeek_other": "{{count}} reservas por persoa e semana."
+    "sumPerWeek_other": "{{count}} reservas por persoa e semana.",
+    "councilActive": "Reservas activas por persoa en todo o concello",
+    "councilActiveHelp": "Contando todas as instalacións do concello. 0 = sen límite.",
+    "sumCouncilActive_one": "{{count}} reserva activa por persoa en todo o concello.",
+    "sumCouncilActive_other": "{{count}} reservas activas por persoa en todo o concello."
   },
   "councilSettings": {
     "title": "Axustes do concello",
@@ -815,7 +819,8 @@
       "branding.changed": "Cambiou o nome ou o logo da aplicación",
       "account.exported": "Descargou os seus datos",
       "account.deleted": "Borrou a súa conta",
-      "other": "Outro cambio"
+      "other": "Outro cambio",
+      "booking_policy.changed": "Cambiou as normas de reserva da plataforma"
     }
   },
   "widget": {
@@ -864,5 +869,11 @@
     "close": "Pechar a instalación ou mirar o seu horario",
     "newCount_one": ", {{count}} nova",
     "newCount_other": ", {{count}} novas"
+  },
+  "bookingPolicy": {
+    "title": "Normas de reserva da plataforma",
+    "oneCouncil": "Un concello de cada vez por conta",
+    "oneCouncilHelp": "Con reservas próximas nun concello (propias ou ás que se uniu), unha persoa non pode reservar nin unirse noutro ata que rematen. Ningún concello ve as reservas doutro.",
+    "saved": "Gardado."
   }
 }
