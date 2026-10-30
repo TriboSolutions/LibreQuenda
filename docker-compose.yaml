@@ -211,6 +211,7 @@ services:
       PUBLIC_SCHEME: ${PUBLIC_SCHEME}
       WEB_DOMAIN: ${WEB_DOMAIN}
       ZITADEL_DOMAIN: ${ZITADEL_DOMAIN}
+      ZITADEL_PASSKEYS: ${ZITADEL_PASSKEYS:-false} # true: offer passkeys besides the password
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
     volumes:

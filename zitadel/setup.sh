@@ -4,6 +4,7 @@
 #  - creates the "LibreQuenda" project and its "web" OIDC app (PKCE, no secret)
 #  - keeps the app's redirect URIs in sync with the environment
 #  - enables "Sign in with Google" when GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET are set
+#  - signs up and in with a password (passkeys only with ZITADEL_PASSKEYS=true)
 #  - brands the login and console as LibreQuenda (logo, colours, no Zitadel links)
 #  - creates the "librequenda-api" service account (user manager only) and writes
 #    its token to /api-secrets, for /perfil (name, email, password)
@@ -128,6 +129,15 @@ elif [ -n "$GOOGLE_IDP_ID" ]; then
 	call DELETE "/admin/v1/policies/login/idps/$GOOGLE_IDP_ID" >/dev/null 2>&1 || true
 	log "GOOGLE_CLIENT_ID not set: Google login disabled"
 fi
+
+# --- sign-up and sign-in with a password ---
+# Without passkeys the login goes straight to a password, with no "passkey or
+# password" step; ZITADEL_PASSKEYS=true offers passkeys again. The rest of the
+# instance's login policy is kept as it is.
+if [ "${ZITADEL_PASSKEYS:-false}" = "true" ]; then PASSWORDLESS=PASSWORDLESS_TYPE_ALLOWED; else PASSWORDLESS=PASSWORDLESS_TYPE_NOT_ALLOWED; fi
+LOGIN_POLICY=$(call GET /admin/v1/policies/login | jq -c --arg pw "$PASSWORDLESS" '.policy | del(.details, .isDefault, .idps) | .passwordlessType = $pw')
+call PUT /admin/v1/policies/login "$LOGIN_POLICY" >/dev/null 2>&1 || true # "no changes" is reported as an error
+log "login: passkeys ${ZITADEL_PASSKEYS:-false}"
 
 # --- branding: residents see LibreQuenda, not Zitadel ---
 # Colours from web/src/globals.css (light and dark); no "powered by" watermark.
