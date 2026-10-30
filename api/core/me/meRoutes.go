@@ -41,6 +41,12 @@ func (r *meRoutes) RegisterRoutes() {
 		AdditionalMethods: []router.HTTPMethod{router.OPTIONS},
 		Handler:           middlewares.AuthMiddleware(h.UpdateProfile),
 	})
+	r.router.NewRoute(router.Route{
+		Path:              "/me/preferences",
+		Method:            http.MethodPut,
+		AdditionalMethods: []router.HTTPMethod{router.OPTIONS},
+		Handler:           middlewares.AuthMiddleware(h.UpdatePreferences),
+	})
 	// "For you" on the home page on or off, from the section itself
 	r.router.NewRoute(router.Route{
 		Path:              "/me/recommendations",

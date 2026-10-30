@@ -139,5 +139,9 @@
     }
   },
   "recommendations": "Mostrar «Per a tu» a l’inici",
-  "recommendationsHelp": "Recomanacions a partir de les teves reserves i del que queda lliure avui. Es calculen al moment i no es desa res més."
+  "recommendationsHelp": "Recomanacions a partir de les teves reserves i del que queda lliure avui. Es calculen al moment i no es desa res més.",
+  "preferences": "Preferències",
+  "preferencesHelp": "Com et parla l’aplicació i què et mostra o envia. Es desen a part de les dades personals.",
+  "savePreferences": "Desar preferències",
+  "preferencesSaved": "Preferències desades."
 }

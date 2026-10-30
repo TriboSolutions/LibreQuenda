@@ -63,6 +63,25 @@ func (h *meHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	helpers.SendSuccessResponse(w, response)
 }
 
+func (h *meHandler) UpdatePreferences(w http.ResponseWriter, r *http.Request) {
+	var session, ok = auth.SessionFromContext(r.Context())
+	if !ok {
+		helpers.SendI18NErrorResponse(w, r, http.StatusUnauthorized, "errors.unauthorized")
+		return
+	}
+	var input PreferencesInput
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_request_body")
+		return
+	}
+	var response, err = GetMeService(h.db).UpdatePreferences(r.Context(), session, input)
+	if err != nil {
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
+		return
+	}
+	helpers.SendSuccessResponse(w, response)
+}
+
 // SetShowRecommendations: {"show": false} hides "For you" on the home page.
 func (h *meHandler) SetShowRecommendations(w http.ResponseWriter, r *http.Request) {
 	var session, ok = auth.SessionFromContext(r.Context())

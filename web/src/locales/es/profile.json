@@ -139,5 +139,9 @@
     }
   },
   "recommendations": "Mostrar «Para ti» en el inicio",
-  "recommendationsHelp": "Recomendaciones a partir de tus reservas y de lo que queda libre hoy. Se calculan al momento y no se guarda nada más."
+  "recommendationsHelp": "Recomendaciones a partir de tus reservas y de lo que queda libre hoy. Se calculan al momento y no se guarda nada más.",
+  "preferences": "Preferencias",
+  "preferencesHelp": "Cómo te habla la aplicación y lo que te muestra o envía. Se guardan aparte de los datos personales.",
+  "savePreferences": "Guardar preferencias",
+  "preferencesSaved": "Preferencias guardadas."
 }

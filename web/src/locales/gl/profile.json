@@ -139,5 +139,9 @@
     }
   },
   "recommendations": "Amosar «Para ti» no inicio",
-  "recommendationsHelp": "Recomendacións a partir das túas reservas e do que queda libre hoxe. Calcúlanse ao momento e non se garda nada máis."
+  "recommendationsHelp": "Recomendacións a partir das túas reservas e do que queda libre hoxe. Calcúlanse ao momento e non se garda nada máis.",
+  "preferences": "Preferencias",
+  "preferencesHelp": "Como che fala a aplicación e o que che amosa ou envía. Gárdanse á parte dos datos persoais.",
+  "savePreferences": "Gardar preferencias",
+  "preferencesSaved": "Preferencias gardadas."
 }

@@ -133,8 +133,6 @@ func validateProfile(in *ProfileInput, today time.Time) (time.Time, string) {
 		return birth, "errors.invalid_phone_format"
 	case in.AvatarRef != "" && (!storage.ValidRef(in.AvatarRef) || !strings.HasPrefix(in.AvatarRef, "users/")):
 		return birth, "errors.invalid_image"
-	case !languages[in.PreferredLanguage]:
-		return birth, "errors.invalid_language"
 	}
 	return birth, ""
 }
@@ -149,13 +147,10 @@ func (s *meService) UpdateProfile(ctx context.Context, session auth.Session, inp
 		return nil, userErr
 	}
 	var err = model.New(s.db).UpdateUserProfile(ctx, model.UpdateUserProfileParams{
-		ID:                  userId,
-		BirthDate:           sql.NullTime{Time: birth, Valid: true},
-		Phone:               sql.NullString{String: input.Phone, Valid: input.Phone != ""},
-		AvatarRef:           sql.NullString{String: input.AvatarRef, Valid: input.AvatarRef != ""},
-		PreferredLanguage:   sql.NullString{String: input.PreferredLanguage, Valid: input.PreferredLanguage != ""},
-		EmailReminders:      input.EmailReminders,
-		ShowRecommendations: sql.NullBool{Bool: input.ShowRecommendations != nil && *input.ShowRecommendations, Valid: input.ShowRecommendations != nil},
+		ID:        userId,
+		BirthDate: sql.NullTime{Time: birth, Valid: true},
+		Phone:     sql.NullString{String: input.Phone, Valid: input.Phone != ""},
+		AvatarRef: sql.NullString{String: input.AvatarRef, Valid: input.AvatarRef != ""},
 	})
 	if err != nil {
 		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.profile_save_failed"}
@@ -171,6 +166,27 @@ func (s *meService) SetShowRecommendations(ctx context.Context, session auth.Ses
 		return nil, userErr
 	}
 	if err := model.New(s.db).SetShowRecommendations(ctx, model.SetShowRecommendationsParams{ID: userId, Show: show}); err != nil {
+		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.profile_save_failed"}
+	}
+	return s.SyncCurrentUser(ctx, session)
+}
+
+// UpdatePreferences saves the profile's preferences on their own.
+func (s *meService) UpdatePreferences(ctx context.Context, session auth.Session, input PreferencesInput) (*MeResponse, *shared.ErrorResponse) {
+	if !languages[input.PreferredLanguage] {
+		return nil, &shared.ErrorResponse{Code: http.StatusUnprocessableEntity, Message: "errors.invalid_language"}
+	}
+	var userId, userErr = CurrentUserId(ctx, s.db, session)
+	if userErr != nil {
+		return nil, userErr
+	}
+	var err = model.New(s.db).UpdateUserPreferences(ctx, model.UpdateUserPreferencesParams{
+		ID:                  userId,
+		PreferredLanguage:   sql.NullString{String: input.PreferredLanguage, Valid: input.PreferredLanguage != ""},
+		EmailReminders:      input.EmailReminders,
+		ShowRecommendations: input.ShowRecommendations,
+	})
+	if err != nil {
 		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.profile_save_failed"}
 	}
 	return s.SyncCurrentUser(ctx, session)
