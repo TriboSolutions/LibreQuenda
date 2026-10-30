@@ -142,7 +142,7 @@ How roles are granted (web UI at `/admin`, API under `/api/admin/…`):
 - **Council admins:** a superadministrator invites an email address (`tenant_invitation`). The role is granted the first time someone signs in with that email. The person may not have an account yet when invited. No invitation email is sent yet: the superadministrator tells the person.
 - **Roles only follow a verified email.** Zitadel's `email_verified` claim is mirrored in `app_user`. Without it, anyone could register with someone else's address and receive their role.
 
-Admin endpoints may require MFA, checked through the token's `amr` claim (claim support in Zitadel to be verified).
+Admin endpoints require a second factor (`REQUIRE_ADMIN_MFA`). Zitadel's JWT access token carries no `amr` claim, so the API introspects an administrator's token (`amr`: `pwd` alone, or with `otp`, `u2f`, `mfa`…) and caches the answer until the token expires.
 
 ## 6. Domain model
 
@@ -236,15 +236,13 @@ Column names are fixed English identifiers. `excel=1` gives `;` separators and d
 - Zitadel console not publicly exposed. Reverse proxy with TLS and rate limiting.
 - Dependency and container image scanning in CI. Prompt updates of Zitadel and PostgreSQL.
 
-#### Production hardening (pending)
+#### Production hardening
 
 Development defaults that must change before a real deployment:
 
 - **Public runtime config is fine.** `/config.json` only holds public OIDC client data (authority, client id, project id, scope), which is visible in the login URL and in tokens anyway. Security comes from the registered redirect URIs and PKCE. Never add secrets to it.
-- **Admin token (`admin.pat`).** The `librequenda-setup` service account is an instance admin and its token expires in 2099. In production:
-  - give it only the project-owner role it needs (least privilege),
-  - set a short expiry, or delete the token after `zitadel-setup` has run.
-- **Separate bootstrap volumes.** `zitadel-login` currently mounts the same `zitadel-bootstrap` volume that holds `admin.pat`. Split it so the login container can only read `login-client.pat`.
+- **Admin token (`admin.pat`), done.** The `librequenda-setup` service account must be an instance owner: the setup changes instance policies (login, OIDC token lifetimes, branding, privacy, identity providers), which no narrower role can. Its token lives alone in the `zitadel-admin` volume, mounted read-only by `zitadel-setup` and by nothing else. `ZITADEL_SETUP_REVOKE_TOKEN=true` revokes it once the setup succeeds (later starts keep the configuration); `ZITADEL_ADMIN_PAT_EXPIRATION` sets its expiry on the first start.
+- **Separate bootstrap volumes, done.** `zitadel-login` mounts only `zitadel-login-client` (its `login-client.pat`); the API only `api-secrets` (its user-manager token and the introspection credentials).
 - **Already handled:** with `PUBLIC_SCHEME=https`, `zitadel-setup` turns off the OIDC app's `devMode` (no plain-HTTP redirects) and drops the `localhost:5173` redirect URIs.
 
 ### 9.2 Data protection (RXPD / GDPR)
@@ -340,10 +338,10 @@ LibreQuenda/
 - [x] Penguin licence: Apache-2.0 since v0.2.0.
 - [ ] Decide how to produce the OpenAPI spec without Huma (hand-written after the code, or annotations).
 - [x] Zitadel licence: AGPL-3.0 (confirmed). Login v2 runs as a separate container (`zitadel-login`).
-- [ ] Production hardening of the Zitadel bootstrap (see §9.1).
+- [x] Production hardening of the Zitadel bootstrap (see §9.1).
 - [x] Go API: verify the Zitadel JWT and upsert `app_user` (`GET /api/me`).
-- [ ] Short access-token lifetime (5–15 min) in Zitadel, so blocked users lose access quickly.
-- [ ] Verify that the `amr` claim is present in Zitadel tokens (MFA check for admins).
+- [x] Short access-token lifetime (10 min by default) in Zitadel, so blocked users lose access quickly.
+- [x] MFA for admins: the JWT access token has no `amr`; token introspection has it (`REQUIRE_ADMIN_MFA`).
 - [ ] Cl@ve / Chave365 federation: confirm the integration path (ask AMTEGA / AGASOL).
 - [ ] Decide on the §1.3 extras (QR, `.ics`).
 - [ ] Mobile app technology.
