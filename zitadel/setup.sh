@@ -9,6 +9,8 @@
 #  - brands the login and console as LibreQuenda (logo, colours, no Zitadel links)
 #  - creates the "librequenda-api" service account (user manager only) and writes
 #    its token to /api-secrets, for /perfil (name, email, password)
+#  - with ZITADEL_SETUP_REVOKE_TOKEN=true, revokes its own admin token at the end;
+#    without a working token, an installation already set up is left as it is
 #  - writes /runtime/config.json, served by Caddy to the SPA; its scope also asks
 #    for Zitadel's own audience, so the API can copy the profile photo to the
 #    person's account with their token (api/zitadel/avatar.go)
@@ -27,11 +29,22 @@ ZITADEL_URL="${PUBLIC_SCHEME}://${ZITADEL_DOMAIN}"
 
 log() { echo "[zitadel-setup] $*"; }
 
+CONFIGURED=/runtime/config.json # written by an earlier successful run
+
 for i in $(seq 1 60); do
 	[ -s "$PAT_FILE" ] && break
+	[ -s "$CONFIGURED" ] && [ "$i" -ge 5 ] && break # set up before, token gone: see below
 	log "waiting for $PAT_FILE ($i)"
 	sleep 2
 done
+if [ ! -s "$PAT_FILE" ]; then
+	if [ -s "$CONFIGURED" ]; then
+		log "no admin token ($PAT_FILE): keeping the existing configuration (see README, 'Zitadel admin token')"
+		exit 0
+	fi
+	log "no admin token at $PAT_FILE: Zitadel writes it on its very first start"
+	exit 1
+fi
 PAT=$(cat "$PAT_FILE")
 
 # Zitadel resolves the instance from the Host header
@@ -43,6 +56,18 @@ call() {
 		-H "Content-Type: application/json" \
 		${body:+-d "$body"}
 }
+
+# A revoked or expired admin token (ZITADEL_SETUP_REVOKE_TOKEN, or its expiry)
+# leaves an installation that is already set up as it is, instead of failing
+# the start of everything that waits for this setup.
+if ! call GET /auth/v1/users/me >/dev/null 2>&1; then
+	if [ -s "$CONFIGURED" ]; then
+		log "the admin token no longer works: keeping the existing configuration"
+		exit 0
+	fi
+	log "the admin token does not work, and nothing is set up yet"
+	exit 1
+fi
 
 # --- project ---
 PROJECT_ID=$(call POST /management/v1/projects/_search \
@@ -232,3 +257,14 @@ jq -n \
 	}' > /runtime/config.json.tmp
 mv /runtime/config.json.tmp /runtime/config.json
 log "wrote /runtime/config.json"
+
+# --- optionally, no admin token left behind ---
+# Everything above is in place, so the instance-owner token can go: later
+# starts keep this configuration (a new token is needed to change it again).
+if [ "${ZITADEL_SETUP_REVOKE_TOKEN:-false}" = "true" ]; then
+	SETUP_USER_ID=$(call GET /auth/v1/users/me | jq -r '.user.id')
+	for token in $(call POST "/management/v1/users/$SETUP_USER_ID/pats/_search" '{}' | jq -r '.result[]?.id'); do
+		call DELETE "/management/v1/users/$SETUP_USER_ID/pats/$token" >/dev/null
+	done
+	log "revoked the admin token (ZITADEL_SETUP_REVOKE_TOKEN)"
+fi
