@@ -87,11 +87,17 @@ UPDATE app_user
 SET
     birth_date         = sqlc.arg('birth_date'),
     phone              = sqlc.narg('phone'),
-    avatar_ref         = sqlc.narg('avatar_ref'),
-    preferred_language = sqlc.narg('preferred_language'),
-    email_reminders    = sqlc.arg('email_reminders'),
-    -- left as it is when the form does not send it
-    show_recommendations = COALESCE(sqlc.narg('show_recommendations'), show_recommendations)
+    avatar_ref         = sqlc.narg('avatar_ref')
+WHERE
+    id = sqlc.arg('id');
+
+-- name: UpdateUserPreferences :exec
+-- The profile's preferences, saved on their own: no birth date needed.
+UPDATE app_user
+SET
+    preferred_language   = sqlc.narg('preferred_language'),
+    email_reminders      = sqlc.arg('email_reminders'),
+    show_recommendations = sqlc.arg('show_recommendations')
 WHERE
     id = sqlc.arg('id');
 

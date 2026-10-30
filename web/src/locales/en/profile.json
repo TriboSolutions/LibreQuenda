@@ -139,5 +139,9 @@
     }
   },
   "recommendations": "Show “For you” on the home page",
-  "recommendationsHelp": "Recommendations from your bookings and what is still free today. They are worked out live and nothing else is kept."
+  "recommendationsHelp": "Recommendations from your bookings and what is still free today. They are worked out live and nothing else is kept.",
+  "preferences": "Preferences",
+  "preferencesHelp": "How the app speaks to you and what it shows or sends you. Saved apart from your personal data.",
+  "savePreferences": "Save preferences",
+  "preferencesSaved": "Preferences saved."
 }

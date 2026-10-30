@@ -12,7 +12,7 @@ func TestValidateProfile(t *testing.T) {
 		in   ProfileInput
 		want string
 	}{
-		{"valid", ProfileInput{BirthDate: "1990-05-17", Phone: "+34 600 123 456", PreferredLanguage: "gl"}, ""},
+		{"valid", ProfileInput{BirthDate: "1990-05-17", Phone: "+34 600 123 456"}, ""},
 		{"birth date required", ProfileInput{}, "errors.invalid_birth_date"},
 		{"birth date in the future", ProfileInput{BirthDate: "2027-01-01"}, "errors.invalid_birth_date"},
 		{"birth date over 120 years ago", ProfileInput{BirthDate: "1900-01-01"}, "errors.invalid_birth_date"},
@@ -20,7 +20,6 @@ func TestValidateProfile(t *testing.T) {
 		{"phone with letters", ProfileInput{BirthDate: "1990-05-17", Phone: "call me"}, "errors.invalid_phone_format"},
 		{"photo of a facility", ProfileInput{BirthDate: "1990-05-17", AvatarRef: "facilities/a.png"}, "errors.invalid_image"},
 		{"own photo", ProfileInput{BirthDate: "1990-05-17", AvatarRef: "users/a.png"}, ""},
-		{"unknown language", ProfileInput{BirthDate: "1990-05-17", PreferredLanguage: "fr"}, "errors.invalid_language"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {

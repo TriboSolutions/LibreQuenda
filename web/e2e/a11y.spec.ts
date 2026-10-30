@@ -462,9 +462,10 @@ test.describe('keyboard', () => {
     const box = page.getByRole('checkbox', { name: 'Amosar «Para ti» no inicio' })
     await expect(box).toBeChecked()
     await box.click()
-    const saved = page.waitForRequest((r) => r.method() === 'PUT' && r.url().endsWith('/me/profile'))
-    await page.getByRole('button', { name: 'Gardar perfil' }).click()
-    expect((await saved).postDataJSON()).toMatchObject({ show_recommendations: false })
+    // the preferences save on their own, without the personal data
+    const saved = page.waitForRequest((r) => r.method() === 'PUT' && r.url().endsWith('/me/preferences'))
+    await page.getByRole('button', { name: 'Gardar preferencias' }).click()
+    expect((await saved).postDataJSON()).toEqual({ preferred_language: 'gl', email_reminders: true, show_recommendations: false })
   })
 
   test('signed out, the home page has no recommendations', async ({ page }) => {

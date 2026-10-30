@@ -63,6 +63,7 @@ export function ProfilePage() {
     body = (
       <>
         <ProfileForm key={me.id} me={me} />
+        <PreferencesForm key={`prefs-${me.id}`} me={me} />
         <AccountSettings />
         <CalendarFeed />
         <PrivacySettings me={me} />
@@ -89,9 +90,6 @@ function ProfileForm({ me }: { me: Me }) {
   const [avatar, setAvatar] = useState<StoredImage | null>(me.avatar_ref ? { ref: me.avatar_ref, url: me.avatar_url } : null)
   const [birthDate, setBirthDate] = useState(me.birth_date)
   const [phone, setPhone] = useState(me.phone)
-  const [language, setLanguage] = useState(me.preferred_language || SAME_AS_WEBSITE)
-  const [reminders, setReminders] = useState(me.email_reminders)
-  const [recommendations, setRecommendations] = useState(me.show_recommendations)
   const [saving, setSaving] = useState(false)
   const [notice, setNotice] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -114,9 +112,6 @@ function ProfileForm({ me }: { me: Me }) {
         birth_date: birthDate,
         phone,
         avatar_ref: avatar?.ref ?? '', // the reference, never the URL
-        preferred_language: language === SAME_AS_WEBSITE ? '' : language,
-        email_reminders: reminders,
-        show_recommendations: recommendations,
       })
       reload()
       setNotice(t('profile:saved'))
@@ -158,22 +153,81 @@ function ProfileForm({ me }: { me: Me }) {
               {t('profile:phoneHelp')}
             </p>
           </div>
-          <div className="grid content-start gap-2">
-            <Label htmlFor="p-language">{t('profile:language')}</Label>
-            <Select value={language} onValueChange={setLanguage}>
-              <SelectTrigger id="p-language" className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={SAME_AS_WEBSITE}>{t('profile:languageAuto')}</SelectItem>
-                {languages.map((l) => (
-                  <SelectItem key={l.code} value={l.code} lang={l.code}>
-                    {l.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        </div>
+        <div aria-live="polite" className="empty:hidden">
+          {notice && (
+            <Alert className="border-0 bg-pill-positive-bg text-pill-positive-ink">
+              <AlertDescription className="text-pill-positive-ink">{notice}</AlertDescription>
+            </Alert>
+          )}
+          {error && (
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+        </div>
+        <div className="flex justify-end border-t pt-4">
+          <Button type="submit" disabled={saving}>
+            {saving ? t('profile:saving') : t('profile:save')}
+          </Button>
+        </div>
+      </form>
+    </SettingsRow>
+  )
+}
+
+/** How the app speaks to them and what it shows or sends: saved apart from the personal data. */
+function PreferencesForm({ me }: { me: Me }) {
+  const { t } = useTranslation(['profile', 'common'])
+  const auth = useAuth()
+  const { reload } = useMe()
+  const [language, setLanguage] = useState(me.preferred_language || SAME_AS_WEBSITE)
+  const [reminders, setReminders] = useState(me.email_reminders)
+  const [recommendations, setRecommendations] = useState(me.show_recommendations)
+  const [saving, setSaving] = useState(false)
+  const [notice, setNotice] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  const save = async (event: React.FormEvent) => {
+    event.preventDefault()
+    const token = auth.user?.access_token
+    if (!token) return
+    setSaving(true)
+    setError(null)
+    setNotice(null)
+    try {
+      await api.updatePreferences(token, {
+        preferred_language: language === SAME_AS_WEBSITE ? '' : language,
+        email_reminders: reminders,
+        show_recommendations: recommendations,
+      })
+      reload()
+      setNotice(t('profile:preferencesSaved'))
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <SettingsRow id="sec-preferences" title={t('profile:preferences')} description={t('profile:preferencesHelp')}>
+      <form onSubmit={(e) => void save(e)} className="grid gap-5 rounded-lg border bg-card p-5">
+        <div className="grid gap-2 sm:max-w-sm">
+          <Label htmlFor="p-language">{t('profile:language')}</Label>
+          <Select value={language} onValueChange={setLanguage}>
+            <SelectTrigger id="p-language" className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={SAME_AS_WEBSITE}>{t('profile:languageAuto')}</SelectItem>
+              {languages.map((l) => (
+                <SelectItem key={l.code} value={l.code} lang={l.code}>
+                  {l.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div className="flex items-start gap-2">
           <Checkbox id="p-reminders" checked={reminders} onCheckedChange={(value) => setReminders(value === true)} className="mt-0.5" />
@@ -213,7 +267,7 @@ function ProfileForm({ me }: { me: Me }) {
         </div>
         <div className="flex justify-end border-t pt-4">
           <Button type="submit" disabled={saving}>
-            {saving ? t('profile:saving') : t('profile:save')}
+            {saving ? t('profile:saving') : t('profile:savePreferences')}
           </Button>
         </div>
       </form>

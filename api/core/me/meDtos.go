@@ -39,13 +39,18 @@ type PendingInvitationDto struct {
 	TenantSlug string `json:"tenant_slug"`
 }
 
+// ProfileInput: the personal data; the preferences are saved apart (PreferencesInput).
 type ProfileInput struct {
-	BirthDate           string `json:"birth_date"`
-	Phone               string `json:"phone"`
-	AvatarRef           string `json:"avatar_ref"` // a storage reference from POST /media, never a URL
-	PreferredLanguage   string `json:"preferred_language"`
+	BirthDate string `json:"birth_date"`
+	Phone     string `json:"phone"`
+	AvatarRef string `json:"avatar_ref"` // a storage reference from POST /media, never a URL
+}
+
+// PreferencesInput: how the app speaks and what it shows or sends them.
+type PreferencesInput struct {
+	PreferredLanguage   string `json:"preferred_language"` // "" = the website's
 	EmailReminders      bool   `json:"email_reminders"`
-	ShowRecommendations *bool  `json:"show_recommendations"` // nil: left as it is
+	ShowRecommendations bool   `json:"show_recommendations"` // "For you" on the home page
 }
 
 func withProfile(response *MeResponse, profile model.GetUserProfileRow) *MeResponse {

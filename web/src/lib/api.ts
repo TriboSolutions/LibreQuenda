@@ -466,14 +466,15 @@ export type Account = {
   password_rules: { min_length: number; uppercase: boolean; lowercase: boolean; number: boolean; symbol: boolean }
 }
 
+/** The personal data; the preferences are saved apart. */
 export type ProfileInput = {
   birth_date: string
   phone: string
   avatar_ref: string // a storage reference, never a URL
-  preferred_language: string
-  email_reminders: boolean
-  show_recommendations?: boolean // left as it is when not sent
 }
+
+/** How the app speaks and what it shows or sends them; saved without the personal data. */
+export type PreferencesInput = Pick<Me, 'preferred_language' | 'email_reminders' | 'show_recommendations'>
 
 // --- superadministrator area -------------------------------------------------
 
@@ -718,6 +719,7 @@ export const api = {
     request<Day>(`/tenants/${encodeURIComponent(slug)}/day${date ? `?date=${date}` : ''}`),
   me: (token: string) => request<Me>('/me', { token }),
   updateProfile: (token: string, input: ProfileInput) => request<Me>('/me/profile', { token, method: 'PUT', body: input }),
+  updatePreferences: (token: string, input: PreferencesInput) => request<Me>('/me/preferences', { token, method: 'PUT', body: input }),
   personalQr: (token: string) => request<PersonalQr>('/me/qr', { token }),
   calendarFeed: {
     get: (token: string) => request<CalendarFeed>('/me/calendar', { token }),

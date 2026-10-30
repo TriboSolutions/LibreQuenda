@@ -277,28 +277,49 @@ func (q *Queries) SetShowRecommendations(ctx context.Context, arg SetShowRecomme
 	return err
 }
 
+const updateUserPreferences = `-- name: UpdateUserPreferences :exec
+UPDATE app_user
+SET
+    preferred_language   = $1,
+    email_reminders      = $2,
+    show_recommendations = $3
+WHERE
+    id = $4
+`
+
+type UpdateUserPreferencesParams struct {
+	PreferredLanguage   sql.NullString `json:"preferred_language"`
+	EmailReminders      bool           `json:"email_reminders"`
+	ShowRecommendations bool           `json:"show_recommendations"`
+	ID                  uuid.UUID      `json:"id"`
+}
+
+// The profile's preferences, saved on their own: no birth date needed.
+func (q *Queries) UpdateUserPreferences(ctx context.Context, arg UpdateUserPreferencesParams) error {
+	_, err := q.db.ExecContext(ctx, updateUserPreferences,
+		arg.PreferredLanguage,
+		arg.EmailReminders,
+		arg.ShowRecommendations,
+		arg.ID,
+	)
+	return err
+}
+
 const updateUserProfile = `-- name: UpdateUserProfile :exec
 UPDATE app_user
 SET
     birth_date         = $1,
     phone              = $2,
-    avatar_ref         = $3,
-    preferred_language = $4,
-    email_reminders    = $5,
-    -- left as it is when the form does not send it
-    show_recommendations = COALESCE($6, show_recommendations)
+    avatar_ref         = $3
 WHERE
-    id = $7
+    id = $4
 `
 
 type UpdateUserProfileParams struct {
-	BirthDate           sql.NullTime   `json:"birth_date"`
-	Phone               sql.NullString `json:"phone"`
-	AvatarRef           sql.NullString `json:"avatar_ref"`
-	PreferredLanguage   sql.NullString `json:"preferred_language"`
-	EmailReminders      bool           `json:"email_reminders"`
-	ShowRecommendations sql.NullBool   `json:"show_recommendations"`
-	ID                  uuid.UUID      `json:"id"`
+	BirthDate sql.NullTime   `json:"birth_date"`
+	Phone     sql.NullString `json:"phone"`
+	AvatarRef sql.NullString `json:"avatar_ref"`
+	ID        uuid.UUID      `json:"id"`
 }
 
 func (q *Queries) UpdateUserProfile(ctx context.Context, arg UpdateUserProfileParams) error {
@@ -306,9 +327,6 @@ func (q *Queries) UpdateUserProfile(ctx context.Context, arg UpdateUserProfilePa
 		arg.BirthDate,
 		arg.Phone,
 		arg.AvatarRef,
-		arg.PreferredLanguage,
-		arg.EmailReminders,
-		arg.ShowRecommendations,
 		arg.ID,
 	)
 	return err
