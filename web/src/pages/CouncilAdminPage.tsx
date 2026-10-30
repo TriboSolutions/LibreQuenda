@@ -103,46 +103,73 @@ export function CouncilAdminPage() {
         ) : list.length === 0 ? (
           <p className="mt-4 rounded-md border border-dashed px-4 py-3 text-muted-foreground">{t('admin:facilities.empty')}</p>
         ) : (
-          <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {list.map((f) => (
-              <li
-                key={f.id}
-                className="relative flex gap-3 rounded-lg border p-3 transition-colors focus-within:ring-2 focus-within:ring-ring hover:border-primary/60"
-              >
-                {f.image_url ? (
-                  <img src={f.image_url} alt="" className="size-16 shrink-0 rounded-md object-cover" />
-                ) : (
-                  <span className="size-16 shrink-0 rounded-md bg-muted" aria-hidden="true" />
-                )}
-                <div className="grid min-w-0 flex-1 content-start gap-1">
-                  <h3 className="leading-5 font-semibold">
-                    {/* stretched over the card: the whole card opens the editor */}
-                    <Link to={`/${slug}/admin/facilities/${f.id}`} className="outline-none after:absolute after:inset-0 after:rounded-lg">
-                      {f.name}
-                    </Link>
-                  </h3>
-                  {f.sport && <p className="truncate text-sm text-muted-foreground">{f.sport}</p>}
-                  <p className="num text-sm text-muted-foreground">
-                    {f.opening_window_count > 0 ? t('admin:facilities.windows', { count: f.opening_window_count }) : t('admin:facilities.noSchedule')}
-                    {' · '}
-                    {t('admin:facilities.upcoming', { count: f.upcoming_booking_count })}
-                  </p>
-                  <p>
-                    <span
-                      className={
-                        f.is_active
-                          ? 'rounded-full bg-pill-positive-bg px-2 py-0.5 text-xs font-medium whitespace-nowrap text-pill-positive-ink'
-                          : 'rounded-full bg-pill-neutral-bg px-2 py-0.5 text-xs font-medium whitespace-nowrap text-pill-neutral-ink'
-                      }
-                    >
-                      {f.is_active ? t('admin:councils.active') : t('admin:councils.inactive')}
-                    </span>
-                  </p>
-                </div>
-                <ChevronRight className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
-              </li>
-            ))}
-          </ul>
+          <div className="mt-3 overflow-x-auto">
+            <table className="w-full min-w-[620px]">
+              <thead>
+                <tr className="text-xs text-muted-foreground">
+                  <th scope="col" className="py-2 text-left font-normal">
+                    {t('admin:facilities.colFacility')}
+                  </th>
+                  <th scope="col" className="py-2 pl-4 text-right font-normal">
+                    {t('admin:facilities.colSchedule')}
+                  </th>
+                  <th scope="col" className="py-2 pl-4 text-right font-normal">
+                    {t('admin:facilities.colUpcoming')}
+                  </th>
+                  <th scope="col" className="py-2 pl-4 text-left font-normal">
+                    {t('admin:councils.colStatus')}
+                  </th>
+                  <th scope="col" className="py-2">
+                    <span className="sr-only">{t('admin:facilities.actions')}</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="num">
+                {list.map((f) => (
+                  <tr key={f.id} className="border-t">
+                    <th scope="row" className="py-3 text-left font-normal">
+                      <span className="flex items-center gap-3">
+                        {f.image_url ? (
+                          <img src={f.image_url} alt="" className="h-10 w-14 shrink-0 rounded-sm object-cover" />
+                        ) : (
+                          <span className="h-10 w-14 shrink-0 rounded-sm bg-muted" aria-hidden="true" />
+                        )}
+                        <span>
+                          <span className="block font-medium">{f.name}</span>
+                          <span className="block text-muted-foreground">
+                            {f.sport ? `${f.sport} · ` : ''}/{slug}/{f.slug}
+                          </span>
+                        </span>
+                      </span>
+                    </th>
+                    <td className="py-3 pl-4 text-right">
+                      {f.opening_window_count > 0 ? f.opening_window_count : <span className="text-muted-foreground">{t('admin:facilities.noSchedule')}</span>}
+                    </td>
+                    <td className="py-3 pl-4 text-right">{f.upcoming_booking_count}</td>
+                    <td className="py-3 pl-4">
+                      <span
+                        className={
+                          f.is_active
+                            ? 'rounded-full bg-pill-positive-bg px-2 py-0.5 text-xs font-medium whitespace-nowrap text-pill-positive-ink'
+                            : 'rounded-full bg-pill-neutral-bg px-2 py-0.5 text-xs font-medium whitespace-nowrap text-pill-neutral-ink'
+                        }
+                      >
+                        {f.is_active ? t('admin:councils.active') : t('admin:councils.inactive')}
+                      </span>
+                    </td>
+                    <td className="py-3 pl-4 text-right whitespace-nowrap">
+                      <Button asChild variant="ghost" size="sm">
+                        <Link to={`/${slug}/admin/facilities/${f.id}`} aria-label={`${t('admin:facilities.edit')}: ${f.name}`}>
+                          {t('admin:facilities.edit')}
+                          <ChevronRight />
+                        </Link>
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </section>
     )

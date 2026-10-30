@@ -97,14 +97,14 @@
     "empty": "Todavía no hay instalaciones. Crea la primera.",
     "count_one": "{{count}} instalación",
     "count_other": "{{count}} instalaciones",
+    "colFacility": "Instalación",
+    "colSchedule": "Franjas de horario",
+    "colUpcoming": "Reservas próximas",
     "edit": "Editar",
     "noSchedule": "sin horario",
     "back": "Todas las instalaciones",
     "viewPage": "Abrir su página",
-    "windows_one": "{{count}} franja de horario",
-    "windows_other": "{{count}} franjas de horario",
-    "upcoming_one": "{{count}} reserva próxima",
-    "upcoming_other": "{{count}} reservas próximas"
+    "actions": "Acciones"
   },
   "editor": {
     "newTitle": "Nueva instalación",
