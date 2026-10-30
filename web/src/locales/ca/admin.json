@@ -856,10 +856,10 @@
     "photo": "Foto del problema",
     "note": "Nota per a qui ha avisat",
     "noteHelp": "Què s’ha fet, o per què no es farà (obligatòria per rebutjar).",
-    "save": "Desar",
+    "save": "Desa",
     "saving": "Desant…",
     "saved": "Desat.",
-    "close": "Tancar la instal·lació o mirar-ne l’horari",
+    "close": "Tanca la instal·lació o mira’n l’horari",
     "newCount_one": ", {{count}} nova",
     "newCount_other": ", {{count}} noves"
   }
