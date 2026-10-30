@@ -41,6 +41,13 @@ func (r *meRoutes) RegisterRoutes() {
 		AdditionalMethods: []router.HTTPMethod{router.OPTIONS},
 		Handler:           middlewares.AuthMiddleware(h.UpdateProfile),
 	})
+	// "For you" on the home page on or off, from the section itself
+	r.router.NewRoute(router.Route{
+		Path:              "/me/recommendations",
+		Method:            http.MethodPut,
+		AdditionalMethods: []router.HTTPMethod{router.OPTIONS},
+		Handler:           middlewares.AuthMiddleware(h.SetShowRecommendations),
+	})
 	// the personal QR: at a facility's reader it checks the person in, or books the turn about to start
 	r.router.NewRoute(router.Route{
 		Path:              "/me/qr",

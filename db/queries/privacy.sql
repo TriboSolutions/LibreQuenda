@@ -13,6 +13,7 @@ SELECT
     avatar_ref,
     preferred_language,
     email_reminders,
+    show_recommendations,
     created_at,
     updated_at
 FROM

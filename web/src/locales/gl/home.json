@@ -63,6 +63,8 @@
     "similar": "Como {{facility}}: {{tags}}",
     "freeAt": "Libre hoxe ás {{time}}",
     "more": "Ver {{count}} máis",
-    "less": "Ver menos"
+    "less": "Ver menos",
+    "hide": "Non amosar",
+    "settings": "Podes volver activalo no teu perfil."
   }
 }

@@ -21,13 +21,14 @@ type MeResponse struct {
 	Roles         []TenantRoleDto `json:"roles"`
 
 	// profile kept by LibreQuenda; name and email belong to Zitadel
-	BirthDate         string `json:"birth_date"` // YYYY-MM-DD, "" until filled in
-	Phone             string `json:"phone"`
-	AvatarRef         string `json:"avatar_ref"` // sent back unchanged when the form is saved
-	AvatarUrl         string `json:"avatar_url"`
-	PreferredLanguage string `json:"preferred_language"`
-	EmailReminders    bool   `json:"email_reminders"`
-	ProfileComplete   bool   `json:"profile_complete"` // the date of birth is required before booking
+	BirthDate           string `json:"birth_date"` // YYYY-MM-DD, "" until filled in
+	Phone               string `json:"phone"`
+	AvatarRef           string `json:"avatar_ref"` // sent back unchanged when the form is saved
+	AvatarUrl           string `json:"avatar_url"`
+	PreferredLanguage   string `json:"preferred_language"`
+	EmailReminders      bool   `json:"email_reminders"`
+	ShowRecommendations bool   `json:"show_recommendations"` // "For you" on the home page
+	ProfileComplete     bool   `json:"profile_complete"`     // the date of birth is required before booking
 
 	// roles waiting for this person: they are granted once the email is verified
 	PendingInvitations []PendingInvitationDto `json:"pending_invitations"`
@@ -39,11 +40,12 @@ type PendingInvitationDto struct {
 }
 
 type ProfileInput struct {
-	BirthDate         string `json:"birth_date"`
-	Phone             string `json:"phone"`
-	AvatarRef         string `json:"avatar_ref"` // a storage reference from POST /media, never a URL
-	PreferredLanguage string `json:"preferred_language"`
-	EmailReminders    bool   `json:"email_reminders"`
+	BirthDate           string `json:"birth_date"`
+	Phone               string `json:"phone"`
+	AvatarRef           string `json:"avatar_ref"` // a storage reference from POST /media, never a URL
+	PreferredLanguage   string `json:"preferred_language"`
+	EmailReminders      bool   `json:"email_reminders"`
+	ShowRecommendations *bool  `json:"show_recommendations"` // nil: left as it is
 }
 
 func withProfile(response *MeResponse, profile model.GetUserProfileRow) *MeResponse {
@@ -55,6 +57,7 @@ func withProfile(response *MeResponse, profile model.GetUserProfileRow) *MeRespo
 	response.AvatarUrl = storage.URL(profile.AvatarRef.String)
 	response.PreferredLanguage = profile.PreferredLanguage.String
 	response.EmailReminders = profile.EmailReminders
+	response.ShowRecommendations = profile.ShowRecommendations
 	response.ProfileComplete = profile.BirthDate.Valid
 	return response
 }

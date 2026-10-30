@@ -62,6 +62,17 @@ func (q *Queries) GetCalendarToken(ctx context.Context, id uuid.UUID) (uuid.Null
 	return calendar_token, err
 }
 
+const getShowRecommendations = `-- name: GetShowRecommendations :one
+SELECT show_recommendations FROM app_user WHERE id = $1
+`
+
+func (q *Queries) GetShowRecommendations(ctx context.Context, id uuid.UUID) (bool, error) {
+	row := q.db.QueryRowContext(ctx, getShowRecommendations, id)
+	var show_recommendations bool
+	err := row.Scan(&show_recommendations)
+	return show_recommendations, err
+}
+
 const getUserBirthDate = `-- name: GetUserBirthDate :one
 SELECT birth_date FROM app_user WHERE id = $1
 `
@@ -110,7 +121,8 @@ SELECT
     phone,
     avatar_ref,
     preferred_language,
-    email_reminders
+    email_reminders,
+    show_recommendations
 FROM
     app_user
 WHERE
@@ -118,15 +130,16 @@ WHERE
 `
 
 type GetUserProfileRow struct {
-	ID                uuid.UUID      `json:"id"`
-	Email             string         `json:"email"`
-	FullName          sql.NullString `json:"full_name"`
-	EmailVerified     bool           `json:"email_verified"`
-	BirthDate         sql.NullTime   `json:"birth_date"`
-	Phone             sql.NullString `json:"phone"`
-	AvatarRef         sql.NullString `json:"avatar_ref"`
-	PreferredLanguage sql.NullString `json:"preferred_language"`
-	EmailReminders    bool           `json:"email_reminders"`
+	ID                  uuid.UUID      `json:"id"`
+	Email               string         `json:"email"`
+	FullName            sql.NullString `json:"full_name"`
+	EmailVerified       bool           `json:"email_verified"`
+	BirthDate           sql.NullTime   `json:"birth_date"`
+	Phone               sql.NullString `json:"phone"`
+	AvatarRef           sql.NullString `json:"avatar_ref"`
+	PreferredLanguage   sql.NullString `json:"preferred_language"`
+	EmailReminders      bool           `json:"email_reminders"`
+	ShowRecommendations bool           `json:"show_recommendations"`
 }
 
 func (q *Queries) GetUserProfile(ctx context.Context, id uuid.UUID) (GetUserProfileRow, error) {
@@ -142,6 +155,7 @@ func (q *Queries) GetUserProfile(ctx context.Context, id uuid.UUID) (GetUserProf
 		&i.AvatarRef,
 		&i.PreferredLanguage,
 		&i.EmailReminders,
+		&i.ShowRecommendations,
 	)
 	return i, err
 }
@@ -248,6 +262,21 @@ func (q *Queries) ResetCalendarToken(ctx context.Context, id uuid.UUID) (uuid.Nu
 	return calendar_token, err
 }
 
+const setShowRecommendations = `-- name: SetShowRecommendations :exec
+UPDATE app_user SET show_recommendations = $1 WHERE id = $2
+`
+
+type SetShowRecommendationsParams struct {
+	Show bool      `json:"show"`
+	ID   uuid.UUID `json:"id"`
+}
+
+// "For you" on the home page on or off, also from the section itself.
+func (q *Queries) SetShowRecommendations(ctx context.Context, arg SetShowRecommendationsParams) error {
+	_, err := q.db.ExecContext(ctx, setShowRecommendations, arg.Show, arg.ID)
+	return err
+}
+
 const updateUserProfile = `-- name: UpdateUserProfile :exec
 UPDATE app_user
 SET
@@ -255,18 +284,21 @@ SET
     phone              = $2,
     avatar_ref         = $3,
     preferred_language = $4,
-    email_reminders    = $5
+    email_reminders    = $5,
+    -- left as it is when the form does not send it
+    show_recommendations = COALESCE($6, show_recommendations)
 WHERE
-    id = $6
+    id = $7
 `
 
 type UpdateUserProfileParams struct {
-	BirthDate         sql.NullTime   `json:"birth_date"`
-	Phone             sql.NullString `json:"phone"`
-	AvatarRef         sql.NullString `json:"avatar_ref"`
-	PreferredLanguage sql.NullString `json:"preferred_language"`
-	EmailReminders    bool           `json:"email_reminders"`
-	ID                uuid.UUID      `json:"id"`
+	BirthDate           sql.NullTime   `json:"birth_date"`
+	Phone               sql.NullString `json:"phone"`
+	AvatarRef           sql.NullString `json:"avatar_ref"`
+	PreferredLanguage   sql.NullString `json:"preferred_language"`
+	EmailReminders      bool           `json:"email_reminders"`
+	ShowRecommendations sql.NullBool   `json:"show_recommendations"`
+	ID                  uuid.UUID      `json:"id"`
 }
 
 func (q *Queries) UpdateUserProfile(ctx context.Context, arg UpdateUserProfileParams) error {
@@ -276,6 +308,7 @@ func (q *Queries) UpdateUserProfile(ctx context.Context, arg UpdateUserProfilePa
 		arg.AvatarRef,
 		arg.PreferredLanguage,
 		arg.EmailReminders,
+		arg.ShowRecommendations,
 		arg.ID,
 	)
 	return err

@@ -137,5 +137,7 @@
       "locate": "Buscar a quién preguntar",
       "none": "No estás cerca de ninguna instalación con personas de contacto."
     }
-  }
+  },
+  "recommendations": "Mostrar «Para ti» en el inicio",
+  "recommendationsHelp": "Recomendaciones a partir de tus reservas y de lo que queda libre hoy. Se calculan al momento y no se guarda nada más."
 }

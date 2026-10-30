@@ -149,14 +149,28 @@ func (s *meService) UpdateProfile(ctx context.Context, session auth.Session, inp
 		return nil, userErr
 	}
 	var err = model.New(s.db).UpdateUserProfile(ctx, model.UpdateUserProfileParams{
-		ID:                userId,
-		BirthDate:         sql.NullTime{Time: birth, Valid: true},
-		Phone:             sql.NullString{String: input.Phone, Valid: input.Phone != ""},
-		AvatarRef:         sql.NullString{String: input.AvatarRef, Valid: input.AvatarRef != ""},
-		PreferredLanguage: sql.NullString{String: input.PreferredLanguage, Valid: input.PreferredLanguage != ""},
-		EmailReminders:    input.EmailReminders,
+		ID:                  userId,
+		BirthDate:           sql.NullTime{Time: birth, Valid: true},
+		Phone:               sql.NullString{String: input.Phone, Valid: input.Phone != ""},
+		AvatarRef:           sql.NullString{String: input.AvatarRef, Valid: input.AvatarRef != ""},
+		PreferredLanguage:   sql.NullString{String: input.PreferredLanguage, Valid: input.PreferredLanguage != ""},
+		EmailReminders:      input.EmailReminders,
+		ShowRecommendations: sql.NullBool{Bool: input.ShowRecommendations != nil && *input.ShowRecommendations, Valid: input.ShowRecommendations != nil},
 	})
 	if err != nil {
+		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.profile_save_failed"}
+	}
+	return s.SyncCurrentUser(ctx, session)
+}
+
+// SetShowRecommendations turns "For you" on the home page on or off, also from
+// the section itself (no need to fill in the whole profile).
+func (s *meService) SetShowRecommendations(ctx context.Context, session auth.Session, show bool) (*MeResponse, *shared.ErrorResponse) {
+	var userId, userErr = CurrentUserId(ctx, s.db, session)
+	if userErr != nil {
+		return nil, userErr
+	}
+	if err := model.New(s.db).SetShowRecommendations(ctx, model.SetShowRecommendationsParams{ID: userId, Show: show}); err != nil {
 		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.profile_save_failed"}
 	}
 	return s.SyncCurrentUser(ctx, session)

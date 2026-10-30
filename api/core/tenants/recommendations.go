@@ -61,6 +61,11 @@ func (s *tenantsService) Recommendations(ctx context.Context, session auth.Sessi
 	if userErr != nil {
 		return nil, userErr
 	}
+	var response = &RecommendationsResponse{Recommendations: []RecommendationDto{}}
+	// turned off by the person: nothing is worked out
+	if show, err := model.New(s.db).GetShowRecommendations(ctx, userId); err != nil || !show {
+		return response, nil
+	}
 	var now = time.Now()
 	var patterns, err = model.New(s.db).ListUserBookingPatterns(ctx, model.ListUserBookingPatternsParams{
 		UserID: uuid.NullUUID{UUID: userId, Valid: true},
@@ -69,7 +74,6 @@ func (s *tenantsService) Recommendations(ctx context.Context, session auth.Sessi
 	if err != nil {
 		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.recommendations_failed"}
 	}
-	var response = &RecommendationsResponse{Recommendations: []RecommendationDto{}}
 	if len(patterns) == 0 {
 		return response, nil
 	}

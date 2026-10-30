@@ -279,19 +279,20 @@ type AppSetting struct {
 }
 
 type AppUser struct {
-	ID                uuid.UUID      `json:"id"`
-	IdpSubject        string         `json:"idp_subject"`
-	Email             string         `json:"email"`
-	FullName          sql.NullString `json:"full_name"`
-	EmailVerified     bool           `json:"email_verified"`
-	BirthDate         sql.NullTime   `json:"birth_date"`
-	Phone             sql.NullString `json:"phone"`
-	AvatarRef         sql.NullString `json:"avatar_ref"`
-	PreferredLanguage sql.NullString `json:"preferred_language"`
-	EmailReminders    bool           `json:"email_reminders"`
-	CalendarToken     uuid.NullUUID  `json:"calendar_token"`
-	CreatedAt         time.Time      `json:"created_at"`
-	UpdatedAt         time.Time      `json:"updated_at"`
+	ID                  uuid.UUID      `json:"id"`
+	IdpSubject          string         `json:"idp_subject"`
+	Email               string         `json:"email"`
+	FullName            sql.NullString `json:"full_name"`
+	EmailVerified       bool           `json:"email_verified"`
+	BirthDate           sql.NullTime   `json:"birth_date"`
+	Phone               sql.NullString `json:"phone"`
+	AvatarRef           sql.NullString `json:"avatar_ref"`
+	PreferredLanguage   sql.NullString `json:"preferred_language"`
+	EmailReminders      bool           `json:"email_reminders"`
+	ShowRecommendations bool           `json:"show_recommendations"`
+	CalendarToken       uuid.NullUUID  `json:"calendar_token"`
+	CreatedAt           time.Time      `json:"created_at"`
+	UpdatedAt           time.Time      `json:"updated_at"`
 }
 
 type Booking struct {

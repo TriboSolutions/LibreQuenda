@@ -451,6 +451,7 @@ export type Me = {
   avatar_url: string
   preferred_language: string
   email_reminders: boolean
+  show_recommendations: boolean // "For you" on the home page
   profile_complete: boolean // the date of birth is required before booking
   // council roles waiting for this person: granted once the email is verified
   pending_invitations?: { tenant_name: string; tenant_slug: string }[]
@@ -471,6 +472,7 @@ export type ProfileInput = {
   avatar_ref: string // a storage reference, never a URL
   preferred_language: string
   email_reminders: boolean
+  show_recommendations?: boolean // left as it is when not sent
 }
 
 // --- superadministrator area -------------------------------------------------
@@ -739,6 +741,8 @@ export const api = {
   },
   myBookings: (token: string) => request<MyBookings>('/me/bookings', { token }),
   recommendations: (token: string) => request<{ recommendations: Recommendation[] }>('/me/recommendations', { token }),
+  // "For you" on or off, also from the section itself
+  setShowRecommendations: (token: string, show: boolean) => request<Me>('/me/recommendations', { token, method: 'PUT', body: { show } }),
   facilityPage: (slug: string, facility: string, date?: string) =>
     request<FacilityPage>(`/tenants/${encodeURIComponent(slug)}/facilities/${encodeURIComponent(facility)}${date ? `?date=${date}` : ''}`),
   // acceptRules: the resident ticked "I have read the rules"; the API refuses the booking otherwise

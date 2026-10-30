@@ -63,6 +63,8 @@
     "similar": "Com {{facility}}: {{tags}}",
     "freeAt": "Lliure avui a les {{time}}",
     "more": "Veure’n {{count}} més",
-    "less": "Veure’n menys"
+    "less": "Veure’n menys",
+    "hide": "No mostrar",
+    "settings": "Ho pots tornar a activar al teu perfil."
   }
 }
