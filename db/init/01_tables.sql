@@ -416,3 +416,29 @@ CREATE TABLE notification (
     read_at    TIMESTAMPTZ       NULL,
     emailed_at TIMESTAMPTZ       NULL               -- NULL = pending in the email queue
 );
+
+
+-- ============================================================
+--  AUDIT LOG (rexistro de actividade)
+-- ============================================================
+
+-- What administrators did, for accountability (GDPR Art. 5(2) and 32, ENS):
+-- who, when, which council, what action on what. Append-only for the API
+-- (05_row_security.sql revokes UPDATE and DELETE), purged after the retention
+-- period by purge_audit_log(). No personal data beyond the actor's and target
+-- person's account ids, which become NULL when those accounts are erased;
+-- names are read from app_user when shown, never copied here.
+CREATE TABLE audit_log (
+    id             UUID         PRIMARY KEY DEFAULT uuidv7(),
+    at             TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    actor_id       UUID         NULL REFERENCES app_user(id) ON DELETE SET NULL, -- NULL: erased account, or the system
+    actor_role     VARCHAR(20)  NOT NULL,             -- superadmin, council_admin, resident, system
+    tenant_id      UUID         NULL,                 -- the council it concerns; NULL: platform-wide. No FK: kept after the council is deleted
+    tenant_label   VARCHAR(255) NULL,                 -- the council's name then
+    action         VARCHAR(64)  NOT NULL,             -- a stable code, e.g. facility.updated
+    target_type    VARCHAR(32)  NULL,                 -- facility, closure, booking, device, tenant, user, tag, …
+    target_id      UUID         NULL,                 -- the target's id when it is not a person
+    target_user_id UUID         NULL REFERENCES app_user(id) ON DELETE SET NULL, -- when the target is a person
+    target_label   VARCHAR(255) NULL,                 -- a non-personal name then (a facility's, a tag's)
+    summary        TEXT         NOT NULL DEFAULT ''   -- what changed, without personal data or free text
+);

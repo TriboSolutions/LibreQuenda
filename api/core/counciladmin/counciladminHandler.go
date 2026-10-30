@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"librequenda/audit"
 	"librequenda/auth"
 	"librequenda/core/me"
 	"librequenda/model"
@@ -150,6 +151,9 @@ func (h *counciladminHandler) CreateFacility(w http.ResponseWriter, r *http.Requ
 		return
 	}
 	var response, err = GetCounciladminService(h.db).CreateFacility(r.Context(), tenantId, input)
+	if err == nil {
+		audit.Target(r.Context(), "facility", uuid.MustParse(response.Id), response.Name)
+	}
 	send(w, r, response, err)
 }
 
@@ -179,7 +183,11 @@ func (h *counciladminHandler) UpdateFacility(w http.ResponseWriter, r *http.Requ
 	if !decode(w, r, &input) {
 		return
 	}
+	var before, _ = GetCounciladminService(h.db).GetFacility(r.Context(), tenantId, id)
 	var response, err = GetCounciladminService(h.db).UpdateFacility(r.Context(), tenantId, id, input)
+	if err == nil {
+		describeFacility(r.Context(), before, response)
+	}
 	send(w, r, response, err)
 }
 
@@ -209,6 +217,9 @@ func (h *counciladminHandler) ReplaceSchedule(w http.ResponseWriter, r *http.Req
 		return
 	}
 	var response, err = GetCounciladminService(h.db).ReplaceSchedule(r.Context(), tenantId, id, input)
+	if err == nil {
+		audit.Describe(r.Context(), "opening windows: %d", len(response.Schedule))
+	}
 	send(w, r, response, err)
 }
 
@@ -252,6 +263,9 @@ func (h *counciladminHandler) CreateDevice(w http.ResponseWriter, r *http.Reques
 		return
 	}
 	var response, err = GetCounciladminService(h.db).CreateDevice(r.Context(), tenantId, id, input)
+	if err == nil {
+		audit.Describe(r.Context(), "reader %q", input.Name)
+	}
 	send(w, r, response, err)
 }
 
@@ -288,6 +302,12 @@ func (h *counciladminHandler) SetActive(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	var response, err = GetCounciladminService(h.db).SetActive(r.Context(), tenantId, id, input)
+	if err == nil {
+		audit.Describe(r.Context(), "active: %v", input.Active)
+		if response.Cancelled > 0 {
+			audit.Describe(r.Context(), "upcoming bookings cancelled: %d", response.Cancelled)
+		}
+	}
 	send(w, r, response, err)
 }
 
@@ -322,6 +342,10 @@ func (h *counciladminHandler) CreateClosure(w http.ResponseWriter, r *http.Reque
 		return
 	}
 	var response, err = GetCounciladminService(h.db).CreateClosure(r.Context(), tenantId, id, input)
+	if err == nil {
+		audit.Describe(r.Context(), "closed %s – %s", input.StartsAt, input.EndsAt)
+		audit.Describe(r.Context(), "bookings cancelled: %d", response.Cancelled)
+	}
 	send(w, r, response, err)
 }
 
@@ -373,6 +397,7 @@ func (h *counciladminHandler) ExportIndicators(w http.ResponseWriter, r *http.Re
 	var query = indicatorsQuery(r)
 	var kind = r.URL.Query().Get("kind")
 	var write, err = GetCounciladminService(h.db).ExportIndicators(r.Context(), tenantId, query, kind, csvFormat{excel: r.URL.Query().Get("excel") == "1"})
+	audit.Describe(r.Context(), "kind: %s", kind)
 	if err != nil {
 		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
 		return
@@ -393,6 +418,8 @@ func (h *counciladminHandler) ExportCouncil(w http.ResponseWriter, r *http.Reque
 	}
 	var personal = r.URL.Query().Get("personal") == "1"
 	var data, err = GetCounciladminService(h.db).ExportCouncil(r.Context(), tenantId, personal)
+	// with residents' personal data, as the GDPR asks to account for it
+	audit.Describe(r.Context(), "personal data: %v", personal)
 	if err != nil {
 		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
 		return
@@ -431,7 +458,21 @@ func (h *counciladminHandler) SaveSmtp(w http.ResponseWriter, r *http.Request) {
 	if !decode(w, r, &input) {
 		return
 	}
+	var before, _ = GetCounciladminService(h.db).GetSmtp(r.Context(), tenantId)
 	var response, err = GetCounciladminService(h.db).SaveSmtp(r.Context(), tenantId, input)
+	if err == nil && before != nil {
+		audit.Changed(r.Context(), "host", before.Host, response.Host)
+		audit.Changed(r.Context(), "port", before.Port, response.Port)
+		if before.Username != response.Username {
+			audit.Describe(r.Context(), "username changed")
+		}
+		if before.From != response.From {
+			audit.Describe(r.Context(), "sender changed")
+		}
+		if input.Password != "" {
+			audit.Describe(r.Context(), "password changed")
+		}
+	}
 	send(w, r, response, err)
 }
 
@@ -483,7 +524,11 @@ func (h *counciladminHandler) SaveBookingRules(w http.ResponseWriter, r *http.Re
 	if !decode(w, r, &input) {
 		return
 	}
+	var before, _ = GetCounciladminService(h.db).GetBookingRules(r.Context(), tenantId)
 	var response, err = GetCounciladminService(h.db).SaveBookingRules(r.Context(), tenantId, input)
+	if err == nil && before != nil {
+		describeRules(r.Context(), *before, *response)
+	}
 	send(w, r, response, err)
 }
 
@@ -501,6 +546,20 @@ func (h *counciladminHandler) SaveFacilityRules(w http.ResponseWriter, r *http.R
 	if !decode(w, r, &input) {
 		return
 	}
+	var before, _ = GetCounciladminService(h.db).GetFacility(r.Context(), tenantId, id)
 	var response, err = GetCounciladminService(h.db).SaveFacilityRules(r.Context(), tenantId, id, input)
+	if err == nil && before != nil {
+		audit.Changed(r.Context(), "own window", before.CustomRules, response.CustomRules)
+		describeRules(r.Context(), before.Rules, response.Rules)
+	}
 	send(w, r, response, err)
+}
+
+// GetAudit: the council's own audit log, for its administrators.
+func (h *counciladminHandler) GetAudit(w http.ResponseWriter, r *http.Request) {
+	var tenantId, ok = h.councilAdmin(w, r)
+	if !ok {
+		return
+	}
+	audit.Serve(w, r, h.db, uuid.NullUUID{UUID: tenantId, Valid: true}, audit.ParseFilters(r.URL.Query(), audit.Zone()))
 }

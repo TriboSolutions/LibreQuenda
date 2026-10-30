@@ -3,6 +3,7 @@ import { lazy, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import { Link, useParams, useSearchParams } from 'react-router'
+import { AuditLogPanel } from '@/components/admin/AuditLogPanel'
 import { StaffBookingsPanel } from '@/components/admin/StaffBookingsPanel'
 import { useVerifyEmail } from '@/hooks/useVerifyEmail'
 import { CouncilHeading } from '@/components/CouncilHeading'
@@ -39,8 +40,8 @@ export function CouncilAdminPage() {
   const council = tenants.data?.tenants.find((c) => c.slug === slug)
   const [searchParams, setSearchParams] = useSearchParams()
   const vista = searchParams.get('vista')
-  const view = vista === 'indicadores' ? 'indicators' : vista === 'reservas' ? 'bookings' : 'facilities'
-  const viewParam: Record<string, string> = { indicators: 'indicadores', bookings: 'reservas' }
+  const view = vista === 'indicadores' ? 'indicators' : vista === 'reservas' ? 'bookings' : vista === 'rexistro' ? 'audit' : 'facilities'
+  const viewParam: Record<string, string> = { indicators: 'indicadores', bookings: 'reservas', audit: 'rexistro' }
   const changeView = (value: string) => setSearchParams(viewParam[value] ? { vista: viewParam[value] } : {}, { replace: true })
   const bookingsFacility = searchParams.get('instalacion') ?? ''
 
@@ -187,6 +188,7 @@ export function CouncilAdminPage() {
             <TabsTrigger value="facilities">{t('admin:facilities.title')}</TabsTrigger>
             <TabsTrigger value="bookings">{t('admin:staff.tab')}</TabsTrigger>
             <TabsTrigger value="indicators">{t('admin:indicators.title')}</TabsTrigger>
+            <TabsTrigger value="audit">{t('admin:tabs.audit')}</TabsTrigger>
           </TabsList>
           {/* the council's settings belong with its facilities and figures, not with the desk's calendar */}
           {view !== 'bookings' && settingsButton}
@@ -199,6 +201,9 @@ export function CouncilAdminPage() {
             facilityId={bookingsFacility}
             onFacilityChange={(id) => setSearchParams({ vista: 'reservas', instalacion: id }, { replace: true })}
           />
+        </TabsContent>
+        <TabsContent value="audit">
+          <AuditLogPanel load={(filters) => api.council.audit(token, slug, filters)} download={(filters) => api.council.downloadAudit(token, slug, filters)} />
         </TabsContent>
         <TabsContent value="indicators">
           <Suspense fallback={<Skeleton className="h-96 w-full" />}>

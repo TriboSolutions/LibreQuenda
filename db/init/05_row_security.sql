@@ -82,3 +82,21 @@ CREATE POLICY tenant_smtp_read   ON tenant_smtp FOR SELECT USING (TRUE);
 CREATE POLICY tenant_smtp_insert ON tenant_smtp FOR INSERT WITH CHECK (tenant_id = app_tenant_id());
 CREATE POLICY tenant_smtp_update ON tenant_smtp FOR UPDATE USING (tenant_id = app_tenant_id()) WITH CHECK (tenant_id = app_tenant_id());
 CREATE POLICY tenant_smtp_delete ON tenant_smtp FOR DELETE USING (tenant_id = app_tenant_id());
+
+-- audit_log: append-only for the API. A council's administrators read it
+-- inside db.WithTenant and see only their council; superadministrators read
+-- it without a council and see everything. Old entries go only through
+-- purge_audit_log(), which runs as the owner.
+ALTER TABLE audit_log ENABLE ROW LEVEL SECURITY;
+CREATE POLICY audit_log_read   ON audit_log FOR SELECT USING (app_tenant_id() IS NULL OR tenant_id = app_tenant_id());
+CREATE POLICY audit_log_insert ON audit_log FOR INSERT WITH CHECK (app_tenant_id() IS NULL OR tenant_id = app_tenant_id());
+REVOKE UPDATE, DELETE, TRUNCATE ON audit_log FROM librequenda_app;
+
+-- The retention purge: the only way entries leave the log.
+CREATE FUNCTION purge_audit_log(older_than INTERVAL) RETURNS BIGINT
+LANGUAGE sql SECURITY DEFINER SET search_path = public AS $$
+    WITH gone AS (DELETE FROM audit_log WHERE at < NOW() - older_than RETURNING 1)
+    SELECT COUNT(*) FROM gone
+$$;
+REVOKE ALL ON FUNCTION purge_audit_log(INTERVAL) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION purge_audit_log(INTERVAL) TO librequenda_app;

@@ -502,6 +502,16 @@ const recommendations = {
   ],
 }
 
+// the activity log: a council admin's change, an erased account's and the system's
+const auditPage = {
+  entries: [
+    { id: 'a1', at: at(-2), actor_name: 'Ana Pérez', actor_role: 'council_admin', actor_deleted: false, tenant_slug: 'lugo', tenant_name: 'Concello de Lugo', action: 'facility.updated', target_type: 'facility', target_id: 'f1', target_name: 'Pista de pádel 1', target_exists: true, summary: 'slot_minutes: 90 → 60' },
+    { id: 'a2', at: at(-5), actor_name: '', actor_role: 'council_admin', actor_deleted: true, tenant_slug: 'lugo', tenant_name: 'Concello de Lugo', action: 'closure.created', target_type: 'facility', target_id: 'f9', target_name: 'Piscina vella', target_exists: false, summary: 'bookings cancelled: 2' },
+    { id: 'a3', at: at(-30), actor_name: '', actor_role: 'system', actor_deleted: false, tenant_slug: '', tenant_name: '', action: 'tag.created', target_type: 'tag', target_id: 't1', target_name: 'Pádel', target_exists: false, summary: '"Pádel"' },
+  ],
+  next: at(-31),
+}
+
 /** GET handlers by path (without /api), first match wins. */
 const routes: [RegExp, () => unknown][] = [
   [/^\/tenants$/, () => ({ tenants })],
@@ -523,6 +533,8 @@ const routes: [RegExp, () => unknown][] = [
   [/^\/me\/qr$/, () => ({ code: 'lq2:0b5e1a8e-6f1d-4c1e-9a55-3f6c2d7b9e10', expires_at: at(1), refresh_seconds: 60 })],
   [/^\/me\/calendar$/, () => ({ url: 'https://reservas.example.org/api/calendar/7c9e6679-7425-40de-944b-e07fc1f90ae7.ics' })],
   [/^\/me\/bookings$/, () => myBookings],
+  [/^\/admin\/audit/, () => auditPage],
+  [/^\/tenants\/[^/]+\/admin\/audit/, () => auditPage],
   [/^\/me\/recommendations$/, () => recommendations],
   [/^\/me\/bookings\/[^/]+\/invite$/, () => invite],
   [/^\/me\/notifications$/, () => notifications],

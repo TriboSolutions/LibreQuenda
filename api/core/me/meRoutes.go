@@ -2,6 +2,7 @@ package me
 
 import (
 	"database/sql"
+	"librequenda/audit"
 	"librequenda/middlewares"
 	"net/http"
 	"sync"
@@ -66,13 +67,13 @@ func (r *meRoutes) RegisterRoutes() {
 		Path:              "/me/export",
 		Method:            http.MethodGet,
 		AdditionalMethods: []router.HTTPMethod{router.OPTIONS},
-		Handler:           middlewares.AuthMiddleware(middlewares.WithStrictRateLimit(h.Export)),
+		Handler:           middlewares.AuthMiddleware(middlewares.WithStrictRateLimit(audit.Route(r.db, http.MethodGet, "/me/export", h.Export))),
 	})
 	r.router.NewRoute(router.Route{
 		Path:              "/me",
 		Method:            http.MethodDelete,
 		AdditionalMethods: []router.HTTPMethod{router.OPTIONS},
-		Handler:           middlewares.AuthMiddleware(h.DeleteAccount),
+		Handler:           middlewares.AuthMiddleware(audit.Route(r.db, http.MethodDelete, "/me", h.DeleteAccount)),
 	})
 
 	// the account in Zitadel, edited from /perfil (never Zitadel's console)
