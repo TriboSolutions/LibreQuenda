@@ -729,7 +729,7 @@
   "audit": {
     "title": "Registre d’activitat",
     "help": "El que han fet les persones administradores i el sistema: qui, quan i què ha canviat. No desa dades personals dels veïns ni textos que escriguin. Es conserva el temps que fixi la instal·lació (dos anys per defecte).",
-    "download": "Baixar CSV",
+    "download": "Baixa el CSV",
     "filters": "Filtrar el registre",
     "action": "Acció",
     "anyAction": "Totes les accions",
@@ -746,7 +746,7 @@
     "colChanges": "Canvis",
     "system": "Sistema",
     "deletedAccount": "Compte esborrat",
-    "more": "Veure’n més",
+    "more": "Mostra’n més",
     "loading": "Carregant…",
     "roles": {
       "superadmin": "Superadministració",

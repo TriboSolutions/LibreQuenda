@@ -728,7 +728,7 @@
   },
   "audit": {
     "title": "Activity log",
-    "help": "What administrators and the system did: who, when and what changed. It keeps no residents' personal data nor anything they write. Entries are kept for the period the installation sets (two years by default).",
+    "help": "What administrators and the system did: who, when and what changed. It keeps no residents’ personal data nor anything they write. Entries are kept for the period the installation sets (two years by default).",
     "download": "Download CSV",
     "filters": "Filter the log",
     "action": "Action",
