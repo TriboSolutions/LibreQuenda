@@ -63,6 +63,8 @@
     "similar": "Like {{facility}}: {{tags}}",
     "freeAt": "Free today at {{time}}",
     "more": "Show {{count}} more",
-    "less": "Show fewer"
+    "less": "Show fewer",
+    "hide": "Hide",
+    "settings": "You can turn it back on in your profile."
   }
 }

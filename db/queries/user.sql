@@ -75,7 +75,8 @@ SELECT
     phone,
     avatar_ref,
     preferred_language,
-    email_reminders
+    email_reminders,
+    show_recommendations
 FROM
     app_user
 WHERE
@@ -88,9 +89,18 @@ SET
     phone              = sqlc.narg('phone'),
     avatar_ref         = sqlc.narg('avatar_ref'),
     preferred_language = sqlc.narg('preferred_language'),
-    email_reminders    = sqlc.arg('email_reminders')
+    email_reminders    = sqlc.arg('email_reminders'),
+    -- left as it is when the form does not send it
+    show_recommendations = COALESCE(sqlc.narg('show_recommendations'), show_recommendations)
 WHERE
     id = sqlc.arg('id');
+
+-- name: SetShowRecommendations :exec
+-- "For you" on the home page on or off, also from the section itself.
+UPDATE app_user SET show_recommendations = sqlc.arg('show') WHERE id = sqlc.arg('id');
+
+-- name: GetShowRecommendations :one
+SELECT show_recommendations FROM app_user WHERE id = sqlc.arg('id');
 
 -- name: HasBirthDate :one
 SELECT (birth_date IS NOT NULL)::BOOLEAN AS complete FROM app_user WHERE id = sqlc.arg('id');

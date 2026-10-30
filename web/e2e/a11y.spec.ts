@@ -452,6 +452,21 @@ test.describe('keyboard', () => {
     await expect(forYou).toContainText('Como ')
   })
 
+  test('"For you" can be turned off from the section and from the profile', async ({ page }) => {
+    await open(page, '/')
+    const sent = page.waitForRequest((r) => r.method() === 'PUT' && r.url().endsWith('/me/recommendations'))
+    await page.getByRole('region', { name: 'Para ti' }).getByRole('button', { name: 'Non amosar' }).click()
+    expect((await sent).postDataJSON()).toEqual({ show: false })
+
+    await open(page, '/perfil')
+    const box = page.getByRole('checkbox', { name: 'Amosar «Para ti» no inicio' })
+    await expect(box).toBeChecked()
+    await box.click()
+    const saved = page.waitForRequest((r) => r.method() === 'PUT' && r.url().endsWith('/me/profile'))
+    await page.getByRole('button', { name: 'Gardar perfil' }).click()
+    expect((await saved).postDataJSON()).toMatchObject({ show_recommendations: false })
+  })
+
   test('signed out, the home page has no recommendations', async ({ page }) => {
     await open(page, '/', { signedIn: false })
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()

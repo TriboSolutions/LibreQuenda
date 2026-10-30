@@ -83,6 +83,7 @@ CREATE TABLE app_user (
     avatar_ref         TEXT         NULL,              -- storage reference, never a URL
     preferred_language VARCHAR(5)   NULL,              -- gl, es, en, ca
     email_reminders    BOOLEAN      NOT NULL DEFAULT TRUE,
+    show_recommendations BOOLEAN    NOT NULL DEFAULT TRUE,             -- "For you" on the home page, from their own bookings
     calendar_token     UUID         NULL UNIQUE,       -- secret in the .ics feed address; NULL = feed off, a new one revokes the old address
     created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
     updated_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW()

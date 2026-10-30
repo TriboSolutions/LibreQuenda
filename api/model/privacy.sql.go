@@ -255,6 +255,7 @@ SELECT
     avatar_ref,
     preferred_language,
     email_reminders,
+    show_recommendations,
     created_at,
     updated_at
 FROM
@@ -264,17 +265,18 @@ WHERE
 `
 
 type ExportUserRow struct {
-	ID                uuid.UUID      `json:"id"`
-	Email             string         `json:"email"`
-	FullName          sql.NullString `json:"full_name"`
-	EmailVerified     bool           `json:"email_verified"`
-	BirthDate         sql.NullTime   `json:"birth_date"`
-	Phone             sql.NullString `json:"phone"`
-	AvatarRef         sql.NullString `json:"avatar_ref"`
-	PreferredLanguage sql.NullString `json:"preferred_language"`
-	EmailReminders    bool           `json:"email_reminders"`
-	CreatedAt         time.Time      `json:"created_at"`
-	UpdatedAt         time.Time      `json:"updated_at"`
+	ID                  uuid.UUID      `json:"id"`
+	Email               string         `json:"email"`
+	FullName            sql.NullString `json:"full_name"`
+	EmailVerified       bool           `json:"email_verified"`
+	BirthDate           sql.NullTime   `json:"birth_date"`
+	Phone               sql.NullString `json:"phone"`
+	AvatarRef           sql.NullString `json:"avatar_ref"`
+	PreferredLanguage   sql.NullString `json:"preferred_language"`
+	EmailReminders      bool           `json:"email_reminders"`
+	ShowRecommendations bool           `json:"show_recommendations"`
+	CreatedAt           time.Time      `json:"created_at"`
+	UpdatedAt           time.Time      `json:"updated_at"`
 }
 
 // ============================================================
@@ -295,6 +297,7 @@ func (q *Queries) ExportUser(ctx context.Context, id uuid.UUID) (ExportUserRow, 
 		&i.AvatarRef,
 		&i.PreferredLanguage,
 		&i.EmailReminders,
+		&i.ShowRecommendations,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

@@ -207,6 +207,7 @@ const me: Me = {
   avatar_url: '',
   preferred_language: 'gl',
   email_reminders: true,
+  show_recommendations: true,
   profile_complete: true,
   pending_invitations: [],
 }

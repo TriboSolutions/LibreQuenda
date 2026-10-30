@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import { Link } from 'react-router'
-import { CalendarClock, ChevronDown, Repeat, Sparkles } from 'lucide-react'
+import { CalendarClock, ChevronDown, EyeOff, Repeat, Sparkles } from 'lucide-react'
 import { Mark } from '@/components/Mark'
 import { Button } from '@/components/ui/button'
 import { useAsync } from '@/hooks/useAsync'
@@ -28,20 +28,46 @@ export function ForYou() {
   const { t } = useTranslation('home')
   const auth = useAuth()
   const token = auth.user?.access_token
-  const { me } = useMe()
+  const { me, reload } = useMe()
+  const [hiding, setHiding] = useState(false)
   // GET /me (MeProvider) first creates the user's row
-  const recommendations = useAsync(token && me ? () => api.recommendations(token) : null, `recommendations:${me?.id}`)
+  const on = !!me?.show_recommendations
+  const recommendations = useAsync(token && me && on ? () => api.recommendations(token) : null, `recommendations:${me?.id}:${on}`)
   const items = recommendations.data?.recommendations ?? []
   const [all, setAll] = useState(false)
-  if (items.length === 0) return null
+  if (!on || items.length === 0) return null
+
+  const hide = async () => {
+    if (!token) return
+    setHiding(true)
+    try {
+      await api.setShowRecommendations(token, false)
+      reload()
+    } finally {
+      setHiding(false)
+    }
+  }
   const shown = all ? items : items.slice(0, FIRST)
 
   return (
     <section aria-labelledby="for-you-title" className="mt-6">
-      <h2 id="for-you-title" className="text-lg font-semibold">
-        {t('forYou.title')}
-      </h2>
-      <p className="text-sm text-muted-foreground">{t('forYou.help')}</p>
+      <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-1">
+        <div>
+          <h2 id="for-you-title" className="text-lg font-semibold">
+            {t('forYou.title')}
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            {t('forYou.help')}{' '}
+            <Link to="/perfil" className="underline underline-offset-4">
+              {t('forYou.settings')}
+            </Link>
+          </p>
+        </div>
+        <Button variant="ghost" size="sm" disabled={hiding} onClick={() => void hide()}>
+          <EyeOff aria-hidden />
+          {t('forYou.hide')}
+        </Button>
+      </div>
       <ul id="for-you-list" className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {shown.map((item) => (
           <ForYouCard key={item.facility.id} item={item} />

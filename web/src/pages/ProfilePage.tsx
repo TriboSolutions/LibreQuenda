@@ -91,6 +91,7 @@ function ProfileForm({ me }: { me: Me }) {
   const [phone, setPhone] = useState(me.phone)
   const [language, setLanguage] = useState(me.preferred_language || SAME_AS_WEBSITE)
   const [reminders, setReminders] = useState(me.email_reminders)
+  const [recommendations, setRecommendations] = useState(me.show_recommendations)
   const [saving, setSaving] = useState(false)
   const [notice, setNotice] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -115,6 +116,7 @@ function ProfileForm({ me }: { me: Me }) {
         avatar_ref: avatar?.ref ?? '', // the reference, never the URL
         preferred_language: language === SAME_AS_WEBSITE ? '' : language,
         email_reminders: reminders,
+        show_recommendations: recommendations,
       })
       reload()
       setNotice(t('profile:saved'))
@@ -178,6 +180,23 @@ function ProfileForm({ me }: { me: Me }) {
           <Label htmlFor="p-reminders" className="leading-5 font-normal">
             {t('profile:reminders')}
           </Label>
+        </div>
+        <div className="flex items-start gap-2">
+          <Checkbox
+            id="p-recommendations"
+            checked={recommendations}
+            onCheckedChange={(value) => setRecommendations(value === true)}
+            aria-describedby="p-recommendations-help"
+            className="mt-0.5"
+          />
+          <div className="grid gap-1">
+            <Label htmlFor="p-recommendations" className="leading-5 font-normal">
+              {t('profile:recommendations')}
+            </Label>
+            <p id="p-recommendations-help" className="text-sm text-muted-foreground">
+              {t('profile:recommendationsHelp')}
+            </p>
+          </div>
         </div>
 
         <div aria-live="polite" className="empty:hidden">

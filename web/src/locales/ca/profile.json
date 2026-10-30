@@ -137,5 +137,7 @@
       "locate": "Buscar a qui preguntar",
       "none": "No ets a prop de cap instal·lació amb persones de contacte."
     }
-  }
+  },
+  "recommendations": "Mostrar «Per a tu» a l’inici",
+  "recommendationsHelp": "Recomanacions a partir de les teves reserves i del que queda lliure avui. Es calculen al moment i no es desa res més."
 }

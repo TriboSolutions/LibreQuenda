@@ -25,17 +25,18 @@ type ExportResponse struct {
 }
 
 type ExportAccount struct {
-	Id                string    `json:"id"`
-	Email             string    `json:"email"`
-	EmailVerified     bool      `json:"email_verified"`
-	FullName          string    `json:"full_name"`
-	BirthDate         string    `json:"birth_date"` // YYYY-MM-DD, "" if never filled in
-	Phone             string    `json:"phone"`
-	AvatarUrl         string    `json:"avatar_url"`
-	PreferredLanguage string    `json:"preferred_language"`
-	EmailReminders    bool      `json:"email_reminders"`
-	CreatedAt         time.Time `json:"created_at"`
-	UpdatedAt         time.Time `json:"updated_at"`
+	Id                  string    `json:"id"`
+	Email               string    `json:"email"`
+	EmailVerified       bool      `json:"email_verified"`
+	FullName            string    `json:"full_name"`
+	BirthDate           string    `json:"birth_date"` // YYYY-MM-DD, "" if never filled in
+	Phone               string    `json:"phone"`
+	AvatarUrl           string    `json:"avatar_url"`
+	PreferredLanguage   string    `json:"preferred_language"`
+	EmailReminders      bool      `json:"email_reminders"`
+	ShowRecommendations bool      `json:"show_recommendations"`
+	CreatedAt           time.Time `json:"created_at"`
+	UpdatedAt           time.Time `json:"updated_at"`
 }
 
 type ExportBooking struct {
@@ -80,15 +81,16 @@ func optionalTime(t sql.NullTime) *time.Time {
 
 func mapExportAccount(user model.ExportUserRow) ExportAccount {
 	var account = ExportAccount{
-		Id:                user.ID.String(),
-		Email:             user.Email,
-		EmailVerified:     user.EmailVerified,
-		FullName:          user.FullName.String,
-		Phone:             user.Phone.String,
-		PreferredLanguage: user.PreferredLanguage.String,
-		EmailReminders:    user.EmailReminders,
-		CreatedAt:         user.CreatedAt,
-		UpdatedAt:         user.UpdatedAt,
+		Id:                  user.ID.String(),
+		Email:               user.Email,
+		EmailVerified:       user.EmailVerified,
+		FullName:            user.FullName.String,
+		Phone:               user.Phone.String,
+		PreferredLanguage:   user.PreferredLanguage.String,
+		EmailReminders:      user.EmailReminders,
+		ShowRecommendations: user.ShowRecommendations,
+		CreatedAt:           user.CreatedAt,
+		UpdatedAt:           user.UpdatedAt,
 	}
 	if user.BirthDate.Valid {
 		account.BirthDate = user.BirthDate.Time.Format("2006-01-02")
@@ -184,6 +186,7 @@ func writeExportCSV(w io.Writer, data *ExportResponse) error {
 		{"avatar_url", a.AvatarUrl},
 		{"preferred_language", a.PreferredLanguage},
 		{"email_reminders", strconv.FormatBool(a.EmailReminders)},
+		{"show_recommendations", strconv.FormatBool(a.ShowRecommendations)},
 		{"is_superadmin", strconv.FormatBool(data.IsSuperadmin)},
 		{"created_at", csvTime(a.CreatedAt)},
 		{"updated_at", csvTime(a.UpdatedAt)},
