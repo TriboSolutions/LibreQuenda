@@ -1,4 +1,4 @@
-import { AlarmClock, Bell, CalendarCheck, CalendarClock, CalendarX, ShieldCheck } from 'lucide-react'
+import { AlarmClock, Bell, CalendarCheck, CalendarClock, CalendarX, ShieldCheck, Wrench } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
@@ -25,6 +25,15 @@ const icons: Record<NotificationType, typeof Bell> = {
   booking_cancelled: CalendarX,
   booking_cancelled_by_council: CalendarX,
   council_admin_granted: ShieldCheck,
+  issue_solved: Wrench,
+  issue_rejected: Wrench,
+}
+
+/** Where a notice leads: the council's administration, the facility of a reported problem, or My bookings. */
+function target(n: AppNotification) {
+  if (n.type === 'council_admin_granted') return `/${n.tenant_slug}/admin`
+  if ((n.type === 'issue_solved' || n.type === 'issue_rejected') && n.facility_slug) return `/${n.tenant_slug}/${n.facility_slug}`
+  return '/reservas'
 }
 
 /** The bell in the top bar: polled notices, marked read when opened. */
@@ -70,7 +79,7 @@ export function NotificationBell() {
                 notification={n}
                 today={today}
                 highlighted={highlighted.has(n.id)}
-                onSelect={() => navigate(n.type === 'council_admin_granted' ? `/${n.tenant_slug}/admin` : '/reservas')}
+                onSelect={() => navigate(target(n))}
               />
             ))}
           </div>
@@ -104,7 +113,11 @@ function NotificationItem({ notification: n, today, highlighted, onSelect }: Ite
             council: n.tenant_name,
           })}
         </span>
-        {n.reason && <span className="mt-0.5 block text-sm text-muted-foreground">{t('reason', { reason: n.reason })}</span>}
+        {n.reason && (
+          <span className="mt-0.5 block text-sm text-muted-foreground">
+            {t(n.type === 'issue_solved' || n.type === 'issue_rejected' ? 'councilNote' : 'reason', { reason: n.reason })}
+          </span>
+        )}
         <span className="num mt-0.5 block text-xs text-muted-foreground">{formatDateTime(n.created_at, TIME_ZONE)}</span>
       </span>
     </DropdownMenuItem>

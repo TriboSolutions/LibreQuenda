@@ -37,5 +37,34 @@
   "ruleInARow_other": "Como máximo {{count}} turnos seguidos por persona.",
   "ruleWeekly": "Los turnos de la semana siguiente se abren el {{weekday}} a las {{time}}.",
   "rulePerWeek_one": "Como máximo {{count}} reserva por persona y semana.",
-  "rulePerWeek_other": "Como máximo {{count}} reservas por persona y semana."
+  "rulePerWeek_other": "Como máximo {{count}} reservas por persona y semana.",
+  "issue": {
+    "report": "Avisar de un problema",
+    "title": "Avisar de un problema",
+    "description": "El ayuntamiento recibe el aviso sobre {{facility}} en su lista de mantenimiento.",
+    "category": "Qué tipo de problema es",
+    "chooseCategory": "Elige un tipo",
+    "what": "Qué pasa",
+    "whatHelp": "Dónde está y qué se ve: por ejemplo, «la red de la pista 2 está rota por el medio». Hasta 1000 caracteres.",
+    "photo": "Foto (opcional)",
+    "urgent": "Es urgente",
+    "urgentHelp": "Por ejemplo, si es peligroso o impide usar la instalación.",
+    "shareContact": "Dejar que el personal del ayuntamiento vea mi correo para preguntarme",
+    "send": "Enviar el aviso",
+    "sending": "Enviando…",
+    "cancel": "Cancelar",
+    "sent": "Gracias. El ayuntamiento recibió el aviso y te avisaremos cuando lo resuelva.",
+    "close": "Cerrar",
+    "sectionTitle": "¿Algo no está bien?",
+    "sectionHelp": "Si ves una avería, falta de limpieza o un peligro, avisa al ayuntamiento.",
+    "categories": {
+      "equipment": "Material (redes, canastas, porterías…)",
+      "lighting": "Iluminación",
+      "cleaning": "Limpieza",
+      "changing_rooms": "Vestuarios y duchas",
+      "accessibility": "Accesibilidad",
+      "safety": "Seguridad",
+      "other": "Otro"
+    }
+  }
 }

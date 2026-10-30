@@ -40,6 +40,13 @@ CREATE POLICY opening_hours_insert ON opening_hours FOR INSERT WITH CHECK (app_o
 CREATE POLICY opening_hours_update ON opening_hours FOR UPDATE USING (app_owns_facility(facility_id)) WITH CHECK (app_owns_facility(facility_id));
 CREATE POLICY opening_hours_delete ON opening_hours FOR DELETE USING (app_owns_facility(facility_id));
 
+-- facility_issue: residents report through the facility's council (db.WithTenant
+-- with the facility's council, after the API checked the person), staff update them
+ALTER TABLE facility_issue ENABLE ROW LEVEL SECURITY;
+CREATE POLICY facility_issue_read   ON facility_issue FOR SELECT USING (TRUE);
+CREATE POLICY facility_issue_insert ON facility_issue FOR INSERT WITH CHECK (app_owns_facility(facility_id));
+CREATE POLICY facility_issue_update ON facility_issue FOR UPDATE USING (app_owns_facility(facility_id)) WITH CHECK (app_owns_facility(facility_id));
+
 -- closure
 ALTER TABLE closure ENABLE ROW LEVEL SECURITY;
 CREATE POLICY closure_read   ON closure FOR SELECT USING (TRUE);

@@ -1,4 +1,4 @@
-import { CalendarClock, CalendarPlus, ChevronDown, DoorOpen, ExternalLink, MapPin, UserPlus } from 'lucide-react'
+import { CalendarClock, CalendarPlus, ChevronDown, DoorOpen, ExternalLink, MapPin, UserPlus, Wrench } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
@@ -9,6 +9,7 @@ import { CheckinDialog } from '@/components/CheckinDialog'
 import { FacilityInfo } from '@/components/FacilityInfo'
 import { ChangeBookingDialog } from '@/components/ChangeBookingDialog'
 import { InviteDialog } from '@/components/InviteDialog'
+import { ReportIssueDialog } from '@/components/ReportIssueDialog'
 import { LeaveDialog } from '@/components/LeaveDialog'
 import { PeopleList } from '@/components/PeopleList'
 import { SpotsMeter } from '@/components/SpotsMeter'
@@ -57,6 +58,7 @@ export function MyBookingsPage() {
   const [toChange, setToChange] = useState<Booking | null>(null)
   const [toLeave, setToLeave] = useState<Booking | null>(null)
   const [toInvite, setToInvite] = useState<Booking | null>(null)
+  const [toReport, setToReport] = useState<Booking | null>(null)
   const [toCheckIn, setToCheckIn] = useState<Booking | null>(null)
   const ticking = useNow()
   const [notice, setNotice] = useState<string | null>(null)
@@ -186,6 +188,10 @@ export function MyBookingsPage() {
                       </Button>
                     )
                   )}
+                  <Button variant="ghost" size="sm" onClick={() => setToReport(booking)}>
+                    <Wrench aria-hidden />
+                    {t('facility:issue.report')}
+                  </Button>
                 </BookingRow>
               ))}
             </ul>
@@ -201,7 +207,7 @@ export function MyBookingsPage() {
           ) : (
             <ul className="mt-2">
               {history.map((booking) => (
-                <HistoryRow key={booking.id} booking={booking} today={today} />
+                <HistoryRow key={booking.id} booking={booking} today={today} onReport={() => setToReport(booking)} />
               ))}
             </ul>
           )}
@@ -231,6 +237,12 @@ export function MyBookingsPage() {
         onPeopleChanged={bookings.reload}
       />
       <LeaveDialog key={toLeave?.id ?? 'none'} booking={toLeave} timeZone={TIME_ZONE} today={today} onClose={() => setToLeave(null)} onConfirm={confirmLeave} />
+      <ReportIssueDialog
+        key={`report-${toReport?.id ?? 'none'}`}
+        facility={toReport ? { id: toReport.facility_id, name: toReport.facility_name } : null}
+        bookingId={toReport?.id}
+        onClose={() => setToReport(null)}
+      />
       <InviteDialog
         key={toInvite?.id ?? 'none'}
         booking={toInvite}
@@ -326,7 +338,13 @@ function Countdown({ booking, now }: { booking: Booking; now: number }) {
 }
 
 /** A past booking, in one line: what, when, and how it ended. */
-function HistoryRow({ booking, today }: { booking: Booking; today: string }) {
+// a past booking can still be reported from for a week after it ended (as the API allows)
+const REPORT_WINDOW_MS = 7 * 24 * 3600_000
+
+function HistoryRow({ booking, today, onReport }: { booking: Booking; today: string; onReport: () => void }) {
+  const { t } = useTranslation('facility')
+  const [mountedAt] = useState(() => Date.now())
+  const reportable = booking.status === 'confirmed' && mountedAt - Date.parse(booking.ends_at) < REPORT_WINDOW_MS
   return (
     <li className="grid gap-0.5 border-t py-3 first:border-t-0">
       <div className="flex items-start justify-between gap-3">
@@ -338,6 +356,14 @@ function HistoryRow({ booking, today }: { booking: Booking; today: string }) {
       <p className="num text-sm text-muted-foreground">
         {formatBookingDay(booking.starts_at, TIME_ZONE, today)}, {formatTime(booking.starts_at, TIME_ZONE)}–{formatTime(booking.ends_at, TIME_ZONE)} · {booking.tenant_name}
       </p>
+      {reportable && (
+        <div>
+          <Button variant="link" size="sm" className="h-auto px-0" onClick={onReport}>
+            <Wrench aria-hidden />
+            {t('issue.report')}
+          </Button>
+        </div>
+      )}
     </li>
   )
 }

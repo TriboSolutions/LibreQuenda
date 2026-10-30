@@ -56,6 +56,7 @@ const pages: { name: string; path: string; signedIn?: boolean }[] = [
   { name: 'council admin, activity log', path: '/lugo/admin?vista=rexistro' },
   { name: 'free-turns widget', path: '/lugo/widget', signedIn: false },
   { name: 'free-turns widget, one facility, dark', path: '/lugo/widget/padel-1?theme=dark&lang=es', signedIn: false },
+  { name: 'council administration, maintenance', path: '/lugo/admin?vista=incidencias' },
   { name: 'facility editor, booking window', path: '/lugo/admin/facilities/f1?vista=reserva' },
   { name: 'entry code to print, in braille', path: '/lugo/admin/facilities/f1/imprimir?que=codigo&braille=1' },
   { name: 'check-in at the door, printed QR', path: '/lugo/padel-1/entrada?c=9a1f6c2e-3b4d-4e5f-8a7b-1c2d3e4f5a6b' },
@@ -150,6 +151,7 @@ for (const theme of ['light', 'dark'] as const) {
         await page.getByRole('button', { name: button }).first().click()
         await expect(page.getByRole('dialog')).toBeVisible()
         await page.waitForLoadState('networkidle')
+        await page.mouse.move(0, 0) // where the button was clicked may now be over the dialog, in its hover colour
         await page.waitForTimeout(300)
         await expectAccessible(page, { overlay: true })
       })
@@ -606,6 +608,36 @@ test.describe('keyboard', () => {
     await widget.getByLabel('Aparencia').click()
     await page.getByRole('option', { name: 'Escura' }).click()
     await expect(widget.getByLabel('Código para pegar na web')).toHaveValue(/\/lugo\/widget\?theme=dark"/)
+  })
+
+  test('a resident reports a problem from a booking, by keyboard', async ({ page }) => {
+    await open(page, '/reservas')
+    await page.getByRole('button', { name: 'Avisar dun problema' }).first().click()
+    const dialog = page.getByRole('dialog')
+    await expect(dialog.getByRole('heading', { name: 'Avisar dun problema' })).toBeVisible()
+    await dialog.getByLabel('Que tipo de problema é').click()
+    await page.getByRole('option', { name: 'Iluminación' }).click()
+    await dialog.getByLabel('Que pasa').fill('Non acende a luz da pista.')
+    await dialog.getByLabel('É urxente').check()
+    const sent = page.waitForRequest((r) => r.method() === 'POST' && r.url().endsWith('/me/issues'))
+    await dialog.getByRole('button', { name: 'Enviar o aviso' }).click()
+    expect((await sent).postDataJSON()).toMatchObject({ category: 'lighting', description: 'Non acende a luz da pista.', urgent: true, share_contact: false })
+    await expect(dialog.getByRole('status')).toContainText('O concello recibiu o aviso')
+  })
+
+  test('staff answer a report from the maintenance list', async ({ page }) => {
+    await open(page, '/lugo/admin')
+    await expect(page.getByRole('tab', { name: /^Incidencias\s*, 1 nova$/ })).toBeVisible()
+    await page.getByRole('tab', { name: /^Incidencias\s*, 1 nova$/ }).click()
+    await expect(page).toHaveURL(/vista=incidencias/)
+    const item = page.getByRole('listitem', { name: /Pista de pádel 1/ })
+    await expect(item.getByRole('link', { name: 'lucia@example.org' })).toBeVisible()
+    await item.getByLabel('Estado').click()
+    await page.getByRole('option', { name: 'Arranxado' }).click()
+    await item.getByLabel('Nota para quen avisou').fill('Rede nova colocada.')
+    const saved = page.waitForRequest((r) => r.method() === 'PUT' && r.url().endsWith('/admin/issues/i1'))
+    await item.getByRole('button', { name: 'Gardar' }).click()
+    expect((await saved).postDataJSON()).toEqual({ status: 'solved', staff_note: 'Rede nova colocada.' })
   })
 
   test('signed out, the home page has no recommendations', async ({ page }) => {

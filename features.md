@@ -24,6 +24,7 @@ Status: **built** · **in progress** (open work) · **idea** (not started).
 | Account in Zitadel: sign up and in with a password or Google, change name, email and password from the profile | built |
 | Verified email required to book (keeps bot accounts from taking turns) | in progress |
 | Your data as a file (JSON and CSV) and deleting your account (bookings anonymised, sign-in account deleted) | built |
+| Report a problem at a facility (broken net, no light, dirty changing rooms…) from a booking or the facility's page, with a category, a photo and whether it is urgent; told by notice and email when the council fixes or rejects it | built |
 | Four languages (Galician, Spanish, English, Catalan), light and dark theme | built |
 
 ## Checking in at the door
@@ -52,6 +53,7 @@ Status: **built** · **in progress** (open work) · **idea** (not started).
 | Indicators: bookings, occupancy, cancellations, no-shows (counting every way to check in), busiest days and hours, comparison with another period, per facility; CSV and Excel export | built |
 | No-shows remember when check-in was off (history of the facility's ways to check in) | in progress |
 | Widget of free turns to embed in the council's own website (`/<council>/widget`, all or one facility, light or dark, any of the four languages), with the code to paste and a preview in the council settings | built |
+| Maintenance list (Incidencias tab): residents' reports with a badge of new ones, filters by facility and status, status and a note for the reporter, the reporter's email only if they shared it | built |
 | Council settings page: details, administrators (invite, remove), booking window, own email relay (SMTP) with a test email, full data export (CSV + Frictionless datapackage + images, optionally with residents' personal data) | built |
 
 ## Platform
@@ -79,7 +81,6 @@ Grouped by who gains most; none of these is started.
 - **Find players:** say you are looking for people for a sport and level, and see others who are, building on public bookings.
 - **Web push notifications** (no app needed) and **SMS** for people without email, through the council's provider.
 - **Installable app that works offline:** the manifest exists; a service worker would keep My bookings and the entry QR available without coverage at the door.
-- **Report a problem** with a facility (broken net, no light) from the booking, landing in the council's maintenance list.
 - **Weather notice** for outdoor facilities (MeteoGalicia's open data), suggesting to change or cancel before the deadline.
 
 **Councils**

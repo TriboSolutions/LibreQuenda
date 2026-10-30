@@ -49,6 +49,10 @@ func (s *meService) Export(ctx context.Context, session auth.Session) (*ExportRe
 	if notifications, err = queries.ExportNotificationsByUser(ctx, userId); err != nil {
 		return nil, failed
 	}
+	var issues []model.ListIssuesByReporterRow
+	if issues, err = queries.ListIssuesByReporter(ctx, owner); err != nil {
+		return nil, failed
+	}
 
 	return &ExportResponse{
 		GeneratedAt:    time.Now().UTC(),
@@ -58,6 +62,7 @@ func (s *meService) Export(ctx context.Context, session auth.Session) (*ExportRe
 		Bookings:       mapExportBookings(bookings),
 		Participations: mapExportParticipations(participations),
 		Notifications:  mapExportNotifications(notifications),
+		Issues:         mapExportIssues(issues),
 	}, nil
 }
 

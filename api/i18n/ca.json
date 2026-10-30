@@ -169,7 +169,16 @@
     "weekly_limit_reached": "Ja tens les reserves que es permeten per setmana en aquesta instal·lació.",
     "invalid_weekly_opening": "L’obertura setmanal necessita un dia de la setmana i una hora vàlids.",
     "public_needs_capacity": "Només es poden fer públiques les reserves d’una instal·lació on hi caben més persones.",
-    "public_booking_not_found": "Aquesta reserva ja no és pública o ja no existeix."
+    "public_booking_not_found": "Aquesta reserva ja no és pública o ja no existeix.",
+    "invalid_issue_category": "Tria de quin tipus és el problema.",
+    "invalid_issue_description": "Descriu el problema (fins a 1000 caràcters).",
+    "issue_failed": "No s’ha pogut desar l’avís. Torna-ho a provar.",
+    "issue_booking_too_old": "Aquesta reserva va acabar fa més d’una setmana: avisa des de la pàgina de la instal·lació.",
+    "too_many_open_issues": "Ja tens 5 avisos oberts. Espera que l’ajuntament els revisi.",
+    "invalid_issue_status": "Aquest estat no existeix.",
+    "invalid_issue_note": "La nota pot tenir fins a 1000 caràcters.",
+    "issue_reject_reason": "Per rebutjar un avís, explica’n el motiu a qui l’ha enviat.",
+    "issue_not_found": "No hem trobat aquest avís."
   },
   "email": {
     "greeting": "Hola {{0}},",
@@ -223,6 +232,16 @@
     "smtp_test": {
       "subject": "Correu de prova de {{1}} ({{0}})",
       "body": "Aquest és un correu de prova de {{0}}, enviat a través de {{1}}. Si el llegeixes, {{2}} pot enviar els correus de reserves de l'ajuntament."
-    }
+    },
+    "issue_solved": {
+      "subject": "Arreglat: el problema que vas avisar a {{0}}",
+      "intro": "L’ajuntament ha marcat com a arreglat el problema que vas avisar a {{0}} ({{1}}). Gràcies per avisar."
+    },
+    "issue_rejected": {
+      "subject": "El teu avís sobre {{0}}",
+      "intro": "L’ajuntament ha revisat el problema que vas avisar a {{0}} ({{1}}) i no el tramitarà."
+    },
+    "issue_note": "Nota de l’ajuntament: {{0}}",
+    "issue_footer": "Reps aquest correu perquè vas avisar d’un problema en una instal·lació a {{0}}."
   }
 }

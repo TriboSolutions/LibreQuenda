@@ -13,7 +13,10 @@
     "booking_cancelled_by_council": "Lo sentimos: se ha cerrado {{facility}}, así que tu reserva del {{day}} a las {{time}} ha sido cancelada.",
     "booking_cancelled_by_closure": "Lo sentimos: {{facility}} está cerrada del {{from}} al {{until}}, así que tu reserva del {{day}} a las {{time}} ha sido cancelada.",
     "booking_cancelled_by_staff": "Lo sentimos: {{council}} ha cancelado tu reserva en {{facility}} el {{day}} a las {{time}}.",
-    "council_admin_granted": "Ya eres administrador o administradora de {{council}}. Abre su administración desde aquí o desde el menú de tu cuenta."
+    "council_admin_granted": "Ya eres administrador o administradora de {{council}}. Abre su administración desde aquí o desde el menú de tu cuenta.",
+    "issue_solved": "Arreglado el problema que avisaste en {{facility}}.",
+    "issue_rejected": "El ayuntamiento revisó el problema que avisaste en {{facility}} y no lo va a tramitar."
   },
-  "reason": "Motivo: {{reason}}"
+  "reason": "Motivo: {{reason}}",
+  "councilNote": "Nota del ayuntamiento: {{reason}}"
 }

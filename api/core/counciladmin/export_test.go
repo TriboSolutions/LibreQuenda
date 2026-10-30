@@ -31,6 +31,7 @@ func TestCouncilExportZip(t *testing.T) {
 			{ID: uuid.New(), FacilityID: facility, Status: model.BookingStatusCancelled, CancelledBy: model.NullBookingCanceller{BookingCanceller: model.BookingCancellerCouncil, Valid: true}},
 		},
 		participants: []model.ExportBookingParticipantsRow{{ID: uuid.New(), IsGuest: true}},
+		issues:       []model.FacilityIssue{{ID: uuid.New(), Category: model.IssueCategoryLighting, Description: "No light", Status: model.IssueStatusNew}},
 	}
 	var buffer bytes.Buffer
 	if err := data.WriteZip(context.Background(), &buffer); err != nil {
@@ -55,8 +56,8 @@ func TestCouncilExportZip(t *testing.T) {
 	if err = json.NewDecoder(reader).Decode(&descriptor); err != nil {
 		t.Fatal(err)
 	}
-	if len(descriptor.Resources) != 7 {
-		t.Fatalf("%d tables, want 7", len(descriptor.Resources))
+	if len(descriptor.Resources) != 8 { // with the maintenance list (facility_issues)
+		t.Fatalf("%d tables, want 8", len(descriptor.Resources))
 	}
 	var rowCounts = map[string]int{}
 	for _, resource := range descriptor.Resources {

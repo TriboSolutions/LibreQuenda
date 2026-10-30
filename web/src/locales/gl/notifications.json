@@ -13,7 +13,10 @@
     "booking_cancelled_by_council": "Sentímolo: pechouse {{facility}}, así que a túa reserva do {{day}} ás {{time}} foi cancelada.",
     "booking_cancelled_by_closure": "Sentímolo: {{facility}} está pechada do {{from}} ao {{until}}, así que a túa reserva do {{day}} ás {{time}} foi cancelada.",
     "booking_cancelled_by_staff": "Sentímolo: {{council}} cancelou a túa reserva en {{facility}} o {{day}} ás {{time}}.",
-    "council_admin_granted": "Xa es administrador ou administradora de {{council}}. Abre a súa administración desde aquí ou desde o menú da túa conta."
+    "council_admin_granted": "Xa es administrador ou administradora de {{council}}. Abre a súa administración desde aquí ou desde o menú da túa conta.",
+    "issue_solved": "Arranxado o problema que avisaches en {{facility}}.",
+    "issue_rejected": "O concello revisou o problema que avisaches en {{facility}} e non o vai tramitar."
   },
-  "reason": "Motivo: {{reason}}"
+  "reason": "Motivo: {{reason}}",
+  "councilNote": "Nota do concello: {{reason}}"
 }
