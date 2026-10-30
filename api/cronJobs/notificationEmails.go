@@ -62,6 +62,13 @@ func (j *notificationEmailJob) Execute() []any {
 		return []any{err}
 	}
 	sent += invitations
+	var issues int
+	issues, err = SendIssueEmails(ctx, j.db)
+	if err != nil {
+		log.Printf("failed to send issue emails: %v", err)
+		return []any{err}
+	}
+	sent += issues
 	if sent > 0 {
 		log.Printf("sent %d notification emails", sent)
 	}

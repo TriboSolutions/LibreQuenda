@@ -34,7 +34,27 @@ CREATE TYPE notification_type AS ENUM (
     'booking_cancelled',            -- cancelled by the user
     'booking_cancelled_by_council', -- closure, maintenance…
     'booking_reminder',
-    'council_admin_granted'         -- made administrator of a council (no booking)
+    'council_admin_granted',        -- made administrator of a council (no booking)
+    'issue_solved',                 -- a problem the person reported was fixed (issue_id)
+    'issue_rejected'                -- …or turned down, with the council's reason
+);
+
+-- A problem a resident reports at a facility, in the council's maintenance list.
+CREATE TYPE issue_category AS ENUM (
+    'equipment',      -- nets, goals, baskets, lane ropes…
+    'lighting',
+    'cleaning',
+    'changing_rooms',
+    'accessibility',
+    'safety',
+    'other'
+);
+
+CREATE TYPE issue_status AS ENUM (
+    'new',
+    'in_progress',
+    'solved',
+    'rejected'        -- with the council's reason in staff_note
 );
 
 
@@ -408,10 +428,32 @@ CREATE TABLE booking_participant (
 --  NOTIFICATIONS (avisos)
 -- ============================================================
 
+-- Problems residents report at a facility (broken net, no light…): the
+-- council's maintenance list. The reporter goes on account erasure, the report
+-- stays. share_contact: the reporter lets the council's staff see their email.
+CREATE TABLE facility_issue (
+    id            UUID           PRIMARY KEY DEFAULT uuidv7(),
+    facility_id   UUID           NOT NULL REFERENCES facility(id) ON DELETE CASCADE,
+    reporter_id   UUID           NULL REFERENCES app_user(id) ON DELETE SET NULL,
+    booking_id    UUID           NULL REFERENCES booking(id) ON DELETE SET NULL,   -- the booking it was reported from
+    category      issue_category NOT NULL,
+    description   VARCHAR(1000)  NOT NULL,
+    photo_ref     TEXT           NULL,       -- storage reference (issues/…), never a URL
+    urgent        BOOLEAN        NOT NULL DEFAULT FALSE,
+    share_contact BOOLEAN        NOT NULL DEFAULT FALSE,
+    status        issue_status   NOT NULL DEFAULT 'new',
+    staff_note    VARCHAR(1000)  NULL,       -- for the reporter: what was done, or why not
+    resolved_by   UUID           NULL REFERENCES app_user(id) ON DELETE SET NULL,
+    resolved_at   TIMESTAMPTZ    NULL,       -- solved or rejected
+    created_at    TIMESTAMPTZ    NOT NULL DEFAULT NOW(),
+    updated_at    TIMESTAMPTZ    NOT NULL DEFAULT NOW()
+);
+
 CREATE TABLE notification (
     id         UUID              PRIMARY KEY DEFAULT uuidv7(),
     user_id    UUID              NOT NULL REFERENCES app_user(id) ON DELETE CASCADE,
     booking_id UUID              NULL REFERENCES booking(id) ON DELETE SET NULL,
+    issue_id   UUID              NULL REFERENCES facility_issue(id) ON DELETE SET NULL, -- issue_solved / issue_rejected
     type       notification_type NOT NULL,
     payload    JSONB             NOT NULL DEFAULT '{}',
     created_at TIMESTAMPTZ       NOT NULL DEFAULT NOW(),

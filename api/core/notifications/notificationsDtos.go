@@ -10,9 +10,10 @@ type NotificationDto struct {
 	Id           string     `json:"id"`
 	Type         string     `json:"type"` // booking_confirmed, booking_reminder, booking_cancelled, booking_cancelled_by_council…
 	FacilityName string     `json:"facility_name"`
+	FacilitySlug string     `json:"facility_slug"` // issue_solved, issue_rejected
 	StartsAt     *time.Time `json:"starts_at"`
 	EndsAt       *time.Time `json:"ends_at"`
-	Reason       string     `json:"reason"`      // council cancellations
+	Reason       string     `json:"reason"`      // council cancellations; the council's note on an issue
 	ClosedFrom   *time.Time `json:"closed_from"` // council cancellations caused by a closure
 	ClosedUntil  *time.Time `json:"closed_until"`
 	ByStaff      bool       `json:"by_staff"`    // council cancellation of one booking by staff
@@ -27,9 +28,11 @@ type NotificationsResponse struct {
 	Notifications []NotificationDto `json:"notifications"` // most recent first
 }
 
-// payload is what bookings.NotificationPayload, CancelBookingsInRange and bookings.StaffCancel store.
+// payload is what bookings.NotificationPayload, CancelBookingsInRange,
+// bookings.StaffCancel and counciladmin.ChangeIssue store.
 type payload struct {
 	FacilityName string     `json:"facility_name"`
+	FacilitySlug string     `json:"facility_slug"`
 	StartsAt     *time.Time `json:"starts_at"`
 	EndsAt       *time.Time `json:"ends_at"`
 	Reason       string     `json:"reason"`
@@ -49,6 +52,7 @@ func MapNotifications(rows []model.ListNotificationsByUserRow, unread int64) *No
 			Id:           row.ID.String(),
 			Type:         string(row.Type),
 			FacilityName: data.FacilityName,
+			FacilitySlug: data.FacilitySlug,
 			StartsAt:     data.StartsAt,
 			EndsAt:       data.EndsAt,
 			Reason:       data.Reason,

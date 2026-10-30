@@ -833,5 +833,34 @@
     "copied": "Código copiado",
     "preview": "Vista previa",
     "iframeTitle": "Quendas libres das instalacións deportivas"
+  },
+  "issues": {
+    "tab": "Incidencias",
+    "title": "Lista de mantemento",
+    "help": "Os problemas que os veciños avisaron nas instalacións, primeiro os máis recentes. Cando o marques como arranxado ou rexeitado, a persoa recibe un aviso e un correo coa túa nota.",
+    "facility": "Instalación",
+    "allFacilities": "Todas",
+    "status": "Estado",
+    "allStatuses": "Todos",
+    "statuses": {
+      "new": "Novo",
+      "in_progress": "En curso",
+      "solved": "Arranxado",
+      "rejected": "Rexeitado"
+    },
+    "empty": "Non hai avisos con estes filtros.",
+    "reported": "Avisou {{name}} o {{date}}",
+    "someone": "unha persoa",
+    "booking": "reserva do {{date}}",
+    "urgent": "Urxente",
+    "photo": "Foto do problema",
+    "note": "Nota para quen avisou",
+    "noteHelp": "Que se fixo, ou por que non se vai facer (obrigatoria para rexeitar).",
+    "save": "Gardar",
+    "saving": "Gardando…",
+    "saved": "Gardado.",
+    "close": "Pechar a instalación ou mirar o seu horario",
+    "newCount_one": ", {{count}} nova",
+    "newCount_other": ", {{count}} novas"
   }
 }

@@ -150,4 +150,4 @@ func ValidRef(ref string) bool {
 }
 
 // Folders that uploads may go to.
-var Folders = map[string]bool{"branding": true, "councils": true, "facilities": true, "users": true}
+var Folders = map[string]bool{"branding": true, "councils": true, "facilities": true, "issues": true, "users": true}

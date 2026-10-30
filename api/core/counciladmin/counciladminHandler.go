@@ -563,3 +563,47 @@ func (h *counciladminHandler) GetAudit(w http.ResponseWriter, r *http.Request) {
 	}
 	audit.Serve(w, r, h.db, uuid.NullUUID{UUID: tenantId, Valid: true}, audit.ParseFilters(r.URL.Query(), audit.Zone()))
 }
+
+// --- the maintenance list ---------------------------------------------------------
+
+// ListIssues: ?facility=<id>&status=<new|in_progress|solved|rejected>, both optional.
+func (h *counciladminHandler) ListIssues(w http.ResponseWriter, r *http.Request) {
+	var tenantId, ok = h.councilAdmin(w, r)
+	if !ok {
+		return
+	}
+	var query = r.URL.Query()
+	var response, err = GetCounciladminService(h.db).ListIssues(r.Context(), tenantId, query.Get("facility"), query.Get("status"))
+	send(w, r, response, err)
+}
+
+func (h *counciladminHandler) CountNewIssues(w http.ResponseWriter, r *http.Request) {
+	var tenantId, ok = h.councilAdmin(w, r)
+	if !ok {
+		return
+	}
+	var response, err = GetCounciladminService(h.db).CountNewIssues(r.Context(), tenantId)
+	send(w, r, response, err)
+}
+
+func (h *counciladminHandler) ChangeIssue(w http.ResponseWriter, r *http.Request) {
+	var tenantId, staffId, ok = h.councilAdminUser(w, r)
+	if !ok {
+		return
+	}
+	var id, err = helpers.GetStringPathValue("issueId", r)
+	var issueId uuid.UUID
+	if err == nil {
+		issueId, err = uuid.Parse(id)
+	}
+	if err != nil {
+		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_query_params")
+		return
+	}
+	var input IssueChangeInput
+	if !decode(w, r, &input) {
+		return
+	}
+	var response, changeErr = GetCounciladminService(h.db).ChangeIssue(r.Context(), tenantId, staffId, issueId, input)
+	send(w, r, response, changeErr)
+}

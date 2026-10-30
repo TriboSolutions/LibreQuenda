@@ -184,6 +184,97 @@ func (ns NullCheckinMethod) Value() (driver.Value, error) {
 	return string(ns.CheckinMethod), nil
 }
 
+type IssueCategory string
+
+const (
+	IssueCategoryEquipment     IssueCategory = "equipment"
+	IssueCategoryLighting      IssueCategory = "lighting"
+	IssueCategoryCleaning      IssueCategory = "cleaning"
+	IssueCategoryChangingRooms IssueCategory = "changing_rooms"
+	IssueCategoryAccessibility IssueCategory = "accessibility"
+	IssueCategorySafety        IssueCategory = "safety"
+	IssueCategoryOther         IssueCategory = "other"
+)
+
+func (e *IssueCategory) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = IssueCategory(s)
+	case string:
+		*e = IssueCategory(s)
+	default:
+		return fmt.Errorf("unsupported scan type for IssueCategory: %T", src)
+	}
+	return nil
+}
+
+type NullIssueCategory struct {
+	IssueCategory IssueCategory `json:"issue_category"`
+	Valid         bool          `json:"valid"` // Valid is true if IssueCategory is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullIssueCategory) Scan(value interface{}) error {
+	if value == nil {
+		ns.IssueCategory, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.IssueCategory.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullIssueCategory) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.IssueCategory), nil
+}
+
+type IssueStatus string
+
+const (
+	IssueStatusNew        IssueStatus = "new"
+	IssueStatusInProgress IssueStatus = "in_progress"
+	IssueStatusSolved     IssueStatus = "solved"
+	IssueStatusRejected   IssueStatus = "rejected"
+)
+
+func (e *IssueStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = IssueStatus(s)
+	case string:
+		*e = IssueStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for IssueStatus: %T", src)
+	}
+	return nil
+}
+
+type NullIssueStatus struct {
+	IssueStatus IssueStatus `json:"issue_status"`
+	Valid       bool        `json:"valid"` // Valid is true if IssueStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullIssueStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.IssueStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.IssueStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullIssueStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.IssueStatus), nil
+}
+
 type NotificationType string
 
 const (
@@ -193,6 +284,8 @@ const (
 	NotificationTypeBookingCancelledByCouncil NotificationType = "booking_cancelled_by_council"
 	NotificationTypeBookingReminder           NotificationType = "booking_reminder"
 	NotificationTypeCouncilAdminGranted       NotificationType = "council_admin_granted"
+	NotificationTypeIssueSolved               NotificationType = "issue_solved"
+	NotificationTypeIssueRejected             NotificationType = "issue_rejected"
 )
 
 func (e *NotificationType) Scan(src interface{}) error {
@@ -421,6 +514,24 @@ type FacilityCheckinPeriod struct {
 	EndsAt     sql.NullTime `json:"ends_at"`
 }
 
+type FacilityIssue struct {
+	ID           uuid.UUID      `json:"id"`
+	FacilityID   uuid.UUID      `json:"facility_id"`
+	ReporterID   uuid.NullUUID  `json:"reporter_id"`
+	BookingID    uuid.NullUUID  `json:"booking_id"`
+	Category     IssueCategory  `json:"category"`
+	Description  string         `json:"description"`
+	PhotoRef     sql.NullString `json:"photo_ref"`
+	Urgent       bool           `json:"urgent"`
+	ShareContact bool           `json:"share_contact"`
+	Status       IssueStatus    `json:"status"`
+	StaffNote    sql.NullString `json:"staff_note"`
+	ResolvedBy   uuid.NullUUID  `json:"resolved_by"`
+	ResolvedAt   sql.NullTime   `json:"resolved_at"`
+	CreatedAt    time.Time      `json:"created_at"`
+	UpdatedAt    time.Time      `json:"updated_at"`
+}
+
 type FacilityTag struct {
 	FacilityID uuid.UUID `json:"facility_id"`
 	TagID      uuid.UUID `json:"tag_id"`
@@ -430,6 +541,7 @@ type Notification struct {
 	ID        uuid.UUID        `json:"id"`
 	UserID    uuid.UUID        `json:"user_id"`
 	BookingID uuid.NullUUID    `json:"booking_id"`
+	IssueID   uuid.NullUUID    `json:"issue_id"`
 	Type      NotificationType `json:"type"`
 	Payload   json.RawMessage  `json:"payload"`
 	CreatedAt time.Time        `json:"created_at"`

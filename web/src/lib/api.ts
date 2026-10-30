@@ -76,7 +76,7 @@ export type TagCatalogue = { categories: TagCategory[] }
 
 /** An uploaded image: forms save the ref (storage reference); screens only show the url. */
 export type StoredImage = { ref: string; url: string }
-export type MediaFolder = 'branding' | 'councils' | 'facilities' | 'users'
+export type MediaFolder = 'branding' | 'councils' | 'facilities' | 'issues' | 'users'
 
 /** How this installation presents itself, set by a superadministrator: name and logo. */
 export type Branding = {
@@ -408,11 +408,14 @@ export type NotificationType =
   | 'booking_cancelled_by_council'
   | 'booking_reminder'
   | 'council_admin_granted'
+  | 'issue_solved' // a problem the person reported was fixed (reason: the council's note)
+  | 'issue_rejected'
 
 export type AppNotification = {
   id: string
   type: NotificationType
   facility_name: string
+  facility_slug: string // issue_solved, issue_rejected
   starts_at: string | null
   ends_at: string | null
   reason: string // council cancellations
@@ -466,6 +469,36 @@ export type Recommendation = {
   shared_tags?: string[] // similar: the tags (slugs) they share
   // public_booking: someone's public booking to join; at most the owner's first name
   booking?: { id: string; starts_at: string; ends_at: string; spots_left: number; owner_first_name: string }
+}
+
+/** A problem residents report at a facility, for the council's maintenance list. */
+export type IssueCategory = 'equipment' | 'lighting' | 'cleaning' | 'changing_rooms' | 'accessibility' | 'safety' | 'other'
+export type IssueStatus = 'new' | 'in_progress' | 'solved' | 'rejected'
+export type IssueReport = {
+  facility_id: string
+  booking_id?: string // the booking it is reported from
+  category: IssueCategory
+  description: string
+  photo_ref?: string // a storage reference under issues/
+  urgent: boolean
+  share_contact: boolean // the council's staff may see the reporter's email
+}
+/** A report in the council's maintenance list. */
+export type CouncilIssue = {
+  id: string
+  facility_id: string
+  facility_name: string
+  category: IssueCategory
+  description: string
+  photo_url: string
+  urgent: boolean
+  status: IssueStatus
+  staff_note: string
+  created_at: string
+  resolved_at: string | null
+  booking_starts_at: string | null
+  reporter_name: string // first name only; "" after the account was deleted
+  reporter_email: string // only when the reporter shared it
 }
 
 export type MyBookings = { upcoming: Booking[]; history: Booking[] }
@@ -835,6 +868,7 @@ export const api = {
     verifyEmail: (token: string, code: string) => request<void>('/me/account/email/verify', { token, method: 'POST', body: { code } }),
   },
   myBookings: (token: string) => request<MyBookings>('/me/bookings', { token }),
+  reportIssue: (token: string, input: IssueReport) => request<{ id: string }>('/me/issues', { token, method: 'POST', body: input }),
   // near: where the person is (the home page's «near me»), in the body; checked, never stored
   recommendations: (token: string, near?: { latitude: number; longitude: number } | null) =>
     request<{ recommendations: Recommendation[] }>('/me/recommendations', { token, method: 'POST', body: near ?? {} }),
@@ -955,6 +989,15 @@ export const api = {
       request<Indicators>(`/tenants/${encodeURIComponent(slug)}/admin/indicators?${indicatorsParams(query)}`, { token }),
     exportIndicators,
     exportData: exportCouncilData,
+    issues: (token: string, slug: string, filter: { facility?: string; status?: IssueStatus | '' } = {}) => {
+      const query = new URLSearchParams()
+      if (filter.facility) query.set('facility', filter.facility)
+      if (filter.status) query.set('status', filter.status)
+      return request<{ issues: CouncilIssue[] }>(`/tenants/${encodeURIComponent(slug)}/admin/issues${query.size ? `?${query}` : ''}`, { token })
+    },
+    newIssueCount: (token: string, slug: string) => request<{ new: number }>(`/tenants/${encodeURIComponent(slug)}/admin/issues/count`, { token }),
+    changeIssue: (token: string, slug: string, id: string, input: { status: IssueStatus; staff_note: string }) =>
+      request<CouncilIssue>(`/tenants/${encodeURIComponent(slug)}/admin/issues/${id}`, { token, method: 'PUT', body: input }),
     bookingRules: (token: string, slug: string) => request<BookingRules>(`/tenants/${encodeURIComponent(slug)}/admin/booking-rules`, { token }),
     saveFacilityRules: (token: string, slug: string, facilityId: string, input: { custom_rules: boolean; rules: BookingRules }) =>
       request<AdminFacility>(`/tenants/${encodeURIComponent(slug)}/admin/facilities/${facilityId}/booking-rules`, { token, method: 'PUT', body: input }),

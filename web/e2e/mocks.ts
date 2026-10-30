@@ -230,8 +230,9 @@ const account: Account = {
 const notifications: Notifications = {
   unread_count: 2,
   notifications: [
-    { id: 'n1', type: 'booking_confirmed', facility_name: 'Pista de pádel 1', starts_at: at(3), ends_at: at(4), reason: '', closed_from: null, closed_until: null, by_staff: false, tenant_name: 'Concello de Lugo', tenant_slug: 'lugo', created_at: at(-1), read: false },
-    { id: 'n2', type: 'booking_cancelled_by_council', facility_name: 'Pavillón municipal', starts_at: at(30), ends_at: at(31), reason: 'Obras', closed_from: at(29), closed_until: at(40), by_staff: false, tenant_name: 'Concello de Lugo', tenant_slug: 'lugo', created_at: at(-5), read: false },
+    { id: 'n1', type: 'booking_confirmed', facility_name: 'Pista de pádel 1', starts_at: at(3), ends_at: at(4), reason: '', closed_from: null, closed_until: null, by_staff: false, tenant_name: 'Concello de Lugo', tenant_slug: 'lugo', facility_slug: '', created_at: at(-1), read: false },
+    { id: 'n2', type: 'booking_cancelled_by_council', facility_name: 'Pavillón municipal', starts_at: at(30), ends_at: at(31), reason: 'Obras', closed_from: at(29), closed_until: at(40), by_staff: false, tenant_name: 'Concello de Lugo', tenant_slug: 'lugo', facility_slug: '', created_at: at(-5), read: false },
+    { id: 'n3', type: 'issue_solved', facility_name: 'Pista de pádel 1', starts_at: null, ends_at: null, reason: 'Rede nova colocada.', closed_from: null, closed_until: null, by_staff: false, tenant_name: 'Concello de Lugo', tenant_slug: 'lugo', facility_slug: 'padel-1', created_at: at(-30), read: true },
   ],
 }
 
@@ -520,6 +521,44 @@ const auditPage = {
   next: at(-31),
 }
 
+// the council's maintenance list: one new and urgent with the reporter's email, one being dealt with
+const councilIssues = {
+  issues: [
+    {
+      id: 'i1',
+      facility_id: 'f1',
+      facility_name: 'Pista de pádel 1',
+      category: 'equipment',
+      description: 'A rede está rota polo medio.',
+      photo_url: '',
+      urgent: true,
+      status: 'new',
+      staff_note: '',
+      created_at: at(-3),
+      resolved_at: null,
+      booking_starts_at: at(-5),
+      reporter_name: 'Lucía',
+      reporter_email: 'lucia@example.org',
+    },
+    {
+      id: 'i2',
+      facility_id: 'f2',
+      facility_name: 'Pavillón municipal',
+      category: 'lighting',
+      description: 'Dous focos non acenden.',
+      photo_url: '',
+      urgent: false,
+      status: 'in_progress',
+      staff_note: 'Avisado o electricista.',
+      created_at: at(-50),
+      resolved_at: null,
+      booking_starts_at: null,
+      reporter_name: 'Brais',
+      reporter_email: '',
+    },
+  ],
+}
+
 /** GET handlers by path (without /api), first match wins. */
 const routes: [RegExp, () => unknown][] = [
   [/^\/tenants$/, () => ({ tenants })],
@@ -533,6 +572,8 @@ const routes: [RegExp, () => unknown][] = [
   [/^\/tenants\/[^/]+\/admin\/facilities\/[^/]+\/devices$/, () => ({ devices: [{ id: 'd1', name: 'Entrada principal', key_hint: 'ab12', last_seen_at: at(-1), created_at: at(-100) }] })],
   [/^\/tenants\/[^/]+\/admin\/facilities\/[^/]+\/checkin$/, () => checkinSettings],
   [/^\/tenants\/[^/]+\/admin\/booking-rules$/, () => councilRules],
+  [/^\/tenants\/[^/]+\/admin\/issues\/count$/, () => ({ new: 1 })],
+  [/^\/tenants\/[^/]+\/admin\/issues/, () => councilIssues],
   [/^\/tenants\/[^/]+\/admin\/facilities\/[^/]+$/, () => adminFacility],
   [/^\/tenants\/[^/]+\/admin\/indicators/, indicators],
   [/^\/tenants\/[^/]+\/admin\/smtp$/, () => smtp],
