@@ -54,6 +54,10 @@ CREATE POLICY checkin_device_insert ON checkin_device FOR INSERT WITH CHECK (app
 CREATE POLICY checkin_device_update ON checkin_device FOR UPDATE USING (app_owns_facility(facility_id)) WITH CHECK (app_owns_facility(facility_id));
 CREATE POLICY checkin_device_delete ON checkin_device FOR DELETE USING (app_owns_facility(facility_id));
 
+-- facility_checkin_period: read by the indicators; written only by refresh_checkin_period (03A_triggers.sql)
+ALTER TABLE facility_checkin_period ENABLE ROW LEVEL SECURITY;
+CREATE POLICY facility_checkin_period_read ON facility_checkin_period FOR SELECT USING (TRUE);
+
 -- facility_checkin: read when a resident checks in, written by the council
 ALTER TABLE facility_checkin ENABLE ROW LEVEL SECURITY;
 CREATE POLICY facility_checkin_read   ON facility_checkin FOR SELECT USING (TRUE);

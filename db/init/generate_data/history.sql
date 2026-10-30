@@ -61,6 +61,9 @@ UPDATE seed_history SET demand =
 -- the seed readers were installed before the history starts: a booking only
 -- counts as a no-show if a reader was there to check it in
 UPDATE checkin_device SET created_at = ({LOCAL_DAY} - {HISTORY_DAYS} - 1)::TIMESTAMP AT TIME ZONE '{TIMEZONE}';
+-- …and their facilities could take check-ins since then (facility_checkin_period)
+UPDATE facility_checkin_period p SET starts_at = ({LOCAL_DAY} - {HISTORY_DAYS} - 1)::TIMESTAMP AT TIME ZONE '{TIMEZONE}'
+WHERE p.ends_at IS NULL AND EXISTS (SELECT 1 FROM checkin_device d WHERE d.facility_id = p.facility_id);
 
 INSERT INTO booking (id, facility_id, user_id, starts_at, ends_at, status, cancelled_by, cancelled_at, created_at, rules_accepted_at, checked_in_at, checked_in_device_id, checked_in_method)
 SELECT

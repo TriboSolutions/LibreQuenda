@@ -317,7 +317,7 @@
     "colCancellation": "Cancelacións",
     "colNoShow": "Non presentadas",
     "percent": "{{value}} %",
-    "definitions": "A ocupación divide as horas reservadas entre as horas nas que se podía reservar, descontando os peches. As non presentadas só se contan desde que a instalación rexistra a entrada (lector QR, código, QR da porta ou persoal). As cifras calcúlanse ao momento a partir das reservas.",
+    "definitions": "A ocupación divide as horas reservadas entre as horas nas que se podía reservar, descontando os peches. As non presentadas só se contan nas quendas que empezaron mentres a instalación rexistraba a entrada (lector QR acendido, código, QR da porta ou persoal). As cifras calcúlanse ao momento a partir das reservas.",
     "kpiTitle": "Resumo do período",
     "fullscreen": "Pantalla completa: {{board}}",
     "exitFullscreen": "Saír da pantalla completa",

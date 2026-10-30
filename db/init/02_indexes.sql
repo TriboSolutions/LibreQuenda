@@ -35,3 +35,7 @@ CREATE UNIQUE INDEX idx_tag_category_name ON tag_category (lower(name));
 CREATE UNIQUE INDEX idx_tag_name          ON tag (lower(name));
 CREATE INDEX idx_tag_category             ON tag (category_id);
 CREATE INDEX idx_facility_tag_tag         ON facility_tag (tag_id);
+
+-- check-in history: one open stretch per facility, and the lookups by start
+CREATE UNIQUE INDEX idx_checkin_period_open ON facility_checkin_period (facility_id) WHERE ends_at IS NULL;
+CREATE INDEX idx_checkin_period_facility ON facility_checkin_period (facility_id, starts_at);

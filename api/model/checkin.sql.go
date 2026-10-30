@@ -753,11 +753,6 @@ SET
     staff_confirm = $5,
     qr_reader     = $6,
     staff_contacts = $7,
-    -- kept while any phone or staff way stays on, for the no-show indicators
-    checks_in_since = CASE
-        WHEN $1::BOOLEAN OR $2::BOOLEAN OR $5::BOOLEAN
-        THEN COALESCE(checks_in_since, NOW())
-    END,
     updated_at    = NOW()
 WHERE
     facility_id = $8
