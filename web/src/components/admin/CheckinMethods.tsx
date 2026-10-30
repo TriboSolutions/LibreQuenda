@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
-import { Hash, MonitorSmartphone, Nfc, Printer, QrCode, RefreshCw, ScanLine, UserCheck, UserPlus } from 'lucide-react'
+import { Hash, Nfc, Printer, QrCode, RefreshCw, ScanLine, UserCheck, UserPlus } from 'lucide-react'
 import { CheckinDevices } from '@/components/admin/CheckinDevices'
 import { QrImage } from '@/components/QrImage'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -19,7 +19,7 @@ import { entranceUrl } from '@/lib/entrance'
 
 type Props = { slug: string; facilityId: string; facilitySlug: string; token: string }
 
-type Method = 'reader' | 'printedQr' | 'nfc' | 'rotating' | 'entryCode' | 'staff'
+type Method = 'reader' | 'printedQr' | 'nfc' | 'entryCode' | 'staff'
 
 type SavedKey = 'printed_qr' | 'entry_code' | 'staff_confirm' | 'qr_reader'
 
@@ -30,7 +30,6 @@ const METHODS: { key: Method; icon: typeof QrCode; built?: boolean; saved?: Save
   { key: 'printedQr', icon: QrCode, built: true, saved: 'printed_qr' },
   { key: 'entryCode', icon: Hash, built: true, saved: 'entry_code' },
   { key: 'nfc', icon: Nfc },
-  { key: 'rotating', icon: MonitorSmartphone },
   { key: 'staff', icon: UserCheck, built: true, saved: 'staff_confirm' },
 ]
 
@@ -91,10 +90,8 @@ function Methods({ slug, facilityId, facilitySlug, token, initial }: Props & { i
   const [rotating, setRotating] = useState(false)
 
   // the ways that are only a preview: switched locally, never saved
-  const [preview, setPreview] = useState<Record<'nfc' | 'rotating', boolean>>({ nfc: false, rotating: false })
+  const [preview, setPreview] = useState<Record<'nfc', boolean>>({ nfc: false })
   const [tagType, setTagType] = useState('signed')
-  const [codeMinutes, setCodeMinutes] = useState('2')
-  const [codeDigits, setCodeDigits] = useState('6')
 
   const dirty = JSON.stringify(draft) !== JSON.stringify(toInput(saved))
   const needsLocation = draft.printed_qr || draft.entry_code
@@ -210,41 +207,6 @@ function Methods({ slug, facilityId, facilitySlug, token, initial }: Props & { i
           </SelectContent>
         </Select>
         <p className="text-sm text-muted-foreground">{tagType === 'signed' ? t('admin:checkin.nfc.signedHelp') : t('admin:checkin.nfc.plainHelp')}</p>
-      </div>
-    ),
-    rotating: (
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="grid gap-2">
-          <Label htmlFor="ci-code-minutes">{t('admin:checkin.rotating.every')}</Label>
-          <Select value={codeMinutes} onValueChange={setCodeMinutes}>
-            <SelectTrigger id="ci-code-minutes" className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {['1', '2', '5'].map((m) => (
-                <SelectItem key={m} value={m}>
-                  {t('admin:checkin.rotating.minutes', { count: Number(m) })}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor="ci-code-digits">{t('admin:checkin.rotating.digits')}</Label>
-          <Select value={codeDigits} onValueChange={setCodeDigits}>
-            <SelectTrigger id="ci-code-digits" className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {['4', '6', '8'].map((d) => (
-                <SelectItem key={d} value={d}>
-                  {d}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <p className="text-sm text-muted-foreground sm:col-span-2">{t('admin:checkin.rotating.help')}</p>
       </div>
     ),
     staff: (

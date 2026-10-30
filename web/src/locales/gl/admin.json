@@ -544,7 +544,7 @@
   "checkin": {
     "title": "Como se rexistra a entrada",
     "help": "Escolle unha ou varias formas de rexistrar a entrada dos veciños. Todas rematan no mesmo rexistro da reserva, así que a asistencia e os indicadores non cambian. Escolle segundo o orzamento e o que importen as trampas aquí.",
-    "preview": "Funcionan o lector QR, o QR impreso, o código de entrada e a confirmación do persoal. O NFC e o código rotativo son unha vista previa: o que escollas neles non se garda.",
+    "preview": "Funcionan o lector QR, o QR impreso, o código de entrada e a confirmación do persoal. O NFC é unha vista previa: o que escollas nel non se garda.",
     "built": "Funciona",
     "soon": "Proximamente",
     "door": "Na porta:",
@@ -585,18 +585,6 @@
       "plain": "Etiqueta simple",
       "signedHelp": "Cada lectura leva unha sinatura e un contador que comproba o servidor, así que unha lectura copiada ou gravada non serve.",
       "plainHelp": "Unha etiqueta simple só garda o enderezo e pódese copiar: engade a comprobación de localización."
-    },
-    "rotating": {
-      "name": "Código cambiante nunha pantalla",
-      "how": "Unha pequena pantalla na porta amosa un código ou QR que cambia cada poucos minutos; o veciño escríbeo ou escanéao na app.",
-      "door": "unha pantalla de tinta electrónica, un ESP32 ou unha tableta vella",
-      "cost": "decenas de euros por porta",
-      "cheat": "alto, o código só vale uns minutos e só nesta porta",
-      "every": "Código novo cada",
-      "minutes_one": "{{count}} minuto",
-      "minutes_other": "{{count}} minutos",
-      "digits": "Cifras do código",
-      "help": "A pantalla ten un segredo propio, gardado coma as chaves dos lectores, e amosa códigos a partir del (TOTP)."
     },
     "entryCode": {
       "name": "Código de entrada",

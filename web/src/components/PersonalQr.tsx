@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import { LocateFixed } from 'lucide-react'
+import { DistanceNotice } from '@/components/DistanceNotice'
 import { DoorQrScanner } from '@/components/DoorQrScanner'
 import { EntranceAnswer } from '@/components/EntranceAnswer'
 import { QrImage } from '@/components/QrImage'
@@ -73,6 +74,7 @@ export function FlashBookingDialog({ open, onOpenChange }: { open: boolean; onOp
           </TabsContent>
           <TabsContent value="door" className="grid gap-4">
             <p className="text-muted-foreground">{t('flash.door.help')}</p>
+            <DistanceNotice />
             <DoorQrScanner book />
           </TabsContent>
           <TabsContent value="staff">
@@ -197,6 +199,7 @@ function CodeFlash() {
   return (
     <div className="grid gap-4">
       <p className="text-muted-foreground">{t('flash.code.help')}</p>
+      <DistanceNotice metres={places?.find((place) => `${place.tenant_slug}/${place.facility_slug}` === chosenOrFirst)?.radius_m} />
       {places === null ? (
         <div>
           <Button type="button" disabled={busy} onClick={() => void find()}>

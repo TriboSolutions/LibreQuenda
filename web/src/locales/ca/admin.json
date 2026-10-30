@@ -544,7 +544,7 @@
   "checkin": {
     "title": "Com es registra l’entrada",
     "help": "Tria una o diverses maneres de registrar l’entrada dels veïns. Totes acaben en el mateix registre de la reserva, així que l’assistència i els indicadors no canvien. Tria segons el pressupost i el que importin les trampes aquí.",
-    "preview": "Funcionen el lector QR, el QR imprès, el codi d’entrada i la confirmació del personal. L’NFC i el codi rotatiu són una previsualització: el que triïs no es desa.",
+    "preview": "Funcionen el lector QR, el QR imprès, el codi d’entrada i la confirmació del personal. L’NFC és una previsualització: el que hi triïs no es desa.",
     "built": "Funciona",
     "soon": "Aviat",
     "door": "A la porta:",
@@ -585,18 +585,6 @@
       "plain": "Etiqueta simple",
       "signedHelp": "Cada lectura porta una signatura i un comptador que comprova el servidor, així que una lectura copiada o enregistrada no serveix.",
       "plainHelp": "Una etiqueta simple només guarda l’adreça i es pot copiar: afegeix la comprovació d’ubicació."
-    },
-    "rotating": {
-      "name": "Codi canviant en una pantalla",
-      "how": "Una petita pantalla a la porta mostra un codi o QR que canvia cada pocs minuts; el veí l’escriu o l’escaneja a l’app.",
-      "door": "una pantalla de tinta electrònica, un ESP32 o una tauleta vella",
-      "cost": "desenes d’euros per porta",
-      "cheat": "alt, el codi només val uns minuts i només en aquesta porta",
-      "every": "Codi nou cada",
-      "minutes_one": "{{count}} minut",
-      "minutes_other": "{{count}} minuts",
-      "digits": "Xifres del codi",
-      "help": "La pantalla té un secret propi, guardat com les claus dels lectors, i mostra codis a partir d’ell (TOTP)."
     },
     "entryCode": {
       "name": "Codi d’entrada",

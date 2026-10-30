@@ -110,13 +110,11 @@ Every entry records how it happened (`reader`, `printed_qr`, `entry_code` or `st
 | Printed QR (built) | A sheet of paper with the facility's QR | Scans it with their phone; the app checks in their booking for that facility and turn | Nearly free | Low: a photo of the sheet works anywhere, so the phone's location is always checked |
 | Entry code (built) | A sheet at the door or the desk with the facility's fixed code | Types the code on their phone | Nearly free | Low on its own: the code does not change until the council makes a new one; the phone's location is always checked |
 | NFC tag | A sticker on the door | Taps it with their phone, which opens the check-in page | A few euros per door | Low with a plain tag (it can be copied). High with a tag that signs every tap (e.g. NTAG 424 DNA "SUN" messages), which the API checks |
-| Rotating code on a display | A small screen (e-ink, ESP32 or an old tablet) showing a code or QR that changes every few minutes, like a TOTP from a secret shared with the API | Types the code in the app or scans it | Tens of euros per door | High: the code is only good for a few minutes, and only at that door |
 | Staff confirmation (built) | Nobody, or the desk | Staff mark them as in from the booking on the "Reserva manual" calendar | Staff time | As good as the staff |
 
 What the ones not built yet would need:
 
 - **NFC tag:** a plain tag can hold the `/entrada` address of the printed QR today. A signed one needs the tag's key, stored per door, and a check of the tap counter so a recorded tap cannot be replayed.
-- **Rotating code:** a secret per door, kept like the reader keys, and the same TOTP check on the API (time step and a little drift). The display runs no LibreQuenda code beyond showing the code.
 
 ## Next: a personal home (the feed)
 
