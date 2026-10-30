@@ -34,7 +34,8 @@
     "past": "Passat",
     "tooFar": "Encara no es pot reservar",
     "bookAria": "Reserva {{facility}}, {{time}}",
-    "closure": "Tancament puntual"
+    "closure": "Tancament puntual",
+    "tooSoon": "Ja no es pot reservar des de l’app"
   },
   "contact": {
     "title": "Contacte de l’ajuntament",

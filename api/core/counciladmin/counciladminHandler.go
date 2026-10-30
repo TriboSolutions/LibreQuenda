@@ -456,3 +456,27 @@ func (h *counciladminHandler) TestSmtp(w http.ResponseWriter, r *http.Request) {
 	var response, err = GetCounciladminService(h.db).TestSmtp(r.Context(), tenantId, userId, language)
 	send(w, r, response, err)
 }
+
+// --- the council's booking window, which its facilities inherit ----------------
+
+func (h *counciladminHandler) GetBookingRules(w http.ResponseWriter, r *http.Request) {
+	var tenantId, ok = h.councilAdmin(w, r)
+	if !ok {
+		return
+	}
+	var response, err = GetCounciladminService(h.db).GetBookingRules(r.Context(), tenantId)
+	send(w, r, response, err)
+}
+
+func (h *counciladminHandler) SaveBookingRules(w http.ResponseWriter, r *http.Request) {
+	var tenantId, ok = h.councilAdmin(w, r)
+	if !ok {
+		return
+	}
+	var input BookingRulesDto
+	if !decode(w, r, &input) {
+		return
+	}
+	var response, err = GetCounciladminService(h.db).SaveBookingRules(r.Context(), tenantId, input)
+	send(w, r, response, err)
+}

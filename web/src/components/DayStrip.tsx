@@ -12,6 +12,7 @@ const statusKey: Record<Slot['status'], string> = {
   closed: 'slot.closure', // a closure inside the opening hours
   past: 'slot.past',
   too_far: 'slot.tooFar',
+  too_soon: 'slot.tooSoon',
 }
 
 const statusClass: Record<Slot['status'], string> = {
@@ -20,6 +21,7 @@ const statusClass: Record<Slot['status'], string> = {
   closed: 'hatch hatch-closure',
   past: 'bg-slot-past',
   too_far: 'bg-slot-past',
+  too_soon: 'bg-slot-past',
 }
 
 function percent(minutes: number, axis: Axis) {

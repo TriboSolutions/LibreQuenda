@@ -26,5 +26,13 @@
   "notFoundTitle": "Instalación no encontrada",
   "notFoundBody": "No hay ninguna instalación en «{{path}}».",
   "mapLabel": "Mapa con la ubicación de la instalación",
-  "minAge": "Edad mínima: {{count}} años."
+  "minAge": "Edad mínima: {{count}} años.",
+  "ruleAdvanceHours_one": "Reserva hasta con {{count}} hora de antelación.",
+  "ruleAdvanceHours_other": "Reserva hasta con {{count}} horas de antelación.",
+  "ruleMinAdvance_one": "Desde la app, reserva como muy tarde {{count}} minuto antes del turno.",
+  "ruleMinAdvance_other": "Desde la app, reserva como muy tarde {{count}} minutos antes del turno.",
+  "rulePerDay_one": "Como máximo {{count}} reserva por persona y día.",
+  "rulePerDay_other": "Como máximo {{count}} reservas por persona y día.",
+  "ruleInARow_one": "No se pueden reservar turnos seguidos.",
+  "ruleInARow_other": "Como máximo {{count}} turnos seguidos por persona."
 }

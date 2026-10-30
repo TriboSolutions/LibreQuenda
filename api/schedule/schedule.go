@@ -8,11 +8,12 @@ import "time"
 type SlotStatus string
 
 const (
-	SlotFree   SlotStatus = "free"
-	SlotBooked SlotStatus = "booked"
-	SlotClosed SlotStatus = "closed"  // a closure (holiday, maintenance) overlaps it
-	SlotPast   SlotStatus = "past"    // already started
-	SlotTooFar SlotStatus = "too_far" // beyond the facility's booking window
+	SlotFree    SlotStatus = "free"
+	SlotBooked  SlotStatus = "booked"
+	SlotClosed  SlotStatus = "closed"   // a closure (holiday, maintenance) overlaps it
+	SlotPast    SlotStatus = "past"     // already started
+	SlotTooFar  SlotStatus = "too_far"  // beyond the facility's booking window
+	SlotTooSoon SlotStatus = "too_soon" // starts sooner than the window lets the app book it
 )
 
 // Window is a local opening range, e.g. 09:00-22:00. Times only use hour and minute.
@@ -26,9 +27,11 @@ type Interval struct {
 	End   time.Time
 }
 
+// Rules: the turns' length and the booking window, counted from now.
 type Rules struct {
-	SlotMinutes    int
-	MaxAdvanceDays int
+	SlotMinutes int
+	MaxAdvance  time.Duration // a turn starting later than now + MaxAdvance is too far
+	MinAdvance  time.Duration // one starting sooner is too soon; 0 for staff and the door
 }
 
 type Slot struct {
@@ -44,12 +47,11 @@ func DaySlots(day time.Time, loc *time.Location, rules Rules, windows []Window, 
 	if rules.SlotMinutes <= 0 {
 		return slots
 	}
-	var lastBookableDay time.Time = startOfDay(now.In(loc), loc).AddDate(0, 0, rules.MaxAdvanceDays+1)
 	for _, i := range cut(day, loc, rules.SlotMinutes, windows) {
 		slots = append(slots, Slot{
 			Start:  i.Start,
 			End:    i.End,
-			Status: status(i, closures, busy, now, lastBookableDay),
+			Status: status(i, closures, busy, now, rules),
 		})
 	}
 	return slots
@@ -110,18 +112,18 @@ func cut(day time.Time, loc *time.Location, slotMinutes int, windows []Window) [
 	return slots
 }
 
-func status(slot Interval, closures []Interval, busy []Interval, now time.Time, lastBookableDay time.Time) SlotStatus {
-	if !slot.Start.After(now) {
+func status(slot Interval, closures []Interval, busy []Interval, now time.Time, rules Rules) SlotStatus {
+	switch {
+	case !slot.Start.After(now):
 		return SlotPast
-	}
-	if !slot.Start.Before(lastBookableDay) {
+	case slot.Start.After(now.Add(rules.MaxAdvance)):
 		return SlotTooFar
-	}
-	if overlapsAny(slot, closures) {
+	case overlapsAny(slot, closures):
 		return SlotClosed
-	}
-	if overlapsAny(slot, busy) {
+	case overlapsAny(slot, busy):
 		return SlotBooked
+	case slot.Start.Before(now.Add(rules.MinAdvance)):
+		return SlotTooSoon
 	}
 	return SlotFree
 }

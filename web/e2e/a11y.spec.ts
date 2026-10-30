@@ -516,6 +516,39 @@ test.describe('keyboard', () => {
     await expect(page.getByRole('list', { name: 'Persoas de contacto' })).toContainText('Marta Rey')
   })
 
+  test('a facility inherits the council booking window until it keeps its own', async ({ page }) => {
+    await open(page, '/lugo/admin/facilities/f1')
+    const inherit = page.getByRole('switch', { name: 'Usar a ventá de reserva do concello' })
+    await expect(inherit).toBeChecked()
+    await expect(page.getByText('Penalización: 3 ausencias en 30 días bloquean 7 días.')).toBeVisible()
+    await inherit.click()
+    // its own window starts from the council's
+    await expect(page.getByLabel('Antelación máxima')).toHaveValue('7')
+    await expect(page.getByRole('switch', { name: 'Penalizar a quen non se presenta' })).toBeChecked()
+    await page.getByLabel('Reservas por persoa e día').fill('2')
+    const saved = page.waitForRequest((r) => r.method() === 'PUT' && /\/admin\/facilities\/f1$/.test(r.url()))
+    await page.getByRole('button', { name: 'Gardar', exact: true }).first().click()
+    expect((await saved).postDataJSON()).toMatchObject({ custom_rules: true, rules: { max_advance_hours: 168, max_bookings_per_day: 2, no_show_penalty: true } })
+  })
+
+  test('the council booking window is set in the council settings', async ({ page }) => {
+    await open(page, '/lugo/admin')
+    await page.getByRole('button', { name: 'Axustes do concello' }).click()
+    const rules = page.getByRole('region', { name: 'Ventá de reserva' })
+    await expect(rules.getByLabel('Antelación mínima (minutos)')).toHaveValue('30')
+    await rules.getByRole('switch', { name: 'Penalizar a quen non se presenta' }).click()
+    const saved = page.waitForRequest((r) => r.method() === 'PUT' && r.url().endsWith('/admin/booking-rules'))
+    await rules.getByRole('button', { name: 'Gardar a ventá' }).click()
+    expect((await saved).postDataJSON()).toMatchObject({ no_show_penalty: false, min_advance_minutes: 30 })
+  })
+
+  test('residents see the booking window on the facility page', async ({ page }) => {
+    await open(page, '/lugo/padel-1')
+    await expect(page.getByText('Reserva ata con 7 días de antelación.')).toBeVisible()
+    await expect(page.getByText('Dende a app, reserva como moi tarde 30 minutos antes do turno.')).toBeVisible()
+    await expect(page.getByText('Como máximo 1 reserva por persoa e día.')).toBeVisible()
+  })
+
   test('the QR reader can be switched off and stays set up', async ({ page }) => {
     await open(page, '/lugo/admin/facilities/f1?vista=entrada')
     const reader = page.getByRole('switch', { name: 'QR de reserva ou flash nun lector' })

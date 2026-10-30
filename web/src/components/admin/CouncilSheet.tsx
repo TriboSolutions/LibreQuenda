@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import { Link } from 'react-router'
+import { BookingRulesSettings } from '@/components/admin/BookingRulesSettings'
 import { CouncilExport } from '@/components/admin/CouncilExport'
 import { CouncilFormDialog } from '@/components/admin/CouncilFormDialog'
 import { SmtpSettings } from '@/components/admin/SmtpSettings'
@@ -202,6 +203,7 @@ export function CouncilSheet({ slug, superadmin = true, onClose, onChanged, onDe
                 </form>
               </section>
 
+              <BookingRulesSettings slug={slug} token={token} />
               <SmtpSettings slug={slug} token={token} />
 
               <CouncilExport slug={slug} token={token} />

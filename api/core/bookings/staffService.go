@@ -33,7 +33,7 @@ func (s *bookingsService) StaffDay(ctx context.Context, tenantId uuid.UUID, faci
 	}
 	var dayEnd = day.AddDate(0, 0, 1)
 
-	var slots, slotsErr = s.daySlots(ctx, queries, facility, loc, day, dayEnd)
+	var slots, slotsErr = s.daySlots(ctx, queries, facility, loc, day, dayEnd, false)
 	if slotsErr != nil {
 		return nil, slotsErr
 	}
@@ -85,7 +85,7 @@ func (s *bookingsService) StaffBook(ctx context.Context, tenantId uuid.UUID, sta
 	}
 	var start = input.StartsAt.In(loc)
 	var day = startOfDay(start, loc)
-	var slot, slotErr = s.findSlot(ctx, queries, facility, loc, day, day.AddDate(0, 0, 1), start)
+	var slot, slotErr = s.findSlot(ctx, queries, facility, loc, day, day.AddDate(0, 0, 1), start, false)
 	if slotErr != nil {
 		return nil, slotErr
 	}

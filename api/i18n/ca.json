@@ -156,7 +156,14 @@
     "staff_checkin_undo_expired": "Ja no es pot desfer: només es pot durant 5 minuts després de marcar-la, i només si la va marcar el personal.",
     "too_many_staff_contacts": "Es poden afegir fins a 10 persones de contacte.",
     "invalid_staff_contact": "Cada persona de contacte necessita un nom (fins a 80 caràcters); el telèfon fins a 30 i on trobar-la fins a 120.",
-    "recommendations_failed": "No s’han pogut carregar les recomanacions."
+    "recommendations_failed": "No s’han pogut carregar les recomanacions.",
+    "invalid_min_advance": "L’antelació mínima ha de ser entre 0 minuts i 24 hores.",
+    "invalid_no_show_penalty": "La penalització necessita entre 1 i 20 absències, comptades en un termini d’1 a 365 dies, i un bloqueig d’1 a 365 dies.",
+    "booking_rules_failed": "No s’ha pogut desar la finestra de reserva.",
+    "daily_limit_reached": "Ja tens les reserves que es permeten per dia en aquesta instal·lació.",
+    "turns_in_a_row_limit": "No pots reservar tants torns seguits en aquesta instal·lació.",
+    "no_show_blocked": "No pots reservar en aquesta instal·lació fins al {{0}}, per no presentar-te a diverses reserves.",
+    "slot_too_soon": "Aquest torn comença massa aviat per reservar-lo des de l’app."
   },
   "email": {
     "greeting": "Hola {{0}},",

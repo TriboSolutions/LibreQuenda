@@ -34,7 +34,8 @@
     "past": "Pasado",
     "tooFar": "Aínda non se pode reservar",
     "bookAria": "Reservar {{facility}}, {{time}}",
-    "closure": "Peche puntual"
+    "closure": "Peche puntual",
+    "tooSoon": "Xa non se pode reservar dende a app"
   },
   "contact": {
     "title": "Contacto do concello",

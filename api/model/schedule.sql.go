@@ -20,9 +20,16 @@ SELECT
     f.tenant_id,
     f.name,
     f.slot_minutes,
-    f.max_advance_days,
+    f.max_advance_hours,
+    f.min_advance_minutes,
     f.min_cancel_hours,
     f.max_active_bookings_per_user,
+    f.max_bookings_per_day,
+    f.max_turns_in_a_row,
+    f.no_show_penalty,
+    f.no_show_limit,
+    f.no_show_window_days,
+    f.no_show_block_days,
     f.min_age,
     t.timezone
 FROM
@@ -39,9 +46,16 @@ type GetFacilityForBookingRow struct {
 	TenantID                 uuid.UUID     `json:"tenant_id"`
 	Name                     string        `json:"name"`
 	SlotMinutes              int32         `json:"slot_minutes"`
-	MaxAdvanceDays           int32         `json:"max_advance_days"`
+	MaxAdvanceHours          int32         `json:"max_advance_hours"`
+	MinAdvanceMinutes        int32         `json:"min_advance_minutes"`
 	MinCancelHours           int32         `json:"min_cancel_hours"`
 	MaxActiveBookingsPerUser int32         `json:"max_active_bookings_per_user"`
+	MaxBookingsPerDay        int32         `json:"max_bookings_per_day"`
+	MaxTurnsInARow           int32         `json:"max_turns_in_a_row"`
+	NoShowPenalty            bool          `json:"no_show_penalty"`
+	NoShowLimit              int32         `json:"no_show_limit"`
+	NoShowWindowDays         int32         `json:"no_show_window_days"`
+	NoShowBlockDays          int32         `json:"no_show_block_days"`
 	MinAge                   sql.NullInt32 `json:"min_age"`
 	Timezone                 string        `json:"timezone"`
 }
@@ -54,9 +68,16 @@ func (q *Queries) GetFacilityForBooking(ctx context.Context, id uuid.UUID) (GetF
 		&i.TenantID,
 		&i.Name,
 		&i.SlotMinutes,
-		&i.MaxAdvanceDays,
+		&i.MaxAdvanceHours,
+		&i.MinAdvanceMinutes,
 		&i.MinCancelHours,
 		&i.MaxActiveBookingsPerUser,
+		&i.MaxBookingsPerDay,
+		&i.MaxTurnsInARow,
+		&i.NoShowPenalty,
+		&i.NoShowLimit,
+		&i.NoShowWindowDays,
+		&i.NoShowBlockDays,
 		&i.MinAge,
 		&i.Timezone,
 	)
@@ -81,9 +102,12 @@ SELECT
     contact_phone,
     contact_email,
     slot_minutes,
-    max_advance_days,
+    max_advance_hours,
+    min_advance_minutes,
     min_cancel_hours,
     max_active_bookings_per_user,
+    max_bookings_per_day,
+    max_turns_in_a_row,
     min_age,
     usage_rules_text
 FROM
@@ -109,9 +133,12 @@ type ListActiveFacilitiesByTenantRow struct {
 	ContactPhone             sql.NullString  `json:"contact_phone"`
 	ContactEmail             sql.NullString  `json:"contact_email"`
 	SlotMinutes              int32           `json:"slot_minutes"`
-	MaxAdvanceDays           int32           `json:"max_advance_days"`
+	MaxAdvanceHours          int32           `json:"max_advance_hours"`
+	MinAdvanceMinutes        int32           `json:"min_advance_minutes"`
 	MinCancelHours           int32           `json:"min_cancel_hours"`
 	MaxActiveBookingsPerUser int32           `json:"max_active_bookings_per_user"`
+	MaxBookingsPerDay        int32           `json:"max_bookings_per_day"`
+	MaxTurnsInARow           int32           `json:"max_turns_in_a_row"`
 	MinAge                   sql.NullInt32   `json:"min_age"`
 	UsageRulesText           sql.NullString  `json:"usage_rules_text"`
 }
@@ -139,9 +166,12 @@ func (q *Queries) ListActiveFacilitiesByTenant(ctx context.Context, tenantID uui
 			&i.ContactPhone,
 			&i.ContactEmail,
 			&i.SlotMinutes,
-			&i.MaxAdvanceDays,
+			&i.MaxAdvanceHours,
+			&i.MinAdvanceMinutes,
 			&i.MinCancelHours,
 			&i.MaxActiveBookingsPerUser,
+			&i.MaxBookingsPerDay,
+			&i.MaxTurnsInARow,
 			&i.MinAge,
 			&i.UsageRulesText,
 		); err != nil {

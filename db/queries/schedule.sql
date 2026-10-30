@@ -16,9 +16,12 @@ SELECT
     contact_phone,
     contact_email,
     slot_minutes,
-    max_advance_days,
+    max_advance_hours,
+    min_advance_minutes,
     min_cancel_hours,
     max_active_bookings_per_user,
+    max_bookings_per_day,
+    max_turns_in_a_row,
     min_age,
     usage_rules_text
 FROM
@@ -79,9 +82,16 @@ SELECT
     f.tenant_id,
     f.name,
     f.slot_minutes,
-    f.max_advance_days,
+    f.max_advance_hours,
+    f.min_advance_minutes,
     f.min_cancel_hours,
     f.max_active_bookings_per_user,
+    f.max_bookings_per_day,
+    f.max_turns_in_a_row,
+    f.no_show_penalty,
+    f.no_show_limit,
+    f.no_show_window_days,
+    f.no_show_block_days,
     f.min_age,
     t.timezone
 FROM

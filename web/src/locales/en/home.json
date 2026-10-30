@@ -34,7 +34,8 @@
     "past": "Past",
     "tooFar": "Not bookable yet",
     "bookAria": "Book {{facility}}, {{time}}",
-    "closure": "Closure"
+    "closure": "Closure",
+    "tooSoon": "Too late to book from the app"
   },
   "contact": {
     "title": "Council contact",

@@ -15,7 +15,7 @@ import (
 
 const getFacility = `-- name: GetFacility :one
 SELECT
-    id, tenant_id, slug, name, description, address, latitude, longitude, capacity, accessibility_info, contact_phone, contact_email, image_ref, is_active, slot_minutes, max_advance_days, min_cancel_hours, max_active_bookings_per_user, min_age, usage_rules_text, created_at, updated_at
+    id, tenant_id, slug, name, description, address, latitude, longitude, capacity, accessibility_info, contact_phone, contact_email, image_ref, is_active, slot_minutes, custom_rules, max_advance_hours, min_advance_minutes, min_cancel_hours, max_active_bookings_per_user, max_bookings_per_day, max_turns_in_a_row, no_show_penalty, no_show_limit, no_show_window_days, no_show_block_days, min_age, usage_rules_text, created_at, updated_at
 FROM
     facility
 WHERE
@@ -47,9 +47,17 @@ func (q *Queries) GetFacility(ctx context.Context, arg GetFacilityParams) (Facil
 		&i.ImageRef,
 		&i.IsActive,
 		&i.SlotMinutes,
-		&i.MaxAdvanceDays,
+		&i.CustomRules,
+		&i.MaxAdvanceHours,
+		&i.MinAdvanceMinutes,
 		&i.MinCancelHours,
 		&i.MaxActiveBookingsPerUser,
+		&i.MaxBookingsPerDay,
+		&i.MaxTurnsInARow,
+		&i.NoShowPenalty,
+		&i.NoShowLimit,
+		&i.NoShowWindowDays,
+		&i.NoShowBlockDays,
 		&i.MinAge,
 		&i.UsageRulesText,
 		&i.CreatedAt,

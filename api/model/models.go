@@ -363,9 +363,17 @@ type Facility struct {
 	ImageRef                 sql.NullString  `json:"image_ref"`
 	IsActive                 bool            `json:"is_active"`
 	SlotMinutes              int32           `json:"slot_minutes"`
-	MaxAdvanceDays           int32           `json:"max_advance_days"`
+	CustomRules              bool            `json:"custom_rules"`
+	MaxAdvanceHours          int32           `json:"max_advance_hours"`
+	MinAdvanceMinutes        int32           `json:"min_advance_minutes"`
 	MinCancelHours           int32           `json:"min_cancel_hours"`
 	MaxActiveBookingsPerUser int32           `json:"max_active_bookings_per_user"`
+	MaxBookingsPerDay        int32           `json:"max_bookings_per_day"`
+	MaxTurnsInARow           int32           `json:"max_turns_in_a_row"`
+	NoShowPenalty            bool            `json:"no_show_penalty"`
+	NoShowLimit              int32           `json:"no_show_limit"`
+	NoShowWindowDays         int32           `json:"no_show_window_days"`
+	NoShowBlockDays          int32           `json:"no_show_block_days"`
 	MinAge                   sql.NullInt32   `json:"min_age"`
 	UsageRulesText           sql.NullString  `json:"usage_rules_text"`
 	CreatedAt                time.Time       `json:"created_at"`
@@ -442,6 +450,21 @@ type Tenant struct {
 	IsActive     bool           `json:"is_active"`
 	CreatedAt    time.Time      `json:"created_at"`
 	UpdatedAt    time.Time      `json:"updated_at"`
+}
+
+type TenantBookingRule struct {
+	TenantID                 uuid.UUID `json:"tenant_id"`
+	MaxAdvanceHours          int32     `json:"max_advance_hours"`
+	MinAdvanceMinutes        int32     `json:"min_advance_minutes"`
+	MinCancelHours           int32     `json:"min_cancel_hours"`
+	MaxActiveBookingsPerUser int32     `json:"max_active_bookings_per_user"`
+	MaxBookingsPerDay        int32     `json:"max_bookings_per_day"`
+	MaxTurnsInARow           int32     `json:"max_turns_in_a_row"`
+	NoShowPenalty            bool      `json:"no_show_penalty"`
+	NoShowLimit              int32     `json:"no_show_limit"`
+	NoShowWindowDays         int32     `json:"no_show_window_days"`
+	NoShowBlockDays          int32     `json:"no_show_block_days"`
+	UpdatedAt                time.Time `json:"updated_at"`
 }
 
 type TenantInvitation struct {

@@ -59,6 +59,9 @@
     "facility_not_found": "This facility cannot be booked right now.",
     "other": "Book in the app, or ask the staff.",
     "use_booking_qr": "You have a booking here: go in with that booking's QR.",
-    "flash_off": "The council does not let a free turn be booked at the door here. Book in the app."
+    "flash_off": "The council does not let a free turn be booked at the door here. Book in the app.",
+    "daily_limit_reached": "You already have the bookings allowed per day here.",
+    "turns_in_a_row_limit": "You cannot book that many turns in a row here.",
+    "no_show_blocked": "You cannot book here for some days, after missing several bookings."
   }
 }

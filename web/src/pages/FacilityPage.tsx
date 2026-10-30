@@ -194,9 +194,16 @@ export function FacilityPage() {
             </h2>
             <ul className="num grid gap-1.5">
               <li>{t('facility:ruleSlot', { count: f.slot_minutes })}</li>
-              <li>{t('facility:ruleAdvance', { count: f.max_advance_days })}</li>
+              <li>
+                {f.max_advance_hours % 24 === 0
+                  ? t('facility:ruleAdvance', { count: f.max_advance_hours / 24 })
+                  : t('facility:ruleAdvanceHours', { count: f.max_advance_hours })}
+              </li>
+              {f.min_advance_minutes > 0 && <li>{t('facility:ruleMinAdvance', { count: f.min_advance_minutes })}</li>}
               <li>{t('facility:ruleCancel', { count: f.min_cancel_hours })}</li>
               <li>{t('facility:ruleLimit', { count: f.max_active_bookings_per_user })}</li>
+              {f.max_bookings_per_day > 0 && <li>{t('facility:rulePerDay', { count: f.max_bookings_per_day })}</li>}
+              {f.max_turns_in_a_row > 0 && <li>{t('facility:ruleInARow', { count: f.max_turns_in_a_row })}</li>}
               {f.min_age !== null && <li className="font-medium">{t('facility:minAge', { count: f.min_age })}</li>}
             </ul>
           </section>

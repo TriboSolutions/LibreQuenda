@@ -104,9 +104,12 @@ function facility(id: string, name: string, slug: string): Facility {
     contact_phone: '', // the council's is shown instead
     contact_email: '',
     slot_minutes: 60,
-    max_advance_days: 7,
+    max_advance_hours: 7 * 24,
+    min_advance_minutes: 30,
     min_cancel_hours: 2,
     max_active_bookings_per_user: 2,
+    max_bookings_per_day: 1,
+    max_turns_in_a_row: 0,
     min_age: 16,
     usage_rules: 'Calzado deportivo obrigatorio.\nRespecta o horario.',
     windows: [{ opens_at: '08:00', closes_at: '22:00' }],
@@ -257,6 +260,20 @@ const adminFacilities: AdminFacilitySummary[] = [
   { id: 'f2', slug: 'pavillon', name: 'Pavillón municipal', sport: 'Baloncesto', tags: ['baloncesto', 'pavillon'], image_url: '', is_active: false, opening_window_count: 0, upcoming_booking_count: 0 },
 ]
 
+// the council's booking window, which the facility inherits
+const councilRules = {
+  max_advance_hours: 7 * 24,
+  min_advance_minutes: 30,
+  min_cancel_hours: 2,
+  max_active_bookings_per_user: 2,
+  max_bookings_per_day: 1,
+  max_turns_in_a_row: 2,
+  no_show_penalty: true,
+  no_show_limit: 3,
+  no_show_window_days: 30,
+  no_show_block_days: 7,
+}
+
 const adminFacility: AdminFacility = {
   id: 'f1',
   slug: 'padel-1',
@@ -274,9 +291,9 @@ const adminFacility: AdminFacility = {
   image_url: '',
   is_active: true,
   slot_minutes: 60,
-  max_advance_days: 7,
-  min_cancel_hours: 2,
-  max_active_bookings_per_user: 2,
+  custom_rules: false,
+  rules: councilRules,
+  council_rules: councilRules,
   min_age: 16,
   usage_rules: 'Calzado deportivo obrigatorio.',
   booking_count: 12,
@@ -491,6 +508,7 @@ const routes: [RegExp, () => unknown][] = [
   [/^\/tenants\/[^/]+\/admin\/facilities\/[^/]+\/bookings/, () => staffDay],
   [/^\/tenants\/[^/]+\/admin\/facilities\/[^/]+\/devices$/, () => ({ devices: [{ id: 'd1', name: 'Entrada principal', key_hint: 'ab12', last_seen_at: at(-1), created_at: at(-100) }] })],
   [/^\/tenants\/[^/]+\/admin\/facilities\/[^/]+\/checkin$/, () => checkinSettings],
+  [/^\/tenants\/[^/]+\/admin\/booking-rules$/, () => councilRules],
   [/^\/tenants\/[^/]+\/admin\/facilities\/[^/]+$/, () => adminFacility],
   [/^\/tenants\/[^/]+\/admin\/indicators/, indicators],
   [/^\/tenants\/[^/]+\/admin\/smtp$/, () => smtp],
