@@ -7,6 +7,7 @@ import (
 	"librequenda/model"
 	"librequenda/shared"
 	"librequenda/storage"
+	"librequenda/zitadel"
 	"net/http"
 	"regexp"
 	"strings"
@@ -111,6 +112,10 @@ func (s *meService) SyncCurrentUser(ctx context.Context, session auth.Session) (
 	}
 
 	var response = withProfile(MapMeResponse(user, info.EmailVerified, isSuperadmin, roles), profile)
+	// no photo of their own here: the one on their sign-in account (Zitadel, or Google through it)
+	if response.AvatarUrl == "" {
+		response.AvatarUrl = info.Picture
+	}
 	response.PendingInvitations = make([]PendingInvitationDto, 0, len(pending))
 	for _, p := range pending {
 		response.PendingInvitations = append(response.PendingInvitations, PendingInvitationDto{TenantName: p.TenantName, TenantSlug: p.TenantSlug})
@@ -146,6 +151,7 @@ func (s *meService) UpdateProfile(ctx context.Context, session auth.Session, inp
 	if userErr != nil {
 		return nil, userErr
 	}
+	var before, _ = model.New(s.db).GetUserProfile(ctx, userId)
 	var err = model.New(s.db).UpdateUserProfile(ctx, model.UpdateUserProfileParams{
 		ID:        userId,
 		BirthDate: sql.NullTime{Time: birth, Valid: true},
@@ -155,7 +161,30 @@ func (s *meService) UpdateProfile(ctx context.Context, session auth.Session, inp
 	if err != nil {
 		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.profile_save_failed"}
 	}
+	if input.AvatarRef != before.AvatarRef.String {
+		syncAvatar(ctx, session, input.AvatarRef)
+	}
 	return s.SyncCurrentUser(ctx, session)
+}
+
+// syncAvatar copies the new profile photo to the person's Zitadel account, or
+// takes it off, so the sign-in pages show the same one. Best effort: the photo
+// is already saved here, and a token without Zitadel's audience (signed in
+// before it was asked for) just leaves Zitadel as it was until the next save.
+func syncAvatar(ctx context.Context, session auth.Session, ref string) {
+	var err error
+	if ref == "" {
+		err = zitadel.RemoveOwnAvatar(ctx, session.AccessToken)
+	} else {
+		var photo *storage.Object
+		if photo, err = storage.Get(ctx, ref); err == nil {
+			defer photo.Reader.Close()
+			err = zitadel.SetOwnAvatar(ctx, session.AccessToken, photo.Reader, photo.ContentType)
+		}
+	}
+	if err != nil {
+		shared.Logger.Error("profile photo of %s not copied to Zitadel: %v", session.Subject, err)
+	}
 }
 
 // SetShowRecommendations turns "For you" on the home page on or off, also from

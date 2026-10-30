@@ -134,6 +134,7 @@ type UserInfo struct {
 	Email         string `json:"email"`
 	EmailVerified bool   `json:"email_verified"`
 	Name          string `json:"name"`
+	Picture       string `json:"picture"` // the photo on the sign-in account, "" without one
 }
 
 // FetchUserInfo asks Zitadel for the profile of the token's user (name, email),

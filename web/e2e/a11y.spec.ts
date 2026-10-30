@@ -468,6 +468,14 @@ test.describe('keyboard', () => {
     expect((await saved).postDataJSON()).toEqual({ preferred_language: 'gl', email_reminders: true, show_recommendations: false })
   })
 
+  test('without upcoming bookings, "Book now" goes to the home page', async ({ page }) => {
+    await open(page, '/reservas')
+    await page.route('**/api/me/bookings', (route) => route.fulfill({ json: { upcoming: [], history: [] } }))
+    await page.reload()
+    await page.getByRole('link', { name: 'Reservar agora' }).click()
+    await expect(page).toHaveURL(/\/$/)
+  })
+
   test('signed out, the home page has no recommendations', async ({ page }) => {
     await open(page, '/', { signedIn: false })
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()

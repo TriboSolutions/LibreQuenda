@@ -1,4 +1,4 @@
-import { CalendarClock, ChevronDown, DoorOpen, ExternalLink, MapPin, UserPlus } from 'lucide-react'
+import { CalendarClock, CalendarPlus, ChevronDown, DoorOpen, ExternalLink, MapPin, UserPlus } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
@@ -142,11 +142,14 @@ export function MyBookingsPage() {
             {t('invites:myBookings.upcoming')} <span className="num font-normal text-muted-foreground">· {upcoming.length}</span>
           </h2>
           {upcoming.length === 0 ? (
-            <div className="mt-4 rounded-lg border border-dashed px-5 py-4 text-muted-foreground">
-              <p>{t('invites:myBookings.emptyUpcoming')}</p>
-              <Link to="/" className="mt-1 inline-block font-medium text-foreground underline-offset-4 hover:underline">
-                {t('invites:myBookings.findTurn')}
-              </Link>
+            <div className="mt-4 grid justify-items-start gap-3 rounded-lg border border-dashed px-5 py-4">
+              <p className="text-muted-foreground">{t('invites:myBookings.emptyUpcoming')}</p>
+              <Button asChild>
+                <Link to="/">
+                  <CalendarPlus aria-hidden />
+                  {t('invites:myBookings.bookNow')}
+                </Link>
+              </Button>
             </div>
           ) : (
             <ul className="mt-4 grid gap-4">
