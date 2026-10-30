@@ -26,6 +26,7 @@ SELECT
     weekly_opening,
     opens_weekday,
     opens_minute,
+    capacity,
     min_age,
     usage_rules_text
 FROM
@@ -100,6 +101,7 @@ SELECT
     f.no_show_limit,
     f.no_show_window_days,
     f.no_show_block_days,
+    f.capacity,
     f.min_age,
     t.timezone
 FROM

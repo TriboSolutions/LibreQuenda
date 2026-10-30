@@ -49,7 +49,21 @@ func (r *invitesRoutes) RegisterRoutes() {
 		Handler:           middlewares.AuthMiddleware(h.RemoveParticipant),
 	})
 
-	// participant with an account
+	// owner: make the booking public (found and joined from «For you») or private
+	r.router.NewRoute(router.Route{
+		Path:              "/me/bookings/{id}/public",
+		Method:            http.MethodPut,
+		AdditionalMethods: []router.HTTPMethod{router.OPTIONS},
+		Handler:           middlewares.AuthMiddleware(h.SetPublic),
+	})
+
+	// participant with an account: join a public booking, or leave
+	r.router.NewRoute(router.Route{
+		Path:              "/me/bookings/{id}/join",
+		Method:            http.MethodPost,
+		AdditionalMethods: []router.HTTPMethod{router.OPTIONS},
+		Handler:           middlewares.AuthMiddleware(h.JoinPublic),
+	})
 	r.router.NewRoute(router.Route{
 		Path:              "/me/bookings/{id}/participation",
 		Method:            http.MethodDelete,

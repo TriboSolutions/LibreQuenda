@@ -332,6 +332,7 @@ type Booking struct {
 	CheckedInMethod   NullCheckinMethod    `json:"checked_in_method"`
 	CheckedInBy       uuid.NullUUID        `json:"checked_in_by"`
 	InviteToken       uuid.NullUUID        `json:"invite_token"`
+	IsPublic          bool                 `json:"is_public"`
 }
 
 type BookingParticipant struct {

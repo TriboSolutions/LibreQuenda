@@ -125,7 +125,63 @@ func (s *invitesService) GetPublicInvite(ctx context.Context, token uuid.UUID) (
 
 // JoinAsUser adds a signed-in person. It does not count towards their own booking limit.
 func (s *invitesService) JoinAsUser(ctx context.Context, userId uuid.UUID, token uuid.UUID) *shared.ErrorResponse {
-	return s.join(ctx, token, func(queries *model.Queries, booking model.LockBookingByInviteTokenRow, day time.Time) *shared.ErrorResponse {
+	return s.join(ctx, lockByToken(token), addUser(ctx, userId))
+}
+
+// JoinPublic adds a signed-in person to a public booking, found in «For you»:
+// the same rules as the invite link, without one.
+func (s *invitesService) JoinPublic(ctx context.Context, userId uuid.UUID, bookingId uuid.UUID) *shared.ErrorResponse {
+	var err = s.join(ctx, lockPublic(bookingId), addUser(ctx, userId))
+	if err == errInviteNotFound { // not public (any more), or gone
+		return &shared.ErrorResponse{Code: http.StatusNotFound, Message: "errors.public_booking_not_found"}
+	}
+	return err
+}
+
+// SetPublic: the owner makes an upcoming booking public, or private again.
+// Only a facility that takes invites (room for more than the owner) can have public bookings.
+func (s *invitesService) SetPublic(ctx context.Context, ownerId uuid.UUID, bookingId uuid.UUID, public bool) *shared.ErrorResponse {
+	var queries = model.New(s.db)
+	var owner = uuid.NullUUID{UUID: ownerId, Valid: true}
+	var booking, err = queries.GetOwnedBookingForInvite(ctx, model.GetOwnedBookingForInviteParams{ID: bookingId, OwnerID: owner})
+	if errors.Is(err, sql.ErrNoRows) {
+		return errBookingNotFound
+	}
+	if err != nil {
+		return failed("errors.invite_failed")
+	}
+	if public && !invitable(booking.Capacity) {
+		return &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.public_needs_capacity"}
+	}
+	var updated int64
+	if updated, err = queries.SetBookingPublic(ctx, model.SetBookingPublicParams{ID: bookingId, OwnerID: owner, IsPublic: public}); err != nil {
+		return failed("errors.invite_failed")
+	}
+	if updated == 0 {
+		return &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.invite_closed"}
+	}
+	return nil
+}
+
+// lock finds the booking to join and locks its row; sql.ErrNoRows when there is none.
+type lock func(context.Context, *model.Queries) (model.LockBookingByInviteTokenRow, error)
+
+func lockByToken(token uuid.UUID) lock {
+	return func(ctx context.Context, queries *model.Queries) (model.LockBookingByInviteTokenRow, error) {
+		return queries.LockBookingByInviteToken(ctx, uuid.NullUUID{UUID: token, Valid: true})
+	}
+}
+
+func lockPublic(bookingId uuid.UUID) lock {
+	return func(ctx context.Context, queries *model.Queries) (model.LockBookingByInviteTokenRow, error) {
+		var row, err = queries.LockPublicBooking(ctx, bookingId)
+		return model.LockBookingByInviteTokenRow(row), err
+	}
+}
+
+// addUser: a signed-in person joins, as themselves.
+func addUser(ctx context.Context, userId uuid.UUID) func(*model.Queries, model.LockBookingByInviteTokenRow, time.Time) *shared.ErrorResponse {
+	return func(queries *model.Queries, booking model.LockBookingByInviteTokenRow, day time.Time) *shared.ErrorResponse {
 		if booking.OwnerID.Valid && booking.OwnerID.UUID == userId {
 			return &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.invite_own_booking"}
 		}
@@ -162,12 +218,12 @@ func (s *invitesService) JoinAsUser(ctx context.Context, userId uuid.UUID, token
 			return failed("errors.invite_failed")
 		}
 		return nil
-	})
+	}
 }
 
 // JoinAsGuest adds someone without an account: only a name and an age are kept.
 func (s *invitesService) JoinAsGuest(ctx context.Context, token uuid.UUID, guest GuestJoinDto) *shared.ErrorResponse {
-	return s.join(ctx, token, func(queries *model.Queries, booking model.LockBookingByInviteTokenRow, _ time.Time) *shared.ErrorResponse {
+	return s.join(ctx, lockByToken(token), func(queries *model.Queries, booking model.LockBookingByInviteTokenRow, _ time.Time) *shared.ErrorResponse {
 		if booking.MinAge.Valid && guest.Age < int(booking.MinAge.Int32) {
 			return &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.guest_age_restricted"}
 		}
@@ -184,7 +240,7 @@ func (s *invitesService) JoinAsGuest(ctx context.Context, token uuid.UUID, guest
 }
 
 // join locks the booking row, so two people cannot both take the last spot.
-func (s *invitesService) join(ctx context.Context, token uuid.UUID, add func(*model.Queries, model.LockBookingByInviteTokenRow, time.Time) *shared.ErrorResponse) *shared.ErrorResponse {
+func (s *invitesService) join(ctx context.Context, find lock, add func(*model.Queries, model.LockBookingByInviteTokenRow, time.Time) *shared.ErrorResponse) *shared.ErrorResponse {
 	var tx, err = s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return failed("errors.invite_failed")
@@ -193,7 +249,7 @@ func (s *invitesService) join(ctx context.Context, token uuid.UUID, add func(*mo
 	var queries = model.New(tx)
 
 	var booking model.LockBookingByInviteTokenRow
-	booking, err = queries.LockBookingByInviteToken(ctx, uuid.NullUUID{UUID: token, Valid: true})
+	booking, err = find(ctx, queries)
 	if errors.Is(err, sql.ErrNoRows) {
 		return errInviteNotFound
 	}

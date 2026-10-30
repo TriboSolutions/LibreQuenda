@@ -40,7 +40,9 @@
     "acceptRules": "Lin e acepto as normas de uso.",
     "noRules": "Esta instalación non ten normas específicas: aplícanse as normas xerais do concello.",
     "minAge": "Idade mínima",
-    "minAgeValue": "{{count}} anos"
+    "minAgeValue": "{{count}} anos",
+    "public": "Facer pública a reserva",
+    "publicHelp": "Calquera persoa con conta poderá vela en «Para ti» e unirse mentres queden prazas. Só se amosa o teu nome de pila."
   },
   "cancelDialog": {
     "title": "Cancelar a reserva?",
@@ -109,5 +111,9 @@
       "helpWithContacts": "Dille o teu nome ao persoal da instalación e marcan a túa entrada. Podes atopalo aquí:"
     },
     "ways": "Como rexistras a entrada"
+  },
+  "public": {
+    "label": "Pública",
+    "help": "Calquera persoa con conta pode vela en «Para ti» e unirse mentres queden prazas."
   }
 }

@@ -127,7 +127,7 @@ export function HomePage() {
             <Skeleton className="mt-2 h-5 w-80 max-w-full" />
           )}
 
-          <ForYou />
+          <ForYou near={me} />
 
           <div role="search" className="mt-6 flex flex-wrap items-center gap-2" aria-label={t('councils:filters')}>
             <div className="relative w-full sm:w-72">

@@ -75,6 +75,8 @@ Scope: bases §1.1 (minimum) + §1.2 (technical). See [architecture plan](docs/s
 - [x] No-show indicators count every way to check in, not only QR readers
 - [x] Booking window per council, inherited by its facilities or overridden in each one's «Reserva» tab; optional no-show penalty
 - [x] «For you» recommendations on the home page (can be turned off in the profile's Preferences)
+- [x] Public bookings: the owner makes a booking public (when booking, or later from My bookings) at facilities that take invites; «For you» shows public bookings with spots left at the person's facilities, alike ones, or within 10 km when «near me» is on, and they join them there (same rules as the invite link)
+- [ ] Public bookings: the owner gets no notice when someone joins (neither from an invite link today)
 - [x] Profile photo copied to the person's Zitadel account; Zitadel signs up and in with a password (passkeys with `ZITADEL_PASSKEYS=true`)
 - [ ] NFC tag: still a preview in the Entrada tab (needs a public check-in address per tag and, for signed tags, NTAG 424 DNA verification)
 - [x] Indicators: a history of when each facility could take check-ins (`facility_checkin_period`), so turns while the QR reader was off, or every way was off, are not no-shows (#31)

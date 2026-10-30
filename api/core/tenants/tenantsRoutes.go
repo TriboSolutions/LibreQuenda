@@ -61,4 +61,10 @@ func (r *tenantsRoutes) RegisterRoutes() {
 		AdditionalMethods: []router.HTTPMethod{router.OPTIONS},
 		Handler:           middlewares.AuthMiddleware(h.Recommendations),
 	})
+	r.router.NewRoute(router.Route{
+		Path:              "/me/recommendations",
+		Method:            http.MethodPost,
+		AdditionalMethods: []router.HTTPMethod{router.OPTIONS},
+		Handler:           middlewares.AuthMiddleware(h.Recommendations),
+	})
 }

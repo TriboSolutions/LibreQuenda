@@ -32,6 +32,7 @@ export type Facility = {
   max_turns_in_a_row: number // back-to-back turns per person; 0 = no limit
   max_bookings_per_week: number // per person and week; 0 = no limit
   weekly_opening: { weekday: number; at: string } | null // instead of max_advance_hours: next week opens then (ISO weekday, "20:00")
+  capacity: number // people per booking, owner included; 0 without a limit
   min_age: number | null // age control: null = none
   usage_rules: string
   windows: { opens_at: string; closes_at: string }[]
@@ -367,6 +368,7 @@ export type Booking = {
   can_change: boolean // owner only: another time of the same facility, on the same terms as cancelling
   cancel_until: string
   checkin_code: string // QR content; "" unless the booking is upcoming and confirmed
+  is_public?: boolean // owner only: anyone signed in finds it in «For you» and can join it
   checked_in_at: string | null
   checkin_ways?: CheckinMethod[] | null // owner only: the ways to check in the facility takes, for the check-in button
   staff_contacts?: StaffContact[] // owner only, with staff confirmation on: who to ask on site
@@ -455,13 +457,15 @@ export type PublicInvite = {
 
 /** The home page's "For you": from the signed-in person's own bookings and today's free turns. */
 export type Recommendation = {
-  kind: 'usual_today' | 'favourite' | 'similar'
+  kind: 'usual_today' | 'favourite' | 'similar' | 'public_booking'
   facility: FacilityCard
   starts_at: string // usual_today: that free turn; favourite and similar: the next free turn today
   times?: number // usual_today: bookings that weekday and time; favourite: bookings there
   weekday?: number // usual_today: ISO, 1 = Monday
   because?: string // similar: the facility of theirs it is like
   shared_tags?: string[] // similar: the tags (slugs) they share
+  // public_booking: someone's public booking to join; at most the owner's first name
+  booking?: { id: string; starts_at: string; ends_at: string; spots_left: number; owner_first_name: string }
 }
 
 export type MyBookings = { upcoming: Booking[]; history: Booking[] }
@@ -831,18 +835,24 @@ export const api = {
     verifyEmail: (token: string, code: string) => request<void>('/me/account/email/verify', { token, method: 'POST', body: { code } }),
   },
   myBookings: (token: string) => request<MyBookings>('/me/bookings', { token }),
-  recommendations: (token: string) => request<{ recommendations: Recommendation[] }>('/me/recommendations', { token }),
+  // near: where the person is (the home page's «near me»), in the body; checked, never stored
+  recommendations: (token: string, near?: { latitude: number; longitude: number } | null) =>
+    request<{ recommendations: Recommendation[] }>('/me/recommendations', { token, method: 'POST', body: near ?? {} }),
   // "For you" on or off, also from the section itself
   setShowRecommendations: (token: string, show: boolean) => request<Me>('/me/recommendations', { token, method: 'PUT', body: { show } }),
   facilityPage: (slug: string, facility: string, date?: string) =>
     request<FacilityPage>(`/tenants/${encodeURIComponent(slug)}/facilities/${encodeURIComponent(facility)}${date ? `?date=${date}` : ''}`),
   // acceptRules: the resident ticked "I have read the rules"; the API refuses the booking otherwise
-  book: (token: string, facilityId: string, startsAt: string, acceptRules: boolean) =>
+  // isPublic: anyone signed in may find it in «For you» and join it (facilities with room for more than one)
+  book: (token: string, facilityId: string, startsAt: string, acceptRules: boolean, isPublic = false) =>
     request<Booking>('/me/bookings', {
       token,
       method: 'POST',
-      body: { facility_id: facilityId, starts_at: startsAt, accept_rules: acceptRules },
+      body: { facility_id: facilityId, starts_at: startsAt, accept_rules: acceptRules, public: isPublic },
     }),
+  setPublic: (token: string, bookingId: string, isPublic: boolean) =>
+    request<void>(`/me/bookings/${bookingId}/public`, { token, method: 'PUT', body: { public: isPublic } }),
+  joinPublic: (token: string, bookingId: string) => request<void>(`/me/bookings/${bookingId}/join`, { token, method: 'POST' }),
   // another free turn of the same facility, any day it can be booked
   changeBooking: (token: string, bookingId: string, startsAt: string) =>
     request<Booking>(`/me/bookings/${bookingId}`, { token, method: 'PATCH', body: { starts_at: startsAt } }),

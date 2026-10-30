@@ -40,7 +40,9 @@
     "acceptRules": "He leído y acepto las normas de uso.",
     "noRules": "Esta instalación no tiene normas específicas: se aplican las normas generales del ayuntamiento.",
     "minAge": "Edad mínima",
-    "minAgeValue": "{{count}} años"
+    "minAgeValue": "{{count}} años",
+    "public": "Hacer pública la reserva",
+    "publicHelp": "Cualquier persona con cuenta podrá verla en «Para ti» y unirse mientras queden plazas. Solo se muestra tu nombre de pila."
   },
   "cancelDialog": {
     "title": "¿Cancelar la reserva?",
@@ -109,5 +111,9 @@
       "helpWithContacts": "Dile tu nombre al personal de la instalación y marcan tu entrada. Puedes encontrarlo aquí:"
     },
     "ways": "Cómo registras la entrada"
+  },
+  "public": {
+    "label": "Pública",
+    "help": "Cualquier persona con cuenta puede verla en «Para ti» y unirse mientras queden plazas."
   }
 }

@@ -70,6 +70,7 @@ SELECT
     b.status,
     b.checkin_token,
     b.checked_in_at,
+    b.is_public,
     facility_took_checkin(f.id, b.starts_at)::BOOLEAN AS checkin_at_start,
     -- the ways in the facility offers now, for the check-in button
     (EXISTS (SELECT 1 FROM checkin_device d WHERE d.facility_id = f.id) AND COALESCE(c.qr_reader, TRUE))::BOOLEAN AS has_reader,
