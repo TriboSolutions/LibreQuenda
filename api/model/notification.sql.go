@@ -175,6 +175,7 @@ SELECT
     u.full_name,
     u.preferred_language,
     u.email_reminders,
+    u.email_notifications,
     b.status,
     b.starts_at,
     b.ends_at,
@@ -221,35 +222,36 @@ type ListPendingEmailsParams struct {
 }
 
 type ListPendingEmailsRow struct {
-	ID                uuid.UUID        `json:"id"`
-	Type              NotificationType `json:"type"`
-	Payload           json.RawMessage  `json:"payload"`
-	Email             string           `json:"email"`
-	FullName          sql.NullString   `json:"full_name"`
-	PreferredLanguage sql.NullString   `json:"preferred_language"`
-	EmailReminders    bool             `json:"email_reminders"`
-	Status            BookingStatus    `json:"status"`
-	StartsAt          time.Time        `json:"starts_at"`
-	EndsAt            time.Time        `json:"ends_at"`
-	CheckinToken      uuid.UUID        `json:"checkin_token"`
-	FacilityName      string           `json:"facility_name"`
-	FacilitySlug      string           `json:"facility_slug"`
-	FacilityAddress   sql.NullString   `json:"facility_address"`
-	FacilityLatitude  sql.NullFloat64  `json:"facility_latitude"`
-	FacilityLongitude sql.NullFloat64  `json:"facility_longitude"`
-	FacilityPhone     sql.NullString   `json:"facility_phone"`
-	FacilityEmail     sql.NullString   `json:"facility_email"`
-	TenantPhone       sql.NullString   `json:"tenant_phone"`
-	TenantEmail       sql.NullString   `json:"tenant_email"`
-	TenantName        string           `json:"tenant_name"`
-	TenantSlug        string           `json:"tenant_slug"`
-	Timezone          string           `json:"timezone"`
-	TenantID          uuid.UUID        `json:"tenant_id"`
-	SmtpConfig        []byte           `json:"smtp_config"`
-	HasReader         bool             `json:"has_reader"`
-	EntryCode         bool             `json:"entry_code"`
-	PrintedQr         bool             `json:"printed_qr"`
-	StaffConfirm      bool             `json:"staff_confirm"`
+	ID                 uuid.UUID        `json:"id"`
+	Type               NotificationType `json:"type"`
+	Payload            json.RawMessage  `json:"payload"`
+	Email              string           `json:"email"`
+	FullName           sql.NullString   `json:"full_name"`
+	PreferredLanguage  sql.NullString   `json:"preferred_language"`
+	EmailReminders     bool             `json:"email_reminders"`
+	EmailNotifications bool             `json:"email_notifications"`
+	Status             BookingStatus    `json:"status"`
+	StartsAt           time.Time        `json:"starts_at"`
+	EndsAt             time.Time        `json:"ends_at"`
+	CheckinToken       uuid.UUID        `json:"checkin_token"`
+	FacilityName       string           `json:"facility_name"`
+	FacilitySlug       string           `json:"facility_slug"`
+	FacilityAddress    sql.NullString   `json:"facility_address"`
+	FacilityLatitude   sql.NullFloat64  `json:"facility_latitude"`
+	FacilityLongitude  sql.NullFloat64  `json:"facility_longitude"`
+	FacilityPhone      sql.NullString   `json:"facility_phone"`
+	FacilityEmail      sql.NullString   `json:"facility_email"`
+	TenantPhone        sql.NullString   `json:"tenant_phone"`
+	TenantEmail        sql.NullString   `json:"tenant_email"`
+	TenantName         string           `json:"tenant_name"`
+	TenantSlug         string           `json:"tenant_slug"`
+	Timezone           string           `json:"timezone"`
+	TenantID           uuid.UUID        `json:"tenant_id"`
+	SmtpConfig         []byte           `json:"smtp_config"`
+	HasReader          bool             `json:"has_reader"`
+	EntryCode          bool             `json:"entry_code"`
+	PrintedQr          bool             `json:"printed_qr"`
+	StaffConfirm       bool             `json:"staff_confirm"`
 }
 
 // The email queue: every notification is also an email, sent through the
@@ -271,6 +273,7 @@ func (q *Queries) ListPendingEmails(ctx context.Context, arg ListPendingEmailsPa
 			&i.FullName,
 			&i.PreferredLanguage,
 			&i.EmailReminders,
+			&i.EmailNotifications,
 			&i.Status,
 			&i.StartsAt,
 			&i.EndsAt,

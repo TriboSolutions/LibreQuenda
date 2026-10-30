@@ -6,20 +6,27 @@ import (
 	"librequenda/model"
 	"librequenda/storage"
 	"sort"
+	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/google/uuid"
 )
 
 type CreateBookingDto struct {
-	FacilityId  uuid.UUID `json:"facility_id"`
-	StartsAt    time.Time `json:"starts_at"`
-	AcceptRules bool      `json:"accept_rules"` // the resident ticked "I have read the rules"; stored as rules_accepted_at
-	Public      bool      `json:"public"`       // anyone signed in may find it in «For you» and join it
+	PublicDescription string    `json:"public_description"`
+	FacilityId        uuid.UUID `json:"facility_id"`
+	StartsAt          time.Time `json:"starts_at"`
+	AcceptRules       bool      `json:"accept_rules"` // the resident ticked "I have read the rules"; stored as rules_accepted_at
+	Public            bool      `json:"public"`       // anyone signed in may find it in «For you» and join it
 }
 
 func (d *CreateBookingDto) Validate() []string {
 	var errs []string
+	d.PublicDescription = strings.TrimSpace(d.PublicDescription)
+	if utf8.RuneCountInString(d.PublicDescription) > 1000 {
+		errs = append(errs, "public_description must be at most 1000 characters")
+	}
 	if d.FacilityId == uuid.Nil {
 		errs = append(errs, "facility_id is required")
 	}
@@ -42,21 +49,22 @@ func (d *ChangeBookingDto) Validate() []string {
 }
 
 type BookingDto struct {
-	Id           string     `json:"id"`
-	StartsAt     time.Time  `json:"starts_at"`
-	EndsAt       time.Time  `json:"ends_at"`
-	Status       string     `json:"status"`
-	FacilityId   string     `json:"facility_id"`
-	FacilityName string     `json:"facility_name"`
-	FacilitySlug string     `json:"facility_slug"`
-	TenantSlug   string     `json:"tenant_slug"`
-	TenantName   string     `json:"tenant_name"`
-	CanCancel    bool       `json:"can_cancel"`
-	CanChange    bool       `json:"can_change"` // owner only: another time, on the same terms as cancelling
-	CancelUntil  time.Time  `json:"cancel_until"`
-	CheckinCode  string     `json:"checkin_code"` // QR content, upcoming confirmed bookings only
-	IsPublic     bool       `json:"is_public"`    // owner only: found and joined from «For you»
-	CheckedInAt  *time.Time `json:"checked_in_at"`
+	PublicDescription string     `json:"public_description"`
+	Id                string     `json:"id"`
+	StartsAt          time.Time  `json:"starts_at"`
+	EndsAt            time.Time  `json:"ends_at"`
+	Status            string     `json:"status"`
+	FacilityId        string     `json:"facility_id"`
+	FacilityName      string     `json:"facility_name"`
+	FacilitySlug      string     `json:"facility_slug"`
+	TenantSlug        string     `json:"tenant_slug"`
+	TenantName        string     `json:"tenant_name"`
+	CanCancel         bool       `json:"can_cancel"`
+	CanChange         bool       `json:"can_change"` // owner only: another time, on the same terms as cancelling
+	CancelUntil       time.Time  `json:"cancel_until"`
+	CheckinCode       string     `json:"checkin_code"` // QR content, upcoming confirmed bookings only
+	IsPublic          bool       `json:"is_public"`    // owner only: found and joined from «For you»
+	CheckedInAt       *time.Time `json:"checked_in_at"`
 	// owner only: the ways in the facility offers ("reader", "printed_qr", "entry_code", "staff")
 	CheckinWays []string `json:"checkin_ways"`
 	// owner only, with staff confirmation on: who to ask on site
@@ -249,27 +257,28 @@ func mapBooking(row model.ListBookingsByUserRow, now time.Time) BookingDto {
 		checkedInAt = &row.CheckedInAt.Time
 	}
 	return BookingDto{
-		Id:             row.ID.String(),
-		StartsAt:       row.StartsAt,
-		EndsAt:         row.EndsAt,
-		Status:         string(row.Status),
-		FacilityId:     row.FacilityID.String(),
-		FacilityName:   row.FacilityName,
-		FacilitySlug:   row.FacilitySlug,
-		TenantSlug:     row.TenantSlug,
-		TenantName:     row.TenantName,
-		CanCancel:      canCancel,
-		CanChange:      canCancel,
-		CancelUntil:    cancelUntil,
-		CheckinCode:    checkinCode,
-		CheckedInAt:    checkedInAt,
-		Attendance:     attendance(row.Status, row.EndsAt, row.CheckedInAt.Valid, row.CheckinAtStart, now),
-		Role:           RoleOwner,
-		IsPublic:       row.IsPublic,
-		CheckinWays:    checkinWays(row),
-		StaffContacts:  staffContacts(row),
-		CheckinRadiusM: int(row.CheckinRadiusM),
-		Facility:       FacilityDetails(row.Facility, row.FacilitySport),
+		Id:                row.ID.String(),
+		StartsAt:          row.StartsAt,
+		EndsAt:            row.EndsAt,
+		Status:            string(row.Status),
+		FacilityId:        row.FacilityID.String(),
+		FacilityName:      row.FacilityName,
+		FacilitySlug:      row.FacilitySlug,
+		TenantSlug:        row.TenantSlug,
+		TenantName:        row.TenantName,
+		CanCancel:         canCancel,
+		CanChange:         canCancel,
+		CancelUntil:       cancelUntil,
+		CheckinCode:       checkinCode,
+		CheckedInAt:       checkedInAt,
+		Attendance:        attendance(row.Status, row.EndsAt, row.CheckedInAt.Valid, row.CheckinAtStart, now),
+		Role:              RoleOwner,
+		IsPublic:          row.IsPublic,
+		PublicDescription: row.PublicDescription,
+		CheckinWays:       checkinWays(row),
+		StaffContacts:     staffContacts(row),
+		CheckinRadiusM:    int(row.CheckinRadiusM),
+		Facility:          FacilityDetails(row.Facility, row.FacilitySport),
 	}
 }
 

@@ -163,6 +163,7 @@ function PublicBookingCard({ item, booking }: { item: Recommendation; booking: N
           <span>{booking.owner_first_name ? t('forYou.publicBy', { name: booking.owner_first_name }) : t('forYou.public')}</span>
         </p>
         <p className="num text-sm">{when}</p>
+        {booking.description && <p className="whitespace-pre-wrap break-words text-sm">{booking.description}</p>}
         <div aria-live="polite" className="grid gap-1">
           {joined ? (
             <p className="text-sm font-medium text-pill-positive-ink">

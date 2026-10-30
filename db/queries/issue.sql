@@ -19,6 +19,7 @@ WHERE
 SELECT
     b.id,
     b.facility_id,
+    b.starts_at,
     b.ends_at
 FROM
     booking b
@@ -28,16 +29,16 @@ WHERE
     AND (
         b.user_id = sqlc.arg('user_id')
         OR EXISTS (SELECT 1 FROM booking_participant p WHERE p.booking_id = b.id AND p.user_id = sqlc.arg('user_id'))
-    );
+    )
+FOR UPDATE OF b;
 
--- name: CountOpenIssuesByReporter :one
+-- name: CountIssuesByBooking :one
 SELECT
     COUNT(*)
 FROM
     facility_issue
 WHERE
-    reporter_id = sqlc.arg('reporter_id')
-    AND status IN ('new', 'in_progress');
+    booking_id = sqlc.arg('booking_id');
 
 -- name: CreateFacilityIssue :one
 -- Row-level security: runs as the facility's council (db.WithTenant).
@@ -57,6 +58,7 @@ SELECT
     i.id,
     i.facility_id,
     f.name AS facility_name,
+    f.image_ref AS facility_image_ref,
     i.category,
     i.description,
     i.photo_ref,
@@ -68,7 +70,8 @@ SELECT
     b.starts_at AS booking_starts_at,
     split_part(COALESCE(u.full_name, ''), ' ', 1)::TEXT AS reporter_first_name,
     i.share_contact,
-    u.email AS reporter_email -- the API drops it unless share_contact
+    u.email AS reporter_email, -- the API drops contact details unless share_contact
+    u.phone AS reporter_phone
 FROM
     facility_issue i
     JOIN facility f ON f.id = i.facility_id
@@ -138,8 +141,10 @@ SELECT
     u.email,
     u.full_name,
     u.preferred_language,
+    u.email_notifications,
     f.name AS facility_name,
     t.name AS tenant_name,
+    t.slug AS tenant_slug,
     t.id   AS tenant_id,
     s.config AS smtp_config
 FROM
@@ -151,7 +156,7 @@ FROM
     LEFT JOIN tenant_smtp s ON s.tenant_id = t.id
 WHERE
     n.emailed_at IS NULL
-    AND n.type IN ('issue_solved', 'issue_rejected')
+    AND n.type IN ('issue_solved', 'issue_rejected', 'issue_reported')
     AND (sqlc.arg('env_relay')::BOOLEAN OR s.tenant_id IS NOT NULL)
 ORDER BY
     n.created_at ASC
@@ -204,3 +209,16 @@ WHERE
 ORDER BY
     i.created_at ASC,
     i.id ASC;
+
+-- name: NotifyCouncilAdminsOfIssue :exec
+-- Created in the report transaction, one notice per council administrator.
+INSERT INTO notification (user_id, issue_id, type, payload)
+SELECT m.user_id, i.id, 'issue_reported', jsonb_build_object(
+    'facility_name', f.name, 'facility_slug', f.slug,
+    'tenant_name', t.name, 'tenant_slug', t.slug
+)
+FROM facility_issue i
+JOIN facility f ON f.id = i.facility_id
+JOIN tenant t ON t.id = f.tenant_id
+JOIN tenant_membership m ON m.tenant_id = t.id AND m.role = 'admin'
+WHERE i.id = sqlc.arg('issue_id');

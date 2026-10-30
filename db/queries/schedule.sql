@@ -5,6 +5,7 @@ SELECT
     name,
     description,
     image_ref,
+    show_weather,
     latitude,
     longitude,
     facility_sport(facility.id)::TEXT AS sport,
@@ -113,3 +114,20 @@ WHERE
     f.id = sqlc.arg('id')
     AND f.is_active = TRUE
     AND t.is_active = TRUE;
+
+-- name: ListPublicBookingsByTenantRange :many
+-- Public activity details only; participant contact data and surnames stay private.
+SELECT b.id, b.facility_id, b.starts_at, b.ends_at, b.public_description,
+    f.capacity,
+    split_part(trim(COALESCE(owner.full_name, '')), ' ', 1)::TEXT AS owner_name,
+    ARRAY(SELECT split_part(trim(COALESCE(u.full_name, p.guest_name, '')), ' ', 1)
+          FROM booking_participant p LEFT JOIN app_user u ON u.id = p.user_id
+          WHERE p.booking_id = b.id ORDER BY p.joined_at, p.id)::TEXT[] AS people
+FROM booking b
+JOIN facility f ON f.id = b.facility_id
+LEFT JOIN app_user owner ON owner.id = b.user_id
+WHERE f.tenant_id = sqlc.arg('tenant_id')
+  AND f.is_active = TRUE AND b.is_public = TRUE AND b.status = 'confirmed'
+  AND b.ends_at > NOW()
+  AND b.starts_at < sqlc.arg('range_end') AND b.ends_at > sqlc.arg('range_start')
+ORDER BY b.starts_at, b.id;

@@ -1,4 +1,6 @@
 {
+  "publicSlot": {"joinable": "Amb places", "ongoing": "En curs", "full": "Completa", "joinableLegend": "Pública: pots unir-te", "ongoingLegend": "Pública: en curs"},
+  "chooseDate": "Triar data",
   "back": "Totes les instal·lacions",
   "bookTitle": "Reserva un torn",
   "noFree": "No queden torns lliures aquest dia.",
@@ -49,7 +51,7 @@
     "photo": "Foto (opcional)",
     "urgent": "És urgent",
     "urgentHelp": "Per exemple, si és perillós o impedeix fer servir la instal·lació.",
-    "shareContact": "Deixar que el personal de l’ajuntament vegi el meu correu per preguntar-me",
+    "shareContact": "Permetre que el personal de l’ajuntament vegi el meu correu i el telèfon del perfil, si el tinc desat, per contactar amb mi",
     "send": "Envia l’avís",
     "sending": "Enviant…",
     "cancel": "Cancel·la",

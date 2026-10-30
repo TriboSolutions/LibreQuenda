@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import { Link } from 'react-router'
-import { CalendarX, Mail, TriangleAlert } from 'lucide-react'
+import { CalendarX, Mail, Phone, TriangleAlert } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -33,7 +33,7 @@ export function IssuesPanel({ slug, facilities, onChanged }: Props) {
   const auth = useAuth()
   const token = auth.user?.access_token ?? ''
   const [facility, setFacility] = useState(ALL)
-  const [status, setStatus] = useState<IssueStatus | typeof ALL>(ALL)
+  const [status, setStatus] = useState<IssueStatus | typeof ALL>('new')
   const issues = useAsync(
     () => api.council.issues(token, slug, { facility: facility === ALL ? '' : facility, status: status === ALL ? '' : status }),
     `issues:${slug}:${facility}:${status}`,
@@ -49,10 +49,10 @@ export function IssuesPanel({ slug, facilities, onChanged }: Props) {
         <p className="mt-1 max-w-[70ch] text-muted-foreground">{t('issues.help')}</p>
       </div>
       <div className="flex flex-wrap gap-3">
-        <div className="grid gap-1.5">
+        <div className="grid min-w-0 max-w-full gap-1.5">
           <Label htmlFor="issues-facility">{t('issues.facility')}</Label>
           <Select value={facility} onValueChange={setFacility}>
-            <SelectTrigger id="issues-facility" className="w-64">
+            <SelectTrigger id="issues-facility" className="w-64 max-w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -65,10 +65,10 @@ export function IssuesPanel({ slug, facilities, onChanged }: Props) {
             </SelectContent>
           </Select>
         </div>
-        <div className="grid gap-1.5">
+        <div className="grid min-w-0 max-w-full gap-1.5">
           <Label htmlFor="issues-status">{t('issues.status')}</Label>
           <Select value={status} onValueChange={(value) => setStatus(value as IssueStatus | typeof ALL)}>
-            <SelectTrigger id="issues-status" className="w-48">
+            <SelectTrigger id="issues-status" className="w-48 max-w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -137,17 +137,22 @@ function IssueItem({ slug, token, issue, onSaved }: { slug: string; token: strin
   return (
     <li aria-labelledby={titleId} className="grid gap-3 rounded-md border p-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
-        <div className="grid gap-1">
-          <h3 id={titleId} className="font-semibold">
-            {issue.facility_name} · {t(`facility:issue.categories.${issue.category}`)}
-          </h3>
-          <p className="num text-sm text-muted-foreground">
-            {t('admin:issues.reported', {
-              date: formatDateTime(issue.created_at, TIME_ZONE),
-              name: issue.reporter_name || t('admin:issues.someone'),
-            })}
-            {issue.booking_starts_at && ` · ${t('admin:issues.booking', { date: formatDateTime(issue.booking_starts_at, TIME_ZONE) })}`}
-          </p>
+        <div className="flex min-w-0 w-full items-start gap-3 sm:w-auto sm:flex-1">
+          {issue.facility_image_url && (
+            <img src={issue.facility_image_url} alt="" className="h-16 w-20 shrink-0 rounded-md object-cover sm:h-20 sm:w-32" loading="lazy" />
+          )}
+          <div className="grid min-w-0 gap-1">
+            <h3 id={titleId} className="font-semibold">
+              {issue.facility_name} · {t(`facility:issue.categories.${issue.category}`)}
+            </h3>
+            <p className="num text-sm text-muted-foreground">
+              {t('admin:issues.reported', {
+                date: formatDateTime(issue.created_at, TIME_ZONE),
+                name: issue.reporter_name || t('admin:issues.someone'),
+              })}
+              {issue.booking_starts_at && ` · ${t('admin:issues.booking', { date: formatDateTime(issue.booking_starts_at, TIME_ZONE) })}`}
+            </p>
+          </div>
         </div>
         <div className="flex flex-wrap gap-1.5">
           {issue.urgent && (
@@ -174,8 +179,17 @@ function IssueItem({ slug, token, issue, onSaved }: { slug: string; token: strin
         </p>
       )}
 
+      {issue.reporter_phone && (
+        <p className="flex items-center gap-1.5 text-sm">
+          <Phone className="size-4 text-muted-foreground" aria-hidden />
+          <a href={`tel:${issue.reporter_phone.replace(/\s/g, '')}`} className="underline underline-offset-4">
+            {issue.reporter_phone}
+          </a>
+        </p>
+      )}
+
       <form onSubmit={(e) => void save(e)} className="grid gap-3 border-t pt-3 sm:grid-cols-[12rem_1fr_auto] sm:items-end">
-        <div className="grid gap-1.5">
+        <div className="grid min-w-0 max-w-full gap-1.5">
           <Label htmlFor={`${titleId}-status`}>{t('admin:issues.status')}</Label>
           <Select value={status} onValueChange={(value) => setStatus(value as IssueStatus)}>
             <SelectTrigger id={`${titleId}-status`} className="w-full">
@@ -190,7 +204,7 @@ function IssueItem({ slug, token, issue, onSaved }: { slug: string; token: strin
             </SelectContent>
           </Select>
         </div>
-        <div className="grid gap-1.5">
+        <div className="grid min-w-0 max-w-full gap-1.5">
           <Label htmlFor={`${titleId}-note`}>{t('admin:issues.note')}</Label>
           <Textarea
             id={`${titleId}-note`}

@@ -190,7 +190,9 @@
     "tagsClear": "Quitar todas",
     "tabDetails": "Datos",
     "tabCheckin": "Entrada",
-    "tabBooking": "Reserva"
+    "tabBooking": "Reserva",
+    "showWeather": "Amosar previsión meteorolóxica",
+    "showWeatherHelp": "Amosa o tempo de MeteoGalicia na páxina da instalación e ao reservar. Require o código INE do concello. É independente das etiquetas."
   },
   "readers": {
     "title": "Lectores QR da entrada",
@@ -678,6 +680,8 @@
     "maxActiveHelp": "As próximas que pode ter á vez.",
     "perDay": "Reservas por persoa e día",
     "inARow": "Quendas seguidas por persoa",
+    "noLimit": "Sen límite",
+    "setNoLimit": "Sen límite: {{field}}",
     "zeroNoLimit": "0 = sen límite.",
     "penalty": "Penalizar a quen non se presenta",
     "penaltyHelp": "Tras varias reservas sen rexistrar a entrada, non poderá reservar durante uns días. Só conta onde se rexistra a entrada.",
@@ -824,7 +828,9 @@
       "other": "Outro cambio",
       "booking_policy.changed": "Cambiou as normas de reserva da plataforma",
       "issue.changed": "Cambiou o estado dunha incidencia"
-    }
+    },
+    "anyDate": "Calquera data",
+    "clearDates": "Limpar datas"
   },
   "widget": {
     "title": "Widget para a túa web",

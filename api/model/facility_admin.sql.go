@@ -92,7 +92,7 @@ func (q *Queries) CountBookingsByFacility(ctx context.Context, facilityID uuid.U
 const createFacility = `-- name: CreateFacility :one
 INSERT INTO facility (
     tenant_id, slug, name, description, address, latitude, longitude, capacity,
-    accessibility_info, contact_phone, contact_email, image_ref, is_active, slot_minutes,
+    accessibility_info, contact_phone, contact_email, image_ref, show_weather, is_active, slot_minutes,
     custom_rules, max_advance_hours, min_advance_minutes, min_cancel_hours, max_active_bookings_per_user,
     max_bookings_per_day, max_turns_in_a_row, max_bookings_per_week, weekly_opening, opens_weekday, opens_minute,
     no_show_penalty, no_show_limit, no_show_window_days, no_show_block_days,
@@ -100,12 +100,12 @@ INSERT INTO facility (
 ) VALUES (
     $1, $2, $3, $4,
     $5, $6, $7, $8,
-    $9, $10, $11, $12, $13, $14,
-    $15, $16, $17, $18,
-    $19, $20, $21,
-    $22, $23, $24, $25,
-    $26, $27, $28, $29,
-    $30, $31
+    $9, $10, $11, $12, $13, $14, $15,
+    $16, $17, $18, $19,
+    $20, $21, $22,
+    $23, $24, $25, $26,
+    $27, $28, $29, $30,
+    $31, $32
 )
 RETURNING
     id
@@ -124,6 +124,7 @@ type CreateFacilityParams struct {
 	ContactPhone             sql.NullString  `json:"contact_phone"`
 	ContactEmail             sql.NullString  `json:"contact_email"`
 	ImageRef                 sql.NullString  `json:"image_ref"`
+	ShowWeather              bool            `json:"show_weather"`
 	IsActive                 bool            `json:"is_active"`
 	SlotMinutes              int32           `json:"slot_minutes"`
 	CustomRules              bool            `json:"custom_rules"`
@@ -159,6 +160,7 @@ func (q *Queries) CreateFacility(ctx context.Context, arg CreateFacilityParams) 
 		arg.ContactPhone,
 		arg.ContactEmail,
 		arg.ImageRef,
+		arg.ShowWeather,
 		arg.IsActive,
 		arg.SlotMinutes,
 		arg.CustomRules,
@@ -226,7 +228,7 @@ func (q *Queries) EnsureTenantBookingRules(ctx context.Context, tenantID uuid.UU
 
 const getFacilityForAdmin = `-- name: GetFacilityForAdmin :one
 SELECT
-    id, tenant_id, slug, name, description, address, latitude, longitude, capacity, accessibility_info, contact_phone, contact_email, image_ref, is_active, slot_minutes, custom_rules, max_advance_hours, min_advance_minutes, min_cancel_hours, max_active_bookings_per_user, max_bookings_per_day, max_turns_in_a_row, max_bookings_per_week, weekly_opening, opens_weekday, opens_minute, no_show_penalty, no_show_limit, no_show_window_days, no_show_block_days, min_age, usage_rules_text, created_at, updated_at
+    id, tenant_id, slug, name, description, address, latitude, longitude, capacity, accessibility_info, contact_phone, contact_email, show_weather, image_ref, is_active, slot_minutes, custom_rules, max_advance_hours, min_advance_minutes, min_cancel_hours, max_active_bookings_per_user, max_bookings_per_day, max_turns_in_a_row, max_bookings_per_week, weekly_opening, opens_weekday, opens_minute, no_show_penalty, no_show_limit, no_show_window_days, no_show_block_days, min_age, usage_rules_text, created_at, updated_at
 FROM
     facility
 WHERE
@@ -255,6 +257,7 @@ func (q *Queries) GetFacilityForAdmin(ctx context.Context, arg GetFacilityForAdm
 		&i.AccessibilityInfo,
 		&i.ContactPhone,
 		&i.ContactEmail,
+		&i.ShowWeather,
 		&i.ImageRef,
 		&i.IsActive,
 		&i.SlotMinutes,
@@ -479,13 +482,14 @@ SET
     contact_phone                = $9,
     contact_email                = $10,
     image_ref                    = $11,
-    is_active                    = $12,
-    slot_minutes                 = $13,
-    min_age                      = $14,
-    usage_rules_text             = $15
+    show_weather                 = $12,
+    is_active                    = $13,
+    slot_minutes                 = $14,
+    min_age                      = $15,
+    usage_rules_text             = $16
 WHERE
-    id = $16
-    AND tenant_id = $17
+    id = $17
+    AND tenant_id = $18
 RETURNING
     id
 `
@@ -502,6 +506,7 @@ type UpdateFacilityParams struct {
 	ContactPhone      sql.NullString  `json:"contact_phone"`
 	ContactEmail      sql.NullString  `json:"contact_email"`
 	ImageRef          sql.NullString  `json:"image_ref"`
+	ShowWeather       bool            `json:"show_weather"`
 	IsActive          bool            `json:"is_active"`
 	SlotMinutes       int32           `json:"slot_minutes"`
 	MinAge            sql.NullInt32   `json:"min_age"`
@@ -523,6 +528,7 @@ func (q *Queries) UpdateFacility(ctx context.Context, arg UpdateFacilityParams) 
 		arg.ContactPhone,
 		arg.ContactEmail,
 		arg.ImageRef,
+		arg.ShowWeather,
 		arg.IsActive,
 		arg.SlotMinutes,
 		arg.MinAge,

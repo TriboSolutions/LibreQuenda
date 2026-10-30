@@ -1,24 +1,26 @@
-import { ArrowLeft, ExternalLink, MapPin, Wrench } from 'lucide-react'
+import { ArrowLeft, ExternalLink, MapPin } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import { Link, useParams, useSearchParams } from 'react-router'
+import { PublicTurnDialog } from '@/components/PublicTurnDialog'
 import { BookingDialog } from '@/components/BookingDialog'
+import { DatePicker } from '@/components/DatePicker'
 import { DayPicker } from '@/components/DayPicker'
 import { CouncilContact, FacilityContact } from '@/components/CouncilContact'
 import { FacilityMap } from '@/components/FacilityMap'
-import { ReportIssueDialog } from '@/components/ReportIssueDialog'
 import { TopBar } from '@/components/TopBar'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { WeatherStrip } from '@/components/Weather'
+import { useNow } from '@/hooks/useNow'
 import { useAsync } from '@/hooks/useAsync'
 import { useForecast } from '@/hooks/useForecast'
 import { useLogin } from '@/hooks/useLogin'
-import { api, ApiError, type Facility, type Slot } from '@/lib/api'
+import { api, ApiError, type Facility, type PublicTurn, type Slot } from '@/lib/api'
 import { directionsUrl } from '@/lib/maps'
-import { formatBookingDay, formatTime, localDate } from '@/lib/time'
+import { addDays, formatBookingDay, formatTime, localDate } from '@/lib/time'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { SiteFooter } from '@/components/SiteFooter'
 
@@ -43,21 +45,38 @@ export function FacilityPage() {
   const date = picked?.key === key ? picked.date : DATE.test(linked) ? linked : undefined
   const page = useAsync(() => api.facilityPage(slug, facilitySlug, date), `facility:${key}:${date ?? 'today'}`)
   const [pick, setPick] = useState<{ facility: Facility; slot: Slot } | null>(null)
+  const [publicPick, setPublicPick] = useState<PublicTurn | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
-  const [reporting, setReporting] = useState(false)
   usePageTitle(page.data?.facility.name, page.data?.tenant.name)
 
+  const ticking = useNow()
+  const currentTime = Math.max(ticking, Date.parse(page.data?.now ?? '') || 0)
   const data = page.data
   const timeZone = data?.timezone ?? 'Europe/Madrid'
   // the day's forecast, for an outdoor facility (MeteoGalicia)
-  const forecast = useForecast(slug, facilitySlug, data?.facility.tags ?? [], data?.date ?? null)
+  const forecast = useForecast(slug, facilitySlug, data?.facility.show_weather ?? false, data?.date ?? null)
   const today = data ? localDate(data.now, data.timezone) : ''
+  let lastBookingDate = today
+  let showCalendar = false
+  if (data) {
+    const opening = data.facility.weekly_opening
+    if (opening) {
+      const weekday = new Date(`${today}T12:00:00Z`).getUTCDay() || 7
+      const opened = weekday > opening.weekday || (weekday === opening.weekday && formatTime(data.now, timeZone) >= opening.at)
+      lastBookingDate = addDays(today, (opened ? 14 : 7) - weekday)
+      showCalendar = lastBookingDate > addDays(today, 6)
+    } else {
+      lastBookingDate = localDate(new Date(Date.parse(data.now) + data.facility.max_advance_hours * 3_600_000).toISOString(), timeZone)
+      showCalendar = data.facility.max_advance_hours > 7 * 24
+    }
+  }
 
-  const confirm = async (facility: Facility, slot: Slot, isPublic: boolean) => {
+
+  const confirm = async (facility: Facility, slot: Slot, isPublic: boolean, description: string) => {
     const token = auth.user?.access_token
     if (!token) return t('bookings:dialog.needLogin')
     try {
-      const booking = await api.book(token, facility.id, slot.starts_at, true, isPublic) // the dialog only enables booking once the rules are accepted
+      const booking = await api.book(token, facility.id, slot.starts_at, true, isPublic, description) // the dialog only enables booking once the rules are accepted
       setPick(null)
       setNotice(
         t('bookings:notice.booked', {
@@ -126,7 +145,19 @@ export function FacilityPage() {
               <h2 id="book-title" className="text-lg font-semibold">
                 {t('facility:bookTitle')}
               </h2>
-              <DayPicker today={today} value={data.date} onChange={(value) => setPicked({ key, date: value })} />
+              <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+                <DayPicker today={today} value={data.date} onChange={(value) => setPicked({ key, date: value })} />
+                {showCalendar && (
+                  <DatePicker
+                    value={data.date > addDays(today, 6) ? data.date : ''}
+                    placeholder={t('facility:chooseDate')}
+                    defaultMonth={data.date}
+                    min={today}
+                    max={lastBookingDate}
+                    onChange={(value) => setPicked({ key, date: value })}
+                  />
+                )}
+              </div>
             </div>
             {forecast && <WeatherStrip forecast={forecast} />}
             <div aria-live="polite">
@@ -141,21 +172,35 @@ export function FacilityPage() {
             ) : (
               <>
                 <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
-                  {f.slots.map((slot) => (
+                  {f.slots.map((slot) => {
+                    const publicBooking = f.public_bookings?.find((b) => Date.parse(b.ends_at) > currentTime && Date.parse(b.starts_at) < Date.parse(slot.ends_at) && Date.parse(b.ends_at) > Date.parse(slot.starts_at))
+                    const publicState = publicBooking
+                      ? Date.parse(publicBooking.starts_at) <= currentTime ? 'ongoing' : publicBooking.people.length >= publicBooking.capacity ? 'full' : 'joinable'
+                      : undefined
+                    return (
                     <li key={slot.starts_at}>
                       <Button
-                        variant="outline"
-                        className="num h-11 w-full disabled:opacity-100 disabled:bg-muted disabled:text-muted-foreground disabled:line-through data-[free=true]:border-primary data-[free=true]:text-primary"
+                        variant={publicBooking ? 'ghost' : 'outline'}
+                        className="num h-14 w-full flex-col gap-0.5 border disabled:opacity-100 disabled:bg-muted disabled:text-muted-foreground disabled:line-through data-[free=true]:border-primary data-[free=true]:text-primary data-[public-state=joinable]:bg-pill-positive-bg data-[public-state=joinable]:text-pill-positive-ink data-[public-state=joinable]:border-pill-positive-ink data-[public-state=ongoing]:bg-pill-accent-bg data-[public-state=ongoing]:text-pill-accent-ink data-[public-state=ongoing]:border-pill-accent-ink data-[public-state=full]:bg-muted data-[public-state=full]:text-muted-foreground"
+                        data-public-state={publicState}
+                        data-public={!!publicBooking}
                         data-free={slot.status === 'free'}
-                        disabled={slot.status !== 'free'}
-                        onClick={() => setPick({ facility: f, slot })}
-                        aria-label={`${formatTime(slot.starts_at, timeZone)}–${formatTime(slot.ends_at, timeZone)}`}
+                        disabled={!publicBooking && slot.status !== 'free'}
+                        onClick={() => publicBooking ? setPublicPick(publicBooking) : setPick({ facility: f, slot })}
+                        aria-label={`${formatTime(slot.starts_at, timeZone)}–${formatTime(slot.ends_at, timeZone)}${publicBooking ? ` · ${t('bookings:public.label') + ' · ' + t(`facility:publicSlot.${publicState}`)}` : ''}`}
                       >
-                        {formatTime(slot.starts_at, timeZone)}
+                        <span>{formatTime(slot.starts_at, timeZone)}</span>
+                        {publicState && <span className="text-[11px] leading-tight">{t(`facility:publicSlot.${publicState}`)}</span>}
                       </Button>
                     </li>
-                  ))}
+                  )})}
                 </ul>
+                {!!f.public_bookings?.length && (
+                  <ul className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-muted-foreground">
+                    <li className="flex items-center gap-2"><span aria-hidden className="size-3 rounded-sm border border-pill-positive-ink bg-pill-positive-bg" />{t('facility:publicSlot.joinableLegend')}</li>
+                    <li className="flex items-center gap-2"><span aria-hidden className="size-3 rounded-sm border border-pill-accent-ink bg-pill-accent-bg" />{t('facility:publicSlot.ongoingLegend')}</li>
+                  </ul>
+                )}
                 {free.length === 0 && <p className="text-muted-foreground">{t('facility:noFree')}</p>}
                 {!auth.isAuthenticated && free.length > 0 && <p className="text-muted-foreground">{t('facility:signInToBook')}</p>}
               </>
@@ -226,21 +271,6 @@ export function FacilityPage() {
             <p className="whitespace-pre-line">{f.usage_rules || t('facility:noRules')}</p>
           </section>
 
-          {auth.isAuthenticated && (
-            <section aria-labelledby="issue-title" className="grid gap-2 rounded-lg border bg-card p-5">
-              <h2 id="issue-title" className="text-lg font-semibold">
-                {t('facility:issue.sectionTitle')}
-              </h2>
-              <p className="text-muted-foreground">{t('facility:issue.sectionHelp')}</p>
-              <div>
-                <Button variant="outline" onClick={() => setReporting(true)}>
-                  <Wrench aria-hidden />
-                  {t('facility:issue.report')}
-                </Button>
-              </div>
-            </section>
-          )}
-
           <section aria-labelledby="schedule-title" className="grid gap-2 rounded-lg border bg-card p-5">
             <h2 id="schedule-title" className="text-lg font-semibold">
               {t('facility:schedule')}
@@ -262,6 +292,17 @@ export function FacilityPage() {
         </aside>
       </div>
 
+      {publicPick && <PublicTurnDialog
+        key={publicPick.id}
+        booking={publicPick}
+        facility={f}
+        timeZone={timeZone}
+        today={today}
+        now={new Date(currentTime).toISOString()}
+        onClose={() => setPublicPick(null)}
+        onJoined={page.reload}
+        onLogin={login}
+      />}
       <BookingDialog
         key={pick ? pick.slot.starts_at : 'none'}
         pick={pick}
@@ -273,7 +314,6 @@ export function FacilityPage() {
         onConfirm={confirm}
         onLogin={login}
       />
-      <ReportIssueDialog key={String(reporting)} facility={reporting ? { id: f.id, name: f.name } : null} onClose={() => setReporting(false)} />
     </>,
   )
 }

@@ -4,7 +4,7 @@ import { Link } from 'react-router'
 import { Download } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { DatePicker } from '@/components/DatePicker'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -106,12 +106,17 @@ export function AuditLogPanel({ load, download, councils }: Props) {
         )}
         <div className="grid gap-1.5">
           <Label htmlFor="audit-from">{t('audit.from')}</Label>
-          <Input id="audit-from" type="date" value={filters.from ?? ''} onChange={(e) => set('from', e.target.value)} className="num w-auto" />
+          <DatePicker id="audit-from" value={filters.from ?? ''} max={filters.to || undefined} onChange={(value) => set('from', value)} placeholder={t('audit.anyDate')} className="w-full sm:w-64" />
         </div>
         <div className="grid gap-1.5">
           <Label htmlFor="audit-to">{t('audit.to')}</Label>
-          <Input id="audit-to" type="date" value={filters.to ?? ''} onChange={(e) => set('to', e.target.value)} className="num w-auto" />
+          <DatePicker id="audit-to" value={filters.to ?? ''} min={filters.from || undefined} onChange={(value) => set('to', value)} placeholder={t('audit.anyDate')} className="w-full sm:w-64" />
         </div>
+        {(filters.from || filters.to) && (
+          <Button type="button" variant="ghost" onClick={() => setFilters((current) => ({ ...current, from: '', to: '' }))}>
+            {t('audit.clearDates')}
+          </Button>
+        )}
       </div>
 
       {error && (

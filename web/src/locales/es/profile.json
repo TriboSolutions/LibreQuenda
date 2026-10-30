@@ -146,5 +146,7 @@
   "preferencesSaved": "Preferencias guardadas.",
   "unverifiedTitle": "Confirma tu correo",
   "unverifiedBody": "Para reservar tienes que confirmar tu correo electrónico: en el perfil, pide el código y escríbelo.",
-  "unverifiedAction": "Confirmar el correo"
+  "unverifiedAction": "Confirmar el correo",
+  "emails": "Recibir emails",
+  "emailsHelp": "Avisos de reservas e incidencias, incluidos los recordatorios. Al desactivarlo, los avisos siguen en la aplicación. Los correos de seguridad de la cuenta no cambian."
 }

@@ -6,7 +6,7 @@
   "loadError": "No s’han pogut carregar els teus avisos.",
   "seeBookings": "Mostra les meves reserves",
   "type": {
-    "booking_confirmed": "Reserva confirmada: {{facility}}, {{day}} a les {{time}}. El QR també és al teu correu.",
+    "booking_confirmed": "Reserva confirmada: {{facility}}, {{day}} a les {{time}}.",
     "booking_reminder": "Comença d’aquí a 15 minuts: {{facility}} a les {{time}}. Tingues el QR a punt.",
     "booking_changed": "Reserva modificada: {{facility}}, ara {{day}} a les {{time}}.",
     "booking_cancelled": "Reserva cancel·lada: {{facility}}, {{day}} a les {{time}}.",
@@ -15,8 +15,11 @@
     "booking_cancelled_by_staff": "Ho sentim: {{council}} ha cancel·lat la teva reserva a {{facility}} el {{day}} a les {{time}}.",
     "council_admin_granted": "Ja ets administrador o administradora de {{council}}. Obre’n l’administració des d’aquí o des del menú del teu compte.",
     "issue_solved": "Arreglat el problema que vas avisar a {{facility}}.",
-    "issue_rejected": "L’ajuntament ha revisat el problema que vas avisar a {{facility}} i no el tramitarà."
+    "issue_rejected": "L’ajuntament ha revisat el problema que vas avisar a {{facility}} i no el tramitarà.",
+    "booking_joined": "{{name}} s’ha unit a la teva reserva a {{facility}}, {{day}} a les {{time}}.",
+    "issue_reported": "Nova incidència a {{facility}}."
   },
   "reason": "Motiu: {{reason}}",
-  "councilNote": "Nota de l’ajuntament: {{reason}}"
+  "councilNote": "Nota de l’ajuntament: {{reason}}",
+  "someone": "Algú"
 }

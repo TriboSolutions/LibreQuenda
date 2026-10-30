@@ -144,7 +144,7 @@ SELECT
     u.full_name AS owner_name,
     (SELECT COUNT(*) FROM booking_participant p WHERE p.booking_id = b.id) AS participant_count,
     facility_sport(f.id)::TEXT AS facility_sport,
-    f.id, f.tenant_id, f.slug, f.name, f.description, f.address, f.latitude, f.longitude, f.capacity, f.accessibility_info, f.contact_phone, f.contact_email, f.image_ref, f.is_active, f.slot_minutes, f.custom_rules, f.max_advance_hours, f.min_advance_minutes, f.min_cancel_hours, f.max_active_bookings_per_user, f.max_bookings_per_day, f.max_turns_in_a_row, f.max_bookings_per_week, f.weekly_opening, f.opens_weekday, f.opens_minute, f.no_show_penalty, f.no_show_limit, f.no_show_window_days, f.no_show_block_days, f.min_age, f.usage_rules_text, f.created_at, f.updated_at -- what the invite page shows: image, address, rules
+    f.id, f.tenant_id, f.slug, f.name, f.description, f.address, f.latitude, f.longitude, f.capacity, f.accessibility_info, f.contact_phone, f.contact_email, f.show_weather, f.image_ref, f.is_active, f.slot_minutes, f.custom_rules, f.max_advance_hours, f.min_advance_minutes, f.min_cancel_hours, f.max_active_bookings_per_user, f.max_bookings_per_day, f.max_turns_in_a_row, f.max_bookings_per_week, f.weekly_opening, f.opens_weekday, f.opens_minute, f.no_show_penalty, f.no_show_limit, f.no_show_window_days, f.no_show_block_days, f.min_age, f.usage_rules_text, f.created_at, f.updated_at -- what the invite page shows: image, address, rules
 FROM
     booking b
     JOIN facility f ON f.id = b.facility_id
@@ -203,6 +203,7 @@ func (q *Queries) GetInviteByToken(ctx context.Context, inviteToken uuid.NullUUI
 		&i.Facility.AccessibilityInfo,
 		&i.Facility.ContactPhone,
 		&i.Facility.ContactEmail,
+		&i.Facility.ShowWeather,
 		&i.Facility.ImageRef,
 		&i.Facility.IsActive,
 		&i.Facility.SlotMinutes,
@@ -334,6 +335,7 @@ func (q *Queries) LeaveBooking(ctx context.Context, arg LeaveBookingParams) (int
 const listJoinablePublicBookings = `-- name: ListJoinablePublicBookings :many
 SELECT
     b.id,
+    b.public_description,
     b.starts_at,
     b.ends_at,
     f.id   AS facility_id,
@@ -367,13 +369,14 @@ type ListJoinablePublicBookingsParams struct {
 }
 
 type ListJoinablePublicBookingsRow struct {
-	ID               uuid.UUID     `json:"id"`
-	StartsAt         time.Time     `json:"starts_at"`
-	EndsAt           time.Time     `json:"ends_at"`
-	FacilityID       uuid.UUID     `json:"facility_id"`
-	Capacity         sql.NullInt32 `json:"capacity"`
-	OwnerFirstName   string        `json:"owner_first_name"`
-	ParticipantCount int64         `json:"participant_count"`
+	ID                uuid.UUID     `json:"id"`
+	PublicDescription string        `json:"public_description"`
+	StartsAt          time.Time     `json:"starts_at"`
+	EndsAt            time.Time     `json:"ends_at"`
+	FacilityID        uuid.UUID     `json:"facility_id"`
+	Capacity          sql.NullInt32 `json:"capacity"`
+	OwnerFirstName    string        `json:"owner_first_name"`
+	ParticipantCount  int64         `json:"participant_count"`
 }
 
 // «For you»: upcoming public bookings with spots left that the person neither
@@ -389,6 +392,7 @@ func (q *Queries) ListJoinablePublicBookings(ctx context.Context, arg ListJoinab
 		var i ListJoinablePublicBookingsRow
 		if err := rows.Scan(
 			&i.ID,
+			&i.PublicDescription,
 			&i.StartsAt,
 			&i.EndsAt,
 			&i.FacilityID,
@@ -479,7 +483,7 @@ SELECT
     COALESCE(u.full_name, '')::TEXT AS owner_name,
     (SELECT COUNT(*) FROM booking_participant c WHERE c.booking_id = b.id) AS participant_count,
     facility_sport(f.id)::TEXT AS facility_sport,
-    f.id, f.tenant_id, f.slug, f.name, f.description, f.address, f.latitude, f.longitude, f.capacity, f.accessibility_info, f.contact_phone, f.contact_email, f.image_ref, f.is_active, f.slot_minutes, f.custom_rules, f.max_advance_hours, f.min_advance_minutes, f.min_cancel_hours, f.max_active_bookings_per_user, f.max_bookings_per_day, f.max_turns_in_a_row, f.max_bookings_per_week, f.weekly_opening, f.opens_weekday, f.opens_minute, f.no_show_penalty, f.no_show_limit, f.no_show_window_days, f.no_show_block_days, f.min_age, f.usage_rules_text, f.created_at, f.updated_at
+    f.id, f.tenant_id, f.slug, f.name, f.description, f.address, f.latitude, f.longitude, f.capacity, f.accessibility_info, f.contact_phone, f.contact_email, f.show_weather, f.image_ref, f.is_active, f.slot_minutes, f.custom_rules, f.max_advance_hours, f.min_advance_minutes, f.min_cancel_hours, f.max_active_bookings_per_user, f.max_bookings_per_day, f.max_turns_in_a_row, f.max_bookings_per_week, f.weekly_opening, f.opens_weekday, f.opens_minute, f.no_show_penalty, f.no_show_limit, f.no_show_window_days, f.no_show_block_days, f.min_age, f.usage_rules_text, f.created_at, f.updated_at
 FROM
     booking_participant p
     JOIN booking  b ON b.id = p.booking_id
@@ -549,6 +553,7 @@ func (q *Queries) ListParticipationsByUser(ctx context.Context, userID uuid.Null
 			&i.Facility.AccessibilityInfo,
 			&i.Facility.ContactPhone,
 			&i.Facility.ContactEmail,
+			&i.Facility.ShowWeather,
 			&i.Facility.ImageRef,
 			&i.Facility.IsActive,
 			&i.Facility.SlotMinutes,
@@ -639,7 +644,8 @@ SELECT
     f.capacity,
     f.min_age,
     t.timezone,
-    t.id AS tenant_id
+    t.id AS tenant_id,
+    f.name AS facility_name -- for the owner's notice
 FROM
     booking b
     JOIN facility f ON f.id = b.facility_id
@@ -650,15 +656,16 @@ FOR UPDATE OF b
 `
 
 type LockBookingByInviteTokenRow struct {
-	ID       uuid.UUID     `json:"id"`
-	OwnerID  uuid.NullUUID `json:"owner_id"`
-	StartsAt time.Time     `json:"starts_at"`
-	EndsAt   time.Time     `json:"ends_at"`
-	Status   BookingStatus `json:"status"`
-	Capacity sql.NullInt32 `json:"capacity"`
-	MinAge   sql.NullInt32 `json:"min_age"`
-	Timezone string        `json:"timezone"`
-	TenantID uuid.UUID     `json:"tenant_id"`
+	ID           uuid.UUID     `json:"id"`
+	OwnerID      uuid.NullUUID `json:"owner_id"`
+	StartsAt     time.Time     `json:"starts_at"`
+	EndsAt       time.Time     `json:"ends_at"`
+	Status       BookingStatus `json:"status"`
+	Capacity     sql.NullInt32 `json:"capacity"`
+	MinAge       sql.NullInt32 `json:"min_age"`
+	Timezone     string        `json:"timezone"`
+	TenantID     uuid.UUID     `json:"tenant_id"`
+	FacilityName string        `json:"facility_name"`
 }
 
 // Inside the join transaction: joins to the same booking wait for each other,
@@ -676,6 +683,7 @@ func (q *Queries) LockBookingByInviteToken(ctx context.Context, inviteToken uuid
 		&i.MinAge,
 		&i.Timezone,
 		&i.TenantID,
+		&i.FacilityName,
 	)
 	return i, err
 }
@@ -690,7 +698,8 @@ SELECT
     f.capacity,
     f.min_age,
     t.timezone,
-    t.id AS tenant_id
+    t.id AS tenant_id,
+    f.name AS facility_name -- for the owner's notice
 FROM
     booking b
     JOIN facility f ON f.id = b.facility_id
@@ -702,15 +711,16 @@ FOR UPDATE OF b
 `
 
 type LockPublicBookingRow struct {
-	ID       uuid.UUID     `json:"id"`
-	OwnerID  uuid.NullUUID `json:"owner_id"`
-	StartsAt time.Time     `json:"starts_at"`
-	EndsAt   time.Time     `json:"ends_at"`
-	Status   BookingStatus `json:"status"`
-	Capacity sql.NullInt32 `json:"capacity"`
-	MinAge   sql.NullInt32 `json:"min_age"`
-	Timezone string        `json:"timezone"`
-	TenantID uuid.UUID     `json:"tenant_id"`
+	ID           uuid.UUID     `json:"id"`
+	OwnerID      uuid.NullUUID `json:"owner_id"`
+	StartsAt     time.Time     `json:"starts_at"`
+	EndsAt       time.Time     `json:"ends_at"`
+	Status       BookingStatus `json:"status"`
+	Capacity     sql.NullInt32 `json:"capacity"`
+	MinAge       sql.NullInt32 `json:"min_age"`
+	Timezone     string        `json:"timezone"`
+	TenantID     uuid.UUID     `json:"tenant_id"`
+	FacilityName string        `json:"facility_name"`
 }
 
 // Inside the join transaction of a public booking, like LockBookingByInviteToken.
@@ -727,6 +737,7 @@ func (q *Queries) LockPublicBooking(ctx context.Context, id uuid.UUID) (LockPubl
 		&i.MinAge,
 		&i.Timezone,
 		&i.TenantID,
+		&i.FacilityName,
 	)
 	return i, err
 }
@@ -785,23 +796,30 @@ const setBookingPublic = `-- name: SetBookingPublic :execrows
 UPDATE booking
 SET
     is_public  = $1,
+    public_description = COALESCE($2::TEXT, public_description),
     updated_at = NOW()
 WHERE
-    id = $2
-    AND user_id = $3
+    id = $3
+    AND user_id = $4
     AND status = 'confirmed'
     AND starts_at > NOW()
 `
 
 type SetBookingPublicParams struct {
-	IsPublic bool          `json:"is_public"`
-	ID       uuid.UUID     `json:"id"`
-	OwnerID  uuid.NullUUID `json:"owner_id"`
+	IsPublic          bool           `json:"is_public"`
+	PublicDescription sql.NullString `json:"public_description"`
+	ID                uuid.UUID      `json:"id"`
+	OwnerID           uuid.NullUUID  `json:"owner_id"`
 }
 
 // The owner makes an upcoming booking public or private again; capacity is checked in the API.
 func (q *Queries) SetBookingPublic(ctx context.Context, arg SetBookingPublicParams) (int64, error) {
-	result, err := q.db.ExecContext(ctx, setBookingPublic, arg.IsPublic, arg.ID, arg.OwnerID)
+	result, err := q.db.ExecContext(ctx, setBookingPublic,
+		arg.IsPublic,
+		arg.PublicDescription,
+		arg.ID,
+		arg.OwnerID,
+	)
 	if err != nil {
 		return 0, err
 	}

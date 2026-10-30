@@ -45,7 +45,7 @@ WHERE
 -- name: CreateFacility :one
 INSERT INTO facility (
     tenant_id, slug, name, description, address, latitude, longitude, capacity,
-    accessibility_info, contact_phone, contact_email, image_ref, is_active, slot_minutes,
+    accessibility_info, contact_phone, contact_email, image_ref, show_weather, is_active, slot_minutes,
     custom_rules, max_advance_hours, min_advance_minutes, min_cancel_hours, max_active_bookings_per_user,
     max_bookings_per_day, max_turns_in_a_row, max_bookings_per_week, weekly_opening, opens_weekday, opens_minute,
     no_show_penalty, no_show_limit, no_show_window_days, no_show_block_days,
@@ -53,7 +53,7 @@ INSERT INTO facility (
 ) VALUES (
     sqlc.arg('tenant_id'), sqlc.arg('slug'), sqlc.arg('name'), sqlc.narg('description'),
     sqlc.narg('address'), sqlc.narg('latitude'), sqlc.narg('longitude'), sqlc.narg('capacity'),
-    sqlc.narg('accessibility_info'), sqlc.narg('contact_phone'), sqlc.narg('contact_email'), sqlc.narg('image_ref'), sqlc.arg('is_active'), sqlc.arg('slot_minutes'),
+    sqlc.narg('accessibility_info'), sqlc.narg('contact_phone'), sqlc.narg('contact_email'), sqlc.narg('image_ref'), sqlc.arg('show_weather'), sqlc.arg('is_active'), sqlc.arg('slot_minutes'),
     sqlc.arg('custom_rules'), sqlc.arg('max_advance_hours'), sqlc.arg('min_advance_minutes'), sqlc.arg('min_cancel_hours'),
     sqlc.arg('max_active_bookings_per_user'), sqlc.arg('max_bookings_per_day'), sqlc.arg('max_turns_in_a_row'),
     sqlc.arg('max_bookings_per_week'), sqlc.arg('weekly_opening'), sqlc.arg('opens_weekday'), sqlc.arg('opens_minute'),
@@ -77,6 +77,7 @@ SET
     contact_phone                = sqlc.narg('contact_phone'),
     contact_email                = sqlc.narg('contact_email'),
     image_ref                    = sqlc.narg('image_ref'),
+    show_weather                 = sqlc.arg('show_weather'),
     is_active                    = sqlc.arg('is_active'),
     slot_minutes                 = sqlc.arg('slot_minutes'),
     min_age                      = sqlc.narg('min_age'),

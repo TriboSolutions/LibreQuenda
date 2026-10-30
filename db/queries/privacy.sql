@@ -13,6 +13,7 @@ SELECT
     avatar_ref,
     preferred_language,
     email_reminders,
+    email_notifications,
     show_recommendations,
     created_at,
     updated_at
@@ -31,6 +32,7 @@ SELECT
     b.ends_at,
     b.status,
     b.rules_accepted_at,
+    b.public_description,
     b.cancelled_at,
     b.cancelled_by,
     b.checked_in_at,
@@ -95,10 +97,11 @@ WHERE
 -- Account erasure: links to the user's bookings stop working.
 UPDATE booking
 SET
-    invite_token = NULL
+    invite_token = NULL,
+    is_public = FALSE,
+    public_description = ''
 WHERE
-    user_id = sqlc.arg('user_id')
-    AND invite_token IS NOT NULL;
+    user_id = sqlc.arg('user_id');
 
 -- name: DeleteUser :one
 -- Account erasure. Bookings stay for the indicators with user_id set to NULL;

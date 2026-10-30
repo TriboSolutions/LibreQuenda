@@ -16,7 +16,9 @@ import { SpotsMeter } from '@/components/SpotsMeter'
 import { TopBar } from '@/components/TopBar'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
 import { useAsync } from '@/hooks/useAsync'
@@ -188,10 +190,12 @@ export function MyBookingsPage() {
                       </Button>
                     )
                   )}
-                  <Button variant="ghost" size="sm" onClick={() => setToReport(booking)}>
-                    <Wrench aria-hidden />
-                    {t('facility:issue.report')}
-                  </Button>
+                  {booking.status === 'confirmed' && ticking >= Date.parse(booking.starts_at) && ticking < Date.parse(booking.ends_at) && (
+                    <Button variant="ghost" size="sm" onClick={() => setToReport(booking)}>
+                      <Wrench aria-hidden />
+                      {t('facility:issue.report')}
+                    </Button>
+                  )}
                 </BookingRow>
               ))}
             </ul>
@@ -207,7 +211,7 @@ export function MyBookingsPage() {
           ) : (
             <ul className="mt-2">
               {history.map((booking) => (
-                <HistoryRow key={booking.id} booking={booking} today={today} onReport={() => setToReport(booking)} />
+                <HistoryRow key={booking.id} booking={booking} today={today} />
               ))}
             </ul>
           )}
@@ -240,7 +244,7 @@ export function MyBookingsPage() {
       <ReportIssueDialog
         key={`report-${toReport?.id ?? 'none'}`}
         facility={toReport ? { id: toReport.facility_id, name: toReport.facility_name } : null}
-        bookingId={toReport?.id}
+        bookingId={toReport?.id ?? ''}
         onClose={() => setToReport(null)}
       />
       <InviteDialog
@@ -275,36 +279,61 @@ type RowProps = {
 function PublicSwitch({ booking, token, onChanged }: { booking: Booking; token: string | undefined; onChanged: () => void }) {
   const { t } = useTranslation('bookings')
   const [on, setOn] = useState(!!booking.is_public)
+  const [description, setDescription] = useState(booking.public_description ?? '')
+  const [confirming, setConfirming] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const id = `public-${booking.id}`
   const change = async (next: boolean) => {
-    if (!token) return
+    if (!token || busy) return
     setBusy(true)
     setError(null)
-    setOn(next)
     try {
-      await api.setPublic(token, booking.id, next)
+      await api.setPublic(token, booking.id, next, description)
+      setOn(next)
+      setConfirming(false)
       onChanged()
     } catch (e) {
-      setOn(!next)
       setError(e instanceof Error ? e.message : String(e))
     } finally {
       setBusy(false)
     }
   }
   return (
-    <span className="inline-flex items-center gap-2">
-      <Switch id={id} checked={on} disabled={busy} onCheckedChange={(next) => void change(next)} aria-describedby={error ? `${id}-error` : undefined} />
-      <Label htmlFor={id} className="text-sm font-normal" title={t('public.help')}>
-        {t('public.label')}
-      </Label>
-      {error && (
-        <span id={`${id}-error`} role="alert" className="text-sm text-destructive">
-          {error}
-        </span>
-      )}
-    </span>
+    <>
+      <span className="inline-flex items-center gap-2">
+        <Switch id={id} checked={on} disabled={busy} onCheckedChange={(next) => {
+          setError(null)
+          if (next) setConfirming(true)
+          else void change(false)
+        }} aria-describedby={error && !confirming ? `${id}-error` : undefined} />
+        <Label htmlFor={id} className="text-sm font-normal" title={t('public.help')}>
+          {t('public.label')}
+        </Label>
+        {on && <Button variant="ghost" size="sm" onClick={() => { setDescription(booking.public_description ?? ''); setConfirming(true) }}>{t('public.edit')}</Button>}
+        {error && !confirming && <span id={`${id}-error`} role="alert" className="text-sm text-destructive">{error}</span>}
+      </span>
+      <Dialog open={confirming} onOpenChange={(open) => { if (!busy) setConfirming(open) }}>
+        <DialogContent className="sm:max-w-md" onCloseAutoFocus={(event) => {
+          event.preventDefault()
+          document.getElementById(id)?.focus()
+        }}>
+          <DialogHeader>
+            <DialogTitle>{t(on ? 'public.edit' : 'public.confirmTitle')}</DialogTitle>
+            <DialogDescription>{t('public.confirmDescription', { facility: booking.facility_name })}</DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-2">
+            <Label htmlFor={`${id}-description`}>{t('public.description')}</Label>
+            <Textarea id={`${id}-description`} maxLength={1000} value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t('public.descriptionHelp')} disabled={busy} />
+          </div>
+          {error && <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>}
+          <DialogFooter>
+            <Button variant="outline" disabled={busy} onClick={() => setConfirming(false)}>{t(on ? 'public.cancel' : 'public.keepPrivate')}</Button>
+            <Button disabled={busy} onClick={() => void change(true)}>{t(busy ? 'public.publishing' : on ? 'public.save' : 'public.confirm')}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }
 
@@ -313,7 +342,7 @@ function CheckinButton({ booking, now, onOpen }: { booking: Booking; now: number
   const { t } = useTranslation('bookings')
   const opensAt = Date.parse(booking.starts_at) - EARLY_WINDOW_MS
   if (now < opensAt && !booking.checked_in_at) {
-    return <span className="num text-sm text-muted-foreground">{t('checkin.from', { time: formatTime(new Date(opensAt).toISOString(), TIME_ZONE) })}</span>
+    return null
   }
   return (
     <Button variant={booking.checked_in_at ? 'outline' : 'default'} size="sm" onClick={onOpen}>
@@ -338,13 +367,7 @@ function Countdown({ booking, now }: { booking: Booking; now: number }) {
 }
 
 /** A past booking, in one line: what, when, and how it ended. */
-// a past booking can still be reported from for a week after it ended (as the API allows)
-const REPORT_WINDOW_MS = 7 * 24 * 3600_000
-
-function HistoryRow({ booking, today, onReport }: { booking: Booking; today: string; onReport: () => void }) {
-  const { t } = useTranslation('facility')
-  const [mountedAt] = useState(() => Date.now())
-  const reportable = booking.status === 'confirmed' && mountedAt - Date.parse(booking.ends_at) < REPORT_WINDOW_MS
+function HistoryRow({ booking, today }: { booking: Booking; today: string }) {
   return (
     <li className="grid gap-0.5 border-t py-3 first:border-t-0">
       <div className="flex items-start justify-between gap-3">
@@ -356,14 +379,6 @@ function HistoryRow({ booking, today, onReport }: { booking: Booking; today: str
       <p className="num text-sm text-muted-foreground">
         {formatBookingDay(booking.starts_at, TIME_ZONE, today)}, {formatTime(booking.starts_at, TIME_ZONE)}–{formatTime(booking.ends_at, TIME_ZONE)} · {booking.tenant_name}
       </p>
-      {reportable && (
-        <div>
-          <Button variant="link" size="sm" className="h-auto px-0" onClick={onReport}>
-            <Wrench aria-hidden />
-            {t('issue.report')}
-          </Button>
-        </div>
-      )}
     </li>
   )
 }
@@ -375,6 +390,8 @@ function BookingRow({ booking, today, now, children }: RowProps) {
   const facility = booking.facility
   const hasPin = facility.latitude !== null && facility.longitude !== null
   const rulesId = `rules-${booking.id}`
+  const opensAt = Date.parse(booking.starts_at) - EARLY_WINDOW_MS
+  const showEntryTime = booking.role === 'owner' && !!booking.checkin_ways?.length && !booking.checked_in_at && now < opensAt
 
   return (
     <li className="grid gap-4 rounded-lg border bg-card p-5">
@@ -446,13 +463,28 @@ function BookingRow({ booking, today, now, children }: RowProps) {
           {t('details.rules')}
           <ChevronDown className={`size-4 transition-transform ${open ? 'rotate-180' : ''}`} aria-hidden />
         </button>
-        {children && <div className="flex flex-wrap items-center gap-2">{children}</div>}
       </div>
       {open && (
         <div id={rulesId}>
           <FacilityInfo facility={facility} withAddress={false} />
         </div>
       )}
+      {booking.is_public && (
+        <div className="grid min-w-0 gap-1">
+          <h3 className="text-sm font-medium">{t('bookings:public.activity')}</h3>
+          <p className="whitespace-pre-wrap break-words text-sm text-muted-foreground">
+            {booking.public_description || t('bookings:public.noDescription')}
+          </p>
+        </div>
+      )}
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        {showEntryTime && (
+          <span className="num text-sm text-muted-foreground">
+            {t('bookings:checkin.from', { time: formatTime(new Date(opensAt).toISOString(), TIME_ZONE) })}
+          </span>
+        )}
+        {children && <div className="ml-auto flex flex-wrap items-center justify-end gap-2">{children}</div>}
+      </div>
     </li>
   )
 }

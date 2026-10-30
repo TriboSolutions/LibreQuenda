@@ -14,6 +14,22 @@ import (
 	"github.com/google/uuid"
 )
 
+const countIssuesByBooking = `-- name: CountIssuesByBooking :one
+SELECT
+    COUNT(*)
+FROM
+    facility_issue
+WHERE
+    booking_id = $1
+`
+
+func (q *Queries) CountIssuesByBooking(ctx context.Context, bookingID uuid.NullUUID) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countIssuesByBooking, bookingID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const countNewCouncilIssues = `-- name: CountNewCouncilIssues :one
 SELECT
     COUNT(*)
@@ -28,23 +44,6 @@ WHERE
 // The badge on the council administration's Maintenance tab.
 func (q *Queries) CountNewCouncilIssues(ctx context.Context, tenantID uuid.UUID) (int64, error) {
 	row := q.db.QueryRowContext(ctx, countNewCouncilIssues, tenantID)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
-}
-
-const countOpenIssuesByReporter = `-- name: CountOpenIssuesByReporter :one
-SELECT
-    COUNT(*)
-FROM
-    facility_issue
-WHERE
-    reporter_id = $1
-    AND status IN ('new', 'in_progress')
-`
-
-func (q *Queries) CountOpenIssuesByReporter(ctx context.Context, reporterID uuid.NullUUID) (int64, error) {
-	row := q.db.QueryRowContext(ctx, countOpenIssuesByReporter, reporterID)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -183,6 +182,7 @@ const getBookingForIssue = `-- name: GetBookingForIssue :one
 SELECT
     b.id,
     b.facility_id,
+    b.starts_at,
     b.ends_at
 FROM
     booking b
@@ -193,6 +193,7 @@ WHERE
         b.user_id = $2
         OR EXISTS (SELECT 1 FROM booking_participant p WHERE p.booking_id = b.id AND p.user_id = $2)
     )
+FOR UPDATE OF b
 `
 
 type GetBookingForIssueParams struct {
@@ -203,6 +204,7 @@ type GetBookingForIssueParams struct {
 type GetBookingForIssueRow struct {
 	ID         uuid.UUID `json:"id"`
 	FacilityID uuid.UUID `json:"facility_id"`
+	StartsAt   time.Time `json:"starts_at"`
 	EndsAt     time.Time `json:"ends_at"`
 }
 
@@ -210,7 +212,12 @@ type GetBookingForIssueRow struct {
 func (q *Queries) GetBookingForIssue(ctx context.Context, arg GetBookingForIssueParams) (GetBookingForIssueRow, error) {
 	row := q.db.QueryRowContext(ctx, getBookingForIssue, arg.BookingID, arg.UserID)
 	var i GetBookingForIssueRow
-	err := row.Scan(&i.ID, &i.FacilityID, &i.EndsAt)
+	err := row.Scan(
+		&i.ID,
+		&i.FacilityID,
+		&i.StartsAt,
+		&i.EndsAt,
+	)
 	return i, err
 }
 
@@ -297,6 +304,7 @@ SELECT
     i.id,
     i.facility_id,
     f.name AS facility_name,
+    f.image_ref AS facility_image_ref,
     i.category,
     i.description,
     i.photo_ref,
@@ -308,7 +316,8 @@ SELECT
     b.starts_at AS booking_starts_at,
     split_part(COALESCE(u.full_name, ''), ' ', 1)::TEXT AS reporter_first_name,
     i.share_contact,
-    u.email AS reporter_email -- the API drops it unless share_contact
+    u.email AS reporter_email, -- the API drops contact details unless share_contact
+    u.phone AS reporter_phone
 FROM
     facility_issue i
     JOIN facility f ON f.id = i.facility_id
@@ -333,6 +342,7 @@ type ListCouncilIssuesRow struct {
 	ID                uuid.UUID      `json:"id"`
 	FacilityID        uuid.UUID      `json:"facility_id"`
 	FacilityName      string         `json:"facility_name"`
+	FacilityImageRef  sql.NullString `json:"facility_image_ref"`
 	Category          IssueCategory  `json:"category"`
 	Description       string         `json:"description"`
 	PhotoRef          sql.NullString `json:"photo_ref"`
@@ -345,6 +355,7 @@ type ListCouncilIssuesRow struct {
 	ReporterFirstName string         `json:"reporter_first_name"`
 	ShareContact      bool           `json:"share_contact"`
 	ReporterEmail     sql.NullString `json:"reporter_email"`
+	ReporterPhone     sql.NullString `json:"reporter_phone"`
 }
 
 // The council's maintenance list, newest first; facility_id and status narrow it.
@@ -362,6 +373,7 @@ func (q *Queries) ListCouncilIssues(ctx context.Context, arg ListCouncilIssuesPa
 			&i.ID,
 			&i.FacilityID,
 			&i.FacilityName,
+			&i.FacilityImageRef,
 			&i.Category,
 			&i.Description,
 			&i.PhotoRef,
@@ -374,6 +386,7 @@ func (q *Queries) ListCouncilIssues(ctx context.Context, arg ListCouncilIssuesPa
 			&i.ReporterFirstName,
 			&i.ShareContact,
 			&i.ReporterEmail,
+			&i.ReporterPhone,
 		); err != nil {
 			return nil, err
 		}
@@ -465,8 +478,10 @@ SELECT
     u.email,
     u.full_name,
     u.preferred_language,
+    u.email_notifications,
     f.name AS facility_name,
     t.name AS tenant_name,
+    t.slug AS tenant_slug,
     t.id   AS tenant_id,
     s.config AS smtp_config
 FROM
@@ -478,7 +493,7 @@ FROM
     LEFT JOIN tenant_smtp s ON s.tenant_id = t.id
 WHERE
     n.emailed_at IS NULL
-    AND n.type IN ('issue_solved', 'issue_rejected')
+    AND n.type IN ('issue_solved', 'issue_rejected', 'issue_reported')
     AND ($1::BOOLEAN OR s.tenant_id IS NOT NULL)
 ORDER BY
     n.created_at ASC
@@ -491,16 +506,18 @@ type ListPendingIssueEmailsParams struct {
 }
 
 type ListPendingIssueEmailsRow struct {
-	ID                uuid.UUID        `json:"id"`
-	Type              NotificationType `json:"type"`
-	Payload           json.RawMessage  `json:"payload"`
-	Email             string           `json:"email"`
-	FullName          sql.NullString   `json:"full_name"`
-	PreferredLanguage sql.NullString   `json:"preferred_language"`
-	FacilityName      string           `json:"facility_name"`
-	TenantName        string           `json:"tenant_name"`
-	TenantID          uuid.UUID        `json:"tenant_id"`
-	SmtpConfig        []byte           `json:"smtp_config"`
+	ID                 uuid.UUID        `json:"id"`
+	Type               NotificationType `json:"type"`
+	Payload            json.RawMessage  `json:"payload"`
+	Email              string           `json:"email"`
+	FullName           sql.NullString   `json:"full_name"`
+	PreferredLanguage  sql.NullString   `json:"preferred_language"`
+	EmailNotifications bool             `json:"email_notifications"`
+	FacilityName       string           `json:"facility_name"`
+	TenantName         string           `json:"tenant_name"`
+	TenantSlug         string           `json:"tenant_slug"`
+	TenantID           uuid.UUID        `json:"tenant_id"`
+	SmtpConfig         []byte           `json:"smtp_config"`
 }
 
 // The email queue for issue notices (no booking): through the council's relay
@@ -521,8 +538,10 @@ func (q *Queries) ListPendingIssueEmails(ctx context.Context, arg ListPendingIss
 			&i.Email,
 			&i.FullName,
 			&i.PreferredLanguage,
+			&i.EmailNotifications,
 			&i.FacilityName,
 			&i.TenantName,
+			&i.TenantSlug,
 			&i.TenantID,
 			&i.SmtpConfig,
 		); err != nil {
@@ -537,6 +556,25 @@ func (q *Queries) ListPendingIssueEmails(ctx context.Context, arg ListPendingIss
 		return nil, err
 	}
 	return items, nil
+}
+
+const notifyCouncilAdminsOfIssue = `-- name: NotifyCouncilAdminsOfIssue :exec
+INSERT INTO notification (user_id, issue_id, type, payload)
+SELECT m.user_id, i.id, 'issue_reported', jsonb_build_object(
+    'facility_name', f.name, 'facility_slug', f.slug,
+    'tenant_name', t.name, 'tenant_slug', t.slug
+)
+FROM facility_issue i
+JOIN facility f ON f.id = i.facility_id
+JOIN tenant t ON t.id = f.tenant_id
+JOIN tenant_membership m ON m.tenant_id = t.id AND m.role = 'admin'
+WHERE i.id = $1
+`
+
+// Created in the report transaction, one notice per council administrator.
+func (q *Queries) NotifyCouncilAdminsOfIssue(ctx context.Context, issueID uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, notifyCouncilAdminsOfIssue, issueID)
+	return err
 }
 
 const updateFacilityIssue = `-- name: UpdateFacilityIssue :exec

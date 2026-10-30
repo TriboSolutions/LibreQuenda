@@ -55,6 +55,7 @@ type RecommendationDto struct {
 // PublicBookingDto: what «For you» shows of someone's public booking: never who
 // they are beyond a first name.
 type PublicBookingDto struct {
+	Description    string    `json:"description"`
 	Id             string    `json:"id"`
 	StartsAt       time.Time `json:"starts_at"`
 	EndsAt         time.Time `json:"ends_at"`
@@ -153,7 +154,7 @@ func publicBookings(rows []model.ListJoinablePublicBookingsRow, patterns []model
 			Kind:     RecommendPublic,
 			Facility: f.card,
 			StartsAt: row.StartsAt,
-			Booking:  &PublicBookingDto{Id: row.ID.String(), StartsAt: row.StartsAt, EndsAt: row.EndsAt, SpotsLeft: spots, OwnerFirstName: row.OwnerFirstName},
+			Booking:  &PublicBookingDto{Id: row.ID.String(), StartsAt: row.StartsAt, EndsAt: row.EndsAt, SpotsLeft: spots, OwnerFirstName: row.OwnerFirstName, Description: row.PublicDescription},
 		})
 		if len(out) == maxPublic {
 			break

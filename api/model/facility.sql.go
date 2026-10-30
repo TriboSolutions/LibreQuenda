@@ -15,7 +15,7 @@ import (
 
 const getFacility = `-- name: GetFacility :one
 SELECT
-    id, tenant_id, slug, name, description, address, latitude, longitude, capacity, accessibility_info, contact_phone, contact_email, image_ref, is_active, slot_minutes, custom_rules, max_advance_hours, min_advance_minutes, min_cancel_hours, max_active_bookings_per_user, max_bookings_per_day, max_turns_in_a_row, max_bookings_per_week, weekly_opening, opens_weekday, opens_minute, no_show_penalty, no_show_limit, no_show_window_days, no_show_block_days, min_age, usage_rules_text, created_at, updated_at
+    id, tenant_id, slug, name, description, address, latitude, longitude, capacity, accessibility_info, contact_phone, contact_email, show_weather, image_ref, is_active, slot_minutes, custom_rules, max_advance_hours, min_advance_minutes, min_cancel_hours, max_active_bookings_per_user, max_bookings_per_day, max_turns_in_a_row, max_bookings_per_week, weekly_opening, opens_weekday, opens_minute, no_show_penalty, no_show_limit, no_show_window_days, no_show_block_days, min_age, usage_rules_text, created_at, updated_at
 FROM
     facility
 WHERE
@@ -44,6 +44,7 @@ func (q *Queries) GetFacility(ctx context.Context, arg GetFacilityParams) (Facil
 		&i.AccessibilityInfo,
 		&i.ContactPhone,
 		&i.ContactEmail,
+		&i.ShowWeather,
 		&i.ImageRef,
 		&i.IsActive,
 		&i.SlotMinutes,
@@ -74,10 +75,7 @@ const getFacilityWeatherPlace = `-- name: GetFacilityWeatherPlace :one
 SELECT
     t.municipality_code,
     t.timezone,
-    EXISTS (
-        SELECT 1 FROM facility_tag ft JOIN tag tg ON tg.id = ft.tag_id
-        WHERE ft.facility_id = f.id AND tg.slug = 'aire-libre'
-    )::BOOLEAN AS outdoor
+    f.show_weather
 FROM
     facility f
     JOIN tenant t ON t.id = f.tenant_id
@@ -96,15 +94,15 @@ type GetFacilityWeatherPlaceParams struct {
 type GetFacilityWeatherPlaceRow struct {
 	MunicipalityCode sql.NullString `json:"municipality_code"`
 	Timezone         string         `json:"timezone"`
-	Outdoor          bool           `json:"outdoor"`
+	ShowWeather      bool           `json:"show_weather"`
 }
 
 // Where to read the forecast of an active facility: its council's municipality
-// (INE code, for MeteoGalicia) and whether it is outdoors (tag "aire-libre").
+// (INE code, for MeteoGalicia) and its explicit forecast preference.
 func (q *Queries) GetFacilityWeatherPlace(ctx context.Context, arg GetFacilityWeatherPlaceParams) (GetFacilityWeatherPlaceRow, error) {
 	row := q.db.QueryRowContext(ctx, getFacilityWeatherPlace, arg.TenantSlug, arg.FacilitySlug)
 	var i GetFacilityWeatherPlaceRow
-	err := row.Scan(&i.MunicipalityCode, &i.Timezone, &i.Outdoor)
+	err := row.Scan(&i.MunicipalityCode, &i.Timezone, &i.ShowWeather)
 	return i, err
 }
 

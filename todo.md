@@ -95,7 +95,7 @@ Scope: bases §1.1 (minimum) + §1.2 (technical). See [architecture plan](docs/s
 
 ## Weather (30 Oct)
 
-- [x] MeteoGalicia's forecast at outdoor facilities (tag «aire-libre»), on the facility page and in the booking dialog, with bad-weather warnings; each council's INE code in its details
+- [x] MeteoGalicia's forecast when enabled in a facility's settings (independent of tags), on the facility page and in the booking dialog, with bad-weather warnings; each council's INE code in its details
 - [ ] Weather line in the change-booking dialog, My bookings and the reminder email
 - [ ] Hourly forecast per point (MeteoSIX, needs an API key) instead of three periods per municipality
 

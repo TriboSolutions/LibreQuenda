@@ -101,8 +101,9 @@ func (s *bookingsService) CreateBooking(ctx context.Context, userId uuid.UUID, b
 	// public: only where others can join (room for more than the owner); the booking stands either way
 	if facility.Capacity.Valid && facility.Capacity.Int32 > 1 {
 		var id = uuid.MustParse(booking.Id)
-		if _, err := queries.SetBookingPublic(ctx, model.SetBookingPublicParams{ID: id, OwnerID: uuid.NullUUID{UUID: userId, Valid: true}, IsPublic: true}); err == nil {
+		if _, err := queries.SetBookingPublic(ctx, model.SetBookingPublicParams{ID: id, OwnerID: uuid.NullUUID{UUID: userId, Valid: true}, IsPublic: true, PublicDescription: sql.NullString{String: body.PublicDescription, Valid: true}}); err == nil {
 			booking.IsPublic = true
+			booking.PublicDescription = body.PublicDescription
 		}
 	}
 	return booking, nil

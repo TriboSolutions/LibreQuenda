@@ -173,8 +173,7 @@
     "invalid_issue_category": "Tria de quin tipus és el problema.",
     "invalid_issue_description": "Descriu el problema (fins a 1000 caràcters).",
     "issue_failed": "No s’ha pogut desar l’avís. Torna-ho a provar.",
-    "issue_booking_too_old": "Aquesta reserva va acabar fa més d’una setmana: avisa des de la pàgina de la instal·lació.",
-    "too_many_open_issues": "Ja tens 5 avisos oberts. Espera que l’ajuntament els revisi.",
+    "issue_active_booking_required": "Només pots avisar d’un problema durant una reserva confirmada de la qual siguis titular o participant.",
     "invalid_issue_status": "Aquest estat no existeix.",
     "invalid_issue_note": "La nota pot tenir fins a 1000 caràcters.",
     "issue_reject_reason": "Per rebutjar un avís, explica’n el motiu a qui l’ha enviat.",
@@ -183,7 +182,8 @@
     "other_council_booking": "Ja tens reserves a {{0}}: amb un compte es reserva en un ajuntament cada vegada. Podràs reservar aquí quan acabin o les cancel·lis.",
     "council_limit_reached": "Ja tens {{0}} reserves properes a les instal·lacions d’aquest ajuntament, el màxim que permet.",
     "booking_policy_failed": "No s’han pogut desar les normes de reserva de la plataforma.",
-    "email_unverified": "Confirma la teva adreça electrònica abans de reservar: al teu perfil pots demanar el codi i escriure’l."
+    "email_unverified": "Confirma la teva adreça electrònica abans de reservar: al teu perfil pots demanar el codi i escriure’l.",
+    "too_many_booking_issues": "Aquesta reserva ja té 5 incidències. No se’n poden enviar més."
   },
   "email": {
     "greeting": "Hola {{0}},",
@@ -247,6 +247,17 @@
       "intro": "L’ajuntament ha revisat el problema que vas avisar a {{0}} ({{1}}) i no el tramitarà."
     },
     "issue_note": "Nota de l’ajuntament: {{0}}",
-    "issue_footer": "Reps aquest correu perquè vas avisar d’un problema en una instal·lació a {{0}}."
+    "issue_footer": "Reps aquest correu perquè vas avisar d’un problema en una instal·lació a {{0}}.",
+    "booking_joined": {
+      "subject": "Algú s’ha unit a la teva reserva: {{0}}, {{1}} a les {{2}}",
+      "intro": "{{5}} s’ha unit a la teva reserva a {{0}} ({{1}}): {{2}}, de {{3}} a {{4}}."
+    },
+    "someone": "Algú",
+    "issue_reported": {
+      "subject": "Nova incidència a {{0}}",
+      "intro": "Han avisat d’un problema a {{0}} ({{1}}). Revisa la incidència a l’administració de l’ajuntament.",
+      "manage": "Veure incidències",
+      "footer": "Reps aquest correu perquè administres aquest ajuntament a {{0}}."
+    }
   }
 }

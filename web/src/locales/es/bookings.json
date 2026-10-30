@@ -113,7 +113,26 @@
     "ways": "Cómo registras la entrada"
   },
   "public": {
+    "activity": "Actividad",
+    "description": "Descripción de la actividad (opcional)",
+    "descriptionHelp": "Cuenta qué vais a hacer, el nivel o qué hay que llevar. No incluyas datos de contacto.",
+    "edit": "Editar descripción",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "turnTitle": "Reserva pública · {{facility}}",
+    "noDescription": "No se ha añadido una descripción.",
+    "people": "{{count}} de {{capacity}} personas",
+    "person": "Participante",
+    "you": "Tú",
+    "started": "La reserva ya ha empezado.",
+    "full": "No quedan plazas.",
+    "login": "Entrar para apuntarse",
     "label": "Pública",
-    "help": "Cualquier persona con cuenta puede verla en «Para ti» y unirse mientras queden plazas."
+    "help": "Cualquier persona con cuenta puede verla en «Para ti» y unirse mientras queden plazas.",
+    "confirmTitle": "¿Hacer pública esta reserva?",
+    "confirmDescription": "Tu reserva en {{facility}} aparecerá en «Para ti». Otras personas podrán encontrarla y unirse mientras queden plazas.",
+    "keepPrivate": "Mantener privada",
+    "confirm": "Hacer pública",
+    "publishing": "Publicando…"
   }
 }

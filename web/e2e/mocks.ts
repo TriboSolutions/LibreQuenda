@@ -91,6 +91,7 @@ const schedule: WeeklyWindow[] = [1, 2, 3, 4, 5].map((weekday) => ({ weekday, op
 
 function facility(id: string, name: string, slug: string): Facility {
   return {
+    show_weather: false,
     id,
     slug,
     name,
@@ -214,6 +215,7 @@ const me: Me = {
   avatar_ref: '',
   avatar_url: '',
   preferred_language: 'gl',
+  email_notifications: true,
   email_reminders: true,
   show_recommendations: true,
   profile_complete: true,
@@ -234,9 +236,9 @@ const account: Account = {
 const notifications: Notifications = {
   unread_count: 2,
   notifications: [
-    { id: 'n1', type: 'booking_confirmed', facility_name: 'Pista de pádel 1', starts_at: at(3), ends_at: at(4), reason: '', closed_from: null, closed_until: null, by_staff: false, tenant_name: 'Concello de Lugo', tenant_slug: 'lugo', facility_slug: '', created_at: at(-1), read: false },
-    { id: 'n2', type: 'booking_cancelled_by_council', facility_name: 'Pavillón municipal', starts_at: at(30), ends_at: at(31), reason: 'Obras', closed_from: at(29), closed_until: at(40), by_staff: false, tenant_name: 'Concello de Lugo', tenant_slug: 'lugo', facility_slug: '', created_at: at(-5), read: false },
-    { id: 'n3', type: 'issue_solved', facility_name: 'Pista de pádel 1', starts_at: null, ends_at: null, reason: 'Rede nova colocada.', closed_from: null, closed_until: null, by_staff: false, tenant_name: 'Concello de Lugo', tenant_slug: 'lugo', facility_slug: 'padel-1', created_at: at(-30), read: true },
+    { name: '', id: 'n1', type: 'booking_confirmed', facility_name: 'Pista de pádel 1', starts_at: at(3), ends_at: at(4), reason: '', closed_from: null, closed_until: null, by_staff: false, tenant_name: 'Concello de Lugo', tenant_slug: 'lugo', facility_slug: '', created_at: at(-1), read: false },
+    { name: '', id: 'n2', type: 'booking_cancelled_by_council', facility_name: 'Pavillón municipal', starts_at: at(30), ends_at: at(31), reason: 'Obras', closed_from: at(29), closed_until: at(40), by_staff: false, tenant_name: 'Concello de Lugo', tenant_slug: 'lugo', facility_slug: '', created_at: at(-5), read: false },
+    { name: '', id: 'n3', type: 'issue_solved', facility_name: 'Pista de pádel 1', starts_at: null, ends_at: null, reason: 'Rede nova colocada.', closed_from: null, closed_until: null, by_staff: false, tenant_name: 'Concello de Lugo', tenant_slug: 'lugo', facility_slug: 'padel-1', created_at: at(-30), read: true },
   ],
 }
 
@@ -288,6 +290,7 @@ const councilRules = {
 }
 
 const adminFacility: AdminFacility = {
+  show_weather: false,
   id: 'f1',
   slug: 'padel-1',
   name: 'Pista de pádel 1',
@@ -531,6 +534,7 @@ const auditPage = {
 const councilIssues = {
   issues: [
     {
+      facility_image_url: '/test-facility.svg',
       id: 'i1',
       facility_id: 'f1',
       facility_name: 'Pista de pádel 1',
@@ -545,6 +549,7 @@ const councilIssues = {
       booking_starts_at: at(-5),
       reporter_name: 'Lucía',
       reporter_email: 'lucia@example.org',
+      reporter_phone: '+34 600 123 456',
     },
     {
       id: 'i2',
@@ -626,10 +631,10 @@ function fulfil(route: Route, body: unknown, status = 200) {
 
 export const defaultBranding: Branding = { name: 'LibreQuenda', custom_name: '', logo_ref: '', logo_url: '' }
 
-export type MockOptions = { signedIn?: boolean; theme?: 'light' | 'dark'; lang?: string; branding?: Branding; outdoor?: boolean }
+export type MockOptions = { signedIn?: boolean; theme?: 'light' | 'dark'; lang?: string; branding?: Branding; outdoor?: boolean; outdoorTagOnly?: boolean }
 
 /** Mocks /config.json, the OIDC provider and /api, and seeds the session in localStorage. */
-export async function mockApp(page: Page, { signedIn = true, theme = 'light', lang = 'gl', branding = defaultBranding, outdoor = false }: MockOptions = {}) {
+export async function mockApp(page: Page, { signedIn = true, theme = 'light', lang = 'gl', branding = defaultBranding, outdoor = false, outdoorTagOnly = false }: MockOptions = {}) {
   await page.route('**/config.json', (route) =>
     fulfil(route, { authority: AUTHORITY, clientId: CLIENT_ID, projectId: 'p1', scope: 'openid profile email' }),
   )
@@ -646,6 +651,11 @@ export async function mockApp(page: Page, { signedIn = true, theme = 'light', la
   await page.route('**/api/**', (route) => {
     const url = new URL(route.request().url())
     const path = url.pathname.replace(/^\/api/, '')
+    if (route.request().method() === 'GET' && /^\/tenants\/[^/]+\/admin\/issues$/.test(path)) {
+      const status = url.searchParams.get('status')
+      const facility = url.searchParams.get('facility')
+      return fulfil(route, { issues: councilIssues.issues.filter((issue) => (!status || issue.status === status) && (!facility || issue.facility_id === facility)) })
+    }
     // flash booking with the entry code: the phone is at Lugo's padel court
     // «For you» is asked for by POST, with the home page's position when «near me» is on
     if (route.request().method() === 'POST' && path === '/me/recommendations') {
@@ -681,10 +691,10 @@ export async function mockApp(page: Page, { signedIn = true, theme = 'light', la
     const handler = routes.find(([pattern]) => pattern.test(path))
     return handler ? fulfil(route, handler[1]()) : fulfil(route, { error: 'not found' }, 404)
   })
-  // outdoor: the facility page's court is in the open air, so it shows the forecast
-  if (outdoor) {
+  // Enable the explicit preference, without changing any tags.
+  if (outdoor || outdoorTagOnly) {
     await page.route(/\/api\/tenants\/[^/]+\/facilities\/[^/?]+(\?.*)?$/, (route) =>
-      fulfil(route, { ...facilityPage, facility: { ...facilityPage.facility, tags: [...facilityPage.facility.tags, 'aire-libre'] } }),
+      fulfil(route, { ...facilityPage, facility: { ...facilityPage.facility, show_weather: outdoor, tags: outdoorTagOnly ? ['aire-libre'] : facilityPage.facility.tags } }),
     )
   }
   // tiles for the map: an empty image keeps the test offline

@@ -183,6 +183,7 @@ function PreferencesForm({ me }: { me: Me }) {
   const auth = useAuth()
   const { reload } = useMe()
   const [language, setLanguage] = useState(me.preferred_language || SAME_AS_WEBSITE)
+  const [emails, setEmails] = useState(me.email_notifications)
   const [reminders, setReminders] = useState(me.email_reminders)
   const [recommendations, setRecommendations] = useState(me.show_recommendations)
   const [saving, setSaving] = useState(false)
@@ -199,6 +200,7 @@ function PreferencesForm({ me }: { me: Me }) {
     try {
       await api.updatePreferences(token, {
         preferred_language: language === SAME_AS_WEBSITE ? '' : language,
+        email_notifications: emails,
         email_reminders: reminders,
         show_recommendations: recommendations,
       })
@@ -231,7 +233,14 @@ function PreferencesForm({ me }: { me: Me }) {
           </Select>
         </div>
         <div className="flex items-start gap-2">
-          <Checkbox id="p-reminders" checked={reminders} onCheckedChange={(value) => setReminders(value === true)} className="mt-0.5" />
+          <Checkbox id="p-emails" checked={emails} onCheckedChange={(value) => setEmails(value === true)} aria-describedby="p-emails-help" className="mt-0.5" />
+          <div className="grid gap-1">
+            <Label htmlFor="p-emails" className="leading-5 font-normal">{t('profile:emails')}</Label>
+            <p id="p-emails-help" className="text-sm text-muted-foreground">{t('profile:emailsHelp')}</p>
+          </div>
+        </div>
+        <div className="flex items-start gap-2">
+          <Checkbox id="p-reminders" disabled={!emails} checked={reminders} onCheckedChange={(value) => setReminders(value === true)} className="mt-0.5" />
           <Label htmlFor="p-reminders" className="leading-5 font-normal">
             {t('profile:reminders')}
           </Label>

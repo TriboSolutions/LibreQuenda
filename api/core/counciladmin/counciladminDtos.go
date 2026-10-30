@@ -12,6 +12,7 @@ import (
 var reservedFacilitySlugs = map[string]bool{"admin": true, "reservas": true, "me": true, "widget": true}
 
 type FacilityInput struct {
+	ShowWeather       bool     `json:"show_weather"`
 	Slug              string   `json:"slug"`
 	Name              string   `json:"name"`
 	Description       string   `json:"description"`
@@ -175,6 +176,7 @@ type FacilitiesResponse struct {
 }
 
 type FacilityDetailDto struct {
+	ShowWeather       bool            `json:"show_weather"`
 	Id                string          `json:"id"`
 	Slug              string          `json:"slug"`
 	Name              string          `json:"name"`

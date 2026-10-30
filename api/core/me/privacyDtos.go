@@ -35,24 +35,26 @@ type ExportAccount struct {
 	AvatarUrl           string    `json:"avatar_url"`
 	PreferredLanguage   string    `json:"preferred_language"`
 	EmailReminders      bool      `json:"email_reminders"`
+	EmailNotifications  bool      `json:"email_notifications"`
 	ShowRecommendations bool      `json:"show_recommendations"`
 	CreatedAt           time.Time `json:"created_at"`
 	UpdatedAt           time.Time `json:"updated_at"`
 }
 
 type ExportBooking struct {
-	Id               string     `json:"id"`
-	Council          string     `json:"council"`
-	Facility         string     `json:"facility"`
-	StartsAt         time.Time  `json:"starts_at"`
-	EndsAt           time.Time  `json:"ends_at"`
-	Status           string     `json:"status"`
-	RulesAcceptedAt  *time.Time `json:"rules_accepted_at"`
-	CancelledAt      *time.Time `json:"cancelled_at"`
-	CancelledBy      string     `json:"cancelled_by"` // user or council, "" if not cancelled
-	CheckedInAt      *time.Time `json:"checked_in_at"`
-	CreatedAt        time.Time  `json:"created_at"`
-	ParticipantCount int64      `json:"participant_count"` // people who joined through the invite link
+	PublicDescription string     `json:"public_description"`
+	Id                string     `json:"id"`
+	Council           string     `json:"council"`
+	Facility          string     `json:"facility"`
+	StartsAt          time.Time  `json:"starts_at"`
+	EndsAt            time.Time  `json:"ends_at"`
+	Status            string     `json:"status"`
+	RulesAcceptedAt   *time.Time `json:"rules_accepted_at"`
+	CancelledAt       *time.Time `json:"cancelled_at"`
+	CancelledBy       string     `json:"cancelled_by"` // user or council, "" if not cancelled
+	CheckedInAt       *time.Time `json:"checked_in_at"`
+	CreatedAt         time.Time  `json:"created_at"`
+	ParticipantCount  int64      `json:"participant_count"` // people who joined through the invite link
 }
 
 type ExportParticipation struct {
@@ -71,7 +73,7 @@ type ExportIssue struct {
 	Category     string     `json:"category"`
 	Description  string     `json:"description"`
 	Urgent       bool       `json:"urgent"`
-	ShareContact bool       `json:"share_contact"` // the council's staff could see the email
+	ShareContact bool       `json:"share_contact"` // the council's staff could see the email and profile phone
 	Status       string     `json:"status"`
 	StaffNote    string     `json:"staff_note"`
 	CreatedAt    time.Time  `json:"created_at"`
@@ -114,6 +116,7 @@ func mapExportAccount(user model.ExportUserRow) ExportAccount {
 		Phone:               user.Phone.String,
 		PreferredLanguage:   user.PreferredLanguage.String,
 		EmailReminders:      user.EmailReminders,
+		EmailNotifications:  user.EmailNotifications,
 		ShowRecommendations: user.ShowRecommendations,
 		CreatedAt:           user.CreatedAt,
 		UpdatedAt:           user.UpdatedAt,
@@ -131,18 +134,19 @@ func mapExportBookings(rows []model.ExportBookingsByUserRow) []ExportBooking {
 	var bookings = make([]ExportBooking, 0, len(rows))
 	for _, b := range rows {
 		bookings = append(bookings, ExportBooking{
-			Id:               b.ID.String(),
-			Council:          b.TenantName,
-			Facility:         b.FacilityName,
-			StartsAt:         b.StartsAt,
-			EndsAt:           b.EndsAt,
-			Status:           string(b.Status),
-			RulesAcceptedAt:  optionalTime(b.RulesAcceptedAt),
-			CancelledAt:      optionalTime(b.CancelledAt),
-			CancelledBy:      string(b.CancelledBy.BookingCanceller),
-			CheckedInAt:      optionalTime(b.CheckedInAt),
-			CreatedAt:        b.CreatedAt,
-			ParticipantCount: b.ParticipantCount,
+			Id:                b.ID.String(),
+			Council:           b.TenantName,
+			Facility:          b.FacilityName,
+			StartsAt:          b.StartsAt,
+			EndsAt:            b.EndsAt,
+			Status:            string(b.Status),
+			RulesAcceptedAt:   optionalTime(b.RulesAcceptedAt),
+			CancelledAt:       optionalTime(b.CancelledAt),
+			CancelledBy:       string(b.CancelledBy.BookingCanceller),
+			CheckedInAt:       optionalTime(b.CheckedInAt),
+			CreatedAt:         b.CreatedAt,
+			ParticipantCount:  b.ParticipantCount,
+			PublicDescription: b.PublicDescription,
 		})
 	}
 	return bookings
@@ -212,6 +216,7 @@ func writeExportCSV(w io.Writer, data *ExportResponse) error {
 		{"avatar_url", a.AvatarUrl},
 		{"preferred_language", a.PreferredLanguage},
 		{"email_reminders", strconv.FormatBool(a.EmailReminders)},
+		{"email_notifications", strconv.FormatBool(a.EmailNotifications)},
 		{"show_recommendations", strconv.FormatBool(a.ShowRecommendations)},
 		{"is_superadmin", strconv.FormatBool(data.IsSuperadmin)},
 		{"created_at", csvTime(a.CreatedAt)},
@@ -230,9 +235,9 @@ func writeExportCSV(w io.Writer, data *ExportResponse) error {
 
 	out.Write(nil)
 	out.Write([]string{"bookings"})
-	out.Write([]string{"id", "council", "facility", "starts_at", "ends_at", "status", "rules_accepted_at", "cancelled_at", "cancelled_by", "checked_in_at", "created_at", "participant_count"})
+	out.Write([]string{"id", "council", "facility", "starts_at", "ends_at", "status", "rules_accepted_at", "cancelled_at", "cancelled_by", "checked_in_at", "created_at", "participant_count", "public_description"})
 	for _, b := range data.Bookings {
-		out.Write([]string{b.Id, b.Council, b.Facility, csvTime(b.StartsAt), csvTime(b.EndsAt), b.Status, csvOptionalTime(b.RulesAcceptedAt), csvOptionalTime(b.CancelledAt), b.CancelledBy, csvOptionalTime(b.CheckedInAt), csvTime(b.CreatedAt), strconv.FormatInt(b.ParticipantCount, 10)})
+		out.Write([]string{b.Id, b.Council, b.Facility, csvTime(b.StartsAt), csvTime(b.EndsAt), b.Status, csvOptionalTime(b.RulesAcceptedAt), csvOptionalTime(b.CancelledAt), b.CancelledBy, csvOptionalTime(b.CheckedInAt), csvTime(b.CreatedAt), strconv.FormatInt(b.ParticipantCount, 10), b.PublicDescription})
 	}
 
 	out.Write(nil)

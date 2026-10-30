@@ -501,11 +501,25 @@ test.describe('keyboard', () => {
     await expect(page.getByRole('dialog').getByRole('checkbox', { name: 'Facer pública a reserva' })).toBeVisible()
 
     await open(page, '/reservas')
-    const toggle = page.getByRole('switch', { name: 'Pública' }).first()
+    const toggle = page.locator('[id^="public-"][role="switch"]').first()
     await expect(toggle).not.toBeChecked()
-    const saved = page.waitForRequest((r) => r.method() === 'PUT' && /\/me\/bookings\/[^/]+\/public$/.test(r.url()))
+    const requests: string[] = []
+    page.on('request', (r) => { if (r.method() === 'PUT' && /\/me\/bookings\/[^/]+\/public$/.test(r.url())) requests.push(r.url()) })
     await toggle.click()
-    expect((await saved).postDataJSON()).toEqual({ public: true })
+    const confirmation = page.getByRole('dialog')
+    await expect(confirmation.getByRole('heading', { name: 'Facer pública esta reserva?' })).toBeVisible()
+    await page.waitForTimeout(350)
+    await expectAccessible(page, { overlay: true })
+    await expect(toggle).not.toBeChecked()
+    await confirmation.getByRole('button', { name: 'Manter privada' }).click()
+    await expect(confirmation).toHaveCount(0)
+    await expect(toggle).not.toBeChecked()
+    expect(requests).toEqual([])
+    await toggle.click()
+    const saved = page.waitForRequest((r) => r.method() === 'PUT' && /\/me\/bookings\/[^/]+\/public$/.test(r.url()))
+    await confirmation.getByLabel('Descrición da actividade (opcional)').fill('Partido amigable')
+    await confirmation.getByRole('button', { name: 'Facer pública', exact: true }).click()
+    expect((await saved).postDataJSON()).toEqual({ public: true, public_description: 'Partido amigable' })
     await expect(toggle).toBeChecked()
   })
 
@@ -522,7 +536,7 @@ test.describe('keyboard', () => {
     // the preferences save on their own, without the personal data
     const saved = page.waitForRequest((r) => r.method() === 'PUT' && r.url().endsWith('/me/preferences'))
     await page.getByRole('button', { name: 'Gardar preferencias' }).click()
-    expect((await saved).postDataJSON()).toEqual({ preferred_language: 'gl', email_reminders: true, show_recommendations: false })
+    expect((await saved).postDataJSON()).toEqual({ preferred_language: 'gl', email_notifications: true, email_reminders: true, show_recommendations: false })
   })
 
   test('without upcoming bookings, "Book now" goes to the home page', async ({ page }) => {
@@ -621,6 +635,7 @@ test.describe('keyboard', () => {
   })
 
   test('a resident reports a problem from a booking, by keyboard', async ({ page }) => {
+    await page.clock.setFixedTime(new Date(Date.now() + 10 * 60_000))
     await open(page, '/reservas')
     await page.getByRole('button', { name: 'Avisar dun problema' }).first().click()
     const dialog = page.getByRole('dialog')
@@ -631,7 +646,7 @@ test.describe('keyboard', () => {
     await dialog.getByLabel('É urxente').check()
     const sent = page.waitForRequest((r) => r.method() === 'POST' && r.url().endsWith('/me/issues'))
     await dialog.getByRole('button', { name: 'Enviar o aviso' }).click()
-    expect((await sent).postDataJSON()).toMatchObject({ category: 'lighting', description: 'Non acende a luz da pista.', urgent: true, share_contact: false })
+    expect((await sent).postDataJSON()).toMatchObject({ booking_id: 'b0', category: 'lighting', description: 'Non acende a luz da pista.', urgent: true, share_contact: false })
     await expect(dialog.getByRole('status')).toContainText('O concello recibiu o aviso')
   })
 
@@ -724,10 +739,10 @@ test.describe('keyboard', () => {
     await expect(page.getByRole('list', { name: 'Persoas de contacto' })).toContainText('Marta Rey')
   })
 
-  test('the forecast only shows outdoors, with MeteoGalicia credited and a warning in words', async ({ page }) => {
+  test('the forecast follows the facility preference, with MeteoGalicia credited and a warning in words', async ({ page }) => {
     await open(page, '/lugo/padel-1')
     await expect(page.getByRole('heading', { name: 'Reservar un turno' })).toBeVisible()
-    await expect(page.getByRole('region', { name: /^Tempo previsto/ })).toHaveCount(0) // indoors
+    await expect(page.getByRole('region', { name: /^Tempo previsto/ })).toHaveCount(0) // disabled
     await open(page, '/lugo/padel-1', { outdoor: true })
     const strip = page.getByRole('region', { name: /^Tempo previsto/ })
     await expect(strip).toContainText('Chuvascos')
@@ -907,3 +922,169 @@ test.describe('reflow', () => {
     expect(overflow).toBeLessThanOrEqual(0)
   })
 })
+
+
+test('email preference keeps reminders selected while disabling delivery', async ({ page }) => {
+  await open(page, '/perfil')
+  const emails = page.locator('#p-emails')
+  const reminders = page.locator('#p-reminders')
+  await expect(emails).toBeChecked()
+  await emails.click()
+  await expect(reminders).toBeDisabled()
+  await expect(reminders).toBeChecked()
+  const saved = page.waitForRequest((r) => r.method() === 'PUT' && r.url().endsWith('/me/preferences'))
+  await page.getByRole('button', { name: 'Gardar preferencias' }).click()
+  expect((await saved).postDataJSON()).toMatchObject({ email_notifications: false, email_reminders: true })
+  await emails.click()
+  await expect(reminders).toBeEnabled()
+  await expectAccessible(page)
+})
+
+
+test('reporting is absent from facilities and bookings outside their time', async ({ page }) => {
+  await open(page, '/lugo/padel-1')
+  await expect(page.getByRole('button', { name: 'Avisar dun problema' })).toHaveCount(0)
+  await page.goto('/reservas')
+  await expect(page.locator('h1')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Avisar dun problema' })).toHaveCount(0)
+  // The same booking becomes reportable during its interval, then disappears at the end.
+  await page.clock.setFixedTime(new Date(Date.now() + 10 * 60_000))
+  await page.reload()
+  await expect(page.getByRole('button', { name: 'Avisar dun problema' })).toHaveCount(1)
+  await page.clock.setFixedTime(new Date(Date.now() + 70 * 60_000))
+  await page.reload()
+  await expect(page.getByRole('button', { name: 'Avisar dun problema' })).toHaveCount(0)
+})
+
+test('issue administration starts with new issues and displays facility photos and shared phone', async ({ page }, testInfo) => {
+  await page.route('**/test-facility.svg', (route) => route.fulfill({ contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" width="160" height="100"><rect width="160" height="100" fill="#52794e"/></svg>' }))
+  const request = page.waitForRequest((r) => r.method() === 'GET' && r.url().includes('/admin/issues?'))
+  await open(page, '/lugo/admin?vista=incidencias')
+  expect(new URL((await request).url()).searchParams.get('status')).toBe('new')
+  await expect(page.locator('#issues-status')).toHaveText('Novo')
+  const item = page.getByRole('listitem', { name: /Pista de pádel 1/ })
+  await expect(item.locator('img').first()).toHaveAttribute('src', '/test-facility.svg')
+  await expect(item.getByRole('link', { name: '+34 600 123 456', exact: true })).toHaveAttribute('href', 'tel:+34600123456')
+  await page.screenshot({ path: testInfo.outputPath('issues-desktop.png'), fullPage: true })
+  await page.setViewportSize({ width: 320, height: 800 })
+  await expect(item).toBeVisible()
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0)
+  await page.screenshot({ path: testInfo.outputPath('issues-mobile.png'), fullPage: true })
+  await expectAccessible(page)
+})
+
+test('audit date filters use the calendar and can be cleared', async ({ page }) => {
+  await open(page, '/lugo/admin?vista=rexistro')
+  await page.locator('#audit-from').click()
+  const calendar = page.getByRole('dialog')
+  await expect(calendar.getByRole('grid')).toBeVisible()
+  const filtered = page.waitForRequest((r) => r.url().includes('/admin/audit?') && new URL(r.url()).searchParams.has('from'))
+  await calendar.locator('button[data-day]').filter({ hasText: /^15$/ }).first().click()
+  expect(new URL((await filtered).url()).searchParams.get('from')).toMatch(/^\d{4}-\d{2}-15$/)
+  await expect(calendar).toHaveCount(0)
+  await page.locator('#audit-to').click()
+  await expect(page.getByRole('dialog').getByRole('grid')).toBeVisible()
+  await page.keyboard.press('Escape')
+  const cleared = page.waitForRequest((r) => r.url().includes('/admin/audit') && !new URL(r.url()).searchParams.has('from'))
+  await page.getByRole('button', { name: 'Limpar datas' }).click()
+  await cleared
+  await expect(page.locator('#audit-from')).toHaveText('Calquera data')
+  await expectAccessible(page)
+})
+
+
+test('weather preference can be enabled independently of facility tags', async ({ page }) => {
+  await open(page, '/lugo/admin/facilities/f1')
+  const toggle = page.getByRole('switch', { name: 'Amosar previsión meteorolóxica' })
+  await expect(toggle).not.toBeChecked()
+  await toggle.click()
+  const saved = page.waitForRequest((r) => r.method() === 'PUT' && r.url().endsWith('/admin/facilities/f1'))
+  await page.locator('#facility-form').getByRole('button', { name: 'Gardar', exact: true }).click()
+  const input = (await saved).postDataJSON()
+  expect(input.show_weather).toBe(true)
+  expect(input.tags).not.toContain('aire-libre')
+  await open(page, '/lugo/admin/facilities/new')
+  await expect(page.getByRole('switch', { name: 'Amosar previsión meteorolóxica' })).not.toBeChecked()
+})
+
+test('an outdoor tag alone does not enable the weather', async ({ page }) => {
+  const requests: string[] = []
+  page.on('request', (r) => { if (r.url().includes('/weather?')) requests.push(r.url()) })
+  await open(page, '/lugo/padel-1', { outdoorTagOnly: true })
+  await expect(page.getByRole('region', { name: /^Tempo previsto/ })).toHaveCount(0)
+  expect(requests).toEqual([])
+})
+
+for (const days of [3, 7, 90]) {
+  test(`facility calendar is conditional on a ${days}-day booking window`, async ({ page }) => {
+    await mockApp(page)
+    const response = page.waitForResponse((r) => /\/api\/tenants\/lugo\/facilities\/padel-1(?:\?|$)/.test(r.url()))
+    await page.goto('/lugo/padel-1')
+    const data = await (await response).json()
+    await page.route(/\/api\/tenants\/lugo\/facilities\/padel-1(?:\?.*)?$/, (route) => route.fulfill({
+      json: { ...data, date: new URL(route.request().url()).searchParams.get('date') ?? data.date, facility: { ...data.facility, weekly_opening: null, max_advance_hours: days * 24 } },
+    }))
+    await page.reload()
+    const picker = page.getByRole('button', { name: 'Escoller data' })
+    await expect(page.locator('h1')).toBeVisible()
+    if (days <= 7) {
+      await expect(picker).toHaveCount(0)
+    } else {
+      await picker.click()
+      await expect(page.getByRole('dialog')).toBeVisible()
+      await expectAccessible(page, { overlay: true })
+      const target = new Date(data.now)
+      target.setDate(target.getDate() + 80)
+      const menus = page.getByRole('dialog').getByRole('combobox')
+      await menus.nth(1).selectOption(String(target.getFullYear()))
+      await menus.nth(0).selectOption(String(target.getMonth()))
+      const cell = page.getByRole('dialog').getByRole('gridcell').filter({ hasText: new RegExp(`^${target.getDate()}$`) }).getByRole('button')
+      await expect(cell).toBeEnabled()
+      const requested = page.waitForRequest((r) => r.url().includes('/facilities/padel-1?date='))
+      await cell.click()
+      const selected = new URL((await requested).url()).searchParams.get('date')
+      expect(selected).toBe(`${target.getFullYear()}-${String(target.getMonth() + 1).padStart(2, '0')}-${String(target.getDate()).padStart(2, '0')}`)
+    }
+  })
+}
+
+for (const theme of ['light', 'dark'] as const) {
+  test(`public facility turn shows people and description and can be joined (${theme})`, async ({ page }) => {
+    await mockApp(page, { theme })
+    const response = page.waitForResponse((r) => /\/api\/tenants\/lugo\/facilities\/padel-1(?:\?|$)/.test(r.url()))
+    await page.goto('/lugo/padel-1')
+    const data = await (await response).json()
+    const start = new Date(Date.now() + 86400000).toISOString()
+    const end = new Date(Date.parse(start) + 3600000).toISOString()
+    const ongoingStart = new Date(Date.now() - 1800000).toISOString()
+    const ongoingEnd = new Date(Date.now() + 1800000).toISOString()
+    await page.route(/\/api\/tenants\/lugo\/facilities\/padel-1(?:\?.*)?$/, (route) => route.fulfill({
+      json: { ...data, facility: { ...data.facility, slots: [{ starts_at: start, ends_at: end, status: 'booked' }, { starts_at: ongoingStart, ends_at: ongoingEnd, status: 'booked' }], public_bookings: [{
+        id: 'public-test', starts_at: start, ends_at: end, description: 'Partido amigable de nivel inicial.', capacity: 4, people: ['Brais', 'Antía'],
+      }, { id: 'ongoing-test', starts_at: ongoingStart, ends_at: ongoingEnd, description: '', capacity: 4, people: ['Uxía'] }] } },
+    }))
+    await page.reload()
+    const turn = page.locator('[data-public-state=joinable]')
+    const ongoing = page.locator('[data-public-state=ongoing]')
+    await expect(ongoing).toContainText('En curso')
+    await expect(turn).toContainText('Con prazas')
+    await ongoing.click()
+    await expect(page.getByRole('dialog').getByText('A reserva xa comezou.')).toBeVisible()
+    await expect(page.getByRole('dialog').getByRole('button', { name: 'Unirme', exact: true })).toHaveCount(0)
+    await page.keyboard.press('Escape')
+    await expect(page.getByRole('dialog')).toHaveCount(0)
+    await expect(turn).toBeEnabled()
+    await turn.click()
+    const dialog = page.getByRole('dialog')
+    await expect(dialog.getByText('Partido amigable de nivel inicial.')).toBeVisible()
+    await expect(dialog.getByText('2 de 4 persoas')).toBeVisible()
+    await expect(dialog.getByText('Antía', { exact: true })).toBeVisible()
+    await page.waitForTimeout(350)
+    await expectAccessible(page, { overlay: true })
+    await page.screenshot({ path: `test-results/public-turn-${theme}.png` })
+    const joined = page.waitForRequest((r) => r.method() === 'POST' && r.url().endsWith('/me/bookings/public-test/join'))
+    await dialog.getByRole('button', { name: 'Unirme', exact: true }).click()
+    await joined
+    await expect(dialog.getByRole('link', { name: 'Ver as miñas reservas' })).toBeVisible()
+  })
+}

@@ -11,8 +11,8 @@ import (
 	"time"
 )
 
-// WeatherResponse: the forecast of an outdoor facility's day, null when there is
-// none (indoors, no municipality set, outside the forecast's days, or MeteoGalicia
+// WeatherResponse: the forecast of a facility's day, null when there is
+// none (disabled, no municipality set, outside the forecast's days, or MeteoGalicia
 // unreachable). Source: MeteoGalicia, to be credited wherever it is shown.
 type WeatherResponse struct {
 	Forecast *weather.DayForecast `json:"forecast"`
@@ -29,7 +29,7 @@ func (s *tenantsService) Weather(ctx context.Context, slug, facility, date strin
 		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.day_load_failed"}
 	}
 	var response = &WeatherResponse{Source: "MeteoGalicia"}
-	if !place.Outdoor || !place.MunicipalityCode.Valid {
+	if !place.ShowWeather || !place.MunicipalityCode.Valid {
 		return response, nil
 	}
 	if date == "" {

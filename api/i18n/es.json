@@ -173,8 +173,7 @@
     "invalid_issue_category": "Elige de qué tipo es el problema.",
     "invalid_issue_description": "Describe el problema (hasta 1000 caracteres).",
     "issue_failed": "No se pudo guardar el aviso. Inténtalo de nuevo.",
-    "issue_booking_too_old": "Esa reserva terminó hace más de una semana: avisa desde la página de la instalación.",
-    "too_many_open_issues": "Ya tienes 5 avisos abiertos. Espera a que el ayuntamiento los revise.",
+    "issue_active_booking_required": "Solo puedes avisar de un problema durante una reserva confirmada de la que seas titular o participante.",
     "invalid_issue_status": "Ese estado no existe.",
     "invalid_issue_note": "La nota puede tener hasta 1000 caracteres.",
     "issue_reject_reason": "Para rechazar un aviso, explica el motivo a quien lo envió.",
@@ -183,7 +182,8 @@
     "other_council_booking": "Ya tienes reservas en {{0}}: con una cuenta se reserva en un ayuntamiento cada vez. Podrás reservar aquí cuando terminen o las canceles.",
     "council_limit_reached": "Ya tienes {{0}} reservas próximas en las instalaciones de este ayuntamiento, el máximo que permite.",
     "booking_policy_failed": "No se pudieron guardar las normas de reserva de la plataforma.",
-    "email_unverified": "Confirma tu correo electrónico antes de reservar: en tu perfil puedes pedir el código y escribirlo."
+    "email_unverified": "Confirma tu correo electrónico antes de reservar: en tu perfil puedes pedir el código y escribirlo.",
+    "too_many_booking_issues": "Esta reserva ya tiene 5 incidencias. No se pueden enviar más."
   },
   "email": {
     "greeting": "Hola {{0}}:",
@@ -247,6 +247,17 @@
       "intro": "El ayuntamiento revisó el problema que avisaste en {{0}} ({{1}}) y no lo va a tramitar."
     },
     "issue_note": "Nota del ayuntamiento: {{0}}",
-    "issue_footer": "Recibes este correo porque avisaste de un problema en una instalación en {{0}}."
+    "issue_footer": "Recibes este correo porque avisaste de un problema en una instalación en {{0}}.",
+    "booking_joined": {
+      "subject": "Alguien se ha unido a tu reserva: {{0}}, {{1}} a las {{2}}",
+      "intro": "{{5}} se ha unido a tu reserva en {{0}} ({{1}}): {{2}}, de {{3}} a {{4}}."
+    },
+    "someone": "Alguien",
+    "issue_reported": {
+      "subject": "Nueva incidencia en {{0}}",
+      "intro": "Han avisado de un problema en {{0}} ({{1}}). Revisa la incidencia en la administración del ayuntamiento.",
+      "manage": "Ver incidencias",
+      "footer": "Recibes este correo porque administras este ayuntamiento en {{0}}."
+    }
   }
 }

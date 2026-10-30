@@ -190,7 +190,9 @@
     "tagsClear": "Clear all",
     "tabDetails": "Details",
     "tabCheckin": "Check-in",
-    "tabBooking": "Booking"
+    "tabBooking": "Booking",
+    "showWeather": "Show weather forecast",
+    "showWeatherHelp": "Show MeteoGalicia forecasts on the facility page and when booking. Requires the council’s INE code. Independent of tags."
   },
   "readers": {
     "title": "Entrance QR readers",
@@ -678,6 +680,8 @@
     "maxActiveHelp": "How many they can hold at once.",
     "perDay": "Bookings per person and day",
     "inARow": "Slots in a row per person",
+    "noLimit": "No limit",
+    "setNoLimit": "No limit: {{field}}",
     "zeroNoLimit": "0 = no limit.",
     "penalty": "Penalise no-shows",
     "penaltyHelp": "After several bookings without a check-in, the person cannot book for some days. Only counts where check-ins are taken.",
@@ -824,7 +828,9 @@
       "other": "Other change",
       "booking_policy.changed": "Changed the platform's booking rules",
       "issue.changed": "Changed a reported problem’s status"
-    }
+    },
+    "anyDate": "Any date",
+    "clearDates": "Clear dates"
   },
   "widget": {
     "title": "Widget for your website",

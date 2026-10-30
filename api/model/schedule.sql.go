@@ -106,6 +106,7 @@ SELECT
     name,
     description,
     image_ref,
+    show_weather,
     latitude,
     longitude,
     facility_sport(facility.id)::TEXT AS sport,
@@ -147,6 +148,7 @@ type ListActiveFacilitiesByTenantRow struct {
 	Name                     string          `json:"name"`
 	Description              sql.NullString  `json:"description"`
 	ImageRef                 sql.NullString  `json:"image_ref"`
+	ShowWeather              bool            `json:"show_weather"`
 	Latitude                 sql.NullFloat64 `json:"latitude"`
 	Longitude                sql.NullFloat64 `json:"longitude"`
 	Sport                    string          `json:"sport"`
@@ -186,6 +188,7 @@ func (q *Queries) ListActiveFacilitiesByTenant(ctx context.Context, tenantID uui
 			&i.Name,
 			&i.Description,
 			&i.ImageRef,
+			&i.ShowWeather,
 			&i.Latitude,
 			&i.Longitude,
 			&i.Sport,
@@ -366,6 +369,73 @@ func (q *Queries) ListOpeningHoursByTenantWeekday(ctx context.Context, arg ListO
 	for rows.Next() {
 		var i ListOpeningHoursByTenantWeekdayRow
 		if err := rows.Scan(&i.FacilityID, &i.OpensAt, &i.ClosesAt); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listPublicBookingsByTenantRange = `-- name: ListPublicBookingsByTenantRange :many
+SELECT b.id, b.facility_id, b.starts_at, b.ends_at, b.public_description,
+    f.capacity,
+    split_part(trim(COALESCE(owner.full_name, '')), ' ', 1)::TEXT AS owner_name,
+    ARRAY(SELECT split_part(trim(COALESCE(u.full_name, p.guest_name, '')), ' ', 1)
+          FROM booking_participant p LEFT JOIN app_user u ON u.id = p.user_id
+          WHERE p.booking_id = b.id ORDER BY p.joined_at, p.id)::TEXT[] AS people
+FROM booking b
+JOIN facility f ON f.id = b.facility_id
+LEFT JOIN app_user owner ON owner.id = b.user_id
+WHERE f.tenant_id = $1
+  AND f.is_active = TRUE AND b.is_public = TRUE AND b.status = 'confirmed'
+  AND b.ends_at > NOW()
+  AND b.starts_at < $2 AND b.ends_at > $3
+ORDER BY b.starts_at, b.id
+`
+
+type ListPublicBookingsByTenantRangeParams struct {
+	TenantID   uuid.UUID `json:"tenant_id"`
+	RangeEnd   time.Time `json:"range_end"`
+	RangeStart time.Time `json:"range_start"`
+}
+
+type ListPublicBookingsByTenantRangeRow struct {
+	ID                uuid.UUID     `json:"id"`
+	FacilityID        uuid.UUID     `json:"facility_id"`
+	StartsAt          time.Time     `json:"starts_at"`
+	EndsAt            time.Time     `json:"ends_at"`
+	PublicDescription string        `json:"public_description"`
+	Capacity          sql.NullInt32 `json:"capacity"`
+	OwnerName         string        `json:"owner_name"`
+	People            []string      `json:"people"`
+}
+
+// Public activity details only; participant contact data and surnames stay private.
+func (q *Queries) ListPublicBookingsByTenantRange(ctx context.Context, arg ListPublicBookingsByTenantRangeParams) ([]ListPublicBookingsByTenantRangeRow, error) {
+	rows, err := q.db.QueryContext(ctx, listPublicBookingsByTenantRange, arg.TenantID, arg.RangeEnd, arg.RangeStart)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListPublicBookingsByTenantRangeRow
+	for rows.Next() {
+		var i ListPublicBookingsByTenantRangeRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.FacilityID,
+			&i.StartsAt,
+			&i.EndsAt,
+			&i.PublicDescription,
+			&i.Capacity,
+			&i.OwnerName,
+			pq.Array(&i.People),
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

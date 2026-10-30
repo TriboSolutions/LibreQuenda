@@ -1,4 +1,4 @@
-import { AlarmClock, Bell, CalendarCheck, CalendarClock, CalendarX, ShieldCheck, Wrench } from 'lucide-react'
+import { AlarmClock, Bell, CalendarCheck, CalendarClock, CalendarX, ShieldCheck, UserPlus, Wrench } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
@@ -22,15 +22,18 @@ const icons: Record<NotificationType, typeof Bell> = {
   booking_confirmed: CalendarCheck,
   booking_reminder: AlarmClock,
   booking_changed: CalendarClock,
+  booking_joined: UserPlus,
   booking_cancelled: CalendarX,
   booking_cancelled_by_council: CalendarX,
   council_admin_granted: ShieldCheck,
+  issue_reported: Wrench,
   issue_solved: Wrench,
   issue_rejected: Wrench,
 }
 
 /** Where a notice leads: the council's administration, the facility of a reported problem, or My bookings. */
 function target(n: AppNotification) {
+  if (n.type === 'issue_reported') return `/${n.tenant_slug}/admin?vista=incidencias`
   if (n.type === 'council_admin_granted') return `/${n.tenant_slug}/admin`
   if ((n.type === 'issue_solved' || n.type === 'issue_rejected') && n.facility_slug) return `/${n.tenant_slug}/${n.facility_slug}`
   return '/reservas'
@@ -105,6 +108,7 @@ function NotificationItem({ notification: n, today, highlighted, onSelect }: Ite
       <span className="min-w-0 whitespace-normal">
         <span className={`block text-sm ${highlighted ? 'font-medium' : ''}`}>
           {t(n.closed_from && n.closed_until ? 'type.booking_cancelled_by_closure' : n.by_staff ? 'type.booking_cancelled_by_staff' : `type.${n.type}`, {
+            name: n.name || t('someone'),
             facility: n.facility_name,
             day: n.starts_at ? formatBookingDay(n.starts_at, TIME_ZONE, today) : '',
             time: n.starts_at ? formatTime(n.starts_at, TIME_ZONE) : '',

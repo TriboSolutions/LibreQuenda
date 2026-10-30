@@ -35,3 +35,19 @@ func TestIssueEmails(t *testing.T) {
 		}
 	}
 }
+
+func TestNewIssueEmailLeadsToCouncilAdministration(t *testing.T) {
+	helpers.GetI18nInstance(helpers.SetDefaultLocale("gl"), helpers.SetDirectory("../i18n"))
+	var row = model.ListPendingIssueEmailsRow{
+		Type: model.NotificationTypeIssueReported, TenantSlug: "lalin",
+		Email: "admin@example.com", FacilityName: "Pista 1", TenantName: "Lalín",
+	}
+	for _, language := range []string{"gl", "es", "en", "ca"} {
+		row.PreferredLanguage.String = language
+		var message = issueEmail(row, "LibreQuenda")
+		if !strings.Contains(message.Text, "/lalin/admin?vista=incidencias") ||
+			!strings.Contains(message.Subject, "Pista 1") || strings.Contains(message.Text, "email.") {
+			t.Errorf("%s: invalid new issue email: %+v", language, message)
+		}
+	}
+}

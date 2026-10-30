@@ -190,7 +190,9 @@
     "tagsClear": "Treu-les totes",
     "tabDetails": "Dades",
     "tabCheckin": "Entrada",
-    "tabBooking": "Reserva"
+    "tabBooking": "Reserva",
+    "showWeather": "Mostrar la previsió meteorològica",
+    "showWeatherHelp": "Mostra el temps de MeteoGalicia a la pàgina de la instal·lació i en reservar. Requereix el codi INE de l’ajuntament. És independent de les etiquetes."
   },
   "readers": {
     "title": "Lectors QR de l’entrada",
@@ -678,6 +680,8 @@
     "maxActiveHelp": "Les properes que pot tenir alhora.",
     "perDay": "Reserves per persona i dia",
     "inARow": "Torns seguits per persona",
+    "noLimit": "Sense límit",
+    "setNoLimit": "Sense límit: {{field}}",
     "zeroNoLimit": "0 = sense límit.",
     "penalty": "Penalitzar qui no es presenta",
     "penaltyHelp": "Després de diverses reserves sense registrar l’entrada, no podrà reservar durant uns dies. Només compta on es registra l’entrada.",
@@ -824,7 +828,9 @@
       "other": "Un altre canvi",
       "booking_policy.changed": "Ha canviat les normes de reserva de la plataforma",
       "issue.changed": "Ha canviat l’estat d’una incidència"
-    }
+    },
+    "anyDate": "Qualsevol data",
+    "clearDates": "Netejar dates"
   },
   "widget": {
     "title": "Giny per al teu web",

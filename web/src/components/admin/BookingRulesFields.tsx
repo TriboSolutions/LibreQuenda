@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -27,20 +28,27 @@ export function BookingRulesFields({ id, value, onChange, council = false }: Pro
   const [unit, setUnit] = useState<'days' | 'hours'>(value.max_advance_hours % 24 === 0 ? 'days' : 'hours')
   const advance = unit === 'days' ? value.max_advance_hours / 24 : value.max_advance_hours
 
-  const field = (key: keyof BookingRules, label: string, min: number, max: number, help?: string) => (
+  const field = (key: keyof BookingRules, label: string, min: number, max: number, help?: string, unlimited = false) => (
     <div className="grid content-start gap-2">
       <Label htmlFor={`${id}-${key}`}>{label}</Label>
-      <Input
-        id={`${id}-${key}`}
-        type="number"
-        required
-        min={min}
-        max={max}
-        value={(value[key] as number | undefined) ?? 0}
-        aria-describedby={help ? `${id}-${key}-help` : undefined}
-        onChange={(e) => set(key, number(e.target.value))}
-        className="num"
-      />
+      <div className="flex gap-2">
+        <Input
+          id={`${id}-${key}`}
+          type="number"
+          required
+          min={min}
+          max={max}
+          value={(value[key] as number | undefined) ?? 0}
+          aria-describedby={help ? `${id}-${key}-help` : undefined}
+          onChange={(e) => set(key, number(e.target.value))}
+          className="num min-w-0"
+        />
+        {unlimited && (
+          <Button type="button" variant="outline" className="shrink-0" disabled={!value[key]} aria-label={t('rules.setNoLimit', { field: label })} onClick={() => set(key, 0)}>
+            {t('rules.noLimit')}
+          </Button>
+        )}
+      </div>
       {help && (
         <p id={`${id}-${key}-help`} className="text-xs text-muted-foreground">
           {help}
@@ -138,10 +146,10 @@ export function BookingRulesFields({ id, value, onChange, council = false }: Pro
         {field('min_advance_minutes', t('rules.minAdvance'), 0, 1440, t('rules.minAdvanceHelp'))}
         {field('min_cancel_hours', t('rules.minCancel'), 0, 720, t('rules.minCancelHelp'))}
         {field('max_active_bookings_per_user', t('rules.maxActive'), 1, 50, t('rules.maxActiveHelp'))}
-        {field('max_bookings_per_day', t('rules.perDay'), 0, 24, t('rules.zeroNoLimit'))}
-        {field('max_turns_in_a_row', t('rules.inARow'), 0, 24, t('rules.zeroNoLimit'))}
-        {field('max_bookings_per_week', t('rules.perWeek'), 0, 100, t('rules.zeroNoLimit'))}
-        {council && field('max_active_bookings_council', t('rules.councilActive'), 0, 100, t('rules.councilActiveHelp'))}
+        {field('max_bookings_per_day', t('rules.perDay'), 0, 24, t('rules.zeroNoLimit'), true)}
+        {field('max_turns_in_a_row', t('rules.inARow'), 0, 24, t('rules.zeroNoLimit'), true)}
+        {field('max_bookings_per_week', t('rules.perWeek'), 0, 100, t('rules.zeroNoLimit'), true)}
+        {council && field('max_active_bookings_council', t('rules.councilActive'), 0, 100, t('rules.councilActiveHelp'), true)}
       </div>
 
       <div className="grid gap-4 rounded-md border p-4">

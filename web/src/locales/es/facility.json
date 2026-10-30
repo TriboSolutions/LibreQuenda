@@ -1,4 +1,6 @@
 {
+  "publicSlot": {"joinable": "Con plazas", "ongoing": "En curso", "full": "Completa", "joinableLegend": "Pública: puedes unirte", "ongoingLegend": "Pública: en curso"},
+  "chooseDate": "Elegir fecha",
   "back": "Todas las instalaciones",
   "bookTitle": "Reservar un turno",
   "noFree": "No quedan turnos libres este día.",
@@ -49,7 +51,7 @@
     "photo": "Foto (opcional)",
     "urgent": "Es urgente",
     "urgentHelp": "Por ejemplo, si es peligroso o impide usar la instalación.",
-    "shareContact": "Dejar que el personal del ayuntamiento vea mi correo para preguntarme",
+    "shareContact": "Permitir que el personal del ayuntamiento vea mi correo y el teléfono del perfil, si lo tengo guardado, para contactar conmigo",
     "send": "Enviar el aviso",
     "sending": "Enviando…",
     "cancel": "Cancelar",

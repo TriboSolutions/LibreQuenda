@@ -173,8 +173,7 @@
     "invalid_issue_category": "Choose what kind of problem it is.",
     "invalid_issue_description": "Describe the problem (up to 1000 characters).",
     "issue_failed": "The report could not be saved. Try again.",
-    "issue_booking_too_old": "That booking ended over a week ago: report it from the facility’s page.",
-    "too_many_open_issues": "You already have 5 open reports. Wait for the council to look at them.",
+    "issue_active_booking_required": "You can only report a problem during a confirmed booking that you own or have joined.",
     "invalid_issue_status": "That status does not exist.",
     "invalid_issue_note": "The note can be up to 1000 characters.",
     "issue_reject_reason": "To reject a report, explain why to the person who sent it.",
@@ -183,7 +182,8 @@
     "other_council_booking": "You already have bookings at {{0}}: an account books in one council at a time. You can book here once they are over or cancelled.",
     "council_limit_reached": "You already have {{0}} upcoming bookings at this council's facilities, the most it allows.",
     "booking_policy_failed": "The platform's booking rules could not be saved.",
-    "email_unverified": "Confirm your email address before booking: you can ask for the code and type it in your profile."
+    "email_unverified": "Confirm your email address before booking: you can ask for the code and type it in your profile.",
+    "too_many_booking_issues": "This booking already has 5 reports. No more can be submitted."
   },
   "email": {
     "greeting": "Hello {{0}},",
@@ -247,6 +247,17 @@
       "intro": "The council looked at the problem you reported at {{0}} ({{1}}) and will not take it further."
     },
     "issue_note": "Note from the council: {{0}}",
-    "issue_footer": "You get this email because you reported a problem at a facility on {{0}}."
+    "issue_footer": "You get this email because you reported a problem at a facility on {{0}}.",
+    "booking_joined": {
+      "subject": "Someone joined your booking: {{0}}, {{1}} at {{2}}",
+      "intro": "{{5}} joined your booking at {{0}} ({{1}}): {{2}}, from {{3}} to {{4}}."
+    },
+    "someone": "Someone",
+    "issue_reported": {
+      "subject": "New issue at {{0}}",
+      "intro": "A problem was reported at {{0}} ({{1}}). Review it in the council administration.",
+      "manage": "View issues",
+      "footer": "You receive this email because you administer this council on {{0}}."
+    }
   }
 }

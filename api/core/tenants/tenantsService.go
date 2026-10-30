@@ -182,6 +182,21 @@ func (s *tenantsService) loadDay(ctx context.Context, slug string, dateParam str
 		return nil, uuid.Nil, nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.day_load_failed"}
 	}
 
+	var publicRows, publicErr = queries.ListPublicBookingsByTenantRange(ctx, model.ListPublicBookingsByTenantRangeParams{
+		TenantID: tenant.ID, RangeStart: day, RangeEnd: dayEnd,
+	})
+	if publicErr != nil {
+		return nil, uuid.Nil, nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.day_load_failed"}
+	}
+	var publicByFacility = map[uuid.UUID][]PublicTurnDto{}
+	for _, row := range publicRows {
+		publicByFacility[row.FacilityID] = append(publicByFacility[row.FacilityID], PublicTurnDto{
+			Id: row.ID.String(), StartsAt: row.StartsAt, EndsAt: row.EndsAt,
+			Description: row.PublicDescription, Capacity: row.Capacity.Int32,
+			People: append([]string{row.OwnerName}, row.People...),
+		})
+	}
+
 	var windowsByFacility = map[uuid.UUID][]schedule.Window{}
 	for _, h := range hours {
 		windowsByFacility[h.FacilityID] = append(windowsByFacility[h.FacilityID], schedule.Window{Opens: h.OpensAt, Closes: h.ClosesAt})
@@ -238,6 +253,7 @@ func (s *tenantsService) loadDay(ctx context.Context, slug string, dateParam str
 		}
 		response.Facilities = append(response.Facilities, FacilityDayDto{
 			Id:                f.ID.String(),
+			PublicBookings:    append([]PublicTurnDto{}, publicByFacility[f.ID]...),
 			Slug:              f.Slug,
 			Name:              f.Name,
 			Description:       f.Description.String,
@@ -246,6 +262,7 @@ func (s *tenantsService) loadDay(ctx context.Context, slug string, dateParam str
 			Longitude:         longitude,
 			Sport:             f.Sport,
 			Tags:              append([]string{}, f.Tags...),
+			ShowWeather:       f.ShowWeather,
 			Address:           f.Address.String,
 			ContactPhone:      f.ContactPhone.String,
 			ContactEmail:      f.ContactEmail.String,

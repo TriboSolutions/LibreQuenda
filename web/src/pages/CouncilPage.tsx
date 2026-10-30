@@ -90,10 +90,10 @@ export function CouncilPage() {
   const shownDay = day.data && chosen.length > 0 ? { ...day.data, facilities: day.data.facilities.filter((f) => chosen.every((slug) => f.tags.includes(slug))) } : day.data
 
 
-  const confirmBooking = async (facility: Facility, slot: Slot, isPublic: boolean) => {
+  const confirmBooking = async (facility: Facility, slot: Slot, isPublic: boolean, description: string) => {
     if (!token) return t('bookings:dialog.needLogin')
     try {
-      const booking = await api.book(token, facility.id, slot.starts_at, true, isPublic) // the dialog only enables booking once the rules are accepted
+      const booking = await api.book(token, facility.id, slot.starts_at, true, isPublic, description) // the dialog only enables booking once the rules are accepted
       setPick(null)
       setNotice(
         t('bookings:notice.booked', {

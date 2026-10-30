@@ -17,7 +17,7 @@ const MAX_DESCRIPTION = 1000
 
 type Props = {
   facility: { id: string; name: string } | null // null: closed
-  bookingId?: string // reported from this booking
+  bookingId: string // reported from this booking
   onClose: () => void
 }
 

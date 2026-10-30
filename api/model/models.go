@@ -283,7 +283,9 @@ const (
 	NotificationTypeBookingCancelled          NotificationType = "booking_cancelled"
 	NotificationTypeBookingCancelledByCouncil NotificationType = "booking_cancelled_by_council"
 	NotificationTypeBookingReminder           NotificationType = "booking_reminder"
+	NotificationTypeBookingJoined             NotificationType = "booking_joined"
 	NotificationTypeCouncilAdminGranted       NotificationType = "council_admin_granted"
+	NotificationTypeIssueReported             NotificationType = "issue_reported"
 	NotificationTypeIssueSolved               NotificationType = "issue_solved"
 	NotificationTypeIssueRejected             NotificationType = "issue_rejected"
 )
@@ -383,6 +385,7 @@ type AppUser struct {
 	AvatarRef           sql.NullString `json:"avatar_ref"`
 	PreferredLanguage   sql.NullString `json:"preferred_language"`
 	EmailReminders      bool           `json:"email_reminders"`
+	EmailNotifications  bool           `json:"email_notifications"`
 	ShowRecommendations bool           `json:"show_recommendations"`
 	CalendarToken       uuid.NullUUID  `json:"calendar_token"`
 	CreatedAt           time.Time      `json:"created_at"`
@@ -427,6 +430,7 @@ type Booking struct {
 	CheckedInBy       uuid.NullUUID        `json:"checked_in_by"`
 	InviteToken       uuid.NullUUID        `json:"invite_token"`
 	IsPublic          bool                 `json:"is_public"`
+	PublicDescription string               `json:"public_description"`
 }
 
 type BookingParticipant struct {
@@ -470,6 +474,7 @@ type Facility struct {
 	AccessibilityInfo        sql.NullString  `json:"accessibility_info"`
 	ContactPhone             sql.NullString  `json:"contact_phone"`
 	ContactEmail             sql.NullString  `json:"contact_email"`
+	ShowWeather              bool            `json:"show_weather"`
 	ImageRef                 sql.NullString  `json:"image_ref"`
 	IsActive                 bool            `json:"is_active"`
 	SlotMinutes              int32           `json:"slot_minutes"`
