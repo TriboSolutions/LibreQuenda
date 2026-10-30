@@ -210,6 +210,11 @@ SET
     staff_confirm = sqlc.arg('staff_confirm'),
     qr_reader     = sqlc.arg('qr_reader'),
     staff_contacts = sqlc.arg('staff_contacts'),
+    -- kept while any phone or staff way stays on, for the no-show indicators
+    checks_in_since = CASE
+        WHEN sqlc.arg('printed_qr')::BOOLEAN OR sqlc.arg('entry_code')::BOOLEAN OR sqlc.arg('staff_confirm')::BOOLEAN
+        THEN COALESCE(checks_in_since, NOW())
+    END,
     updated_at    = NOW()
 WHERE
     facility_id = sqlc.arg('facility_id')

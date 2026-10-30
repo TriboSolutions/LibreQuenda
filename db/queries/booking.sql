@@ -61,8 +61,8 @@ WHERE
 FOR UPDATE OF b;
 
 -- name: ListBookingsByUser :many
--- reader_at_start: a QR reader was there when the turn began, so a missing
--- check-in means the person did not show up.
+-- checkin_at_start: the facility took check-ins when the turn began, so a
+-- missing check-in means the person did not show up.
 SELECT
     b.id,
     b.starts_at,
@@ -70,7 +70,7 @@ SELECT
     b.status,
     b.checkin_token,
     b.checked_in_at,
-    EXISTS (SELECT 1 FROM checkin_device d WHERE d.facility_id = f.id AND d.created_at <= b.starts_at)::BOOLEAN AS reader_at_start,
+    COALESCE(facility_checkin_since(f.id) <= b.starts_at, FALSE)::BOOLEAN AS checkin_at_start,
     -- the ways in the facility offers now, for the check-in button
     (EXISTS (SELECT 1 FROM checkin_device d WHERE d.facility_id = f.id) AND COALESCE(c.qr_reader, TRUE))::BOOLEAN AS has_reader,
     (COALESCE(c.printed_qr, FALSE) AND f.latitude IS NOT NULL)::BOOLEAN AS printed_qr,

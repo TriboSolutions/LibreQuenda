@@ -5,11 +5,12 @@
 INSERT INTO app_user (idp_subject, email, full_name, birth_date)
 VALUES ('seed-tester', '{TESTER_EMAIL}', 'Persoa de probas', DATE '1990-05-17');
 
-INSERT INTO facility_checkin (facility_id, printed_qr, entry_code, staff_confirm)
-SELECT f.id, TRUE, TRUE, TRUE
+INSERT INTO facility_checkin (facility_id, printed_qr, entry_code, staff_confirm, checks_in_since)
+SELECT f.id, TRUE, TRUE, TRUE, NOW()
 FROM facility f JOIN tenant t ON t.id = f.tenant_id
 WHERE t.slug = 'lalin' AND f.slug = 'pavillon-municipal-de-deportes'
-ON CONFLICT (facility_id) DO UPDATE SET printed_qr = TRUE, entry_code = TRUE, staff_confirm = TRUE;
+ON CONFLICT (facility_id) DO UPDATE SET printed_qr = TRUE, entry_code = TRUE, staff_confirm = TRUE,
+    checks_in_since = COALESCE(facility_checkin.checks_in_since, NOW());
 
 INSERT INTO booking (facility_id, user_id, starts_at, ends_at, rules_accepted_at)
 SELECT f.id, u.id, slot.starts_at, slot.starts_at + make_interval(mins => f.slot_minutes), NOW()

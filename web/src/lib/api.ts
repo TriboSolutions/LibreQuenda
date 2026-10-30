@@ -509,7 +509,7 @@ export type IndicatorCounts = {
   no_show_rate: number | null
 }
 
-export type FacilityIndicators = IndicatorCounts & { id: string; name: string; is_active: boolean; has_reader: boolean }
+export type FacilityIndicators = IndicatorCounts & { id: string; name: string; is_active: boolean; takes_checkin: boolean } // takes_checkin: a reader, the code, the door QR or staff
 
 export type IndicatorTotals = IndicatorCounts & {
   active_users: number

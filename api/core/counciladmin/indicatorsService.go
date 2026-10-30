@@ -165,10 +165,10 @@ func weekdayOccupancy(open map[uuid.UUID]map[string]int, booked []model.Indicato
 
 func mapFacilityIndicators(f model.IndicatorsByFacilityRow, openMinutes int) FacilityIndicatorsDto {
 	var item = FacilityIndicatorsDto{
-		ID:        f.ID,
-		Name:      f.Name,
-		IsActive:  f.IsActive,
-		HasReader: f.HasReader,
+		ID:           f.ID,
+		Name:         f.Name,
+		IsActive:     f.IsActive,
+		TakesCheckin: f.TakesCheckin,
 		IndicatorCountsDto: IndicatorCountsDto{
 			Bookings:           f.Bookings,
 			Confirmed:          f.Confirmed,
@@ -178,8 +178,8 @@ func mapFacilityIndicators(f model.IndicatorsByFacilityRow, openMinutes int) Fac
 			OpenHours:          float64(openMinutes) / 60,
 		},
 	}
-	// without a reader nobody checks in, so a missing check-in says nothing
-	if f.HasReader {
+	// without a way to check in, a missing check-in says nothing
+	if f.TakesCheckin {
 		item.Finished = f.Finished
 		item.Attended = f.Attended
 	}
@@ -349,8 +349,8 @@ func writeDailyCSV(w io.Writer, format csvFormat, r indicatorsRange, facilities 
 			var row = byDay[dayKey{f.ID, date}]
 			var openHours = float64(open[f.ID][date]) / 60
 			var bookedHours = float64(row.BookedMinutes) / 60
-			var checkedIn string // no reader, no check-ins to count
-			if f.HasReader {
+			var checkedIn string // no way to check in, no check-ins to count
+			if f.TakesCheckin {
 				checkedIn = format.count(row.CheckedIn)
 			}
 			out.Write([]string{

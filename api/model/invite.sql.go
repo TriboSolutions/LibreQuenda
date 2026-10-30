@@ -379,7 +379,7 @@ SELECT
     b.ends_at,
     b.status,
     b.checked_in_at,
-    EXISTS (SELECT 1 FROM checkin_device d WHERE d.facility_id = f.id AND d.created_at <= b.starts_at)::BOOLEAN AS reader_at_start,
+    COALESCE(facility_checkin_since(f.id) <= b.starts_at, FALSE)::BOOLEAN AS checkin_at_start,
     f.id   AS facility_id,
     f.name AS facility_name,
     f.slug AS facility_slug,
@@ -408,7 +408,7 @@ type ListParticipationsByUserRow struct {
 	EndsAt           time.Time     `json:"ends_at"`
 	Status           BookingStatus `json:"status"`
 	CheckedInAt      sql.NullTime  `json:"checked_in_at"`
-	ReaderAtStart    bool          `json:"reader_at_start"`
+	CheckinAtStart   bool          `json:"checkin_at_start"`
 	FacilityID       uuid.UUID     `json:"facility_id"`
 	FacilityName     string        `json:"facility_name"`
 	FacilitySlug     string        `json:"facility_slug"`
@@ -437,7 +437,7 @@ func (q *Queries) ListParticipationsByUser(ctx context.Context, userID uuid.Null
 			&i.EndsAt,
 			&i.Status,
 			&i.CheckedInAt,
-			&i.ReaderAtStart,
+			&i.CheckinAtStart,
 			&i.FacilityID,
 			&i.FacilityName,
 			&i.FacilitySlug,

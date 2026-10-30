@@ -318,9 +318,8 @@
     "colOccupancy": "Occupancy",
     "colCancellation": "Cancellations",
     "colNoShow": "No-shows",
-    "noReader": "no QR reader",
     "percent": "{{value}}%",
-    "definitions": "Occupancy divides the hours booked by the hours that could be booked, leaving out closures. No-shows only count at facilities with a QR reader. The figures are worked out live from the bookings.",
+    "definitions": "Occupancy divides the booked hours by the hours that could be booked, leaving out closures. No-shows only count since the facility takes check-ins (QR reader, code, QR at the door or staff). The figures are worked out live from the bookings.",
     "kpiTitle": "Period summary",
     "fullscreen": "Full screen: {{board}}",
     "exitFullscreen": "Exit full screen",
@@ -380,7 +379,8 @@
     "facilityTitle": "Indicators of {{name}}",
     "facilityDetail": "Facility detail",
     "editFacility": "Edit facility",
-    "customInvalid": "Choose a start date before the end date, at most a year apart."
+    "customInvalid": "Choose a start date before the end date, at most a year apart.",
+    "noCheckin": "no check-in"
   },
   "smtp": {
     "title": "Email server (SMTP)",

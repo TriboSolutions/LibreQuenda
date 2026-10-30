@@ -297,17 +297,17 @@ SELECT
     f.name,
     f.slot_minutes,
     f.is_active,
-    EXISTS (SELECT 1 FROM checkin_device d WHERE d.facility_id = f.id)::BOOLEAN AS has_reader,
+    (checkin.since IS NOT NULL)::BOOLEAN AS takes_checkin,
     COUNT(b.id) AS bookings,
     COUNT(b.id) FILTER (WHERE b.status = 'confirmed') AS confirmed,
     COUNT(b.id) FILTER (WHERE b.cancelled_by = 'user') AS cancelled_by_user,
     COUNT(b.id) FILTER (WHERE b.cancelled_by = 'council') AS cancelled_by_council,
     COALESCE(SUM(EXTRACT(EPOCH FROM b.ends_at - b.starts_at) / 60) FILTER (WHERE b.status = 'confirmed'), 0)::BIGINT AS booked_minutes,
-    COUNT(b.id) FILTER (WHERE b.status = 'confirmed' AND b.ends_at <= NOW() AND reader.since <= b.starts_at) AS finished,
-    COUNT(b.id) FILTER (WHERE b.status = 'confirmed' AND b.ends_at <= NOW() AND reader.since <= b.starts_at AND b.checked_in_at IS NOT NULL) AS attended
+    COUNT(b.id) FILTER (WHERE b.status = 'confirmed' AND b.ends_at <= NOW() AND checkin.since <= b.starts_at) AS finished,
+    COUNT(b.id) FILTER (WHERE b.status = 'confirmed' AND b.ends_at <= NOW() AND checkin.since <= b.starts_at AND b.checked_in_at IS NOT NULL) AS attended
 FROM
     facility f
-    CROSS JOIN LATERAL (SELECT MIN(d.created_at) AS since FROM checkin_device d WHERE d.facility_id = f.id) reader
+    CROSS JOIN LATERAL (SELECT facility_checkin_since(f.id) AS since) checkin
     LEFT JOIN booking b ON b.facility_id = f.id
         AND b.starts_at >= $1
         AND b.starts_at < $2
@@ -316,7 +316,7 @@ WHERE
     AND ($4::UUID IS NULL OR f.id = $4)
 GROUP BY
     f.id,
-    reader.since
+    checkin.since
 ORDER BY
     f.name ASC
 `
@@ -333,7 +333,7 @@ type IndicatorsByFacilityRow struct {
 	Name               string    `json:"name"`
 	SlotMinutes        int32     `json:"slot_minutes"`
 	IsActive           bool      `json:"is_active"`
-	HasReader          bool      `json:"has_reader"`
+	TakesCheckin       bool      `json:"takes_checkin"`
 	Bookings           int64     `json:"bookings"`
 	Confirmed          int64     `json:"confirmed"`
 	CancelledByUser    int64     `json:"cancelled_by_user"`
@@ -347,9 +347,10 @@ type IndicatorsByFacilityRow struct {
 // A booking belongs to the period its start falls in: range_start <= starts_at < range_end.
 // facility_id NULL = every facility of the council.
 // One row per facility, also the ones with no bookings in the period.
-// finished / attended: past confirmed bookings that began with a QR reader in
-// place, and those checked in at the door. Before a reader was installed nobody
-// could check in, so those bookings say nothing about no-shows.
+// finished / attended: past confirmed bookings that began while the facility
+// took check-ins (a QR reader, the code, the QR on the door or staff; see
+// facility_checkin_since), and those checked in. Before that nobody could check
+// in, so those bookings say nothing about no-shows.
 func (q *Queries) IndicatorsByFacility(ctx context.Context, arg IndicatorsByFacilityParams) ([]IndicatorsByFacilityRow, error) {
 	rows, err := q.db.QueryContext(ctx, indicatorsByFacility,
 		arg.RangeStart,
@@ -369,7 +370,7 @@ func (q *Queries) IndicatorsByFacility(ctx context.Context, arg IndicatorsByFaci
 			&i.Name,
 			&i.SlotMinutes,
 			&i.IsActive,
-			&i.HasReader,
+			&i.TakesCheckin,
 			&i.Bookings,
 			&i.Confirmed,
 			&i.CancelledByUser,

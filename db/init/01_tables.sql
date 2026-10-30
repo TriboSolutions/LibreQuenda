@@ -257,8 +257,21 @@ CREATE TABLE facility_checkin (
     staff_confirm BOOLEAN      NOT NULL DEFAULT FALSE,              -- staff mark the entry from the calendar
     qr_reader     BOOLEAN      NOT NULL DEFAULT TRUE,               -- off: the readers refuse every QR, but stay set up (broken, switched off)
     staff_contacts JSONB       NOT NULL DEFAULT '[]'::JSONB,        -- who residents ask on site: [{name, phone, place}], not accounts
+    checks_in_since TIMESTAMPTZ NULL,                                -- since the QR on the door, the code or staff took check-ins; NULL while all are off
     updated_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW()
 );
+
+-- Since when the facility takes check-ins: its first QR reader, or the phone and
+-- staff ways (facility_checkin.checks_in_since), whichever came first; NULL if
+-- never. A booking that started before it says nothing about no-shows: nobody
+-- could check in.
+CREATE FUNCTION facility_checkin_since(target UUID) RETURNS TIMESTAMPTZ
+LANGUAGE sql STABLE AS $$
+    SELECT LEAST(
+        (SELECT MIN(d.created_at) FROM checkin_device d WHERE d.facility_id = target),
+        (SELECT c.checks_in_since FROM facility_checkin c WHERE c.facility_id = target)
+    )
+$$;
 
 -- The personal QR on /perfil: a random token that lasts about a minute, so a
 -- screenshot is soon useless. At a reader it checks the person in, or books the

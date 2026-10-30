@@ -147,14 +147,14 @@ const (
 )
 
 // attendance: "" until a confirmed booking has ended; then whether anyone checked in,
-// which only says something if a reader was there to scan the QR.
-func attendance(status model.BookingStatus, endsAt time.Time, checkedIn, readerAtStart bool, now time.Time) string {
+// which only says something if the facility took check-ins when it began.
+func attendance(status model.BookingStatus, endsAt time.Time, checkedIn, checkinAtStart bool, now time.Time) string {
 	switch {
 	case status != model.BookingStatusConfirmed || endsAt.After(now):
 		return ""
 	case checkedIn:
 		return AttendanceAttended
-	case readerAtStart:
+	case checkinAtStart:
 		return AttendanceNoShow
 	default:
 		return AttendanceUnknown
@@ -223,7 +223,7 @@ func mapParticipation(row model.ListParticipationsByUserRow, now time.Time) Book
 		TenantSlug:       row.TenantSlug,
 		TenantName:       row.TenantName,
 		CheckedInAt:      checkedInAt,
-		Attendance:       attendance(row.Status, row.EndsAt, row.CheckedInAt.Valid, row.ReaderAtStart, now),
+		Attendance:       attendance(row.Status, row.EndsAt, row.CheckedInAt.Valid, row.CheckinAtStart, now),
 		Role:             RoleParticipant,
 		OwnerName:        row.OwnerName,
 		Capacity:         invitableCapacity(row.Capacity),
@@ -259,7 +259,7 @@ func mapBooking(row model.ListBookingsByUserRow, now time.Time) BookingDto {
 		CancelUntil:   cancelUntil,
 		CheckinCode:   checkinCode,
 		CheckedInAt:   checkedInAt,
-		Attendance:    attendance(row.Status, row.EndsAt, row.CheckedInAt.Valid, row.ReaderAtStart, now),
+		Attendance:    attendance(row.Status, row.EndsAt, row.CheckedInAt.Valid, row.CheckinAtStart, now),
 		Role:          RoleOwner,
 		CheckinWays:   checkinWays(row),
 		StaffContacts: staffContacts(row),
