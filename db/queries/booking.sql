@@ -70,7 +70,7 @@ SELECT
     b.status,
     b.checkin_token,
     b.checked_in_at,
-    COALESCE(facility_checkin_since(f.id) <= b.starts_at, FALSE)::BOOLEAN AS checkin_at_start,
+    facility_took_checkin(f.id, b.starts_at)::BOOLEAN AS checkin_at_start,
     -- the ways in the facility offers now, for the check-in button
     (EXISTS (SELECT 1 FROM checkin_device d WHERE d.facility_id = f.id) AND COALESCE(c.qr_reader, TRUE))::BOOLEAN AS has_reader,
     (COALESCE(c.printed_qr, FALSE) AND f.latitude IS NOT NULL)::BOOLEAN AS printed_qr,
@@ -294,6 +294,6 @@ WHERE
     AND checked_in_at IS NULL
     AND ends_at <= NOW()
     AND ends_at >= sqlc.arg('since')
-    AND facility_checkin_since(facility_id) <= starts_at
+    AND facility_took_checkin(facility_id, starts_at)
 ORDER BY
     ends_at DESC;

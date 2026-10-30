@@ -297,33 +297,34 @@ SELECT
     f.name,
     f.slot_minutes,
     f.is_active,
-    (checkin.since IS NOT NULL)::BOOLEAN AS takes_checkin,
+    EXISTS (
+        SELECT 1 FROM facility_checkin_period p
+        WHERE p.facility_id = f.id AND p.starts_at < $1::TIMESTAMPTZ AND (p.ends_at IS NULL OR p.ends_at > $2::TIMESTAMPTZ)
+    )::BOOLEAN AS takes_checkin,
     COUNT(b.id) AS bookings,
     COUNT(b.id) FILTER (WHERE b.status = 'confirmed') AS confirmed,
     COUNT(b.id) FILTER (WHERE b.cancelled_by = 'user') AS cancelled_by_user,
     COUNT(b.id) FILTER (WHERE b.cancelled_by = 'council') AS cancelled_by_council,
     COALESCE(SUM(EXTRACT(EPOCH FROM b.ends_at - b.starts_at) / 60) FILTER (WHERE b.status = 'confirmed'), 0)::BIGINT AS booked_minutes,
-    COUNT(b.id) FILTER (WHERE b.status = 'confirmed' AND b.ends_at <= NOW() AND checkin.since <= b.starts_at) AS finished,
-    COUNT(b.id) FILTER (WHERE b.status = 'confirmed' AND b.ends_at <= NOW() AND checkin.since <= b.starts_at AND b.checked_in_at IS NOT NULL) AS attended
+    COUNT(b.id) FILTER (WHERE b.status = 'confirmed' AND b.ends_at <= NOW() AND facility_took_checkin(f.id, b.starts_at)) AS finished,
+    COUNT(b.id) FILTER (WHERE b.status = 'confirmed' AND b.ends_at <= NOW() AND facility_took_checkin(f.id, b.starts_at) AND b.checked_in_at IS NOT NULL) AS attended
 FROM
     facility f
-    CROSS JOIN LATERAL (SELECT facility_checkin_since(f.id) AS since) checkin
     LEFT JOIN booking b ON b.facility_id = f.id
-        AND b.starts_at >= $1
-        AND b.starts_at < $2
+        AND b.starts_at >= $2
+        AND b.starts_at < $1
 WHERE
     f.tenant_id = $3
     AND ($4::UUID IS NULL OR f.id = $4)
 GROUP BY
-    f.id,
-    checkin.since
+    f.id
 ORDER BY
     f.name ASC
 `
 
 type IndicatorsByFacilityParams struct {
-	RangeStart time.Time     `json:"range_start"`
 	RangeEnd   time.Time     `json:"range_end"`
+	RangeStart time.Time     `json:"range_start"`
 	TenantID   uuid.UUID     `json:"tenant_id"`
 	FacilityID uuid.NullUUID `json:"facility_id"`
 }
@@ -348,13 +349,14 @@ type IndicatorsByFacilityRow struct {
 // facility_id NULL = every facility of the council.
 // One row per facility, also the ones with no bookings in the period.
 // finished / attended: past confirmed bookings that began while the facility
-// took check-ins (a QR reader, the code, the QR on the door or staff; see
-// facility_checkin_since), and those checked in. Before that nobody could check
-// in, so those bookings say nothing about no-shows.
+// took check-ins (a QR reader switched on, the code, the QR on the door or
+// staff; see facility_checkin_period), and those checked in. Outside those
+// stretches nobody could check in, so those bookings say nothing about no-shows.
+// takes_checkin: it took check-ins at some point of the period.
 func (q *Queries) IndicatorsByFacility(ctx context.Context, arg IndicatorsByFacilityParams) ([]IndicatorsByFacilityRow, error) {
 	rows, err := q.db.QueryContext(ctx, indicatorsByFacility,
-		arg.RangeStart,
 		arg.RangeEnd,
+		arg.RangeStart,
 		arg.TenantID,
 		arg.FacilityID,
 	)

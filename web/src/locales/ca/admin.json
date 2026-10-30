@@ -317,7 +317,7 @@
     "colCancellation": "Cancel·lacions",
     "colNoShow": "No presentades",
     "percent": "{{value}} %",
-    "definitions": "L’ocupació divideix les hores reservades entre les hores en què es podia reservar, descomptant els tancaments. Les no presentades només es compten des que la instal·lació registra l’entrada (lector QR, codi, QR de la porta o personal). Les xifres es calculen al moment a partir de les reserves.",
+    "definitions": "L’ocupació divideix les hores reservades entre les hores en què es podia reservar, descomptant els tancaments. Les no presentades només es compten en els torns que van començar mentre la instal·lació registrava l’entrada (lector QR encès, codi, QR de la porta o personal). Les xifres es calculen al moment a partir de les reserves.",
     "kpiTitle": "Resum del període",
     "fullscreen": "Pantalla completa: {{board}}",
     "exitFullscreen": "Surt de la pantalla completa",
