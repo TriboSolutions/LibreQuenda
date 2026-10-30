@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import { Link } from 'react-router'
+import { AuditLogPanel } from '@/components/admin/AuditLogPanel'
 import { BrandingPanel } from '@/components/admin/BrandingPanel'
 import { CouncilsPanel } from '@/components/admin/CouncilsPanel'
 import { SuperadminsPanel } from '@/components/admin/SuperadminsPanel'
@@ -9,9 +10,11 @@ import { TopBar } from '@/components/TopBar'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useAsync } from '@/hooks/useAsync'
 import { useLogin } from '@/hooks/useLogin'
 import { useMe } from '@/hooks/useMe'
 import { usePageTitle } from '@/hooks/usePageTitle'
+import { api } from '@/lib/api'
 import { SiteFooter } from '@/components/SiteFooter'
 
 /** /admin: the superadministrator's area (councils, superadministrators, the facility tag catalogue and the app's name and logo). */
@@ -54,6 +57,7 @@ export function PlatformAdmin() {
           <TabsTrigger value="superadmins">{t('admin:tabs.superadmins')}</TabsTrigger>
           <TabsTrigger value="tags">{t('admin:tabs.tags')}</TabsTrigger>
           <TabsTrigger value="branding">{t('admin:tabs.branding')}</TabsTrigger>
+          <TabsTrigger value="audit">{t('admin:tabs.audit')}</TabsTrigger>
         </TabsList>
         <TabsContent value="councils">
           <CouncilsPanel />
@@ -66,6 +70,9 @@ export function PlatformAdmin() {
         </TabsContent>
         <TabsContent value="branding">
           <BrandingPanel />
+        </TabsContent>
+        <TabsContent value="audit">
+          <PlatformAudit />
         </TabsContent>
       </Tabs>
     )
@@ -81,5 +88,19 @@ export function PlatformAdmin() {
       </main>
       <SiteFooter />
     </div>
+  )
+}
+
+/** The whole audit log, every council and the platform's own changes. */
+function PlatformAudit() {
+  const auth = useAuth()
+  const token = auth.user?.access_token ?? ''
+  const councils = useAsync(() => api.admin.councils(token), 'audit-councils')
+  return (
+    <AuditLogPanel
+      load={(filters) => api.admin.audit(token, filters)}
+      download={(filters) => api.admin.downloadAudit(token, filters)}
+      councils={councils.data?.tenants ?? []}
+    />
   )
 }

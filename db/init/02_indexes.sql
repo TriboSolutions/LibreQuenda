@@ -39,3 +39,8 @@ CREATE INDEX idx_facility_tag_tag         ON facility_tag (tag_id);
 -- check-in history: one open stretch per facility, and the lookups by start
 CREATE UNIQUE INDEX idx_checkin_period_open ON facility_checkin_period (facility_id) WHERE ends_at IS NULL;
 CREATE INDEX idx_checkin_period_facility ON facility_checkin_period (facility_id, starts_at);
+
+-- the activity log: by council and time, newest first, and by action
+CREATE INDEX idx_audit_log_tenant_at ON audit_log (tenant_id, at DESC);
+CREATE INDEX idx_audit_log_at        ON audit_log (at DESC);
+CREATE INDEX idx_audit_log_action    ON audit_log (action);

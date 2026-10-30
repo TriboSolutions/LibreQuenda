@@ -3,6 +3,7 @@ package platform
 import (
 	"database/sql"
 	"encoding/json"
+	"librequenda/audit"
 	"librequenda/auth"
 	"librequenda/core/me"
 	"librequenda/model"
@@ -148,6 +149,13 @@ func (h *platformHandler) CreateTenant(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var response, err = GetPlatformService(h.db).CreateTenant(r.Context(), userId, input)
+	if err == nil {
+		if row, lookupErr := model.New(h.db).GetTenantIdBySlug(r.Context(), response.Slug); lookupErr == nil {
+			audit.Council(r.Context(), row.ID)
+			audit.Target(r.Context(), "tenant", row.ID, response.Name)
+		}
+		audit.Describe(r.Context(), "first administrator invited")
+	}
 	send(w, r, response, err)
 }
 
@@ -182,7 +190,20 @@ func (h *platformHandler) UpdateTenant(w http.ResponseWriter, r *http.Request) {
 	if !isSuperadmin {
 		input.IsActive = nil
 	}
+	var before, _ = GetPlatformService(h.db).GetTenant(r.Context(), slug)
 	var response, err = GetPlatformService(h.db).UpdateTenant(r.Context(), slug, input)
+	if err == nil && before != nil {
+		audit.Changed(r.Context(), "name", before.Name, response.Name)
+		audit.Changed(r.Context(), "slug", before.Slug, response.Slug)
+		audit.Changed(r.Context(), "timezone", before.Timezone, response.Timezone)
+		audit.Changed(r.Context(), "active", before.IsActive, response.IsActive)
+		if before.ContactEmail != response.ContactEmail || before.ContactPhone != response.ContactPhone {
+			audit.Describe(r.Context(), "contact changed")
+		}
+		if before.LogoRef != response.LogoRef {
+			audit.Describe(r.Context(), "logo changed")
+		}
+	}
 	send(w, r, response, err)
 }
 
@@ -260,7 +281,13 @@ func (h *platformHandler) AddSuperadmin(w http.ResponseWriter, r *http.Request) 
 	if !decode(w, r, &input) {
 		return
 	}
-	send(w, r, nil, GetPlatformService(h.db).AddSuperadmin(r.Context(), input.Email))
+	var err = GetPlatformService(h.db).AddSuperadmin(r.Context(), input.Email)
+	if err == nil {
+		if id, lookupErr := model.New(h.db).GetUserIdByEmailForAudit(r.Context(), input.Email); lookupErr == nil {
+			audit.TargetUser(r.Context(), id)
+		}
+	}
+	send(w, r, nil, err)
 }
 
 func (h *platformHandler) RemoveSuperadmin(w http.ResponseWriter, r *http.Request) {
@@ -290,6 +317,7 @@ func (h *platformHandler) CreateTagCategory(w http.ResponseWriter, r *http.Reque
 		return
 	}
 	var response, err = GetPlatformService(h.db).CreateTagCategory(r.Context(), input)
+	audit.Describe(r.Context(), "%q", input.Name)
 	send(w, r, response, err)
 }
 
@@ -306,6 +334,7 @@ func (h *platformHandler) UpdateTagCategory(w http.ResponseWriter, r *http.Reque
 		return
 	}
 	var response, err = GetPlatformService(h.db).UpdateTagCategory(r.Context(), id, input)
+	audit.Describe(r.Context(), "%q", input.Name)
 	send(w, r, response, err)
 }
 
@@ -330,6 +359,7 @@ func (h *platformHandler) CreateTag(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var response, err = GetPlatformService(h.db).CreateTag(r.Context(), input)
+	audit.Describe(r.Context(), "%q", input.Name)
 	send(w, r, response, err)
 }
 
@@ -346,6 +376,7 @@ func (h *platformHandler) UpdateTag(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var response, err = GetPlatformService(h.db).UpdateTag(r.Context(), id, input)
+	audit.Describe(r.Context(), "%q", input.Name)
 	send(w, r, response, err)
 }
 
@@ -376,6 +407,30 @@ func (h *platformHandler) UpdateBranding(w http.ResponseWriter, r *http.Request)
 	if !decode(w, r, &input) {
 		return
 	}
+	var before, _ = GetPlatformService(h.db).Branding(r.Context())
 	var response, err = GetPlatformService(h.db).UpdateBranding(r.Context(), input)
+	if err == nil && before != nil {
+		audit.Changed(r.Context(), "name", before.CustomName, response.CustomName)
+		if before.LogoRef != response.LogoRef {
+			audit.Describe(r.Context(), "logo changed")
+		}
+	}
 	send(w, r, response, err)
+}
+
+// GetAudit: the whole audit log, for superadministrators; ?council=<slug> narrows it.
+func (h *platformHandler) GetAudit(w http.ResponseWriter, r *http.Request) {
+	if _, ok := h.superadmin(w, r); !ok {
+		return
+	}
+	var filters = audit.ParseFilters(r.URL.Query(), audit.Zone())
+	if slug := r.URL.Query().Get("council"); slug != "" {
+		var row, err = model.New(h.db).GetTenantIdBySlug(r.Context(), slug)
+		if err != nil {
+			helpers.SendI18NErrorResponse(w, r, http.StatusNotFound, "errors.tenant_not_found")
+			return
+		}
+		filters.TenantID = uuid.NullUUID{UUID: row.ID, Valid: true}
+	}
+	audit.Serve(w, r, h.db, uuid.NullUUID{}, filters)
 }

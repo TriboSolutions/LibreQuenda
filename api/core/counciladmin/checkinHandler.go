@@ -34,7 +34,11 @@ func (h *counciladminHandler) SaveCheckinSettings(w http.ResponseWriter, r *http
 	if !decode(w, r, &input) {
 		return
 	}
+	var before, _ = GetCounciladminService(h.db).GetCheckinSettings(r.Context(), tenantId, id)
 	var response, err = GetCounciladminService(h.db).SaveCheckinSettings(r.Context(), tenantId, id, input)
+	if err == nil {
+		describeCheckin(r.Context(), before, response)
+	}
 	send(w, r, response, err)
 }
 

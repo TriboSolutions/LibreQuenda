@@ -53,6 +53,7 @@ const pages: { name: string; path: string; signedIn?: boolean }[] = [
   { name: 'check-in QR to print', path: '/lugo/admin/facilities/f1/imprimir?que=qr' },
   { name: 'entry code to print', path: '/lugo/admin/facilities/f1/imprimir?que=codigo' },
   { name: 'council settings', path: '/lugo/admin/axustes' },
+  { name: 'council admin, activity log', path: '/lugo/admin?vista=rexistro' },
   { name: 'facility editor, booking window', path: '/lugo/admin/facilities/f1?vista=reserva' },
   { name: 'entry code to print, in braille', path: '/lugo/admin/facilities/f1/imprimir?que=codigo&braille=1' },
   { name: 'check-in at the door, printed QR', path: '/lugo/padel-1/entrada?c=9a1f6c2e-3b4d-4e5f-8a7b-1c2d3e4f5a6b' },
@@ -221,6 +222,14 @@ for (const theme of ['light', 'dark'] as const) {
       await open(page, '/admin', { theme })
       await page.getByRole('tab').nth(2).click()
       await expect(page.getByRole('heading', { name: 'Deportes' })).toBeVisible()
+      await expectAccessible(page)
+    })
+
+    test('platform admin, activity log tab', async ({ page }) => {
+      await open(page, '/admin', { theme })
+      await page.getByRole('tab', { name: 'Rexistro' }).click()
+      await expect(page.getByRole('table', { name: 'Rexistro de actividade, máis recente primeiro' })).toBeVisible()
+      await page.waitForTimeout(300)
       await expectAccessible(page)
     })
 
@@ -535,6 +544,22 @@ test.describe('keyboard', () => {
     await expect(notice.getByRole('button', { name: 'Iniciar sesión de novo' })).toBeVisible()
     await page.waitForTimeout(300)
     await expectAccessible(page)
+  })
+
+  test('the activity log filters, pages and names erased accounts', async ({ page }) => {
+    await open(page, '/lugo/admin?vista=rexistro')
+    const log = page.getByRole('table', { name: 'Rexistro de actividade, máis recente primeiro' })
+    await expect(log).toContainText('Editou unha instalación')
+    await expect(log).toContainText('Conta borrada')
+    await expect(log).toContainText('Sistema')
+    await expect(log.getByRole('link', { name: 'Pista de pádel 1' })).toHaveAttribute('href', '/lugo/admin/facilities/f1')
+    const filtered = page.waitForRequest((r) => r.url().includes('/admin/audit?') && r.url().includes('action=closure'))
+    await page.getByLabel('Acción').click()
+    await page.getByRole('option', { name: 'Peches' }).click()
+    await filtered
+    const more = page.waitForRequest((r) => r.url().includes('/admin/audit?') && r.url().includes('before='))
+    await page.getByRole('button', { name: 'Ver máis' }).click()
+    await more
   })
 
   test('signed out, the home page has no recommendations', async ({ page }) => {

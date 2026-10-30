@@ -65,6 +65,7 @@ Status: **built** · **in progress** (open work) · **idea** (not started).
 | CI: Go and web checks, vulnerability and image scanning (govulncheck, pnpm audit, Trivy), images published to ghcr.io | built |
 | Short-lived access tokens, second factor required for administrators, least-privilege Zitadel bootstrap | in progress |
 | Rate limit on sign-up and sign-in at the proxy (no captcha: Zitadel's login has none) | in progress |
+| Activity log of every administrative change, for superadministrators (all) and each council's administrators (their own), append-only with a retention period, CSV download | built |
 | Demo deployment, production kit (`deploy/`), OpenAPI spec | idea (see todo.md) |
 
 ## Ideas for later
@@ -93,4 +94,3 @@ Grouped by who gains most; none of these is started.
 
 - **Cl@ve / Chave365** sign-in for residents (to confirm with AMTEGA/AGASOL).
 - **Native mobile app** (`app/`), if the installable web app is not enough.
-- **Audit log** of administrators' actions (who closed what, who cancelled whose booking).

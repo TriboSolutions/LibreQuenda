@@ -295,6 +295,21 @@ type AppUser struct {
 	UpdatedAt           time.Time      `json:"updated_at"`
 }
 
+type AuditLog struct {
+	ID           uuid.UUID      `json:"id"`
+	At           time.Time      `json:"at"`
+	ActorID      uuid.NullUUID  `json:"actor_id"`
+	ActorRole    string         `json:"actor_role"`
+	TenantID     uuid.NullUUID  `json:"tenant_id"`
+	TenantLabel  sql.NullString `json:"tenant_label"`
+	Action       string         `json:"action"`
+	TargetType   sql.NullString `json:"target_type"`
+	TargetID     uuid.NullUUID  `json:"target_id"`
+	TargetUserID uuid.NullUUID  `json:"target_user_id"`
+	TargetLabel  sql.NullString `json:"target_label"`
+	Summary      string         `json:"summary"`
+}
+
 type Booking struct {
 	ID                uuid.UUID            `json:"id"`
 	FacilityID        uuid.UUID            `json:"facility_id"`
