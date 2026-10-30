@@ -80,7 +80,7 @@
     "guestJoined": "Hecho: {{name}} está en la reserva en {{facility}}, {{day}} a las {{time}}.",
     "seeMyBookings": "Ver mis reservas",
     "facilityPage": "Ver la instalación",
-    "error": "No se pudo unir a la reserva.",
+    "error": "No te has podido unir a la reserva.",
     "or": "o"
   },
   "people": {

@@ -8,10 +8,10 @@
   "radius": "Distància",
   "anyDistance": "Qualsevol",
   "withinKm": "Fins a {{km}} km",
-  "locationDenied": "No s'ha pogut saber on ets. Permet la ubicació al navegador o cerca l'ajuntament pel nom.",
+  "locationDenied": "No s’ha pogut saber on ets. Permet la ubicació al navegador o cerca l’ajuntament pel nom.",
   "notFound": {
     "title": "Ajuntament no trobat",
-    "body": "No hi ha cap ajuntament a «/{{slug}}». Revisa l'adreça o tria'n un de la llista."
+    "body": "No hi ha cap ajuntament a «/{{slug}}». Revisa l’adreça o tria’n un de la llista."
   },
   "allCouncils": "Tots els ajuntaments",
   "council": "Ajuntament",
@@ -27,7 +27,7 @@
   "noneInView": "Cap instal·lació en aquesta zona del mapa. Allunya o mou el mapa.",
   "empty": "Encara no hi ha instal·lacions publicades.",
   "loading": "Carregant instal·lacions",
-  "loadError": "No s'han pogut carregar les instal·lacions.",
+  "loadError": "No s’han pogut carregar les instal·lacions.",
   "card": {
     "freeTodayLong_one": "{{count}} torn lliure avui",
     "freeTodayLong_other": "{{count}} torns lliures avui",
@@ -37,8 +37,8 @@
     "council_one": "{{name}}: {{count}} instal·lació",
     "council_other": "{{name}}: {{count}} instal·lacions",
     "openCouncil": "Obre {{name}}",
-    "zoomIn_one": "Apropa't a la seva instal·lació",
-    "zoomIn_other": "Apropa't a les seves {{count}} instal·lacions"
+    "zoomIn_one": "Apropa’t a la seva instal·lació",
+    "zoomIn_other": "Apropa’t a les seves {{count}} instal·lacions"
   },
   "widget": {
     "title": "Torns lliures",

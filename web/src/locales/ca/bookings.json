@@ -5,10 +5,10 @@
   "signedOut": "Consulta els horaris sense compte. Per reservar, cancel·lar i veure el teu historial, inicia la sessió amb el teu correu o crea un compte en un minut.",
   "createAccount": "Crea un compte",
   "loading": "Carregant reserves",
-  "loadError": "No s'han pogut carregar les teves reserves.",
+  "loadError": "No s’han pogut carregar les teves reserves.",
   "empty": "No tens reserves properes. Tria un torn lliure a la disponibilitat.",
   "cancel": "Cancel·la",
-  "change": "Canviar",
+  "change": "Canvia",
   "noCancel": "Sense cancel·lació",
   "cancelDeadlinePassed": "Només es podia cancel·lar fins a {{date}}",
   "locked": "Canvis i cancel·lació tancats el {{date}}",
@@ -18,7 +18,7 @@
     "attended": "Assistida",
     "noShow": "No presentada",
     "ended": "Finalitzada",
-    "checkedIn": "A dins"
+    "checkedIn": "Entrada registrada"
   },
   "notice": {
     "booked": "Reserva confirmada: {{facility}}, {{day}} a les {{time}}.",
@@ -35,10 +35,10 @@
     "confirm": "Confirma la reserva",
     "confirming": "Reservant…",
     "loginToBook": "Inicia la sessió per reservar",
-    "needLogin": "Has d'iniciar la sessió per reservar.",
-    "error": "No s'ha pogut fer la reserva.",
-    "acceptRules": "He llegit i accepto les normes d'ús.",
-    "noRules": "Aquesta instal·lació no té normes específiques: s'apliquen les normes generals de l'ajuntament.",
+    "needLogin": "Has d’iniciar la sessió per reservar.",
+    "error": "No s’ha pogut fer la reserva.",
+    "acceptRules": "He llegit i accepto les normes d’ús.",
+    "noRules": "Aquesta instal·lació no té normes específiques: s’apliquen les normes generals de l’ajuntament.",
     "minAge": "Edat mínima",
     "minAgeValue": "{{count}} anys",
     "public": "Fer pública la reserva",
@@ -50,12 +50,12 @@
     "keep": "Mantén la reserva",
     "confirm": "Cancel·la la reserva",
     "confirming": "Cancel·lant…",
-    "needLogin": "Has d'iniciar la sessió.",
-    "error": "No s'ha pogut cancel·lar la reserva."
+    "needLogin": "Has d’iniciar la sessió.",
+    "error": "No s’ha pogut cancel·lar la reserva."
   },
   "changeDialog": {
-    "title": "Canviar la reserva a {{facility}}",
-    "description": "Ara {{day}}, {{start}}–{{end}}. Tria una altra hora lliure; qui s'hi ha unit, el QR i l'enllaç d'invitació continuen amb la reserva.",
+    "title": "Canvia la reserva a {{facility}}",
+    "description": "Ara {{day}}, {{start}}–{{end}}. Tria una altra hora lliure; qui s’hi ha unit, el QR i l’enllaç d’invitació continuen amb la reserva.",
     "when": "Nova data i hora",
     "date": "Data",
     "times": "Hores",
@@ -63,21 +63,21 @@
     "closedDay": "Tancat aquest dia. Tria una altra data.",
     "cancelUntil": "La podràs canviar o cancel·lar fins al {{date}}.",
     "pick": "Tria una hora",
-    "confirm": "Passar a {{day}}, {{time}}",
+    "confirm": "Passa-la a {{day}}, {{time}}",
     "saving": "Canviant…",
-    "error": "No s'ha pogut canviar la reserva.",
-    "close": "Tancar"
+    "error": "No s’ha pogut canviar la reserva.",
+    "close": "Tanca"
   },
   "qr": {
-    "show": "QR d'entrada",
-    "title": "QR d'entrada",
+    "show": "QR d’entrada",
+    "title": "QR d’entrada",
     "description": "{{facility}}, {{day}}, {{start}}–{{end}}",
     "alt": "Codi QR de la reserva a {{facility}}",
-    "hint": "Mostra'l al lector de l'entrada, des de 15 minuts abans de l'inici fins al final de la reserva.",
+    "hint": "Mostra’l al lector de l’entrada, des de 15 minuts abans de l’inici fins al final de la reserva.",
     "brightness": "Si el lector no el detecta, apuja la brillantor de la pantalla.",
-    "email": "També t'arriba als correus de confirmació i de recordatori.",
+    "email": "També t’arriba als correus de confirmació i de recordatori.",
     "checkedIn": "Entrada registrada a les {{time}}",
-    "close": "Tancar"
+    "close": "Tanca"
   },
   "countdown": {
     "startsIn": "Comença d’aquí a {{time}}",
@@ -86,12 +86,12 @@
     "in": "Entrada registrada a les {{time}}"
   },
   "checkin": {
-    "button": "Registrar l’entrada",
+    "button": "Registra l’entrada",
     "from": "Entrada des de les {{time}}",
-    "title": "Registrar l’entrada",
+    "title": "Registra l’entrada",
     "description": "{{facility}}, {{day}}, {{start}}–{{end}}",
     "done": "Ja tens l’entrada registrada a les {{time}}.",
-    "close": "Tancar",
+    "close": "Tanca",
     "entry_code": {
       "help": "Escriu el codi que hi ha a la porta o al taulell. Et demanarem la ubicació: es comprova i mai no es desa.",
       "tab": "Codi"

@@ -19,7 +19,7 @@
     "today": "Hoy",
     "tomorrow": "Mañana",
     "todayShort": "hoy",
-    "tomorrowShort": "mañ.",
+    "tomorrowShort": "mañana",
     "longDate": "{{weekday}}, {{day}} de {{month}}",
     "dateWithYear": "{{day}} de {{month}} de {{year}}",
     "shortDate": "{{weekday}} {{day}}",

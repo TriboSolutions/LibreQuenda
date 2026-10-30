@@ -3,9 +3,9 @@
   "finding": {
     "today": "Today, {{date}}",
     "closed": "{{when}}. All facilities are closed.",
-    "full": "{{when}}. No free turns left.",
-    "free_one": "{{when}}. {{count}} free turn in {{facilities}}; the first, {{facility}} at {{time}}.",
-    "free_other": "{{when}}. {{count}} free turns in {{facilities}}; the first, {{facility}} at {{time}}.",
+    "full": "{{when}}. No free slots left.",
+    "free_one": "{{when}}. {{count}} free slot in {{facilities}}; the first, {{facility}} at {{time}}.",
+    "free_other": "{{when}}. {{count}} free slots in {{facilities}}; the first, {{facility}} at {{time}}.",
     "facilities_one": "{{count}} facility",
     "facilities_other": "{{count}} facilities"
   },

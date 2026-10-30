@@ -72,7 +72,7 @@
       "11": "des"
     }
   },
-  "configError": "No s'ha pogut carregar la configuració de l'aplicació ({{status}}).",
+  "configError": "No s’ha pogut carregar la configuració de l’aplicació ({{status}}).",
   "signingIn": "Iniciant la sessió…",
   "imagePicker": {
     "upload": "Puja una imatge",

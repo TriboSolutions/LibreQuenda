@@ -1,8 +1,8 @@
 {
   "title": "Instalaciones deportivas",
   "subtitle": "{{count}} instalaciones en {{councils}} ayuntamientos. Filtra por ayuntamiento, deporte o distancia.",
-  "search": "Buscar instalación, ayuntamiento, deporte…",
-  "filters": "Filtrar ayuntamientos",
+  "search": "Busca una instalación, un ayuntamiento o un deporte…",
+  "filters": "Filtros",
   "nearMe": "Buscar cerca de mí",
   "locating": "Buscando dónde estás…",
   "radius": "Distancia",

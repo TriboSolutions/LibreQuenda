@@ -1,14 +1,14 @@
 {
   "title": "Sports facilities",
   "subtitle": "{{count}} facilities in {{councils}} councils. Filter by council, sport or distance.",
-  "search": "Search facility, council, sport…",
-  "filters": "Filter councils",
+  "search": "Search facilities, councils or sports…",
+  "filters": "Filters",
   "nearMe": "Search near me",
   "locating": "Finding where you are…",
   "radius": "Distance",
   "anyDistance": "Any",
   "withinKm": "Up to {{km}} km",
-  "locationDenied": "We couldn't tell where you are. Allow location in your browser, or search for the council by name.",
+  "locationDenied": "We couldn’t tell where you are. Allow location in your browser, or search for the council by name.",
   "notFound": {
     "title": "Council not found",
     "body": "There is no council at “/{{slug}}”. Check the address or choose one from the list."
@@ -29,8 +29,8 @@
   "loading": "Loading facilities",
   "loadError": "Could not load the facilities.",
   "card": {
-    "freeTodayLong_one": "{{count}} free turn today",
-    "freeTodayLong_other": "{{count}} free turns today",
+    "freeTodayLong_one": "{{count}} free slot today",
+    "freeTodayLong_other": "{{count}} free slots today",
     "distance": "{{km}} km away"
   },
   "map": {

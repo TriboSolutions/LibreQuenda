@@ -72,11 +72,11 @@
     "joining": "Joining…",
     "signInToJoin": "Sign in to join",
     "asGuest": "Join without an account",
-    "asGuestHint": "No account needed. Only the name and age are kept, to check the facility's minimum age.",
+    "asGuestHint": "No account needed. Only the name and age are kept, to check the facility’s minimum age.",
     "name": "Name",
     "age": "Age",
     "joinAsGuest": "Join without an account",
-    "joined": "You're in: {{facility}}, {{day}} at {{time}}.",
+    "joined": "You’re in: {{facility}}, {{day}} at {{time}}.",
     "guestJoined": "Done: {{name}} is in the booking at {{facility}}, {{day}} at {{time}}.",
     "seeMyBookings": "See my bookings",
     "facilityPage": "See the facility",
@@ -84,7 +84,7 @@
     "or": "or"
   },
   "people": {
-    "label": "Who's coming",
+    "label": "Who’s coming",
     "you": "You",
     "organiser": "booked it",
     "noAccount": "no account",

@@ -4,7 +4,7 @@
   "home": "{{app}}, home",
   "signIn": "Sign in",
   "signOut": "Sign out",
-  "account": "{{name}}'s account",
+  "account": "{{name}}’s account",
   "appearance": "Appearance",
   "theme": {
     "light": "Light",
@@ -19,7 +19,7 @@
     "today": "Today",
     "tomorrow": "Tomorrow",
     "todayShort": "today",
-    "tomorrowShort": "tmrw",
+    "tomorrowShort": "tomorrow",
     "longDate": "{{weekday}}, {{month}} {{day}}",
     "dateWithYear": "{{month}} {{day}}, {{year}}",
     "shortDate": "{{weekday}} {{day}}",
