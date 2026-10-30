@@ -30,6 +30,8 @@ export type Facility = {
   max_active_bookings_per_user: number
   max_bookings_per_day: number // per person and day; 0 = no limit
   max_turns_in_a_row: number // back-to-back turns per person; 0 = no limit
+  max_bookings_per_week: number // per person and week; 0 = no limit
+  weekly_opening: { weekday: number; at: string } | null // instead of max_advance_hours: next week opens then (ISO weekday, "20:00")
   min_age: number | null // age control: null = none
   usage_rules: string
   windows: { opens_at: string; closes_at: string }[]
@@ -144,6 +146,11 @@ export type BookingRules = {
   max_active_bookings_per_user: number
   max_bookings_per_day: number // per person and day; 0 = no limit
   max_turns_in_a_row: number // back-to-back turns per person; 0 = no limit
+  max_bookings_per_week: number // per person and ISO week; 0 = no limit
+  // instead of max_advance_hours: next week's turns open all at once on opens_weekday (ISO, 7 = Sunday) at opens_minute
+  weekly_opening: boolean
+  opens_weekday: number
+  opens_minute: number // minutes after local midnight
   // after no_show_limit no-shows in no_show_window_days, no booking for no_show_block_days
   no_show_penalty: boolean
   no_show_limit: number

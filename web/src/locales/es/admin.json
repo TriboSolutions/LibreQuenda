@@ -707,7 +707,19 @@
     "useCouncilHelp": "Apágalo para que esta instalación tenga su propia antelación, límites y penalización.",
     "facilityHelp": "Hasta cuánto antes se puede reservar, los límites por persona y la penalización por ausencias en esta instalación.",
     "facilitySaved": "Ventana guardada.",
-    "openCouncil": "Ver la del ayuntamiento"
+    "openCouncil": "Ver la del ayuntamiento",
+    "opening": "Cómo se abre la reserva",
+    "rolling": "Ventana móvil: hasta un tiempo antes",
+    "weekly": "Apertura semanal a hora fija",
+    "rollingHelp": "Cada turno se puede reservar desde la antelación que pongas.",
+    "weeklyHelp": "Hasta la apertura solo se reserva esta semana; desde ella, también la siguiente. Es más justo cuando hay mucha demanda.",
+    "opensAt": "La semana siguiente se abre",
+    "opensDay": "Día de la apertura",
+    "opensTime": "Hora de la apertura",
+    "perWeek": "Reservas por persona y semana",
+    "sumWeekly": "Los turnos de la semana siguiente se abren el {{weekday}} a las {{time}}.",
+    "sumPerWeek_one": "{{count}} reserva por persona y semana.",
+    "sumPerWeek_other": "{{count}} reservas por persona y semana."
   },
   "councilSettings": {
     "title": "Ajustes del ayuntamiento",

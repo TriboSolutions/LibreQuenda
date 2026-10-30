@@ -239,6 +239,9 @@ func (s *bookingsService) daySlots(ctx context.Context, queries *model.Queries, 
 // rulesOf: the facility's turns and booking window for the schedule.
 func rulesOf(facility model.GetFacilityForBookingRow, resident bool) schedule.Rules {
 	var rules = schedule.Rules{SlotMinutes: int(facility.SlotMinutes), MaxAdvance: time.Duration(facility.MaxAdvanceHours) * time.Hour}
+	if facility.WeeklyOpening {
+		rules.Weekly = &schedule.WeeklyOpening{Weekday: int(facility.OpensWeekday), Minute: int(facility.OpensMinute)}
+	}
 	if resident {
 		rules.MinAdvance = time.Duration(facility.MinAdvanceMinutes) * time.Minute
 	}

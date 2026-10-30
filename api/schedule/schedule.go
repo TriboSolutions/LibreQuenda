@@ -32,6 +32,27 @@ type Rules struct {
 	SlotMinutes int
 	MaxAdvance  time.Duration // a turn starting later than now + MaxAdvance is too far
 	MinAdvance  time.Duration // one starting sooner is too soon; 0 for staff and the door
+	// instead of MaxAdvance: next week's turns open all at once, every week
+	Weekly *WeeklyOpening
+}
+
+// WeeklyOpening: on Weekday (ISO, 7 = Sunday) at Minute (minutes after local
+// midnight) the turns of the next ISO week open; until then only this week's.
+type WeeklyOpening struct {
+	Weekday int
+	Minute  int
+}
+
+// Horizon: the first instant no longer bookable under a weekly opening. Before
+// this week's opening, the end of this week; from then on, the end of the next.
+func (w WeeklyOpening) Horizon(now time.Time, loc *time.Location) time.Time {
+	var today = startOfDay(now, loc)
+	var monday = today.AddDate(0, 0, 1-int(ISOWeekday(today)))
+	var opening = monday.AddDate(0, 0, w.Weekday-1).Add(time.Duration(w.Minute) * time.Minute)
+	if now.Before(opening) {
+		return monday.AddDate(0, 0, 7)
+	}
+	return monday.AddDate(0, 0, 14)
 }
 
 type Slot struct {
@@ -51,7 +72,7 @@ func DaySlots(day time.Time, loc *time.Location, rules Rules, windows []Window, 
 		slots = append(slots, Slot{
 			Start:  i.Start,
 			End:    i.End,
-			Status: status(i, closures, busy, now, rules),
+			Status: status(i, closures, busy, now, loc, rules),
 		})
 	}
 	return slots
@@ -112,11 +133,13 @@ func cut(day time.Time, loc *time.Location, slotMinutes int, windows []Window) [
 	return slots
 }
 
-func status(slot Interval, closures []Interval, busy []Interval, now time.Time, rules Rules) SlotStatus {
+func status(slot Interval, closures []Interval, busy []Interval, now time.Time, loc *time.Location, rules Rules) SlotStatus {
 	switch {
 	case !slot.Start.After(now):
 		return SlotPast
-	case slot.Start.After(now.Add(rules.MaxAdvance)):
+	case rules.Weekly != nil && !slot.Start.Before(rules.Weekly.Horizon(now, loc)):
+		return SlotTooFar
+	case rules.Weekly == nil && slot.Start.After(now.Add(rules.MaxAdvance)):
 		return SlotTooFar
 	case overlapsAny(slot, closures):
 		return SlotClosed

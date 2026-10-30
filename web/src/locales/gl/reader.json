@@ -62,6 +62,7 @@
     "flash_off": "Aquí o concello non permite reservar unha quenda libre na porta. Reserva na aplicación.",
     "daily_limit_reached": "Xa tes as reservas que se permiten por día aquí.",
     "turns_in_a_row_limit": "Non podes reservar tantas quendas seguidas aquí.",
-    "no_show_blocked": "Non podes reservar aquí durante uns días, por non presentarte a varias reservas."
+    "no_show_blocked": "Non podes reservar aquí durante uns días, por non presentarte a varias reservas.",
+    "weekly_limit_reached": "Xa tes as reservas que se permiten por semana aquí."
   }
 }

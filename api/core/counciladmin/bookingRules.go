@@ -21,6 +21,11 @@ type BookingRulesDto struct {
 	MaxActiveBookingsPerUser int32 `json:"max_active_bookings_per_user"` // upcoming bookings per person
 	MaxBookingsPerDay        int32 `json:"max_bookings_per_day"`         // per person and day; 0 = no limit
 	MaxTurnsInARow           int32 `json:"max_turns_in_a_row"`           // back-to-back turns per person; 0 = no limit
+	MaxBookingsPerWeek       int32 `json:"max_bookings_per_week"`        // per person and ISO week; 0 = no limit
+	// instead of MaxAdvanceHours: next week's turns open all at once on OpensWeekday (ISO, 7 = Sunday) at OpensMinute
+	WeeklyOpening bool  `json:"weekly_opening"`
+	OpensWeekday  int16 `json:"opens_weekday"`
+	OpensMinute   int32 `json:"opens_minute"` // minutes after local midnight
 	// no-show penalty: after NoShowLimit no-shows in NoShowWindowDays, no booking for NoShowBlockDays
 	NoShowPenalty    bool  `json:"no_show_penalty"`
 	NoShowLimit      int32 `json:"no_show_limit"`
@@ -39,8 +44,10 @@ func (r BookingRulesDto) validate() string {
 		return "errors.invalid_cancel_hours"
 	case r.MaxActiveBookingsPerUser < 1 || r.MaxActiveBookingsPerUser > 50:
 		return "errors.invalid_booking_limit"
-	case r.MaxBookingsPerDay < 0 || r.MaxBookingsPerDay > 24, r.MaxTurnsInARow < 0 || r.MaxTurnsInARow > 24:
+	case r.MaxBookingsPerDay < 0 || r.MaxBookingsPerDay > 24, r.MaxTurnsInARow < 0 || r.MaxTurnsInARow > 24, r.MaxBookingsPerWeek < 0 || r.MaxBookingsPerWeek > 100:
 		return "errors.invalid_booking_limit"
+	case r.OpensWeekday < 1 || r.OpensWeekday > 7 || r.OpensMinute < 0 || r.OpensMinute > 24*60-1:
+		return "errors.invalid_weekly_opening"
 	case r.NoShowLimit < 1 || r.NoShowLimit > 20 || r.NoShowWindowDays < 1 || r.NoShowWindowDays > 365 || r.NoShowBlockDays < 1 || r.NoShowBlockDays > 365:
 		return "errors.invalid_no_show_penalty"
 	}
@@ -52,6 +59,7 @@ func rulesOfFacility(f model.Facility) BookingRulesDto {
 		MaxAdvanceHours: f.MaxAdvanceHours, MinAdvanceMinutes: f.MinAdvanceMinutes, MinCancelHours: f.MinCancelHours,
 		MaxActiveBookingsPerUser: f.MaxActiveBookingsPerUser, MaxBookingsPerDay: f.MaxBookingsPerDay, MaxTurnsInARow: f.MaxTurnsInARow,
 		NoShowPenalty: f.NoShowPenalty, NoShowLimit: f.NoShowLimit, NoShowWindowDays: f.NoShowWindowDays, NoShowBlockDays: f.NoShowBlockDays,
+		MaxBookingsPerWeek: f.MaxBookingsPerWeek, WeeklyOpening: f.WeeklyOpening, OpensWeekday: f.OpensWeekday, OpensMinute: f.OpensMinute,
 	}
 }
 
@@ -60,6 +68,7 @@ func rulesOfCouncil(r model.TenantBookingRule) BookingRulesDto {
 		MaxAdvanceHours: r.MaxAdvanceHours, MinAdvanceMinutes: r.MinAdvanceMinutes, MinCancelHours: r.MinCancelHours,
 		MaxActiveBookingsPerUser: r.MaxActiveBookingsPerUser, MaxBookingsPerDay: r.MaxBookingsPerDay, MaxTurnsInARow: r.MaxTurnsInARow,
 		NoShowPenalty: r.NoShowPenalty, NoShowLimit: r.NoShowLimit, NoShowWindowDays: r.NoShowWindowDays, NoShowBlockDays: r.NoShowBlockDays,
+		MaxBookingsPerWeek: r.MaxBookingsPerWeek, WeeklyOpening: r.WeeklyOpening, OpensWeekday: r.OpensWeekday, OpensMinute: r.OpensMinute,
 	}
 }
 
@@ -101,6 +110,7 @@ func (s *counciladminService) SaveBookingRules(ctx context.Context, tenantId uui
 			TenantID: tenantId, MaxAdvanceHours: input.MaxAdvanceHours, MinAdvanceMinutes: input.MinAdvanceMinutes,
 			MinCancelHours: input.MinCancelHours, MaxActiveBookingsPerUser: input.MaxActiveBookingsPerUser,
 			MaxBookingsPerDay: input.MaxBookingsPerDay, MaxTurnsInARow: input.MaxTurnsInARow, NoShowPenalty: input.NoShowPenalty,
+			MaxBookingsPerWeek: input.MaxBookingsPerWeek, WeeklyOpening: input.WeeklyOpening, OpensWeekday: input.OpensWeekday, OpensMinute: input.OpensMinute,
 			NoShowLimit: input.NoShowLimit, NoShowWindowDays: input.NoShowWindowDays, NoShowBlockDays: input.NoShowBlockDays,
 		}); updateErr != nil {
 			return updateErr
@@ -142,6 +152,7 @@ func (s *counciladminService) SaveFacilityRules(ctx context.Context, tenantId uu
 			MaxAdvanceHours: rules.MaxAdvanceHours, MinAdvanceMinutes: rules.MinAdvanceMinutes, MinCancelHours: rules.MinCancelHours,
 			MaxActiveBookingsPerUser: rules.MaxActiveBookingsPerUser, MaxBookingsPerDay: rules.MaxBookingsPerDay, MaxTurnsInARow: rules.MaxTurnsInARow,
 			NoShowPenalty: rules.NoShowPenalty, NoShowLimit: rules.NoShowLimit, NoShowWindowDays: rules.NoShowWindowDays, NoShowBlockDays: rules.NoShowBlockDays,
+			MaxBookingsPerWeek: rules.MaxBookingsPerWeek, WeeklyOpening: rules.WeeklyOpening, OpensWeekday: rules.OpensWeekday, OpensMinute: rules.OpensMinute,
 		})
 		return updateErr
 	})

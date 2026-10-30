@@ -62,6 +62,7 @@
     "flash_off": "Aquí l'ajuntament no permet reservar un torn lliure a la porta. Reserva a l'aplicació.",
     "daily_limit_reached": "Ja tens les reserves que es permeten per dia aquí.",
     "turns_in_a_row_limit": "No pots reservar tants torns seguits aquí.",
-    "no_show_blocked": "No pots reservar aquí durant uns dies, per no presentar-te a diverses reserves."
+    "no_show_blocked": "No pots reservar aquí durant uns dies, per no presentar-te a diverses reserves.",
+    "weekly_limit_reached": "Ja tens les reserves que es permeten per setmana aquí."
   }
 }

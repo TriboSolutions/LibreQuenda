@@ -69,6 +69,10 @@ CREATE TABLE tenant_booking_rules (
     max_active_bookings_per_user INT NOT NULL DEFAULT 2  CHECK (max_active_bookings_per_user > 0),
     max_bookings_per_day INT         NOT NULL DEFAULT 0  CHECK (max_bookings_per_day >= 0),
     max_turns_in_a_row   INT         NOT NULL DEFAULT 0  CHECK (max_turns_in_a_row >= 0),
+    max_bookings_per_week INT        NOT NULL DEFAULT 0  CHECK (max_bookings_per_week >= 0),
+    weekly_opening       BOOLEAN     NOT NULL DEFAULT FALSE,
+    opens_weekday        SMALLINT    NOT NULL DEFAULT 7  CHECK (opens_weekday BETWEEN 1 AND 7),
+    opens_minute         INT         NOT NULL DEFAULT 1200 CHECK (opens_minute BETWEEN 0 AND 1439),
     no_show_penalty      BOOLEAN     NOT NULL DEFAULT FALSE,
     no_show_limit        INT         NOT NULL DEFAULT 3  CHECK (no_show_limit > 0),
     no_show_window_days  INT         NOT NULL DEFAULT 30 CHECK (no_show_window_days > 0),
@@ -180,6 +184,12 @@ CREATE TABLE facility (
     max_active_bookings_per_user INT          NOT NULL DEFAULT 2  CHECK (max_active_bookings_per_user > 0),
     max_bookings_per_day         INT          NOT NULL DEFAULT 0  CHECK (max_bookings_per_day >= 0),  -- per person and day here; 0 = no limit
     max_turns_in_a_row           INT          NOT NULL DEFAULT 0  CHECK (max_turns_in_a_row >= 0),    -- back-to-back turns per person; 0 = no limit
+    max_bookings_per_week        INT          NOT NULL DEFAULT 0  CHECK (max_bookings_per_week >= 0),  -- per person and ISO week here; 0 = no limit
+    -- weekly opening instead of the rolling max_advance_hours: next week's turns
+    -- open all at once on opens_weekday (ISO, 7 = Sunday) at opens_minute (local)
+    weekly_opening               BOOLEAN      NOT NULL DEFAULT FALSE,
+    opens_weekday                SMALLINT     NOT NULL DEFAULT 7  CHECK (opens_weekday BETWEEN 1 AND 7),
+    opens_minute                 INT          NOT NULL DEFAULT 1200 CHECK (opens_minute BETWEEN 0 AND 1439),
     no_show_penalty              BOOLEAN      NOT NULL DEFAULT FALSE,  -- block bookings after too many no-shows here
     no_show_limit                INT          NOT NULL DEFAULT 3  CHECK (no_show_limit > 0),          -- no-shows…
     no_show_window_days          INT          NOT NULL DEFAULT 30 CHECK (no_show_window_days > 0),    -- …within these days…

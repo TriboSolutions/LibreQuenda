@@ -119,3 +119,32 @@ func TestCurrent(t *testing.T) {
 		}
 	}
 }
+
+func TestWeeklyOpening(t *testing.T) {
+	var loc, _ = time.LoadLocation("Europe/Madrid")
+	var sunday20 = WeeklyOpening{Weekday: 7, Minute: 20 * 60}
+	var friday = time.Date(2026, 10, 30, 12, 0, 0, 0, loc) // Friday
+	if got := sunday20.Horizon(friday, loc); !got.Equal(time.Date(2026, 11, 2, 0, 0, 0, 0, loc)) {
+		t.Errorf("on Friday only this week opens, until Monday 00:00: got %v", got)
+	}
+	var sundayNight = time.Date(2026, 11, 1, 20, 0, 0, 0, loc) // Sunday 20:00, the opening itself
+	if got := sunday20.Horizon(sundayNight, loc); !got.Equal(time.Date(2026, 11, 9, 0, 0, 0, 0, loc)) {
+		t.Errorf("from Sunday 20:00 next week is open too: got %v", got)
+	}
+	var monday = time.Date(2026, 11, 2, 9, 0, 0, 0, loc) // a new week: back to this week only
+	if got := sunday20.Horizon(monday, loc); !got.Equal(time.Date(2026, 11, 9, 0, 0, 0, 0, loc)) {
+		t.Errorf("on Monday the new week is open, not the next: got %v", got)
+	}
+
+	var rules = Rules{SlotMinutes: 60, MaxAdvance: time.Hour, Weekly: &sunday20} // MaxAdvance does not apply
+	var windows = []Window{{clock(9, 0), clock(11, 0)}}
+	var thisWeek = DaySlots(time.Date(2026, 11, 1, 0, 0, 0, 0, loc), loc, rules, windows, nil, nil, friday)
+	var nextWeek = DaySlots(time.Date(2026, 11, 2, 0, 0, 0, 0, loc), loc, rules, windows, nil, nil, friday)
+	if thisWeek[0].Status != SlotFree || nextWeek[0].Status != SlotTooFar {
+		t.Errorf("on Friday: Sunday free, next Monday too far; got %s and %s", thisWeek[0].Status, nextWeek[0].Status)
+	}
+	var opened = DaySlots(time.Date(2026, 11, 2, 0, 0, 0, 0, loc), loc, rules, windows, nil, nil, sundayNight)
+	if opened[0].Status != SlotFree {
+		t.Errorf("after the opening next Monday is free, got %s", opened[0].Status)
+	}
+}

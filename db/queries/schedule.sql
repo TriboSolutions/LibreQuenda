@@ -22,6 +22,10 @@ SELECT
     max_active_bookings_per_user,
     max_bookings_per_day,
     max_turns_in_a_row,
+    max_bookings_per_week,
+    weekly_opening,
+    opens_weekday,
+    opens_minute,
     min_age,
     usage_rules_text
 FROM
@@ -88,6 +92,10 @@ SELECT
     f.max_active_bookings_per_user,
     f.max_bookings_per_day,
     f.max_turns_in_a_row,
+    f.max_bookings_per_week,
+    f.weekly_opening,
+    f.opens_weekday,
+    f.opens_minute,
     f.no_show_penalty,
     f.no_show_limit,
     f.no_show_window_days,
