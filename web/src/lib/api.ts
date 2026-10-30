@@ -97,6 +97,28 @@ export type Day = {
 
 export type WeeklyWindow = { weekday: number; opens_at: string; closes_at: string } // ISO weekday: 1 = Monday
 
+/** MeteoGalicia's forecast of one period of an outdoor facility's day. */
+export type WeatherPeriod = {
+  period: 'morning' | 'afternoon' | 'night'
+  sky: string // clear, partly_cloudy, cloudy, overcast, fog, haze, drizzle, rain, showers, storm, snow, sleet, hail; '' unknown
+  rain_chance: number | null // %
+  wind: string // calm, variable, light, moderate, strong, very_strong; '' unknown
+  wind_from: string // n, ne, e, se, s, sw, w, nw; '' none
+  temperature: number | null // ºC
+  warnings: WeatherWarning[]
+}
+export type WeatherWarning = 'rain' | 'storm' | 'snow' | 'wind' | 'heat' | 'cold' | 'alert'
+export type DayForecast = {
+  date: string
+  sky: string
+  temp_min: number | null
+  temp_max: number | null
+  periods: WeatherPeriod[]
+  warnings: WeatherWarning[]
+}
+/** null when there is none: indoors, no municipality, outside the forecast's days, or the source unreachable. */
+export type Weather = { forecast: DayForecast | null; source: string }
+
 export type FacilityPage = {
   tenant: Tenant
   timezone: string
@@ -565,6 +587,7 @@ export type CouncilDetail = {
   timezone: string
   contact_email: string
   contact_phone: string
+  municipality_code: string // INE code, for MeteoGalicia's forecast; "" = none
   logo_ref: string
   logo_url: string
   is_active: boolean
@@ -632,6 +655,7 @@ export type CouncilInput = {
   timezone: string
   contact_email: string
   contact_phone: string
+  municipality_code: string // INE code (5 digits), for MeteoGalicia's forecast; "" = none
   logo_ref: string // a storage reference, never a URL
   is_active?: boolean // update only
   admin_email?: string // create only
@@ -874,6 +898,9 @@ export const api = {
     request<{ recommendations: Recommendation[] }>('/me/recommendations', { token, method: 'POST', body: near ?? {} }),
   // "For you" on or off, also from the section itself
   setShowRecommendations: (token: string, show: boolean) => request<Me>('/me/recommendations', { token, method: 'PUT', body: { show } }),
+  // an outdoor facility's forecast, from MeteoGalicia through the API
+  weather: (slug: string, facility: string, date: string) =>
+    request<Weather>(`/tenants/${encodeURIComponent(slug)}/facilities/${encodeURIComponent(facility)}/weather?date=${date}`),
   facilityPage: (slug: string, facility: string, date?: string) =>
     request<FacilityPage>(`/tenants/${encodeURIComponent(slug)}/facilities/${encodeURIComponent(facility)}${date ? `?date=${date}` : ''}`),
   // acceptRules: the resident ticked "I have read the rules"; the API refuses the booking otherwise

@@ -76,6 +76,8 @@ The first Zitadel admin (`ZITADEL_ADMIN_*`), Zitadel's email settings and the `Z
 
 **Passwords, not passkeys:** sign-up and sign-in go straight to a password. Set `ZITADEL_PASSKEYS=true` in `.env` and run `docker compose up -d` to also offer passkeys.
 
+**Weather:** outdoor facilities (tag «aire-libre») show MeteoGalicia's forecast for their council's municipality, set as its INE code in the council's details (e.g. 36024 for Lalín). The API fetches it (keyless, `servizos.meteogalicia.gal/mgrss/predicion/jsonPredConcellos.action`), caches it for an hour and shows nothing if it is unreachable; `WEATHER_URL` points it elsewhere. Data © MeteoGalicia, credited where it is shown.
+
 **Short sessions:** access tokens last 10 minutes (`ZITADEL_ACCESS_TOKEN_MINUTES`), so a blocked account or a removed role stops working that soon. The web renews them silently with its refresh token, so people stay signed in while they use it; after 30 idle days (`ZITADEL_REFRESH_IDLE_DAYS`), or 90 days in all (`ZITADEL_REFRESH_DAYS`), they sign in again. Run `docker compose up -d` after changing them.
 
 **Second factor for administrators:** council administrators and superadministrators only get into the administration after signing in with a second factor (an authenticator app, a security key or a passkey), set up in their sign-in account. Zitadel's access tokens don't say how the person signed in, so the API asks Zitadel (token introspection, with an API application `zitadel-setup` creates) once per token. On by default (`REQUIRE_ADMIN_MFA=true` in `docker-compose.yaml`); the local development stack leaves it off. Residents are not affected. Before turning it on in an existing installation, ask the administrators to set up a second factor first.

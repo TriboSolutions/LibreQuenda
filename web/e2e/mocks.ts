@@ -382,6 +382,7 @@ const council: CouncilDetail = {
   timezone: TZ,
   contact_email: 'deportes@lugo.gal',
   contact_phone: '982000000',
+  municipality_code: '27028',
   logo_ref: '',
   logo_url: '',
   is_active: true,
@@ -559,6 +560,23 @@ const councilIssues = {
   ],
 }
 
+// MeteoGalicia's forecast for an outdoor facility: a fine morning, showers in the afternoon
+const weather = {
+  source: 'MeteoGalicia',
+  forecast: {
+    date: today,
+    sky: 'showers',
+    temp_min: 9,
+    temp_max: 17,
+    periods: [
+      { period: 'morning', sky: 'partly_cloudy', rain_chance: 10, wind: 'light', wind_from: 'sw', temperature: 15, warnings: [] },
+      { period: 'afternoon', sky: 'showers', rain_chance: 80, wind: 'strong', wind_from: 'w', temperature: 17, warnings: ['rain', 'wind'] },
+      { period: 'night', sky: 'cloudy', rain_chance: 40, wind: 'moderate', wind_from: 'w', temperature: 10, warnings: [] },
+    ],
+    warnings: ['rain', 'wind'],
+  },
+}
+
 /** GET handlers by path (without /api), first match wins. */
 const routes: [RegExp, () => unknown][] = [
   [/^\/tenants$/, () => ({ tenants })],
@@ -566,6 +584,7 @@ const routes: [RegExp, () => unknown][] = [
   [/^\/facilities$/, () => ({ facilities: facilityCards })],
   [/^\/tenants\/[^/]+\/day/, () => day],
   [/^\/tenants\/[^/]+\/facilities\/[^/]+\/entrance$/, () => entrance],
+  [/^\/tenants\/[^/]+\/facilities\/[^/]+\/weather$/, () => weather],
   [/^\/tenants\/[^/]+\/facilities\/[^/?]+/, () => facilityPage],
   [/^\/tenants\/[^/]+\/admin\/facilities$/, () => ({ facilities: adminFacilities })],
   [/^\/tenants\/[^/]+\/admin\/facilities\/[^/]+\/bookings/, () => staffDay],
@@ -601,10 +620,10 @@ function fulfil(route: Route, body: unknown, status = 200) {
 
 export const defaultBranding: Branding = { name: 'LibreQuenda', custom_name: '', logo_ref: '', logo_url: '' }
 
-export type MockOptions = { signedIn?: boolean; theme?: 'light' | 'dark'; lang?: string; branding?: Branding }
+export type MockOptions = { signedIn?: boolean; theme?: 'light' | 'dark'; lang?: string; branding?: Branding; outdoor?: boolean }
 
 /** Mocks /config.json, the OIDC provider and /api, and seeds the session in localStorage. */
-export async function mockApp(page: Page, { signedIn = true, theme = 'light', lang = 'gl', branding = defaultBranding }: MockOptions = {}) {
+export async function mockApp(page: Page, { signedIn = true, theme = 'light', lang = 'gl', branding = defaultBranding, outdoor = false }: MockOptions = {}) {
   await page.route('**/config.json', (route) =>
     fulfil(route, { authority: AUTHORITY, clientId: CLIENT_ID, projectId: 'p1', scope: 'openid profile email' }),
   )
@@ -656,6 +675,12 @@ export async function mockApp(page: Page, { signedIn = true, theme = 'light', la
     const handler = routes.find(([pattern]) => pattern.test(path))
     return handler ? fulfil(route, handler[1]()) : fulfil(route, { error: 'not found' }, 404)
   })
+  // outdoor: the facility page's court is in the open air, so it shows the forecast
+  if (outdoor) {
+    await page.route(/\/api\/tenants\/[^/]+\/facilities\/[^/?]+(\?.*)?$/, (route) =>
+      fulfil(route, { ...facilityPage, facility: { ...facilityPage.facility, tags: [...facilityPage.facility.tags, 'aire-libre'] } }),
+    )
+  }
   // tiles for the map: an empty image keeps the test offline
   await page.route('https://*.tile.openstreetmap.org/**', (route) => route.fulfill({ status: 204 }))
 

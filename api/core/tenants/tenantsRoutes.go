@@ -54,6 +54,13 @@ func (r *tenantsRoutes) RegisterRoutes() {
 		AdditionalMethods: []router.HTTPMethod{router.HEAD, router.OPTIONS},
 		Handler:           middlewares.VersionMiddleware(h.GetFacility),
 	})
+	// an outdoor facility's forecast (MeteoGalicia), public like the day view
+	r.router.NewRoute(router.Route{
+		Path:              "/tenants/{slug}/facilities/{facility}/weather",
+		Method:            http.MethodGet,
+		AdditionalMethods: []router.HTTPMethod{router.HEAD, router.OPTIONS},
+		Handler:           middlewares.VersionMiddleware(h.Weather),
+	})
 	// signed in: "For you" on the home page, from the person's own bookings
 	r.router.NewRoute(router.Route{
 		Path:              "/me/recommendations",

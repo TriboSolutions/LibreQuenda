@@ -70,6 +70,44 @@ func (q *Queries) GetFacility(ctx context.Context, arg GetFacilityParams) (Facil
 	return i, err
 }
 
+const getFacilityWeatherPlace = `-- name: GetFacilityWeatherPlace :one
+SELECT
+    t.municipality_code,
+    t.timezone,
+    EXISTS (
+        SELECT 1 FROM facility_tag ft JOIN tag tg ON tg.id = ft.tag_id
+        WHERE ft.facility_id = f.id AND tg.slug = 'aire-libre'
+    )::BOOLEAN AS outdoor
+FROM
+    facility f
+    JOIN tenant t ON t.id = f.tenant_id
+WHERE
+    t.slug = $1
+    AND f.slug = $2
+    AND f.is_active = TRUE
+    AND t.is_active = TRUE
+`
+
+type GetFacilityWeatherPlaceParams struct {
+	TenantSlug   string `json:"tenant_slug"`
+	FacilitySlug string `json:"facility_slug"`
+}
+
+type GetFacilityWeatherPlaceRow struct {
+	MunicipalityCode sql.NullString `json:"municipality_code"`
+	Timezone         string         `json:"timezone"`
+	Outdoor          bool           `json:"outdoor"`
+}
+
+// Where to read the forecast of an active facility: its council's municipality
+// (INE code, for MeteoGalicia) and whether it is outdoors (tag "aire-libre").
+func (q *Queries) GetFacilityWeatherPlace(ctx context.Context, arg GetFacilityWeatherPlaceParams) (GetFacilityWeatherPlaceRow, error) {
+	row := q.db.QueryRowContext(ctx, getFacilityWeatherPlace, arg.TenantSlug, arg.FacilitySlug)
+	var i GetFacilityWeatherPlaceRow
+	err := row.Scan(&i.MunicipalityCode, &i.Timezone, &i.Outdoor)
+	return i, err
+}
+
 const listFacilitiesByTenant = `-- name: ListFacilitiesByTenant :many
 SELECT
     id,

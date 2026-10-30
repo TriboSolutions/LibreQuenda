@@ -66,5 +66,63 @@
       "safety": "Seguridad",
       "other": "Otro"
     }
+  },
+  "weather": {
+    "title": "Tiempo previsto",
+    "source": "Datos:",
+    "range": "{{min}}–{{max}} °C",
+    "temperature": "{{value}} °C",
+    "rainChance": "{{value}} % de lluvia",
+    "unknown": "Sin datos",
+    "forTurn": "Tiempo a las {{time}}",
+    "dayWarning": "Atención al tiempo: {{list}}.",
+    "turnWarning": "Atención al tiempo a las {{time}}: {{list}}. Puedes cancelar hasta el {{date}}.",
+    "period": {
+      "morning": "Mañana",
+      "afternoon": "Tarde",
+      "night": "Noche"
+    },
+    "sky": {
+      "clear": "Despejado",
+      "partly_cloudy": "Nubes y claros",
+      "cloudy": "Nublado",
+      "overcast": "Cubierto",
+      "fog": "Niebla",
+      "haze": "Calima",
+      "drizzle": "Llovizna",
+      "rain": "Lluvia",
+      "showers": "Chubascos",
+      "storm": "Tormenta",
+      "snow": "Nieve",
+      "sleet": "Aguanieve",
+      "hail": "Granizo"
+    },
+    "wind": {
+      "calm": "Calma",
+      "variable": "viento variable",
+      "light": "viento flojo",
+      "moderate": "viento moderado",
+      "strong": "viento fuerte",
+      "very_strong": "viento muy fuerte"
+    },
+    "from": {
+      "n": "del norte",
+      "ne": "del nordeste",
+      "e": "del este",
+      "se": "del sureste",
+      "s": "del sur",
+      "sw": "del suroeste",
+      "w": "del oeste",
+      "nw": "del noroeste"
+    },
+    "warning": {
+      "rain": "lluvia probable",
+      "storm": "tormenta",
+      "snow": "nieve o granizo",
+      "wind": "viento fuerte",
+      "heat": "mucho calor",
+      "cold": "helada o mucho frío",
+      "alert": "aviso de MeteoGalicia"
+    }
   }
 }

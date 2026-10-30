@@ -99,12 +99,13 @@ func (s *platformService) CreateTenant(ctx context.Context, invitedBy uuid.UUID,
 
 	var created model.CreateTenantRow
 	created, err = queries.CreateTenant(ctx, model.CreateTenantParams{
-		Slug:         input.Slug,
-		Name:         input.Name,
-		Timezone:     input.Timezone,
-		ContactEmail: nullString(input.ContactEmail),
-		ContactPhone: nullString(input.ContactPhone),
-		LogoRef:      nullString(input.LogoRef),
+		Slug:             input.Slug,
+		Name:             input.Name,
+		Timezone:         input.Timezone,
+		ContactEmail:     nullString(input.ContactEmail),
+		ContactPhone:     nullString(input.ContactPhone),
+		MunicipalityCode: nullString(input.MunicipalityCode),
+		LogoRef:          nullString(input.LogoRef),
 	})
 	if isUniqueViolation(err) {
 		return nil, &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.slug_taken"}
@@ -151,17 +152,18 @@ func (s *platformService) GetTenant(ctx context.Context, slug string) (*TenantDe
 	}
 
 	var detail = &TenantDetailDto{
-		Slug:         tenant.Slug,
-		Name:         tenant.Name,
-		Timezone:     tenant.Timezone,
-		ContactEmail: tenant.ContactEmail.String,
-		ContactPhone: tenant.ContactPhone.String,
-		LogoRef:      tenant.LogoRef.String,
-		LogoUrl:      storage.URL(tenant.LogoRef.String),
-		IsActive:     tenant.IsActive,
-		BookingCount: bookings,
-		Admins:       []MemberDto{},
-		Invitations:  []InvitationDto{},
+		Slug:             tenant.Slug,
+		Name:             tenant.Name,
+		Timezone:         tenant.Timezone,
+		ContactEmail:     tenant.ContactEmail.String,
+		ContactPhone:     tenant.ContactPhone.String,
+		MunicipalityCode: tenant.MunicipalityCode.String,
+		LogoRef:          tenant.LogoRef.String,
+		LogoUrl:          storage.URL(tenant.LogoRef.String),
+		IsActive:         tenant.IsActive,
+		BookingCount:     bookings,
+		Admins:           []MemberDto{},
+		Invitations:      []InvitationDto{},
 	}
 	for _, m := range members {
 		if m.Role != model.TenantRoleAdmin {
@@ -202,14 +204,15 @@ func (s *platformService) UpdateTenant(ctx context.Context, slug string, input T
 	}
 
 	var updated, err = queries.UpdateTenant(ctx, model.UpdateTenantParams{
-		ID:           tenant.ID,
-		Slug:         input.Slug,
-		Name:         input.Name,
-		Timezone:     input.Timezone,
-		ContactEmail: nullString(input.ContactEmail),
-		ContactPhone: nullString(input.ContactPhone),
-		LogoRef:      nullString(input.LogoRef),
-		IsActive:     isActive,
+		ID:               tenant.ID,
+		Slug:             input.Slug,
+		Name:             input.Name,
+		Timezone:         input.Timezone,
+		ContactEmail:     nullString(input.ContactEmail),
+		ContactPhone:     nullString(input.ContactPhone),
+		MunicipalityCode: nullString(input.MunicipalityCode),
+		LogoRef:          nullString(input.LogoRef),
+		IsActive:         isActive,
 	})
 	if isUniqueViolation(err) {
 		return nil, &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.slug_taken"}

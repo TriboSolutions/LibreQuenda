@@ -11,6 +11,7 @@ Status: **built** · **in progress** (open work) · **idea** (not started).
 | Home page with every facility of every council: list beside a map, search, filters by council, sport and kind of place (tag catalogue), "near me" with a distance | built |
 | Council pages and facility pages: photos, description, address and directions, contact (the facility's, else the council's), opening hours, closures, usage rules, minimum age, the booking window that applies | built |
 | Day view of free, booked, closed and past turns | built |
+| Weather forecast at outdoor facilities (MeteoGalicia's open data, by the council's municipality): the day on the facility page, the turn's period in the booking dialog, with a warning in words for rain, storm, snow or hail, strong wind, heat or frost | built |
 | Book a free turn, accepting the usage rules; change it to another time of the same facility; cancel it until the deadline | built |
 | Invite people to fill a booking's capacity by link, with an account or as a guest (name and age); leave a booking; the owner removes people | built |
 | Public bookings: make a booking public, and join others' public bookings from "For you" | built |
@@ -81,7 +82,6 @@ Grouped by who gains most; none of these is started.
 - **Find players:** say you are looking for people for a sport and level, and see others who are, building on public bookings.
 - **Web push notifications** (no app needed) and **SMS** for people without email, through the council's provider.
 - **Installable app that works offline:** the manifest exists; a service worker would keep My bookings and the entry QR available without coverage at the door.
-- **Weather notice** for outdoor facilities (MeteoGalicia's open data), suggesting to change or cancel before the deadline.
 
 **Councils**
 

@@ -16,6 +16,7 @@ def generate(context: dict) -> list:
                 "timezone": TIMEZONE,
                 "contact_email": council["contact_email"],
                 "contact_phone": council["contact_phone"],
+                "municipality_code": council["municipality_code"],
                 "logo_ref": council["logo_ref"],
             }
         )
