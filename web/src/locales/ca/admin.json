@@ -815,5 +815,23 @@
       "account.deleted": "Ha esborrat el seu compte",
       "other": "Un altre canvi"
     }
+  },
+  "widget": {
+    "title": "Giny per al teu web",
+    "help": "Insereix els torns lliures de les instal·lacions al web de l’ajuntament: copia aquest codi i enganxa’l allà. Cada torn obre aquesta aplicació per reservar-lo.",
+    "facility": "Instal·lació",
+    "allFacilities": "Totes les instal·lacions",
+    "height": "Alçada (píxels)",
+    "theme": "Aparença",
+    "themeAuto": "La del dispositiu",
+    "themeLight": "Clara",
+    "themeDark": "Fosca",
+    "language": "Idioma",
+    "languageAuto": "El del navegador",
+    "code": "Codi per enganxar al web",
+    "copy": "Copiar el codi",
+    "copied": "Codi copiat",
+    "preview": "Previsualització",
+    "iframeTitle": "Torns lliures de les instal·lacions esportives"
   }
 }

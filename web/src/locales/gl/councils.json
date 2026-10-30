@@ -39,5 +39,17 @@
     "openCouncil": "Ver {{name}}",
     "zoomIn_one": "Achegar á súa instalación",
     "zoomIn_other": "Achegar ás súas {{count}} instalacións"
+  },
+  "widget": {
+    "title": "Quendas libres",
+    "previous": "Día anterior",
+    "next": "Día seguinte",
+    "error": "Non se puideron cargar as quendas.",
+    "none": "Non hai instalacións que amosar.",
+    "noFree": "Sen quendas libres este día.",
+    "freeTurns": "Quendas libres en {{facility}}",
+    "book": "Reservar {{facility}} ás {{time}}, abre unha nova lapela",
+    "newTab": "abre unha nova lapela",
+    "bookIn": "Reservar en {{app}}"
   }
 }

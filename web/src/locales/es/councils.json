@@ -39,5 +39,17 @@
     "openCouncil": "Ver {{name}}",
     "zoomIn_one": "Acercar a su instalación",
     "zoomIn_other": "Acercar a sus {{count}} instalaciones"
+  },
+  "widget": {
+    "title": "Turnos libres",
+    "previous": "Día anterior",
+    "next": "Día siguiente",
+    "error": "No se pudieron cargar los turnos.",
+    "none": "No hay instalaciones que mostrar.",
+    "noFree": "Sin turnos libres este día.",
+    "freeTurns": "Turnos libres en {{facility}}",
+    "book": "Reservar {{facility}} a las {{time}}, abre una nueva pestaña",
+    "newTab": "abre una nueva pestaña",
+    "bookIn": "Reservar en {{app}}"
   }
 }

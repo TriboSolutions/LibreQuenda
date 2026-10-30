@@ -39,5 +39,17 @@
     "openCouncil": "Open {{name}}",
     "zoomIn_one": "Zoom in to its facility",
     "zoomIn_other": "Zoom in to its {{count}} facilities"
+  },
+  "widget": {
+    "title": "Free turns",
+    "previous": "Previous day",
+    "next": "Next day",
+    "error": "The turns could not be loaded.",
+    "none": "No facilities to show.",
+    "noFree": "No free turns this day.",
+    "freeTurns": "Free turns at {{facility}}",
+    "book": "Book {{facility}} at {{time}}, opens a new tab",
+    "newTab": "opens a new tab",
+    "bookIn": "Book on {{app}}"
   }
 }
