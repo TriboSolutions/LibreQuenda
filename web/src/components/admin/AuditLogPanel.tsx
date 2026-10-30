@@ -15,7 +15,7 @@ const TIME_ZONE = 'Europe/Madrid'
 const ANY = '_any'
 
 // the action families to filter by: the first part of the codes
-const FAMILIES = ['facility', 'closure', 'checkin', 'reader', 'booking_window', 'staff', 'council', 'admin', 'superadmin', 'tag', 'tag_category', 'branding', 'smtp', 'indicators', 'account', 'other']
+const FAMILIES = ['facility', 'closure', 'checkin', 'reader', 'booking_window', 'booking_policy', 'issue', 'staff', 'council', 'admin', 'superadmin', 'tag', 'tag_category', 'branding', 'smtp', 'indicators', 'account', 'other']
 
 type Props = {
   load: (filters: AuditFilters) => Promise<AuditPage>

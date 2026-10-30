@@ -776,7 +776,9 @@
       "smtp": "Correo (SMTP)",
       "indicators": "Indicadores",
       "account": "Cuentas",
-      "other": "Otros"
+      "other": "Otros",
+      "booking_policy": "Normas de reserva de la plataforma",
+      "issue": "Incidencias"
     },
     "actions": {
       "facility.created": "Creó una instalación",
@@ -820,7 +822,8 @@
       "account.exported": "Descargó sus datos",
       "account.deleted": "Borró su cuenta",
       "other": "Otro cambio",
-      "booking_policy.changed": "Cambió las normas de reserva de la plataforma"
+      "booking_policy.changed": "Cambió las normas de reserva de la plataforma",
+      "issue.changed": "Cambió el estado de una incidencia"
     }
   },
   "widget": {

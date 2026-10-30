@@ -776,7 +776,9 @@
       "smtp": "Email (SMTP)",
       "indicators": "Indicators",
       "account": "Accounts",
-      "other": "Other"
+      "other": "Other",
+      "booking_policy": "Platform booking rules",
+      "issue": "Reported problems"
     },
     "actions": {
       "facility.created": "Created a facility",
@@ -820,7 +822,8 @@
       "account.exported": "Downloaded their data",
       "account.deleted": "Deleted their account",
       "other": "Other change",
-      "booking_policy.changed": "Changed the platform's booking rules"
+      "booking_policy.changed": "Changed the platform's booking rules",
+      "issue.changed": "Changed a reported problem’s status"
     }
   },
   "widget": {
