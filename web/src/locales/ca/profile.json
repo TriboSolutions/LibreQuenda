@@ -143,5 +143,8 @@
   "preferences": "Preferències",
   "preferencesHelp": "Com et parla l’aplicació i què et mostra o envia. Es desen a part de les dades personals.",
   "savePreferences": "Desa les preferències",
-  "preferencesSaved": "Preferències desades."
+  "preferencesSaved": "Preferències desades.",
+  "unverifiedTitle": "Confirma el teu correu",
+  "unverifiedBody": "Per reservar has de confirmar la teva adreça electrònica: al perfil, demana el codi i escriu-lo.",
+  "unverifiedAction": "Confirmar el correu"
 }

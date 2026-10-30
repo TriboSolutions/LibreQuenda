@@ -65,6 +65,7 @@
     "no_show_blocked": "Non podes reservar aquí durante uns días, por non presentarte a varias reservas.",
     "weekly_limit_reached": "Xa tes as reservas que se permiten por semana aquí.",
     "other_council_booking": "Xa tes reservas noutro concello: reservas nun concello de cada vez.",
-    "council_limit_reached": "Xa tes as reservas próximas que permite este concello."
+    "council_limit_reached": "Xa tes as reservas próximas que permite este concello.",
+    "email_unverified": "Confirma o teu correo electrónico no perfil da app para reservar."
   }
 }

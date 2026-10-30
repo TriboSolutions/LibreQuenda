@@ -143,5 +143,8 @@
   "preferences": "Preferencias",
   "preferencesHelp": "Como che fala a aplicación e o que che amosa ou envía. Gárdanse á parte dos datos persoais.",
   "savePreferences": "Gardar preferencias",
-  "preferencesSaved": "Preferencias gardadas."
+  "preferencesSaved": "Preferencias gardadas.",
+  "unverifiedTitle": "Confirma o teu correo",
+  "unverifiedBody": "Para reservar tes que confirmar o teu correo electrónico: no perfil, pide o código e escríbeo.",
+  "unverifiedAction": "Confirmar o correo"
 }

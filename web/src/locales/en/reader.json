@@ -65,6 +65,7 @@
     "no_show_blocked": "You cannot book here for some days, after missing several bookings.",
     "weekly_limit_reached": "You already have the bookings allowed per week here.",
     "other_council_booking": "You already have bookings in another council: you book in one council at a time.",
-    "council_limit_reached": "You already have the upcoming bookings this council allows."
+    "council_limit_reached": "You already have the upcoming bookings this council allows.",
+    "email_unverified": "Confirm your email address in the app’s profile to book."
   }
 }

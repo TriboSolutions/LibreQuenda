@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, type Page, test } from '@playwright/test'
 import QRCode from 'qrcode'
-import { mockApp, type MockOptions } from './mocks'
+import { mockApp, ME_UNVERIFIED, type MockOptions } from './mocks'
 
 // Every automatable WCAG 2.1 A and AA rule, plus axe's AAA rules (7:1 contrast and the like).
 const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag2aaa', 'best-practice']
@@ -663,6 +663,27 @@ test.describe('keyboard', () => {
     const saved = page.waitForRequest((r) => r.method() === 'PUT' && r.url().endsWith('/admin/booking-policy'))
     await one.click()
     expect((await saved).postDataJSON()).toEqual({ one_council_per_account: false })
+  })
+
+  test('without a verified email, booking and joining point to the profile', async ({ page }) => {
+    await open(page, '/lugo/padel-1')
+    // the general mock answers /me as verified; this route, added after it, wins
+    await page.route('**/api/me', (route) => route.fulfill({ json: { ...ME_UNVERIFIED } }))
+    await page.reload()
+    await expect(page.getByRole('status').filter({ hasText: 'Confirma o teu correo.' })).toBeVisible()
+    await page.locator('[data-free=true]').first().click()
+    const dialog = page.getByRole('dialog')
+    await expect(dialog).toContainText('Para reservar tes que confirmar o teu correo electrónico')
+    await expect(dialog.getByRole('link', { name: 'Confirmar o correo' })).toHaveAttribute('href', '/perfil')
+    await page.mouse.move(0, 0)
+    await page.waitForTimeout(300)
+    await expectAccessible(page, { overlay: true })
+
+    const joins: string[] = []
+    page.on('request', (r) => r.method() === 'POST' && r.url().includes('/join') && joins.push(r.url()))
+    await page.goto('/invitacion/tok123')
+    await expect(page.getByRole('region', { name: 'Unirme coa miña conta' }).getByRole('link', { name: 'Confirmar o correo' })).toBeVisible()
+    expect(joins).toHaveLength(0) // no automatic join
   })
 
   test('signed out, the home page has no recommendations', async ({ page }) => {

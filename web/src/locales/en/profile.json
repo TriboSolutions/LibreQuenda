@@ -143,5 +143,8 @@
   "preferences": "Preferences",
   "preferencesHelp": "How the app speaks to you and what it shows or sends you. Saved apart from your personal data.",
   "savePreferences": "Save preferences",
-  "preferencesSaved": "Preferences saved."
+  "preferencesSaved": "Preferences saved.",
+  "unverifiedTitle": "Confirm your email",
+  "unverifiedBody": "To book you need to confirm your email address: in your profile, ask for the code and type it in.",
+  "unverifiedAction": "Confirm my email"
 }

@@ -108,8 +108,16 @@ UPDATE app_user SET show_recommendations = sqlc.arg('show') WHERE id = sqlc.arg(
 -- name: GetShowRecommendations :one
 SELECT show_recommendations FROM app_user WHERE id = sqlc.arg('id');
 
--- name: HasBirthDate :one
-SELECT (birth_date IS NOT NULL)::BOOLEAN AS complete FROM app_user WHERE id = sqlc.arg('id');
+-- name: GetBookingReadiness :one
+-- What a resident needs before booking from the app: the birth date (age
+-- limits) and a verified email (synced from Zitadel on every sign-in by /me).
+SELECT
+    (birth_date IS NOT NULL)::BOOLEAN AS has_birth_date,
+    email_verified
+FROM
+    app_user
+WHERE
+    id = sqlc.arg('id');
 
 -- name: GetUserBirthDate :one
 SELECT birth_date FROM app_user WHERE id = sqlc.arg('id');

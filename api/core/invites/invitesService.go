@@ -125,12 +125,18 @@ func (s *invitesService) GetPublicInvite(ctx context.Context, token uuid.UUID) (
 
 // JoinAsUser adds a signed-in person. It does not count towards their own booking limit.
 func (s *invitesService) JoinAsUser(ctx context.Context, userId uuid.UUID, token uuid.UUID) *shared.ErrorResponse {
+	if notReady := bookings.ReadyToBook(ctx, model.New(s.db), userId); notReady != nil {
+		return notReady
+	}
 	return s.join(ctx, lockByToken(token), addUser(ctx, userId))
 }
 
 // JoinPublic adds a signed-in person to a public booking, found in «For you»:
 // the same rules as the invite link, without one.
 func (s *invitesService) JoinPublic(ctx context.Context, userId uuid.UUID, bookingId uuid.UUID) *shared.ErrorResponse {
+	if notReady := bookings.ReadyToBook(ctx, model.New(s.db), userId); notReady != nil {
+		return notReady
+	}
 	var err = s.join(ctx, lockPublic(bookingId), addUser(ctx, userId))
 	if err == errInviteNotFound { // not public (any more), or gone
 		return &shared.ErrorResponse{Code: http.StatusNotFound, Message: "errors.public_booking_not_found"}

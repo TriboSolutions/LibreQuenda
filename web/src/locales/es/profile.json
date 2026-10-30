@@ -143,5 +143,8 @@
   "preferences": "Preferencias",
   "preferencesHelp": "Cómo te habla la aplicación y lo que te muestra o envía. Se guardan aparte de los datos personales.",
   "savePreferences": "Guardar preferencias",
-  "preferencesSaved": "Preferencias guardadas."
+  "preferencesSaved": "Preferencias guardadas.",
+  "unverifiedTitle": "Confirma tu correo",
+  "unverifiedBody": "Para reservar tienes que confirmar tu correo electrónico: en el perfil, pide el código y escríbelo.",
+  "unverifiedAction": "Confirmar el correo"
 }

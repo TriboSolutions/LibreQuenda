@@ -2,8 +2,8 @@
 -- birth date and a booking at Lalín's pavilion in the first free turn from the
 -- next full hour, where every way in is on. Their first sign-in takes this row
 -- over (api/core/me: AdoptSeedTester), so the booking is waiting for them.
-INSERT INTO app_user (idp_subject, email, full_name, birth_date)
-VALUES ('seed-tester', '{TESTER_EMAIL}', 'Persoa de probas', DATE '1990-05-17');
+INSERT INTO app_user (idp_subject, email, full_name, birth_date, email_verified)
+VALUES ('seed-tester', '{TESTER_EMAIL}', 'Persoa de probas', DATE '1990-05-17', TRUE);
 
 INSERT INTO facility_checkin (facility_id, printed_qr, entry_code, staff_confirm)
 SELECT f.id, TRUE, TRUE, TRUE
