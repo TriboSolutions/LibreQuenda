@@ -51,5 +51,7 @@
     "notOurs": "That QR is not a facility’s entrance. Point it at the one on the door.",
     "cancel": "Close the camera",
     "locating": "Checking where you are…"
-  }
+  },
+  "distance": "You must be within {{metres}} m of the facility.",
+  "distanceAny": "You must be at the facility: usually within 100 m."
 }

@@ -59,7 +59,9 @@ type BookingDto struct {
 	CheckinWays []string `json:"checkin_ways"`
 	// owner only, with staff confirmation on: who to ask on site
 	StaffContacts []checkin.StaffContact `json:"staff_contacts,omitempty"`
-	Attendance    string                 `json:"attendance"` // past confirmed bookings only: "attended", "no_show" or "unknown"; "" otherwise
+	// owner only: how close the phone must be (metres) to check in with the code or the door QR
+	CheckinRadiusM int    `json:"checkin_radius_m,omitempty"`
+	Attendance     string `json:"attendance"` // past confirmed bookings only: "attended", "no_show" or "unknown"; "" otherwise
 	// invites: the owner shares a link and others fill the facility's capacity
 	Role             string      `json:"role"`              // "owner" or "participant" (joined through an invite)
 	OwnerName        string      `json:"owner_name"`        // participant only
@@ -245,25 +247,26 @@ func mapBooking(row model.ListBookingsByUserRow, now time.Time) BookingDto {
 		checkedInAt = &row.CheckedInAt.Time
 	}
 	return BookingDto{
-		Id:            row.ID.String(),
-		StartsAt:      row.StartsAt,
-		EndsAt:        row.EndsAt,
-		Status:        string(row.Status),
-		FacilityId:    row.FacilityID.String(),
-		FacilityName:  row.FacilityName,
-		FacilitySlug:  row.FacilitySlug,
-		TenantSlug:    row.TenantSlug,
-		TenantName:    row.TenantName,
-		CanCancel:     canCancel,
-		CanChange:     canCancel,
-		CancelUntil:   cancelUntil,
-		CheckinCode:   checkinCode,
-		CheckedInAt:   checkedInAt,
-		Attendance:    attendance(row.Status, row.EndsAt, row.CheckedInAt.Valid, row.CheckinAtStart, now),
-		Role:          RoleOwner,
-		CheckinWays:   checkinWays(row),
-		StaffContacts: staffContacts(row),
-		Facility:      FacilityDetails(row.Facility, row.FacilitySport),
+		Id:             row.ID.String(),
+		StartsAt:       row.StartsAt,
+		EndsAt:         row.EndsAt,
+		Status:         string(row.Status),
+		FacilityId:     row.FacilityID.String(),
+		FacilityName:   row.FacilityName,
+		FacilitySlug:   row.FacilitySlug,
+		TenantSlug:     row.TenantSlug,
+		TenantName:     row.TenantName,
+		CanCancel:      canCancel,
+		CanChange:      canCancel,
+		CancelUntil:    cancelUntil,
+		CheckinCode:    checkinCode,
+		CheckedInAt:    checkedInAt,
+		Attendance:     attendance(row.Status, row.EndsAt, row.CheckedInAt.Valid, row.CheckinAtStart, now),
+		Role:           RoleOwner,
+		CheckinWays:    checkinWays(row),
+		StaffContacts:  staffContacts(row),
+		CheckinRadiusM: int(row.CheckinRadiusM),
+		Facility:       FacilityDetails(row.Facility, row.FacilitySport),
 	}
 }
 

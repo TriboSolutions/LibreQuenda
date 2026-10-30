@@ -77,6 +77,7 @@ SELECT
     (COALESCE(c.entry_code, FALSE) AND f.latitude IS NOT NULL)::BOOLEAN AS entry_code,
     COALESCE(c.staff_confirm, FALSE)::BOOLEAN AS staff_confirm,
     COALESCE(c.staff_contacts, '[]'::JSONB) AS staff_contacts,
+    COALESCE(c.radius_m, 100)::INT AS checkin_radius_m, -- how close the phone must be for the code or the door QR
     t.contact_phone AS tenant_phone, -- who to ask without staff contacts: the facility's, else the council's
     t.contact_email AS tenant_email,
     f.id   AS facility_id,

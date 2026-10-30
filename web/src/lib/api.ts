@@ -308,6 +308,7 @@ export type Nearby = {
     tenant_slug: string
     entry_code: boolean // books with its entry code
     printed_qr: boolean // has a QR on the door
+    radius_m: number // how close the phone must be
     staff_contacts: StaffContact[] // staff to ask on site
   }[]
 }
@@ -342,6 +343,7 @@ export type Booking = {
   checked_in_at: string | null
   checkin_ways?: CheckinMethod[] | null // owner only: the ways to check in the facility takes, for the check-in button
   staff_contacts?: StaffContact[] // owner only, with staff confirmation on: who to ask on site
+  checkin_radius_m?: number // owner only: how close the phone must be for the code or the door QR
   // past confirmed bookings only, from the QR readers: unknown = no reader when it began, so nobody could check in
   attendance: '' | 'attended' | 'no_show' | 'unknown'
   // invites: the owner shares a link and others fill the facility's capacity

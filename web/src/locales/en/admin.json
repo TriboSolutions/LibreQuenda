@@ -544,7 +544,7 @@
   "checkin": {
     "title": "How people check in",
     "help": "Choose one or several ways for residents to check in at the entrance. They all end in the same check-in on the booking, so attendance and the indicators stay the same. Pick by budget and by how much cheating matters here.",
-    "preview": "The QR reader, the printed QR, the entry code and staff confirmation work. NFC and the rotating code are a preview: their choices are not saved.",
+    "preview": "The QR reader, the printed QR, the entry code and staff confirmation work. NFC is a preview: its choices are not saved.",
     "built": "Working",
     "soon": "Coming soon",
     "door": "At the door:",
@@ -585,18 +585,6 @@
       "plain": "Plain tag",
       "signedHelp": "Each tap carries a signature and a counter that the server checks, so a copied or recorded tap does not work.",
       "plainHelp": "A plain tag only holds the address and can be copied: add the location check."
-    },
-    "rotating": {
-      "name": "Rotating code on a display",
-      "how": "A small screen at the door shows a code or QR that changes every few minutes; the resident types or scans it in the app.",
-      "door": "an e-ink screen, ESP32 or old tablet",
-      "cost": "tens of euros per door",
-      "cheat": "high, the code only works for a few minutes and only at this door",
-      "every": "New code every",
-      "minutes_one": "{{count}} minute",
-      "minutes_other": "{{count}} minutes",
-      "digits": "Digits in the code",
-      "help": "The display gets a secret of its own, kept like the reader keys, and shows codes from it (TOTP)."
     },
     "entryCode": {
       "name": "Entry code",

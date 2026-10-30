@@ -262,6 +262,7 @@ SELECT
     (COALESCE(c.entry_code, FALSE) AND f.latitude IS NOT NULL)::BOOLEAN AS entry_code,
     COALESCE(c.staff_confirm, FALSE)::BOOLEAN AS staff_confirm,
     COALESCE(c.staff_contacts, '[]'::JSONB) AS staff_contacts,
+    COALESCE(c.radius_m, 100)::INT AS checkin_radius_m, -- how close the phone must be for the code or the door QR
     t.contact_phone AS tenant_phone, -- who to ask without staff contacts: the facility's, else the council's
     t.contact_email AS tenant_email,
     f.id   AS facility_id,
@@ -296,6 +297,7 @@ type ListBookingsByUserRow struct {
 	EntryCode      bool            `json:"entry_code"`
 	StaffConfirm   bool            `json:"staff_confirm"`
 	StaffContacts  json.RawMessage `json:"staff_contacts"`
+	CheckinRadiusM int32           `json:"checkin_radius_m"`
 	TenantPhone    sql.NullString  `json:"tenant_phone"`
 	TenantEmail    sql.NullString  `json:"tenant_email"`
 	FacilityID     uuid.UUID       `json:"facility_id"`
@@ -332,6 +334,7 @@ func (q *Queries) ListBookingsByUser(ctx context.Context, userID uuid.NullUUID) 
 			&i.EntryCode,
 			&i.StaffConfirm,
 			&i.StaffContacts,
+			&i.CheckinRadiusM,
 			&i.TenantPhone,
 			&i.TenantEmail,
 			&i.FacilityID,

@@ -214,6 +214,7 @@ func nearby(rows []model.ListNearbyFacilitiesRow, position checkin.Position) []N
 			TenantSlug:    f.row.TenantSlug,
 			EntryCode:     f.row.EntryCode,
 			PrintedQr:     f.row.PrintedQr,
+			RadiusM:       int(f.row.RadiusM),
 			StaffContacts: staffContacts(f.row),
 		})
 	}

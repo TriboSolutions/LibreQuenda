@@ -51,5 +51,7 @@
     "notOurs": "Ese QR no es el de la entrada de una instalación. Apunta al de la puerta.",
     "cancel": "Cerrar la cámara",
     "locating": "Comprobando dónde estás…"
-  }
+  },
+  "distance": "Tienes que estar a menos de {{metres}} m de la instalación.",
+  "distanceAny": "Tienes que estar en la instalación: normalmente, a menos de 100 m."
 }

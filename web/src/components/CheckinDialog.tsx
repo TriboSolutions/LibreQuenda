@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { CircleCheck } from 'lucide-react'
+import { DistanceNotice } from '@/components/DistanceNotice'
 import { DoorQrScanner } from '@/components/DoorQrScanner'
 import { EntranceAnswer } from '@/components/EntranceAnswer'
 import { QrImage } from '@/components/QrImage'
@@ -68,6 +69,7 @@ export function CheckinDialog({ booking, token, timeZone, today, onClose, onChec
         <p id="checkin-code-help" className="text-muted-foreground">
           {t('checkin.entry_code.help')}
         </p>
+        <DistanceNotice metres={booking.checkin_radius_m} />
         <div className="grid gap-2 sm:max-w-xs">
           <Label htmlFor="checkin-code">{t('entrance:code')}</Label>
           <Input
@@ -94,6 +96,7 @@ export function CheckinDialog({ booking, token, timeZone, today, onClose, onChec
     printed_qr: (
       <div className="grid gap-4">
         <p className="text-muted-foreground">{t('checkin.printed_qr.help')}</p>
+        <DistanceNotice metres={booking.checkin_radius_m} />
         <DoorQrScanner book={false} facility={{ slug: booking.tenant_slug, facility: booking.facility_slug }} onCheckedIn={onCheckedIn} />
       </div>
     ),
