@@ -122,7 +122,7 @@ export function CouncilsPanel() {
                   </td>
                   <td className="py-3 pl-4 text-right">
                     <Button asChild variant="ghost" size="sm">
-                      <Link to={`/${council.slug}/admin/axustes`} aria-label={`${t('admin:councils.manage')}: ${council.name}`}>
+                      <Link to={`/${council.slug}/admin`} aria-label={`${t('admin:councils.manage')}: ${council.name}`}>
                         {t('admin:councils.manage')}
                         <ChevronRight />
                       </Link>

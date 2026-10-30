@@ -2,7 +2,7 @@ import { ArrowLeft, ExternalLink } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
-import { Link, useNavigate, useParams } from 'react-router'
+import { Link, useLocation, useNavigate, useParams } from 'react-router'
 import { BookingRulesSettings } from '@/components/admin/BookingRulesSettings'
 import { CouncilExport } from '@/components/admin/CouncilExport'
 import { CouncilFormDialog } from '@/components/admin/CouncilFormDialog'
@@ -33,6 +33,7 @@ export function CouncilSettingsPage() {
   const auth = useAuth()
   const { me } = useMe()
   const navigate = useNavigate()
+  const location = useLocation()
   const allowed = useCouncilAdmin(slug)
   // a superadministrator also switches the council on or off and deletes it
   const superadmin = me?.is_superadmin ?? false
@@ -248,7 +249,16 @@ export function CouncilSettingsPage() {
       <TopBar tenants={tenants.data?.tenants ?? []} tenantSlug={slug} />
       <main id="main" tabIndex={-1} className="mx-auto max-w-[1152px] px-4 pt-8 pb-16 sm:px-6">
         <p>
-          <Link to={`/${slug}/admin`} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
+          {/* back to where they came from, like the browser's back; straight from a link, to the council's administration */}
+          <Link
+            to={`/${slug}/admin`}
+            onClick={(event) => {
+              if (location.key === 'default') return
+              event.preventDefault()
+              navigate(-1)
+            }}
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+          >
             <ArrowLeft className="size-4" aria-hidden />
             {t('admin:councilSettings.back')}
           </Link>
