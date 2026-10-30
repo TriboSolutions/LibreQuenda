@@ -101,3 +101,20 @@ func (h *tenantsHandler) Recommendations(w http.ResponseWriter, r *http.Request)
 	w.Header().Set("Cache-Control", "no-store")
 	helpers.SendSuccessResponse(w, response)
 }
+
+// Weather: GET /tenants/{slug}/facilities/{facility}/weather?date=YYYY-MM-DD, public.
+func (h *tenantsHandler) Weather(w http.ResponseWriter, r *http.Request) {
+	var slug, slugErr = helpers.GetStringPathValue("slug", r)
+	var facility, facilityErr = helpers.GetStringPathValue("facility", r)
+	if slugErr != nil || facilityErr != nil {
+		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_query_params")
+		return
+	}
+	var response, err = GetTenantsService(h.db).Weather(r.Context(), slug, facility, r.URL.Query().Get("date"))
+	if err != nil {
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
+		return
+	}
+	w.Header().Set("Cache-Control", "public, max-age=600")
+	helpers.SendSuccessResponse(w, response)
+}

@@ -178,7 +178,8 @@
     "invalid_issue_status": "Ese estado non existe.",
     "invalid_issue_note": "A nota pode ter ata 1000 caracteres.",
     "issue_reject_reason": "Para rexeitar un aviso, explica o motivo a quen o enviou.",
-    "issue_not_found": "Non atopamos ese aviso."
+    "issue_not_found": "Non atopamos ese aviso.",
+    "invalid_municipality_code": "O código INE do concello ten cinco cifras (por exemplo, 36024 para Lalín)."
   },
   "email": {
     "greeting": "Ola {{0}},",

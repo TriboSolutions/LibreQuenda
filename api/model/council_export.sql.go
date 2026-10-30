@@ -473,7 +473,7 @@ func (q *Queries) ExportPeople(ctx context.Context, tenantID uuid.UUID) ([]Expor
 const exportTenant = `-- name: ExportTenant :one
 
 SELECT
-    id, slug, name, timezone, contact_email, contact_phone, logo_ref, is_active, created_at, updated_at
+    id, slug, name, timezone, contact_email, contact_phone, municipality_code, logo_ref, is_active, created_at, updated_at
 FROM
     tenant
 WHERE
@@ -499,6 +499,7 @@ func (q *Queries) ExportTenant(ctx context.Context, tenantID uuid.UUID) (Tenant,
 		&i.Timezone,
 		&i.ContactEmail,
 		&i.ContactPhone,
+		&i.MunicipalityCode,
 		&i.LogoRef,
 		&i.IsActive,
 		&i.CreatedAt,

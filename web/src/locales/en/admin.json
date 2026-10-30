@@ -52,7 +52,9 @@
     "saving": "Saving…",
     "cancel": "Cancel",
     "logo": "Coat of arms or logo",
-    "pageUrl": "Its page: {{url}}"
+    "pageUrl": "Its page: {{url}}",
+    "municipalityCode": "Municipality INE code",
+    "municipalityCodeHelp": "Five digits (e.g. 36024 for Lalín): MeteoGalicia’s forecast at outdoor facilities."
   },
   "manage": {
     "details": "Details",

@@ -66,5 +66,63 @@
       "safety": "Seguridade",
       "other": "Outro"
     }
+  },
+  "weather": {
+    "title": "Tempo previsto",
+    "source": "Datos:",
+    "range": "{{min}}–{{max}} °C",
+    "temperature": "{{value}} °C",
+    "rainChance": "{{value}} % de choiva",
+    "unknown": "Sen datos",
+    "forTurn": "Tempo ás {{time}}",
+    "dayWarning": "Atención ao tempo: {{list}}.",
+    "turnWarning": "Atención ao tempo ás {{time}}: {{list}}. Podes cancelar ata o {{date}}.",
+    "period": {
+      "morning": "Mañá",
+      "afternoon": "Tarde",
+      "night": "Noite"
+    },
+    "sky": {
+      "clear": "Despexado",
+      "partly_cloudy": "Nubes e claros",
+      "cloudy": "Nubrado",
+      "overcast": "Cuberto",
+      "fog": "Néboa",
+      "haze": "Calima",
+      "drizzle": "Orballo",
+      "rain": "Choiva",
+      "showers": "Chuvascos",
+      "storm": "Treboada",
+      "snow": "Neve",
+      "sleet": "Auganeve",
+      "hail": "Sarabia"
+    },
+    "wind": {
+      "calm": "Calma",
+      "variable": "vento variable",
+      "light": "vento frouxo",
+      "moderate": "vento moderado",
+      "strong": "vento forte",
+      "very_strong": "vento moi forte"
+    },
+    "from": {
+      "n": "do norte",
+      "ne": "do nordés",
+      "e": "do leste",
+      "se": "do sueste",
+      "s": "do sur",
+      "sw": "do sudoeste",
+      "w": "do oeste",
+      "nw": "do noroeste"
+    },
+    "warning": {
+      "rain": "choiva probable",
+      "storm": "treboada",
+      "snow": "neve ou sarabia",
+      "wind": "vento forte",
+      "heat": "moita calor",
+      "cold": "xeada ou moito frío",
+      "alert": "aviso de MeteoGalicia"
+    }
   }
 }

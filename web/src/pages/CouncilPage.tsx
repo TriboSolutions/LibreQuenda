@@ -211,6 +211,7 @@ export function CouncilPage() {
       <BookingDialog
         key={pick ? `${pick.facility.id}:${pick.slot.starts_at}` : 'none'}
         pick={pick}
+        tenantSlug={tenantSlug}
         timeZone={timeZone}
         today={today}
         authenticated={auth.isAuthenticated}

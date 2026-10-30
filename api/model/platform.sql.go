@@ -151,6 +151,7 @@ INSERT INTO tenant (
     timezone,
     contact_email,
     contact_phone,
+    municipality_code,
     logo_ref
 ) VALUES (
     $1,
@@ -158,7 +159,8 @@ INSERT INTO tenant (
     $3,
     $4,
     $5,
-    $6
+    $6,
+    $7
 )
 RETURNING
     id,
@@ -166,12 +168,13 @@ RETURNING
 `
 
 type CreateTenantParams struct {
-	Slug         string         `json:"slug"`
-	Name         string         `json:"name"`
-	Timezone     string         `json:"timezone"`
-	ContactEmail sql.NullString `json:"contact_email"`
-	ContactPhone sql.NullString `json:"contact_phone"`
-	LogoRef      sql.NullString `json:"logo_ref"`
+	Slug             string         `json:"slug"`
+	Name             string         `json:"name"`
+	Timezone         string         `json:"timezone"`
+	ContactEmail     sql.NullString `json:"contact_email"`
+	ContactPhone     sql.NullString `json:"contact_phone"`
+	MunicipalityCode sql.NullString `json:"municipality_code"`
+	LogoRef          sql.NullString `json:"logo_ref"`
 }
 
 type CreateTenantRow struct {
@@ -186,6 +189,7 @@ func (q *Queries) CreateTenant(ctx context.Context, arg CreateTenantParams) (Cre
 		arg.Timezone,
 		arg.ContactEmail,
 		arg.ContactPhone,
+		arg.MunicipalityCode,
 		arg.LogoRef,
 	)
 	var i CreateTenantRow
@@ -235,6 +239,7 @@ SELECT
     timezone,
     contact_email,
     contact_phone,
+    municipality_code,
     logo_ref,
     is_active
 FROM
@@ -244,14 +249,15 @@ WHERE
 `
 
 type GetTenantForPlatformRow struct {
-	ID           uuid.UUID      `json:"id"`
-	Slug         string         `json:"slug"`
-	Name         string         `json:"name"`
-	Timezone     string         `json:"timezone"`
-	ContactEmail sql.NullString `json:"contact_email"`
-	ContactPhone sql.NullString `json:"contact_phone"`
-	LogoRef      sql.NullString `json:"logo_ref"`
-	IsActive     bool           `json:"is_active"`
+	ID               uuid.UUID      `json:"id"`
+	Slug             string         `json:"slug"`
+	Name             string         `json:"name"`
+	Timezone         string         `json:"timezone"`
+	ContactEmail     sql.NullString `json:"contact_email"`
+	ContactPhone     sql.NullString `json:"contact_phone"`
+	MunicipalityCode sql.NullString `json:"municipality_code"`
+	LogoRef          sql.NullString `json:"logo_ref"`
+	IsActive         bool           `json:"is_active"`
 }
 
 func (q *Queries) GetTenantForPlatform(ctx context.Context, slug string) (GetTenantForPlatformRow, error) {
@@ -264,6 +270,7 @@ func (q *Queries) GetTenantForPlatform(ctx context.Context, slug string) (GetTen
 		&i.Timezone,
 		&i.ContactEmail,
 		&i.ContactPhone,
+		&i.MunicipalityCode,
 		&i.LogoRef,
 		&i.IsActive,
 	)
@@ -725,24 +732,26 @@ SET
     timezone      = $3,
     contact_email = $4,
     contact_phone = $5,
-    logo_ref      = $6,
-    is_active     = $7
+    municipality_code = $6,
+    logo_ref      = $7,
+    is_active     = $8
 WHERE
-    id = $8
+    id = $9
 RETURNING
     id,
     slug
 `
 
 type UpdateTenantParams struct {
-	Slug         string         `json:"slug"`
-	Name         string         `json:"name"`
-	Timezone     string         `json:"timezone"`
-	ContactEmail sql.NullString `json:"contact_email"`
-	ContactPhone sql.NullString `json:"contact_phone"`
-	LogoRef      sql.NullString `json:"logo_ref"`
-	IsActive     bool           `json:"is_active"`
-	ID           uuid.UUID      `json:"id"`
+	Slug             string         `json:"slug"`
+	Name             string         `json:"name"`
+	Timezone         string         `json:"timezone"`
+	ContactEmail     sql.NullString `json:"contact_email"`
+	ContactPhone     sql.NullString `json:"contact_phone"`
+	MunicipalityCode sql.NullString `json:"municipality_code"`
+	LogoRef          sql.NullString `json:"logo_ref"`
+	IsActive         bool           `json:"is_active"`
+	ID               uuid.UUID      `json:"id"`
 }
 
 type UpdateTenantRow struct {
@@ -757,6 +766,7 @@ func (q *Queries) UpdateTenant(ctx context.Context, arg UpdateTenantParams) (Upd
 		arg.Timezone,
 		arg.ContactEmail,
 		arg.ContactPhone,
+		arg.MunicipalityCode,
 		arg.LogoRef,
 		arg.IsActive,
 		arg.ID,

@@ -6,12 +6,15 @@ import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
+import { TurnWeather } from '@/components/Weather'
+import { useForecast } from '@/hooks/useForecast'
 import { useMe } from '@/hooks/useMe'
 import type { Facility, Slot } from '@/lib/api'
-import { formatBookingDay, formatDateTime, formatTime } from '@/lib/time'
+import { formatBookingDay, formatDateTime, formatTime, localDate } from '@/lib/time'
 
 type Props = {
   pick: { facility: Facility; slot: Slot } | null
+  tenantSlug: string // for an outdoor facility's forecast
   timeZone: string
   today: string
   authenticated: boolean
@@ -21,7 +24,7 @@ type Props = {
 }
 
 /** Confirms a turn. The rules are shown first and must be accepted before booking. */
-export function BookingDialog({ pick, timeZone, today, authenticated, onClose, onConfirm, onLogin }: Props) {
+export function BookingDialog({ pick, tenantSlug, timeZone, today, authenticated, onClose, onConfirm, onLogin }: Props) {
   const { t } = useTranslation(['bookings', 'common', 'home', 'profile'])
   const { me } = useMe()
   const needsProfile = authenticated && me !== null && !me.profile_complete
@@ -29,6 +32,8 @@ export function BookingDialog({ pick, timeZone, today, authenticated, onClose, o
   const [accepted, setAccepted] = useState(false)
   const [isPublic, setIsPublic] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // the turn's forecast, outdoors (before any early return: hooks keep their order)
+  const forecast = useForecast(tenantSlug, pick?.facility.slug ?? '', pick?.facility.tags ?? [], pick ? localDate(pick.slot.starts_at, timeZone) : null)
 
   const close = () => {
     setError(null)
@@ -73,6 +78,8 @@ export function BookingDialog({ pick, timeZone, today, authenticated, onClose, o
             </>
           )}
         </dl>
+
+        {forecast && <TurnWeather forecast={forecast} startsAt={slot.starts_at} timeZone={timeZone} cancelUntil={cancelUntil} />}
 
         <section aria-labelledby="booking-rules" className="grid gap-2 rounded-md bg-muted p-3">
           <h3 id="booking-rules" className="font-medium">

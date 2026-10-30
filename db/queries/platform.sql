@@ -76,6 +76,7 @@ SELECT
     timezone,
     contact_email,
     contact_phone,
+    municipality_code,
     logo_ref,
     is_active
 FROM
@@ -90,6 +91,7 @@ INSERT INTO tenant (
     timezone,
     contact_email,
     contact_phone,
+    municipality_code,
     logo_ref
 ) VALUES (
     sqlc.arg('slug'),
@@ -97,6 +99,7 @@ INSERT INTO tenant (
     sqlc.arg('timezone'),
     sqlc.narg('contact_email'),
     sqlc.narg('contact_phone'),
+    sqlc.narg('municipality_code'),
     sqlc.narg('logo_ref')
 )
 RETURNING
@@ -111,6 +114,7 @@ SET
     timezone      = sqlc.arg('timezone'),
     contact_email = sqlc.narg('contact_email'),
     contact_phone = sqlc.narg('contact_phone'),
+    municipality_code = sqlc.narg('municipality_code'),
     logo_ref      = sqlc.narg('logo_ref'),
     is_active     = sqlc.arg('is_active')
 WHERE
