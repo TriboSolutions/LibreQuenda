@@ -144,7 +144,7 @@ SELECT
     u.full_name AS owner_name,
     (SELECT COUNT(*) FROM booking_participant p WHERE p.booking_id = b.id) AS participant_count,
     facility_sport(f.id)::TEXT AS facility_sport,
-    f.id, f.tenant_id, f.slug, f.name, f.description, f.address, f.latitude, f.longitude, f.capacity, f.accessibility_info, f.contact_phone, f.contact_email, f.image_ref, f.is_active, f.slot_minutes, f.custom_rules, f.max_advance_hours, f.min_advance_minutes, f.min_cancel_hours, f.max_active_bookings_per_user, f.max_bookings_per_day, f.max_turns_in_a_row, f.no_show_penalty, f.no_show_limit, f.no_show_window_days, f.no_show_block_days, f.min_age, f.usage_rules_text, f.created_at, f.updated_at -- what the invite page shows: image, address, rules
+    f.id, f.tenant_id, f.slug, f.name, f.description, f.address, f.latitude, f.longitude, f.capacity, f.accessibility_info, f.contact_phone, f.contact_email, f.image_ref, f.is_active, f.slot_minutes, f.custom_rules, f.max_advance_hours, f.min_advance_minutes, f.min_cancel_hours, f.max_active_bookings_per_user, f.max_bookings_per_day, f.max_turns_in_a_row, f.max_bookings_per_week, f.weekly_opening, f.opens_weekday, f.opens_minute, f.no_show_penalty, f.no_show_limit, f.no_show_window_days, f.no_show_block_days, f.min_age, f.usage_rules_text, f.created_at, f.updated_at -- what the invite page shows: image, address, rules
 FROM
     booking b
     JOIN facility f ON f.id = b.facility_id
@@ -213,6 +213,10 @@ func (q *Queries) GetInviteByToken(ctx context.Context, inviteToken uuid.NullUUI
 		&i.Facility.MaxActiveBookingsPerUser,
 		&i.Facility.MaxBookingsPerDay,
 		&i.Facility.MaxTurnsInARow,
+		&i.Facility.MaxBookingsPerWeek,
+		&i.Facility.WeeklyOpening,
+		&i.Facility.OpensWeekday,
+		&i.Facility.OpensMinute,
 		&i.Facility.NoShowPenalty,
 		&i.Facility.NoShowLimit,
 		&i.Facility.NoShowWindowDays,
@@ -397,7 +401,7 @@ SELECT
     COALESCE(u.full_name, '')::TEXT AS owner_name,
     (SELECT COUNT(*) FROM booking_participant c WHERE c.booking_id = b.id) AS participant_count,
     facility_sport(f.id)::TEXT AS facility_sport,
-    f.id, f.tenant_id, f.slug, f.name, f.description, f.address, f.latitude, f.longitude, f.capacity, f.accessibility_info, f.contact_phone, f.contact_email, f.image_ref, f.is_active, f.slot_minutes, f.custom_rules, f.max_advance_hours, f.min_advance_minutes, f.min_cancel_hours, f.max_active_bookings_per_user, f.max_bookings_per_day, f.max_turns_in_a_row, f.no_show_penalty, f.no_show_limit, f.no_show_window_days, f.no_show_block_days, f.min_age, f.usage_rules_text, f.created_at, f.updated_at
+    f.id, f.tenant_id, f.slug, f.name, f.description, f.address, f.latitude, f.longitude, f.capacity, f.accessibility_info, f.contact_phone, f.contact_email, f.image_ref, f.is_active, f.slot_minutes, f.custom_rules, f.max_advance_hours, f.min_advance_minutes, f.min_cancel_hours, f.max_active_bookings_per_user, f.max_bookings_per_day, f.max_turns_in_a_row, f.max_bookings_per_week, f.weekly_opening, f.opens_weekday, f.opens_minute, f.no_show_penalty, f.no_show_limit, f.no_show_window_days, f.no_show_block_days, f.min_age, f.usage_rules_text, f.created_at, f.updated_at
 FROM
     booking_participant p
     JOIN booking  b ON b.id = p.booking_id
@@ -477,6 +481,10 @@ func (q *Queries) ListParticipationsByUser(ctx context.Context, userID uuid.Null
 			&i.Facility.MaxActiveBookingsPerUser,
 			&i.Facility.MaxBookingsPerDay,
 			&i.Facility.MaxTurnsInARow,
+			&i.Facility.MaxBookingsPerWeek,
+			&i.Facility.WeeklyOpening,
+			&i.Facility.OpensWeekday,
+			&i.Facility.OpensMinute,
 			&i.Facility.NoShowPenalty,
 			&i.Facility.NoShowLimit,
 			&i.Facility.NoShowWindowDays,

@@ -195,7 +195,9 @@ export function FacilityPage() {
             <ul className="num grid gap-1.5">
               <li>{t('facility:ruleSlot', { count: f.slot_minutes })}</li>
               <li>
-                {f.max_advance_hours % 24 === 0
+                {f.weekly_opening
+                  ? t('facility:ruleWeekly', { weekday: t(`common:date.weekdays.${f.weekly_opening.weekday % 7}`), time: f.weekly_opening.at })
+                  : f.max_advance_hours % 24 === 0
                   ? t('facility:ruleAdvance', { count: f.max_advance_hours / 24 })
                   : t('facility:ruleAdvanceHours', { count: f.max_advance_hours })}
               </li>
@@ -204,6 +206,7 @@ export function FacilityPage() {
               <li>{t('facility:ruleLimit', { count: f.max_active_bookings_per_user })}</li>
               {f.max_bookings_per_day > 0 && <li>{t('facility:rulePerDay', { count: f.max_bookings_per_day })}</li>}
               {f.max_turns_in_a_row > 0 && <li>{t('facility:ruleInARow', { count: f.max_turns_in_a_row })}</li>}
+              {f.max_bookings_per_week > 0 && <li>{t('facility:rulePerWeek', { count: f.max_bookings_per_week })}</li>}
               {f.min_age !== null && <li className="font-medium">{t('facility:minAge', { count: f.min_age })}</li>}
             </ul>
           </section>

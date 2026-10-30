@@ -26,6 +26,10 @@ SELECT
     f.max_active_bookings_per_user,
     f.max_bookings_per_day,
     f.max_turns_in_a_row,
+    f.max_bookings_per_week,
+    f.weekly_opening,
+    f.opens_weekday,
+    f.opens_minute,
     f.no_show_penalty,
     f.no_show_limit,
     f.no_show_window_days,
@@ -52,6 +56,10 @@ type GetFacilityForBookingRow struct {
 	MaxActiveBookingsPerUser int32         `json:"max_active_bookings_per_user"`
 	MaxBookingsPerDay        int32         `json:"max_bookings_per_day"`
 	MaxTurnsInARow           int32         `json:"max_turns_in_a_row"`
+	MaxBookingsPerWeek       int32         `json:"max_bookings_per_week"`
+	WeeklyOpening            bool          `json:"weekly_opening"`
+	OpensWeekday             int16         `json:"opens_weekday"`
+	OpensMinute              int32         `json:"opens_minute"`
 	NoShowPenalty            bool          `json:"no_show_penalty"`
 	NoShowLimit              int32         `json:"no_show_limit"`
 	NoShowWindowDays         int32         `json:"no_show_window_days"`
@@ -74,6 +82,10 @@ func (q *Queries) GetFacilityForBooking(ctx context.Context, id uuid.UUID) (GetF
 		&i.MaxActiveBookingsPerUser,
 		&i.MaxBookingsPerDay,
 		&i.MaxTurnsInARow,
+		&i.MaxBookingsPerWeek,
+		&i.WeeklyOpening,
+		&i.OpensWeekday,
+		&i.OpensMinute,
 		&i.NoShowPenalty,
 		&i.NoShowLimit,
 		&i.NoShowWindowDays,
@@ -108,6 +120,10 @@ SELECT
     max_active_bookings_per_user,
     max_bookings_per_day,
     max_turns_in_a_row,
+    max_bookings_per_week,
+    weekly_opening,
+    opens_weekday,
+    opens_minute,
     min_age,
     usage_rules_text
 FROM
@@ -139,6 +155,10 @@ type ListActiveFacilitiesByTenantRow struct {
 	MaxActiveBookingsPerUser int32           `json:"max_active_bookings_per_user"`
 	MaxBookingsPerDay        int32           `json:"max_bookings_per_day"`
 	MaxTurnsInARow           int32           `json:"max_turns_in_a_row"`
+	MaxBookingsPerWeek       int32           `json:"max_bookings_per_week"`
+	WeeklyOpening            bool            `json:"weekly_opening"`
+	OpensWeekday             int16           `json:"opens_weekday"`
+	OpensMinute              int32           `json:"opens_minute"`
 	MinAge                   sql.NullInt32   `json:"min_age"`
 	UsageRulesText           sql.NullString  `json:"usage_rules_text"`
 }
@@ -172,6 +192,10 @@ func (q *Queries) ListActiveFacilitiesByTenant(ctx context.Context, tenantID uui
 			&i.MaxActiveBookingsPerUser,
 			&i.MaxBookingsPerDay,
 			&i.MaxTurnsInARow,
+			&i.MaxBookingsPerWeek,
+			&i.WeeklyOpening,
+			&i.OpensWeekday,
+			&i.OpensMinute,
 			&i.MinAge,
 			&i.UsageRulesText,
 		); err != nil {

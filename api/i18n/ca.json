@@ -165,7 +165,9 @@
     "no_show_blocked": "No pots reservar en aquesta instal·lació fins al {{0}}, per no presentar-te a diverses reserves.",
     "slot_too_soon": "Aquest torn comença massa aviat per reservar-lo des de l’app.",
     "mfa_required": "L’administració requereix entrar amb un segon factor (una app d’autenticació o una clau de seguretat). Configura’l al teu compte i torna a iniciar la sessió.",
-    "mfa_check_failed": "No s’ha pogut comprovar el segon factor. Torna-ho a provar d’aquí a un moment."
+    "mfa_check_failed": "No s’ha pogut comprovar el segon factor. Torna-ho a provar d’aquí a un moment.",
+    "weekly_limit_reached": "Ja tens les reserves que es permeten per setmana en aquesta instal·lació.",
+    "invalid_weekly_opening": "L’obertura setmanal necessita un dia de la setmana i una hora vàlids."
   },
   "email": {
     "greeting": "Hola {{0}},",

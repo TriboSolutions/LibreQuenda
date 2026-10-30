@@ -34,5 +34,8 @@
   "rulePerDay_one": "Como máximo {{count}} reserva por persoa e día.",
   "rulePerDay_other": "Como máximo {{count}} reservas por persoa e día.",
   "ruleInARow_one": "Non se poden reservar quendas seguidas.",
-  "ruleInARow_other": "Como máximo {{count}} quendas seguidas por persoa."
+  "ruleInARow_other": "Como máximo {{count}} quendas seguidas por persoa.",
+  "ruleWeekly": "As quendas da semana seguinte ábrense o {{weekday}} ás {{time}}.",
+  "rulePerWeek_one": "Como máximo {{count}} reserva por persoa e semana.",
+  "rulePerWeek_other": "Como máximo {{count}} reservas por persoa e semana."
 }

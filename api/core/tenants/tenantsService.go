@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"librequenda/model"
 	"librequenda/schedule"
 	"librequenda/shared"
@@ -219,11 +220,15 @@ func (s *tenantsService) loadDay(ctx context.Context, slug string, dateParam str
 		for _, w := range windows {
 			windowDtos = append(windowDtos, WindowDto{OpensAt: w.Opens.Format("15:04"), ClosesAt: w.Closes.Format("15:04")})
 		}
-		var slots = schedule.DaySlots(day, loc, schedule.Rules{
+		var rules = schedule.Rules{
 			SlotMinutes: int(f.SlotMinutes),
 			MaxAdvance:  time.Duration(f.MaxAdvanceHours) * time.Hour,
 			MinAdvance:  time.Duration(f.MinAdvanceMinutes) * time.Minute,
-		}, windows, closureIntervals, busyByFacility[f.ID], now)
+		}
+		if f.WeeklyOpening {
+			rules.Weekly = &schedule.WeeklyOpening{Weekday: int(f.OpensWeekday), Minute: int(f.OpensMinute)}
+		}
+		var slots = schedule.DaySlots(day, loc, rules, windows, closureIntervals, busyByFacility[f.ID], now)
 		if slots == nil {
 			slots = []schedule.Slot{}
 		}
@@ -251,6 +256,8 @@ func (s *tenantsService) loadDay(ctx context.Context, slug string, dateParam str
 			MaxActive:         f.MaxActiveBookingsPerUser,
 			MaxPerDay:         f.MaxBookingsPerDay,
 			MaxInARow:         f.MaxTurnsInARow,
+			MaxPerWeek:        f.MaxBookingsPerWeek,
+			WeeklyOpening:     weeklyOpening(f.WeeklyOpening, f.OpensWeekday, f.OpensMinute),
 			MinAge:            minAge(f.MinAge),
 			UsageRules:        f.UsageRulesText.String,
 			Windows:           windowDtos,
@@ -297,4 +304,12 @@ func minAge(value sql.NullInt32) *int32 {
 		return nil
 	}
 	return &value.Int32
+}
+
+// weeklyOpening: when next week's turns open, for the facility page; nil with a rolling window.
+func weeklyOpening(on bool, weekday int16, minute int32) *WeeklyOpeningDto {
+	if !on {
+		return nil
+	}
+	return &WeeklyOpeningDto{Weekday: weekday, At: fmt.Sprintf("%02d:%02d", minute/60, minute%60)}
 }

@@ -243,6 +243,10 @@ func (s *counciladminService) CreateFacility(ctx context.Context, tenantId uuid.
 			NoShowLimit:              rules.NoShowLimit,
 			NoShowWindowDays:         rules.NoShowWindowDays,
 			NoShowBlockDays:          rules.NoShowBlockDays,
+			MaxBookingsPerWeek:       rules.MaxBookingsPerWeek,
+			WeeklyOpening:            rules.WeeklyOpening,
+			OpensWeekday:             rules.OpensWeekday,
+			OpensMinute:              rules.OpensMinute,
 			MinAge:                   nullInt(input.MinAge),
 			UsageRulesText:           nullString(input.UsageRules),
 		})

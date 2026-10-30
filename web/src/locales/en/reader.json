@@ -62,6 +62,7 @@
     "flash_off": "The council does not let a free turn be booked at the door here. Book in the app.",
     "daily_limit_reached": "You already have the bookings allowed per day here.",
     "turns_in_a_row_limit": "You cannot book that many turns in a row here.",
-    "no_show_blocked": "You cannot book here for some days, after missing several bookings."
+    "no_show_blocked": "You cannot book here for some days, after missing several bookings.",
+    "weekly_limit_reached": "You already have the bookings allowed per week here."
   }
 }

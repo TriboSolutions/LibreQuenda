@@ -34,5 +34,8 @@
   "rulePerDay_one": "Como máximo {{count}} reserva por persona y día.",
   "rulePerDay_other": "Como máximo {{count}} reservas por persona y día.",
   "ruleInARow_one": "No se pueden reservar turnos seguidos.",
-  "ruleInARow_other": "Como máximo {{count}} turnos seguidos por persona."
+  "ruleInARow_other": "Como máximo {{count}} turnos seguidos por persona.",
+  "ruleWeekly": "Los turnos de la semana siguiente se abren el {{weekday}} a las {{time}}.",
+  "rulePerWeek_one": "Como máximo {{count}} reserva por persona y semana.",
+  "rulePerWeek_other": "Como máximo {{count}} reservas por persona y semana."
 }

@@ -165,7 +165,9 @@
     "no_show_blocked": "You cannot book at this facility until {{0}}, after missing several bookings.",
     "slot_too_soon": "That turn starts too soon to book it from the app.",
     "mfa_required": "Administration needs a sign-in with a second factor (an authenticator app or a security key). Set one up in your account and sign in again.",
-    "mfa_check_failed": "The second factor could not be checked. Try again in a moment."
+    "mfa_check_failed": "The second factor could not be checked. Try again in a moment.",
+    "weekly_limit_reached": "You already have the bookings allowed per week at this facility.",
+    "invalid_weekly_opening": "The weekly opening needs a valid weekday and time."
   },
   "email": {
     "greeting": "Hello {{0}},",

@@ -619,9 +619,27 @@ test.describe('keyboard', () => {
     expect((await saved).postDataJSON()).toMatchObject({ no_show_penalty: false, min_advance_minutes: 30 })
   })
 
+  test('the council can open next week at a fixed time and cap bookings per week', async ({ page }) => {
+    await open(page, '/lugo/admin/axustes')
+    const rules = page.getByRole('region', { name: 'Ventá de reserva' })
+    await rules.getByLabel('Como se abre a reserva').click()
+    await page.getByRole('option', { name: 'Apertura semanal a hora fixa' }).click()
+    await expect(rules.getByLabel('Antelación máxima')).toHaveCount(0) // the rolling window gives way
+    await rules.getByLabel('Día da apertura').click()
+    await page.getByRole('option', { name: 'venres' }).click()
+    await rules.getByLabel('Hora da apertura').fill('18:30')
+    await rules.getByLabel('Reservas por persoa e semana').fill('3')
+    await page.waitForTimeout(300)
+    await expectAccessible(page)
+    const saved = page.waitForRequest((r) => r.method() === 'PUT' && r.url().endsWith('/admin/booking-rules'))
+    await rules.getByRole('button', { name: 'Gardar a ventá' }).click()
+    expect((await saved).postDataJSON()).toMatchObject({ weekly_opening: true, opens_weekday: 5, opens_minute: 18 * 60 + 30, max_bookings_per_week: 3 })
+  })
+
   test('residents see the booking window on the facility page', async ({ page }) => {
     await open(page, '/lugo/padel-1')
-    await expect(page.getByText('Reserva ata con 7 días de antelación.')).toBeVisible()
+    await expect(page.getByText('As quendas da semana seguinte ábrense o domingo ás 20:00.')).toBeVisible()
+    await expect(page.getByText('Como máximo 3 reservas por persoa e semana.')).toBeVisible()
     await expect(page.getByText('Dende a app, reserva como moi tarde 30 minutos antes do turno.')).toBeVisible()
     await expect(page.getByText('Como máximo 1 reserva por persoa e día.')).toBeVisible()
   })

@@ -264,7 +264,7 @@ func (q *Queries) ExportClosures(ctx context.Context, tenantID uuid.UUID) ([]Clo
 
 const exportFacilities = `-- name: ExportFacilities :many
 SELECT
-    facility.id, facility.tenant_id, facility.slug, facility.name, facility.description, facility.address, facility.latitude, facility.longitude, facility.capacity, facility.accessibility_info, facility.contact_phone, facility.contact_email, facility.image_ref, facility.is_active, facility.slot_minutes, facility.custom_rules, facility.max_advance_hours, facility.min_advance_minutes, facility.min_cancel_hours, facility.max_active_bookings_per_user, facility.max_bookings_per_day, facility.max_turns_in_a_row, facility.no_show_penalty, facility.no_show_limit, facility.no_show_window_days, facility.no_show_block_days, facility.min_age, facility.usage_rules_text, facility.created_at, facility.updated_at,
+    facility.id, facility.tenant_id, facility.slug, facility.name, facility.description, facility.address, facility.latitude, facility.longitude, facility.capacity, facility.accessibility_info, facility.contact_phone, facility.contact_email, facility.image_ref, facility.is_active, facility.slot_minutes, facility.custom_rules, facility.max_advance_hours, facility.min_advance_minutes, facility.min_cancel_hours, facility.max_active_bookings_per_user, facility.max_bookings_per_day, facility.max_turns_in_a_row, facility.max_bookings_per_week, facility.weekly_opening, facility.opens_weekday, facility.opens_minute, facility.no_show_penalty, facility.no_show_limit, facility.no_show_window_days, facility.no_show_block_days, facility.min_age, facility.usage_rules_text, facility.created_at, facility.updated_at,
     facility_sport(facility.id)::TEXT AS sport,
     ARRAY(
         SELECT tg.slug FROM facility_tag ft JOIN tag tg ON tg.id = ft.tag_id
@@ -316,6 +316,10 @@ func (q *Queries) ExportFacilities(ctx context.Context, tenantID uuid.UUID) ([]E
 			&i.Facility.MaxActiveBookingsPerUser,
 			&i.Facility.MaxBookingsPerDay,
 			&i.Facility.MaxTurnsInARow,
+			&i.Facility.MaxBookingsPerWeek,
+			&i.Facility.WeeklyOpening,
+			&i.Facility.OpensWeekday,
+			&i.Facility.OpensMinute,
 			&i.Facility.NoShowPenalty,
 			&i.Facility.NoShowLimit,
 			&i.Facility.NoShowWindowDays,

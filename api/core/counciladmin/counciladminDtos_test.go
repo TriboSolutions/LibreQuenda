@@ -63,7 +63,7 @@ func TestFacilityInputValidate(t *testing.T) {
 
 func goodRules() BookingRulesDto {
 	return BookingRulesDto{MaxAdvanceHours: 7 * 24, MinAdvanceMinutes: 30, MinCancelHours: 4, MaxActiveBookingsPerUser: 2,
-		MaxBookingsPerDay: 1, MaxTurnsInARow: 2, NoShowLimit: 3, NoShowWindowDays: 30, NoShowBlockDays: 7}
+		MaxBookingsPerDay: 1, MaxTurnsInARow: 2, NoShowLimit: 3, NoShowWindowDays: 30, NoShowBlockDays: 7, OpensWeekday: 7, OpensMinute: 20 * 60}
 }
 
 func TestBookingRulesValidate(t *testing.T) {
@@ -74,6 +74,16 @@ func TestBookingRulesValidate(t *testing.T) {
 	noAdvance.MaxAdvanceHours = 0
 	if key := noAdvance.validate(); key != "errors.invalid_booking_window" {
 		t.Errorf("0 hours ahead: %q", key)
+	}
+	var badOpening = goodRules()
+	badOpening.WeeklyOpening, badOpening.OpensWeekday = true, 8
+	if key := badOpening.validate(); key != "errors.invalid_weekly_opening" {
+		t.Errorf("an opening on weekday 8: %q", key)
+	}
+	var tooManyPerWeek = goodRules()
+	tooManyPerWeek.MaxBookingsPerWeek = 101
+	if key := tooManyPerWeek.validate(); key != "errors.invalid_booking_limit" {
+		t.Errorf("101 bookings a week: %q", key)
 	}
 	var noBlock = goodRules()
 	noBlock.NoShowBlockDays = 0
