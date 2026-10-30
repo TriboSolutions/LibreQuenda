@@ -10,6 +10,8 @@
 		# Keep X-Forwarded-* from a TLS-terminating proxy on the private network
 		trusted_proxies static private_ranges
 	}
+	# per-IP limits on the sign-in pages (caddy-ratelimit), before anything else
+	order rate_limit before basic_auth
 }
 
 # --- Web app + core API ---
@@ -52,6 +54,30 @@
 
 # --- Identity (Zitadel) ---
 {$ZITADEL_ADDRESS} {
+	# Zitadel's login has no captcha: per-IP limits on its form posts (Next.js
+	# server actions post to the page itself), loose enough for a real person.
+	# Over the limit: 429 with Retry-After. {client_ip} honours trusted_proxies.
+	rate_limit {
+		zone signup {
+			match {
+				method POST
+				path /ui/v2/login/register /ui/v2/login/register/*
+			}
+			key {client_ip}
+			events {$SIGNUP_LIMIT_PER_HOUR:5}
+			window 1h
+		}
+		zone signin {
+			match {
+				method POST
+				path /ui/v2/login/loginname /ui/v2/login/password /ui/v2/login/password/* /ui/v2/login/otp/* /ui/v2/login/u2f /ui/v2/login/passkey /ui/v2/login/verify /ui/v2/login/mfa /ui/v2/login/mfa/*
+			}
+			key {client_ip}
+			events {$SIGNIN_LIMIT_PER_10_MIN:30}
+			window 10m
+		}
+	}
+
 	# Login v2 UI (Next.js)
 	handle /ui/v2/login* {
 		reverse_proxy zitadel-login:3000

@@ -104,6 +104,9 @@ services:
       CADDY_AUTO_HTTPS: ${CADDY_AUTO_HTTPS:-false}
       WEB_DOMAIN: ${WEB_DOMAIN}
       ZITADEL_DOMAIN: ${ZITADEL_DOMAIN}
+      # per-IP limits on the sign-in pages' form posts (no captcha in Zitadel's login)
+      SIGNUP_LIMIT_PER_HOUR: ${SIGNUP_LIMIT_PER_HOUR:-5}
+      SIGNIN_LIMIT_PER_10_MIN: ${SIGNIN_LIMIT_PER_10_MIN:-30}
     volumes:
       - caddy_data:/data
       - caddy_config:/config
