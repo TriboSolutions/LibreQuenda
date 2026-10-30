@@ -58,6 +58,7 @@ SELECT
     u.full_name,
     u.preferred_language,
     u.email_reminders,
+    u.email_notifications,
     b.status,
     b.starts_at,
     b.ends_at,

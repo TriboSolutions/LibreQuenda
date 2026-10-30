@@ -173,8 +173,7 @@
     "invalid_issue_category": "Escolle de que tipo é o problema.",
     "invalid_issue_description": "Describe o problema (ata 1000 caracteres).",
     "issue_failed": "Non se puido gardar o aviso. Téntao de novo.",
-    "issue_booking_too_old": "Esa reserva rematou hai máis dunha semana: avisa dende a páxina da instalación.",
-    "too_many_open_issues": "Xa tes 5 avisos abertos. Agarda a que o concello os revise.",
+    "issue_active_booking_required": "Só podes avisar dun problema durante unha reserva confirmada da que sexas titular ou participante.",
     "invalid_issue_status": "Ese estado non existe.",
     "invalid_issue_note": "A nota pode ter ata 1000 caracteres.",
     "issue_reject_reason": "Para rexeitar un aviso, explica o motivo a quen o enviou.",
@@ -183,7 +182,8 @@
     "other_council_booking": "Xa tes reservas en {{0}}: cunha conta resérvase nun concello de cada vez. Poderás reservar aquí cando rematen ou as canceles.",
     "council_limit_reached": "Xa tes {{0}} reservas próximas nas instalacións deste concello, o máximo que permite.",
     "booking_policy_failed": "Non se puideron gardar as normas de reserva da plataforma.",
-    "email_unverified": "Confirma o teu correo electrónico antes de reservar: no teu perfil podes pedir o código e escribilo."
+    "email_unverified": "Confirma o teu correo electrónico antes de reservar: no teu perfil podes pedir o código e escribilo.",
+    "too_many_booking_issues": "Esta reserva xa ten 5 incidencias. Non se poden enviar máis."
   },
   "email": {
     "greeting": "Ola {{0}},",
@@ -247,6 +247,17 @@
       "intro": "O concello revisou o problema que avisaches en {{0}} ({{1}}) e non o vai tramitar."
     },
     "issue_note": "Nota do concello: {{0}}",
-    "issue_footer": "Recibes este correo porque avisaches dun problema nunha instalación en {{0}}."
+    "issue_footer": "Recibes este correo porque avisaches dun problema nunha instalación en {{0}}.",
+    "booking_joined": {
+      "subject": "Alguén se uniu á túa reserva: {{0}}, {{1}} ás {{2}}",
+      "intro": "{{5}} uniuse á túa reserva en {{0}} ({{1}}): {{2}}, de {{3}} a {{4}}."
+    },
+    "someone": "Alguén",
+    "issue_reported": {
+      "subject": "Nova incidencia en {{0}}",
+      "intro": "Avisaron dun problema en {{0}} ({{1}}). Revisa a incidencia na administración do concello.",
+      "manage": "Ver incidencias",
+      "footer": "Recibes este correo porque administras este concello en {{0}}."
+    }
   }
 }

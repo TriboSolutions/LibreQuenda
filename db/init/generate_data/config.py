@@ -46,13 +46,13 @@ COUNCILS = [
                 "schedule": [(WEEKDAYS, "09:00", "22:00"), (SATURDAY, "10:00", "14:00")],
             },
             {
-                "key": "tenis-1", "tags": ["tenis", "pista", "aire-libre"], "slug": "pista-de-tenis-1", "image_ref": "facilities/pista-de-tenis.jpg", "description": "Pista de tenis ao aire libre a carón do pavillón municipal.", "latitude": 42.66419, "longitude": -8.1075, "name": "Pista de tenis 1", "sport": "Tenis", "address": "Rúa da Banda de Música de Lalín, 36500 Lalín",
+                "show_weather": True, "key": "tenis-1", "tags": ["tenis", "pista", "aire-libre"], "slug": "pista-de-tenis-1", "image_ref": "facilities/pista-de-tenis.jpg", "description": "Pista de tenis ao aire libre a carón do pavillón municipal.", "latitude": 42.66419, "longitude": -8.1075, "name": "Pista de tenis 1", "sport": "Tenis", "address": "Rúa da Banda de Música de Lalín, 36500 Lalín",
                 "capacity": 4, "slot_minutes": 60,
                 "usage_rules_text": None,
                 "schedule": [(WEEKDAYS, "09:00", "21:00"), (WEEKEND, "10:00", "14:00")],
             },
             {
-                "key": "tenis-2", "tags": ["tenis", "pista", "aire-libre"], "slug": "pista-de-tenis-2", "image_ref": "facilities/pista-de-tenis.jpg", "description": "Segunda pista de tenis ao aire libre a carón do pavillón municipal.", "latitude": 42.66441, "longitude": -8.10758, "name": "Pista de tenis 2", "sport": "Tenis", "address": "Rúa da Banda de Música de Lalín, 36500 Lalín",
+                "show_weather": True, "key": "tenis-2", "tags": ["tenis", "pista", "aire-libre"], "slug": "pista-de-tenis-2", "image_ref": "facilities/pista-de-tenis.jpg", "description": "Segunda pista de tenis ao aire libre a carón do pavillón municipal.", "latitude": 42.66441, "longitude": -8.10758, "name": "Pista de tenis 2", "sport": "Tenis", "address": "Rúa da Banda de Música de Lalín, 36500 Lalín",
                 "capacity": 4, "slot_minutes": 60,
                 "usage_rules_text": None,
                 "schedule": [(WEEKDAYS, "09:00", "21:00"), (WEEKEND, "10:00", "14:00")],
@@ -100,7 +100,7 @@ COUNCILS = [
                 "schedule": [(WEEKDAYS, "16:00", "23:00")],
             },
             {
-                "key": "gorgoso", "tags": ["futbol", "futbol-7", "campo", "aire-libre", "cesped-artificial", "iluminacion", "vestiarios"], "slug": "campo-luis-lopez-gorgoso", "image_ref": "facilities/campo-de-futbol-7.jpg", "description": "Campo de fútbol de céspede artificial con iluminación e vestiarios.", "latitude": 43.02475, "longitude": -7.56094, "name": "Campo de fútbol Luis López Gorgoso", "sport": "Fútbol", "address": "Avenida Infanta Elena, 27003 Lugo",
+                "show_weather": True, "key": "gorgoso", "tags": ["futbol", "futbol-7", "campo", "aire-libre", "cesped-artificial", "iluminacion", "vestiarios"], "slug": "campo-luis-lopez-gorgoso", "image_ref": "facilities/campo-de-futbol-7.jpg", "description": "Campo de fútbol de céspede artificial con iluminación e vestiarios.", "latitude": 43.02475, "longitude": -7.56094, "name": "Campo de fútbol Luis López Gorgoso", "sport": "Fútbol", "address": "Avenida Infanta Elena, 27003 Lugo",
                 "capacity": 22, "slot_minutes": 90,
                 "usage_rules_text": "Céspede artificial: só bota de tacos de goma.",
                 "schedule": [(WEEKDAYS, "17:00", "23:00"), (SATURDAY, "09:00", "13:30")],
@@ -130,7 +130,7 @@ COUNCILS = [
                 "schedule": [(WEEKDAYS, "07:00", "10:00"), (WEEKDAYS, "15:30", "21:30"), (SATURDAY, "10:00", "13:00")],
             },
             {
-                "key": "remedios-campo", "tags": ["futbol", "campo", "aire-libre", "iluminacion", "vestiarios"], "slug": "campo-miguel-angel-os-remedios", "image_ref": "facilities/campo-de-futbol-7.jpg", "description": "Campo de fútbol do complexo dos Remedios, con iluminación e vestiarios.", "latitude": 42.34423, "longitude": -7.87139, "name": "Campo de fútbol Miguel Ángel - Os Remedios", "sport": "Fútbol", "address": "Avenida da Ribeira Sacra, 32003 Ourense",
+                "show_weather": True, "key": "remedios-campo", "tags": ["futbol", "campo", "aire-libre", "iluminacion", "vestiarios"], "slug": "campo-miguel-angel-os-remedios", "image_ref": "facilities/campo-de-futbol-7.jpg", "description": "Campo de fútbol do complexo dos Remedios, con iluminación e vestiarios.", "latitude": 42.34423, "longitude": -7.87139, "name": "Campo de fútbol Miguel Ángel - Os Remedios", "sport": "Fútbol", "address": "Avenida da Ribeira Sacra, 32003 Ourense",
                 "capacity": 22, "slot_minutes": 90,
                 "usage_rules_text": "Só bota de tacos de goma.",
                 "schedule": [(WEEKDAYS, "17:30", "23:30"), (SATURDAY, "09:00", "13:30")],
@@ -142,7 +142,7 @@ COUNCILS = [
                 "schedule": [(WEEKDAYS, "10:00", "22:00"), (SATURDAY, "10:00", "14:00")],
             },
             {
-                "key": "oira-padel", "tags": ["padel", "pista", "aire-libre"], "slug": "pista-de-padel-de-oira", "image_ref": "facilities/pista-de-padel-1.jpg", "description": "Pista de pádel ao aire libre do Complexo Deportivo de Oira.", "latitude": 42.35499, "longitude": -7.85376, "name": "Pista de pádel de Oira", "sport": "Pádel", "address": "Complexo Deportivo de Oira, Paseo de Oira, 32004 Ourense",
+                "show_weather": True, "key": "oira-padel", "tags": ["padel", "pista", "aire-libre"], "slug": "pista-de-padel-de-oira", "image_ref": "facilities/pista-de-padel-1.jpg", "description": "Pista de pádel ao aire libre do Complexo Deportivo de Oira.", "latitude": 42.35499, "longitude": -7.85376, "name": "Pista de pádel de Oira", "sport": "Pádel", "address": "Complexo Deportivo de Oira, Paseo de Oira, 32004 Ourense",
                 "capacity": 4, "slot_minutes": 90,
                 "usage_rules_text": "Calzado de pádel obrigatorio.",
                 "schedule": [(WEEKDAYS, "09:00", "22:30"), (WEEKEND, "10:00", "14:30")],

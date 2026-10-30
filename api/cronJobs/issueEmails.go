@@ -28,6 +28,12 @@ func SendIssueEmails(ctx context.Context, db *sql.DB) (int, error) {
 	var sent int
 	var appName = branding.Name(ctx, db)
 	for _, row := range rows {
+		if !row.EmailNotifications {
+			if err = queries.MarkNotificationEmailed(ctx, row.ID); err != nil {
+				return sent, err
+			}
+			continue
+		}
 		var council, councilErr = mailer.OpenRelay(row.SmtpConfig, row.TenantID)
 		if err = send(council, councilErr, issueEmail(row, appName)); err != nil {
 			log.Printf("issue email %s: %v", row.ID, err)
@@ -58,6 +64,11 @@ func issueEmail(row model.ListPendingIssueEmailsRow, appName string) mailer.Mess
 		Manage:    t("manage"),
 		ManageURL: shared.PUBLIC_URL + "/reservas",
 		Footer:    t("issue_footer", appName),
+	}
+	if row.Type == model.NotificationTypeIssueReported {
+		view.Manage = t("issue_reported.manage")
+		view.ManageURL = shared.PUBLIC_URL + "/" + row.TenantSlug + "/admin?vista=incidencias"
+		view.Footer = t("issue_reported.footer", appName)
 	}
 	if notice.Reason != "" {
 		view.Reason = t("issue_note", notice.Reason)

@@ -12,7 +12,7 @@ import (
 
 func TestShouldEmailAndUsable(t *testing.T) {
 	var now = time.Date(2026, 11, 2, 10, 0, 0, 0, time.UTC)
-	var soon = model.ListPendingEmailsRow{Status: model.BookingStatusConfirmed, StartsAt: now.Add(10 * time.Minute), EndsAt: now.Add(70 * time.Minute), EmailReminders: true}
+	var soon = model.ListPendingEmailsRow{Status: model.BookingStatusConfirmed, StartsAt: now.Add(10 * time.Minute), EndsAt: now.Add(70 * time.Minute), EmailReminders: true, EmailNotifications: true}
 	var with = func(change func(*model.ListPendingEmailsRow)) model.ListPendingEmailsRow {
 		var row = soon
 		change(&row)
@@ -42,6 +42,11 @@ func TestShouldEmailAndUsable(t *testing.T) {
 			r.Status = model.BookingStatusCancelled
 			r.EmailReminders = false
 		}), true, false},
+		{"someone joined: emailed, without ways in", with(func(r *model.ListPendingEmailsRow) { r.Type = model.NotificationTypeBookingJoined }), true, false},
+		{"emails turned off: none, not even a council cancellation", with(func(r *model.ListPendingEmailsRow) {
+			r.Type = model.NotificationTypeBookingCancelledByCouncil
+			r.EmailNotifications = false
+		}), false, false},
 		{"cancelled by the user: no ways in", with(func(r *model.ListPendingEmailsRow) {
 			r.Type = model.NotificationTypeBookingCancelled
 			r.Status = model.BookingStatusCancelled
@@ -182,5 +187,29 @@ func TestEmailLinksDirectionsAndContacts(t *testing.T) {
 	message, _ = notificationEmail(row, "LibreQuenda", now)
 	if strings.Contains(message.HTML, "google.com/maps") || !strings.Contains(message.HTML, "mailto:lalin@lalin.org") {
 		t.Errorf("cancellation: %s", message.HTML)
+	}
+}
+
+func TestJoinedEmailNamesWhoJoined(t *testing.T) {
+	helpers.GetI18nInstance(helpers.SetDefaultLocale("gl"), helpers.SetDirectory("../i18n"))
+	var now = time.Date(2026, 11, 2, 10, 0, 0, 0, time.UTC)
+	var row = model.ListPendingEmailsRow{
+		Type: model.NotificationTypeBookingJoined, Status: model.BookingStatusConfirmed, EmailNotifications: true,
+		StartsAt: now.Add(48 * time.Hour), EndsAt: now.Add(49 * time.Hour),
+		FacilityName: "Pista de tenis", TenantName: "Concello de Lalín", Timezone: "Europe/Madrid", Email: "a@example.com",
+		Payload: []byte(`{"name":"Uxía","guest":false}`),
+	}
+	row.PreferredLanguage.String, row.PreferredLanguage.Valid = "en", true
+	var message, err = notificationEmail(row, "LibreQuenda", now)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(message.Subject, "Someone joined your booking") || !strings.Contains(message.Text, "Uxía joined your booking at Pista de tenis") {
+		t.Errorf("joined email: %q / %q", message.Subject, message.Text)
+	}
+	row.Payload = []byte(`{}`)
+	message, _ = notificationEmail(row, "LibreQuenda", now)
+	if !strings.Contains(message.Text, "Someone joined your booking") {
+		t.Errorf("without a name: %q", message.Text)
 	}
 }

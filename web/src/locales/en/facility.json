@@ -1,4 +1,6 @@
 {
+  "publicSlot": {"joinable": "Spots available", "ongoing": "In progress", "full": "Full", "joinableLegend": "Public: open to join", "ongoingLegend": "Public: in progress"},
+  "chooseDate": "Choose date",
   "back": "All facilities",
   "bookTitle": "Book a slot",
   "noFree": "No free slots left on this day.",
@@ -49,7 +51,7 @@
     "photo": "Photo (optional)",
     "urgent": "It is urgent",
     "urgentHelp": "For example, if it is dangerous or the facility cannot be used.",
-    "shareContact": "Let the council’s staff see my email to ask me about it",
+    "shareContact": "Let council staff see my email and profile phone number, if saved, to contact me",
     "send": "Send the report",
     "sending": "Sending…",
     "cancel": "Cancel",

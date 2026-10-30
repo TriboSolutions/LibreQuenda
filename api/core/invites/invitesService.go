@@ -3,13 +3,16 @@ package invites
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"librequenda/core/bookings"
 	"librequenda/model"
 	"librequenda/shared"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
+	"unicode/utf8"
 
 	"github.com/google/uuid"
 	"github.com/lib/pq"
@@ -128,7 +131,7 @@ func (s *invitesService) JoinAsUser(ctx context.Context, userId uuid.UUID, token
 	if notReady := bookings.ReadyToBook(ctx, model.New(s.db), userId); notReady != nil {
 		return notReady
 	}
-	return s.join(ctx, lockByToken(token), addUser(ctx, userId))
+	return s.join(ctx, lockByToken(token), addUser(ctx, userId), joiner{userId: userId})
 }
 
 // JoinPublic adds a signed-in person to a public booking, found in «For you»:
@@ -137,7 +140,7 @@ func (s *invitesService) JoinPublic(ctx context.Context, userId uuid.UUID, booki
 	if notReady := bookings.ReadyToBook(ctx, model.New(s.db), userId); notReady != nil {
 		return notReady
 	}
-	var err = s.join(ctx, lockPublic(bookingId), addUser(ctx, userId))
+	var err = s.join(ctx, lockPublic(bookingId), addUser(ctx, userId), joiner{userId: userId})
 	if err == errInviteNotFound { // not public (any more), or gone
 		return &shared.ErrorResponse{Code: http.StatusNotFound, Message: "errors.public_booking_not_found"}
 	}
@@ -146,7 +149,15 @@ func (s *invitesService) JoinPublic(ctx context.Context, userId uuid.UUID, booki
 
 // SetPublic: the owner makes an upcoming booking public, or private again.
 // Only a facility that takes invites (room for more than the owner) can have public bookings.
-func (s *invitesService) SetPublic(ctx context.Context, ownerId uuid.UUID, bookingId uuid.UUID, public bool) *shared.ErrorResponse {
+func (s *invitesService) SetPublic(ctx context.Context, ownerId uuid.UUID, bookingId uuid.UUID, public bool, description *string) *shared.ErrorResponse {
+	var text sql.NullString
+	if description != nil {
+		text = sql.NullString{String: strings.TrimSpace(*description), Valid: true}
+		if utf8.RuneCountInString(text.String) > 1000 {
+			return &shared.ErrorResponse{Code: http.StatusBadRequest, Message: "errors.invalid_request_body"}
+		}
+	}
+
 	var queries = model.New(s.db)
 	var owner = uuid.NullUUID{UUID: ownerId, Valid: true}
 	var booking, err = queries.GetOwnedBookingForInvite(ctx, model.GetOwnedBookingForInviteParams{ID: bookingId, OwnerID: owner})
@@ -160,7 +171,7 @@ func (s *invitesService) SetPublic(ctx context.Context, ownerId uuid.UUID, booki
 		return &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.public_needs_capacity"}
 	}
 	var updated int64
-	if updated, err = queries.SetBookingPublic(ctx, model.SetBookingPublicParams{ID: bookingId, OwnerID: owner, IsPublic: public}); err != nil {
+	if updated, err = queries.SetBookingPublic(ctx, model.SetBookingPublicParams{ID: bookingId, OwnerID: owner, IsPublic: public, PublicDescription: text}); err != nil {
 		return failed("errors.invite_failed")
 	}
 	if updated == 0 {
@@ -245,11 +256,11 @@ func (s *invitesService) JoinAsGuest(ctx context.Context, token uuid.UUID, guest
 			return failed("errors.invite_failed")
 		}
 		return nil
-	})
+	}, joiner{guestName: guest.Name})
 }
 
 // join locks the booking row, so two people cannot both take the last spot.
-func (s *invitesService) join(ctx context.Context, find lock, add func(*model.Queries, model.LockBookingByInviteTokenRow, time.Time) *shared.ErrorResponse) *shared.ErrorResponse {
+func (s *invitesService) join(ctx context.Context, find lock, add func(*model.Queries, model.LockBookingByInviteTokenRow, time.Time) *shared.ErrorResponse, who joiner) *shared.ErrorResponse {
 	var tx, err = s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return failed("errors.invite_failed")
@@ -291,6 +302,8 @@ func (s *invitesService) join(ctx context.Context, find lock, add func(*model.Qu
 	if err = tx.Commit(); err != nil {
 		return failed("errors.invite_failed")
 	}
+	// after the commit: a failed notice never undoes the join
+	notifyOwner(ctx, model.New(s.db), booking, who)
 	return nil
 }
 
@@ -313,4 +326,44 @@ func (s *invitesService) Leave(ctx context.Context, userId uuid.UUID, bookingId 
 		return failed("errors.leave_failed")
 	}
 	return nil
+}
+
+// joiner: who joined, for the owner's notice: an account, or a guest's name.
+type joiner struct {
+	userId    uuid.UUID
+	guestName string
+}
+
+// notifyOwner tells the booking's owner who joined it (in the app, and by email
+// unless they turned emails off). Only a first name is shared. A failure is
+// logged and never undoes the join.
+func notifyOwner(ctx context.Context, queries *model.Queries, booking model.LockBookingByInviteTokenRow, who joiner) {
+	if !booking.OwnerID.Valid {
+		return
+	}
+	var name = strings.TrimSpace(who.guestName)
+	if who.userId != uuid.Nil {
+		if fullName, err := queries.GetUserFullName(ctx, who.userId); err == nil {
+			name = fullName
+		}
+	}
+	if first := strings.Fields(name); len(first) > 0 {
+		name = first[0]
+	}
+	var payload, _ = json.Marshal(map[string]any{
+		"facility_name": booking.FacilityName,
+		"starts_at":     booking.StartsAt,
+		"ends_at":       booking.EndsAt,
+		"name":          name,
+		"guest":         who.userId == uuid.Nil,
+	})
+	var err = queries.CreateNotification(ctx, model.CreateNotificationParams{
+		UserID:    booking.OwnerID.UUID,
+		BookingID: uuid.NullUUID{UUID: booking.ID, Valid: true},
+		Type:      model.NotificationTypeBookingJoined,
+		Payload:   payload,
+	})
+	if err != nil {
+		shared.Logger.Error("failed to notify the owner of booking %s: %v", booking.ID, err)
+	}
 }

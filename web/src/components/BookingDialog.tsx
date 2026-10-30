@@ -5,6 +5,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { TurnWeather } from '@/components/Weather'
 import { useForecast } from '@/hooks/useForecast'
@@ -19,7 +20,7 @@ type Props = {
   today: string
   authenticated: boolean
   onClose: () => void
-  onConfirm: (facility: Facility, slot: Slot, isPublic: boolean) => Promise<string | null> // error message, or null when booked
+  onConfirm: (facility: Facility, slot: Slot, isPublic: boolean, description: string) => Promise<string | null> // error message, or null when booked
   onLogin: () => void
 }
 
@@ -33,9 +34,10 @@ export function BookingDialog({ pick, tenantSlug, timeZone, today, authenticated
   const [submitting, setSubmitting] = useState(false)
   const [accepted, setAccepted] = useState(false)
   const [isPublic, setIsPublic] = useState(false)
+  const [description, setDescription] = useState('')
   const [error, setError] = useState<string | null>(null)
   // the turn's forecast, outdoors (before any early return: hooks keep their order)
-  const forecast = useForecast(tenantSlug, pick?.facility.slug ?? '', pick?.facility.tags ?? [], pick ? localDate(pick.slot.starts_at, timeZone) : null)
+  const forecast = useForecast(tenantSlug, pick?.facility.slug ?? '', pick?.facility.show_weather ?? false, pick ? localDate(pick.slot.starts_at, timeZone) : null)
 
   const close = () => {
     setError(null)
@@ -51,7 +53,7 @@ export function BookingDialog({ pick, tenantSlug, timeZone, today, authenticated
   const confirm = async () => {
     setSubmitting(true)
     setError(null)
-    const message = await onConfirm(facility, slot, isPublic && facility.capacity > 1)
+    const message = await onConfirm(facility, slot, isPublic && facility.capacity > 1, isPublic ? description : '')
     setSubmitting(false)
     if (message) setError(message)
   }
@@ -126,6 +128,13 @@ export function BookingDialog({ pick, tenantSlug, timeZone, today, authenticated
               <span className="font-medium">{t('profile:unverifiedTitle')}.</span> {t('profile:unverifiedBody')}
             </AlertDescription>
           </Alert>
+        )}
+
+        {isPublic && facility.capacity > 1 && (
+          <div className="grid gap-2">
+            <Label htmlFor="public-description">{t('bookings:public.description')}</Label>
+            <Textarea id="public-description" maxLength={1000} value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t('bookings:public.descriptionHelp')} />
+          </div>
         )}
 
         {error && (

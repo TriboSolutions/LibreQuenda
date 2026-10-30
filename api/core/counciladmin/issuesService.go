@@ -20,20 +20,22 @@ import (
 // --- the maintenance list: problems residents reported at the council's facilities ---
 
 type IssueDto struct {
-	Id              string     `json:"id"`
-	FacilityId      string     `json:"facility_id"`
-	FacilityName    string     `json:"facility_name"`
-	Category        string     `json:"category"`
-	Description     string     `json:"description"`
-	PhotoUrl        string     `json:"photo_url"`
-	Urgent          bool       `json:"urgent"`
-	Status          string     `json:"status"` // new, in_progress, solved, rejected
-	StaffNote       string     `json:"staff_note"`
-	CreatedAt       time.Time  `json:"created_at"`
-	ResolvedAt      *time.Time `json:"resolved_at"`
-	BookingStartsAt *time.Time `json:"booking_starts_at"` // the booking it was reported from
-	ReporterName    string     `json:"reporter_name"`     // first name only; "" after account erasure
-	ReporterEmail   string     `json:"reporter_email"`    // only when the reporter shared it
+	ReporterPhone    string     `json:"reporter_phone"` // only when the reporter shared contact details
+	FacilityImageURL string     `json:"facility_image_url"`
+	Id               string     `json:"id"`
+	FacilityId       string     `json:"facility_id"`
+	FacilityName     string     `json:"facility_name"`
+	Category         string     `json:"category"`
+	Description      string     `json:"description"`
+	PhotoUrl         string     `json:"photo_url"`
+	Urgent           bool       `json:"urgent"`
+	Status           string     `json:"status"` // new, in_progress, solved, rejected
+	StaffNote        string     `json:"staff_note"`
+	CreatedAt        time.Time  `json:"created_at"`
+	ResolvedAt       *time.Time `json:"resolved_at"`
+	BookingStartsAt  *time.Time `json:"booking_starts_at"` // the booking it was reported from
+	ReporterName     string     `json:"reporter_name"`     // first name only; "" after account erasure
+	ReporterEmail    string     `json:"reporter_email"`    // only when the reporter shared it
 }
 
 type IssuesResponse struct {
@@ -54,10 +56,12 @@ func mapIssue(row model.ListCouncilIssuesRow) IssueDto {
 		Id: row.ID.String(), FacilityId: row.FacilityID.String(), FacilityName: row.FacilityName,
 		Category: string(row.Category), Description: row.Description, PhotoUrl: storage.URL(row.PhotoRef.String),
 		Urgent: row.Urgent, Status: string(row.Status), StaffNote: row.StaffNote.String, CreatedAt: row.CreatedAt,
-		ReporterName: row.ReporterFirstName,
+		ReporterName:     row.ReporterFirstName,
+		FacilityImageURL: storage.URL(row.FacilityImageRef.String),
 	}
 	if row.ShareContact {
 		dto.ReporterEmail = row.ReporterEmail.String
+		dto.ReporterPhone = row.ReporterPhone.String
 	}
 	if row.ResolvedAt.Valid {
 		dto.ResolvedAt = &row.ResolvedAt.Time

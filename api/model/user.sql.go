@@ -108,6 +108,18 @@ func (q *Queries) GetUserBirthDate(ctx context.Context, id uuid.UUID) (sql.NullT
 	return birth_date, err
 }
 
+const getUserFullName = `-- name: GetUserFullName :one
+SELECT COALESCE(full_name, '')::TEXT AS full_name FROM app_user WHERE id = $1
+`
+
+// Who joined a booking, for the owner's notice (their first name is shown).
+func (q *Queries) GetUserFullName(ctx context.Context, id uuid.UUID) (string, error) {
+	row := q.db.QueryRowContext(ctx, getUserFullName, id)
+	var full_name string
+	err := row.Scan(&full_name)
+	return full_name, err
+}
+
 const getUserIdByCalendarToken = `-- name: GetUserIdByCalendarToken :one
 SELECT id FROM app_user WHERE calendar_token = $1
 `
@@ -146,6 +158,7 @@ SELECT
     avatar_ref,
     preferred_language,
     email_reminders,
+    email_notifications,
     show_recommendations
 FROM
     app_user
@@ -163,6 +176,7 @@ type GetUserProfileRow struct {
 	AvatarRef           sql.NullString `json:"avatar_ref"`
 	PreferredLanguage   sql.NullString `json:"preferred_language"`
 	EmailReminders      bool           `json:"email_reminders"`
+	EmailNotifications  bool           `json:"email_notifications"`
 	ShowRecommendations bool           `json:"show_recommendations"`
 }
 
@@ -179,6 +193,7 @@ func (q *Queries) GetUserProfile(ctx context.Context, id uuid.UUID) (GetUserProf
 		&i.AvatarRef,
 		&i.PreferredLanguage,
 		&i.EmailReminders,
+		&i.EmailNotifications,
 		&i.ShowRecommendations,
 	)
 	return i, err
@@ -295,14 +310,16 @@ UPDATE app_user
 SET
     preferred_language   = $1,
     email_reminders      = $2,
-    show_recommendations = $3
+    email_notifications  = $3,
+    show_recommendations = $4
 WHERE
-    id = $4
+    id = $5
 `
 
 type UpdateUserPreferencesParams struct {
 	PreferredLanguage   sql.NullString `json:"preferred_language"`
 	EmailReminders      bool           `json:"email_reminders"`
+	EmailNotifications  bool           `json:"email_notifications"`
 	ShowRecommendations bool           `json:"show_recommendations"`
 	ID                  uuid.UUID      `json:"id"`
 }
@@ -312,6 +329,7 @@ func (q *Queries) UpdateUserPreferences(ctx context.Context, arg UpdateUserPrefe
 	_, err := q.db.ExecContext(ctx, updateUserPreferences,
 		arg.PreferredLanguage,
 		arg.EmailReminders,
+		arg.EmailNotifications,
 		arg.ShowRecommendations,
 		arg.ID,
 	)

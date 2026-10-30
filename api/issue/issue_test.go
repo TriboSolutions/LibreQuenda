@@ -9,7 +9,7 @@ import (
 
 func TestReportClean(t *testing.T) {
 	var valid = func() Report {
-		return Report{Category: "lighting", Description: "  The lights of court 2 do not turn on. "}
+		return Report{BookingID: "booking-id", Category: "lighting", Description: "  The lights of court 2 do not turn on. "}
 	}
 	var cases = []struct {
 		name   string
@@ -17,6 +17,7 @@ func TestReportClean(t *testing.T) {
 		want   string
 	}{
 		{"valid", func(*Report) {}, ""},
+		{"no booking", func(r *Report) { r.BookingID = "" }, "errors.issue_active_booking_required"},
 		{"unknown category", func(r *Report) { r.Category = "noise" }, "errors.invalid_issue_category"},
 		{"no description", func(r *Report) { r.Description = "   " }, "errors.invalid_issue_description"},
 		{"description too long", func(r *Report) { r.Description = strings.Repeat("a", MaxDescription+1) }, "errors.invalid_issue_description"},
@@ -38,9 +39,24 @@ func TestReportClean(t *testing.T) {
 }
 
 func TestReportable(t *testing.T) {
-	var ended = time.Date(2026, 11, 2, 19, 0, 0, 0, time.UTC)
-	if !Reportable(ended, ended.Add(6*24*time.Hour)) || Reportable(ended, ended.Add(8*24*time.Hour)) {
-		t.Error("a booking can be reported from for a week after it ends")
+	var start = time.Date(2026, 11, 2, 19, 0, 0, 0, time.UTC)
+	var end = start.Add(time.Hour)
+	for _, c := range []struct {
+		name string
+		now  time.Time
+		want bool
+	}{
+		{"before start", start.Add(-time.Nanosecond), false},
+		{"at start", start, true},
+		{"during", start.Add(30 * time.Minute), true},
+		{"at end", end, false},
+		{"after end", end.Add(time.Nanosecond), false},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			if got := Reportable(start, end, c.now); got != c.want {
+				t.Errorf("Reportable() = %v, want %v", got, c.want)
+			}
+		})
 	}
 }
 

@@ -6,7 +6,7 @@
   "loadError": "Could not load your notifications.",
   "seeBookings": "See my bookings",
   "type": {
-    "booking_confirmed": "Booking confirmed: {{facility}}, {{day}} at {{time}}. The QR is also in your email.",
+    "booking_confirmed": "Booking confirmed: {{facility}}, {{day}} at {{time}}.",
     "booking_reminder": "Starts in 15 minutes: {{facility}} at {{time}}. Have your QR ready.",
     "booking_changed": "Booking changed: {{facility}}, now {{day}} at {{time}}.",
     "booking_cancelled": "Booking cancelled: {{facility}}, {{day}} at {{time}}.",
@@ -15,8 +15,11 @@
     "booking_cancelled_by_staff": "We’re sorry: {{council}} cancelled your booking at {{facility}} on {{day}} at {{time}}.",
     "council_admin_granted": "You are now an administrator of {{council}}. Open its administration from here or from your account menu.",
     "issue_solved": "The problem you reported at {{facility}} is fixed.",
-    "issue_rejected": "The council looked at the problem you reported at {{facility}} and will not take it further."
+    "issue_rejected": "The council looked at the problem you reported at {{facility}} and will not take it further.",
+    "booking_joined": "{{name}} joined your booking at {{facility}}, {{day}} at {{time}}.",
+    "issue_reported": "New issue at {{facility}}."
   },
   "reason": "Reason: {{reason}}",
-  "councilNote": "Note from the council: {{reason}}"
+  "councilNote": "Note from the council: {{reason}}",
+  "someone": "Someone"
 }

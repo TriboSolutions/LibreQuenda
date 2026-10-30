@@ -62,6 +62,7 @@ SELECT
     b.ends_at,
     b.status,
     b.rules_accepted_at,
+    b.public_description,
     b.cancelled_at,
     b.cancelled_by,
     b.checked_in_at,
@@ -78,18 +79,19 @@ ORDER BY
 `
 
 type ExportBookingsByUserRow struct {
-	ID               uuid.UUID            `json:"id"`
-	TenantName       string               `json:"tenant_name"`
-	FacilityName     string               `json:"facility_name"`
-	StartsAt         time.Time            `json:"starts_at"`
-	EndsAt           time.Time            `json:"ends_at"`
-	Status           BookingStatus        `json:"status"`
-	RulesAcceptedAt  sql.NullTime         `json:"rules_accepted_at"`
-	CancelledAt      sql.NullTime         `json:"cancelled_at"`
-	CancelledBy      NullBookingCanceller `json:"cancelled_by"`
-	CheckedInAt      sql.NullTime         `json:"checked_in_at"`
-	CreatedAt        time.Time            `json:"created_at"`
-	ParticipantCount int64                `json:"participant_count"`
+	ID                uuid.UUID            `json:"id"`
+	TenantName        string               `json:"tenant_name"`
+	FacilityName      string               `json:"facility_name"`
+	StartsAt          time.Time            `json:"starts_at"`
+	EndsAt            time.Time            `json:"ends_at"`
+	Status            BookingStatus        `json:"status"`
+	RulesAcceptedAt   sql.NullTime         `json:"rules_accepted_at"`
+	PublicDescription string               `json:"public_description"`
+	CancelledAt       sql.NullTime         `json:"cancelled_at"`
+	CancelledBy       NullBookingCanceller `json:"cancelled_by"`
+	CheckedInAt       sql.NullTime         `json:"checked_in_at"`
+	CreatedAt         time.Time            `json:"created_at"`
+	ParticipantCount  int64                `json:"participant_count"`
 }
 
 // Every booking the user made, cancelled ones too.
@@ -110,6 +112,7 @@ func (q *Queries) ExportBookingsByUser(ctx context.Context, userID uuid.NullUUID
 			&i.EndsAt,
 			&i.Status,
 			&i.RulesAcceptedAt,
+			&i.PublicDescription,
 			&i.CancelledAt,
 			&i.CancelledBy,
 			&i.CheckedInAt,
@@ -255,6 +258,7 @@ SELECT
     avatar_ref,
     preferred_language,
     email_reminders,
+    email_notifications,
     show_recommendations,
     created_at,
     updated_at
@@ -274,6 +278,7 @@ type ExportUserRow struct {
 	AvatarRef           sql.NullString `json:"avatar_ref"`
 	PreferredLanguage   sql.NullString `json:"preferred_language"`
 	EmailReminders      bool           `json:"email_reminders"`
+	EmailNotifications  bool           `json:"email_notifications"`
 	ShowRecommendations bool           `json:"show_recommendations"`
 	CreatedAt           time.Time      `json:"created_at"`
 	UpdatedAt           time.Time      `json:"updated_at"`
@@ -297,6 +302,7 @@ func (q *Queries) ExportUser(ctx context.Context, id uuid.UUID) (ExportUserRow, 
 		&i.AvatarRef,
 		&i.PreferredLanguage,
 		&i.EmailReminders,
+		&i.EmailNotifications,
 		&i.ShowRecommendations,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -307,10 +313,11 @@ func (q *Queries) ExportUser(ctx context.Context, id uuid.UUID) (ExportUserRow, 
 const revokeInviteLinksOfUser = `-- name: RevokeInviteLinksOfUser :exec
 UPDATE booking
 SET
-    invite_token = NULL
+    invite_token = NULL,
+    is_public = FALSE,
+    public_description = ''
 WHERE
     user_id = $1
-    AND invite_token IS NOT NULL
 `
 
 // Account erasure: links to the user's bookings stop working.

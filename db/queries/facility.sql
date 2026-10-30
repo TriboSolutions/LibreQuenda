@@ -42,14 +42,11 @@ ORDER BY
 
 -- name: GetFacilityWeatherPlace :one
 -- Where to read the forecast of an active facility: its council's municipality
--- (INE code, for MeteoGalicia) and whether it is outdoors (tag "aire-libre").
+-- (INE code, for MeteoGalicia) and its explicit forecast preference.
 SELECT
     t.municipality_code,
     t.timezone,
-    EXISTS (
-        SELECT 1 FROM facility_tag ft JOIN tag tg ON tg.id = ft.tag_id
-        WHERE ft.facility_id = f.id AND tg.slug = 'aire-libre'
-    )::BOOLEAN AS outdoor
+    f.show_weather
 FROM
     facility f
     JOIN tenant t ON t.id = f.tenant_id

@@ -213,6 +213,7 @@ func (s *meService) UpdatePreferences(ctx context.Context, session auth.Session,
 		ID:                  userId,
 		PreferredLanguage:   sql.NullString{String: input.PreferredLanguage, Valid: input.PreferredLanguage != ""},
 		EmailReminders:      input.EmailReminders,
+		EmailNotifications:  input.EmailNotifications,
 		ShowRecommendations: input.ShowRecommendations,
 	})
 	if err != nil {

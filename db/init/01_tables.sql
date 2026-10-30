@@ -34,7 +34,9 @@ CREATE TYPE notification_type AS ENUM (
     'booking_cancelled',            -- cancelled by the user
     'booking_cancelled_by_council', -- closure, maintenance…
     'booking_reminder',
+    'booking_joined',               -- someone joined the person's booking (payload: name, guest)
     'council_admin_granted',        -- made administrator of a council (no booking)
+    'issue_reported',               -- new issue for the council administrators
     'issue_solved',                 -- a problem the person reported was fixed (issue_id)
     'issue_rejected'                -- …or turned down, with the council's reason
 );
@@ -126,6 +128,7 @@ CREATE TABLE app_user (
     avatar_ref         TEXT         NULL,              -- storage reference, never a URL
     preferred_language VARCHAR(5)   NULL,              -- gl, es, en, ca
     email_reminders    BOOLEAN      NOT NULL DEFAULT TRUE,
+    email_notifications BOOLEAN     NOT NULL DEFAULT TRUE,             -- off: booking and problem notices stay in the app only, no email
     show_recommendations BOOLEAN    NOT NULL DEFAULT TRUE,             -- "For you" on the home page, from their own bookings
     calendar_token     UUID         NULL UNIQUE,       -- secret in the .ics feed address; NULL = feed off, a new one revokes the old address
     created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
@@ -193,6 +196,7 @@ CREATE TABLE facility (
     accessibility_info           TEXT         NULL,
     contact_phone                VARCHAR(50)  NULL,       -- its own; without one, residents see the council's
     contact_email                VARCHAR(255) NULL,
+    show_weather                 BOOLEAN      NOT NULL DEFAULT FALSE, -- explicit facility preference
     image_ref                    TEXT         NULL,       -- storage reference, never a URL
     is_active                    BOOLEAN      NOT NULL DEFAULT TRUE,
 
@@ -397,6 +401,7 @@ CREATE TABLE booking (
     invite_token         UUID        NULL,
     -- public: anyone signed in can find it in «For you» and join it while spots are left; private (the default) only by the invite link
     is_public            BOOLEAN     NOT NULL DEFAULT FALSE,
+    public_description   TEXT        NOT NULL DEFAULT '' CHECK (char_length(public_description) <= 1000),
     CHECK (ends_at > starts_at),
     CHECK ((status = 'cancelled') = (cancelled_by IS NOT NULL)),
     CHECK (holder_name IS NULL OR (user_id IS NULL AND channel = 'staff')),

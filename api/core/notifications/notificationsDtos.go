@@ -7,6 +7,7 @@ import (
 )
 
 type NotificationDto struct {
+	Name         string     `json:"name"`
 	Id           string     `json:"id"`
 	Type         string     `json:"type"` // booking_confirmed, booking_reminder, booking_cancelled, booking_cancelled_by_council…
 	FacilityName string     `json:"facility_name"`
@@ -31,6 +32,7 @@ type NotificationsResponse struct {
 // payload is what bookings.NotificationPayload, CancelBookingsInRange,
 // bookings.StaffCancel and counciladmin.ChangeIssue store.
 type payload struct {
+	Name         string     `json:"name"`
 	FacilityName string     `json:"facility_name"`
 	FacilitySlug string     `json:"facility_slug"`
 	StartsAt     *time.Time `json:"starts_at"`
@@ -50,6 +52,7 @@ func MapNotifications(rows []model.ListNotificationsByUserRow, unread int64) *No
 		_ = json.Unmarshal(row.Payload, &data) // an unreadable payload still shows its type
 		response.Notifications = append(response.Notifications, NotificationDto{
 			Id:           row.ID.String(),
+			Name:         data.Name,
 			Type:         string(row.Type),
 			FacilityName: data.FacilityName,
 			FacilitySlug: data.FacilitySlug,

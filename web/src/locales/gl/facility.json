@@ -1,4 +1,6 @@
 {
+  "publicSlot": {"joinable": "Con prazas", "ongoing": "En curso", "full": "Completa", "joinableLegend": "Pública: podes unirte", "ongoingLegend": "Pública: en curso"},
+  "chooseDate": "Escoller data",
   "back": "Todas as instalacións",
   "bookTitle": "Reservar un turno",
   "noFree": "Non quedan turnos libres este día.",
@@ -49,7 +51,7 @@
     "photo": "Foto (opcional)",
     "urgent": "É urxente",
     "urgentHelp": "Por exemplo, se é perigoso ou impide usar a instalación.",
-    "shareContact": "Deixar que o persoal do concello vexa o meu correo para preguntarme",
+    "shareContact": "Deixar que o persoal do concello vexa o meu correo e o teléfono do perfil, se o teño gardado, para contactar comigo",
     "send": "Enviar o aviso",
     "sending": "Enviando…",
     "cancel": "Cancelar",

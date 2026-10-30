@@ -113,7 +113,26 @@
     "ways": "Com registres l’entrada"
   },
   "public": {
+    "activity": "Activitat",
+    "description": "Descripció de l’activitat (opcional)",
+    "descriptionHelp": "Explica què fareu, el nivell o què cal portar. No incloguis dades de contacte.",
+    "edit": "Editar descripció",
+    "cancel": "Cancel·lar",
+    "save": "Desar",
+    "turnTitle": "Reserva pública · {{facility}}",
+    "noDescription": "No s’ha afegit cap descripció.",
+    "people": "{{count}} de {{capacity}} persones",
+    "person": "Participant",
+    "you": "Tu",
+    "started": "La reserva ja ha començat.",
+    "full": "No queden places.",
+    "login": "Entrar per apuntar-se",
     "label": "Pública",
-    "help": "Qualsevol persona amb compte la pot veure a «Per a tu» i unir-s’hi mentre quedin places."
+    "help": "Qualsevol persona amb compte la pot veure a «Per a tu» i unir-s’hi mentre quedin places.",
+    "confirmTitle": "Vols fer pública aquesta reserva?",
+    "confirmDescription": "La teva reserva a {{facility}} apareixerà a «Per a tu». Altres persones la podran trobar i unir-s’hi mentre quedin places.",
+    "keepPrivate": "Mantenir privada",
+    "confirm": "Fer pública",
+    "publishing": "Publicant…"
   }
 }

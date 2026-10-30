@@ -29,6 +29,7 @@ import { usePageTitle } from '@/hooks/usePageTitle'
 import { SiteFooter } from '@/components/SiteFooter'
 
 const EMPTY: FacilityInput = {
+  show_weather: false,
   slug: '',
   name: '',
   description: '',
@@ -256,6 +257,13 @@ function Editor({ slug, facility, tenants, token }: { slug: string; facility: Ad
               </div>
               <div className="md:col-span-2">
                 <TagPicker value={form.tags} onChange={(tags) => set('tags', tags)} />
+              </div>
+              <div className="flex items-start gap-3 md:col-span-2">
+                <Switch id="f-weather" checked={form.show_weather} onCheckedChange={(value) => set('show_weather', value)} aria-describedby="f-weather-help" />
+                <div className="grid gap-1">
+                  <Label htmlFor="f-weather">{t('admin:editor.showWeather')}</Label>
+                  <p id="f-weather-help" className="text-sm text-muted-foreground">{t('admin:editor.showWeatherHelp')}</p>
+                </div>
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="f-description">{t('admin:editor.description')}</Label>

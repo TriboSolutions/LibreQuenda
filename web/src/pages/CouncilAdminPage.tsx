@@ -189,6 +189,7 @@ export function CouncilAdminPage() {
     body = (
       <Tabs value={view} onValueChange={changeView} className="mt-6 gap-6">
         <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0 overflow-x-auto">
           <TabsList>
             <TabsTrigger value="facilities">{t('admin:facilities.title')}</TabsTrigger>
             <TabsTrigger value="bookings">{t('admin:staff.tab')}</TabsTrigger>
@@ -206,6 +207,7 @@ export function CouncilAdminPage() {
             </TabsTrigger>
             <TabsTrigger value="audit">{t('admin:tabs.audit')}</TabsTrigger>
           </TabsList>
+          </div>
           {/* the council's settings belong with its facilities and figures, not with the desk's calendar */}
           {view !== 'bookings' && settingsButton}
         </div>

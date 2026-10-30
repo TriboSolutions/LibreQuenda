@@ -11,10 +11,8 @@ import (
 )
 
 const (
-	MaxDescription = 1000 // characters, for the description and the staff note
-	MaxOpenReports = 5    // new or in progress, per person
-	// ReportWindow: how long after a booking ends it can still be reported from
-	ReportWindow = 7 * 24 * time.Hour
+	MaxDescription       = 1000 // characters, for the description and the staff note
+	MaxReportsPerBooking = 5    // all reports, including resolved ones and all participants
 )
 
 var categories = map[model.IssueCategory]bool{
@@ -26,12 +24,12 @@ var categories = map[model.IssueCategory]bool{
 // Report: what a resident sends.
 type Report struct {
 	FacilityID   string `json:"facility_id"`
-	BookingID    string `json:"booking_id"` // optional: the booking it is reported from
+	BookingID    string `json:"booking_id"` // required: the active booking it is reported from
 	Category     string `json:"category"`
 	Description  string `json:"description"`
 	PhotoRef     string `json:"photo_ref"` // optional, a storage reference under issues/
 	Urgent       bool   `json:"urgent"`
-	ShareContact bool   `json:"share_contact"` // the council's staff may see their email
+	ShareContact bool   `json:"share_contact"` // the council's staff may see their email and profile phone
 }
 
 // Clean trims the report and checks it; the error is an i18n key.
@@ -39,6 +37,8 @@ func (r *Report) Clean() string {
 	r.Description = strings.TrimSpace(r.Description)
 	r.PhotoRef = strings.TrimSpace(r.PhotoRef)
 	switch {
+	case strings.TrimSpace(r.BookingID) == "":
+		return "errors.issue_active_booking_required"
 	case !categories[model.IssueCategory(r.Category)]:
 		return "errors.invalid_issue_category"
 	case r.Description == "" || utf8.RuneCountInString(r.Description) > MaxDescription:
@@ -49,9 +49,9 @@ func (r *Report) Clean() string {
 	return ""
 }
 
-// Reportable: a booking can be reported from until ReportWindow after it ends.
-func Reportable(bookingEnds, now time.Time) bool {
-	return now.Before(bookingEnds.Add(ReportWindow))
+// Reportable includes the start and excludes the end of the booked interval.
+func Reportable(bookingStarts, bookingEnds, now time.Time) bool {
+	return !now.Before(bookingStarts) && now.Before(bookingEnds)
 }
 
 // Final: solved or rejected, the reporter is told.

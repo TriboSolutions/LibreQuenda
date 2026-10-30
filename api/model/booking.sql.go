@@ -25,7 +25,7 @@ WHERE
     AND user_id = $2
     AND status = 'confirmed'
 RETURNING
-    id, facility_id, user_id, starts_at, ends_at, status, rules_accepted_at, channel, booked_by, holder_name, holder_phone, cancelled_at, cancelled_by, created_at, updated_at, checkin_token, checked_in_at, checked_in_device_id, checked_in_method, checked_in_by, invite_token, is_public
+    id, facility_id, user_id, starts_at, ends_at, status, rules_accepted_at, channel, booked_by, holder_name, holder_phone, cancelled_at, cancelled_by, created_at, updated_at, checkin_token, checked_in_at, checked_in_device_id, checked_in_method, checked_in_by, invite_token, is_public, public_description
 `
 
 type CancelBookingParams struct {
@@ -59,6 +59,7 @@ func (q *Queries) CancelBooking(ctx context.Context, arg CancelBookingParams) (B
 		&i.CheckedInBy,
 		&i.InviteToken,
 		&i.IsPublic,
+		&i.PublicDescription,
 	)
 	return i, err
 }
@@ -74,7 +75,7 @@ WHERE
     AND user_id = $4
     AND status = 'confirmed'
 RETURNING
-    id, facility_id, user_id, starts_at, ends_at, status, rules_accepted_at, channel, booked_by, holder_name, holder_phone, cancelled_at, cancelled_by, created_at, updated_at, checkin_token, checked_in_at, checked_in_device_id, checked_in_method, checked_in_by, invite_token, is_public
+    id, facility_id, user_id, starts_at, ends_at, status, rules_accepted_at, channel, booked_by, holder_name, holder_phone, cancelled_at, cancelled_by, created_at, updated_at, checkin_token, checked_in_at, checked_in_device_id, checked_in_method, checked_in_by, invite_token, is_public, public_description
 `
 
 type ChangeBookingTimeParams struct {
@@ -117,6 +118,7 @@ func (q *Queries) ChangeBookingTime(ctx context.Context, arg ChangeBookingTimePa
 		&i.CheckedInBy,
 		&i.InviteToken,
 		&i.IsPublic,
+		&i.PublicDescription,
 	)
 	return i, err
 }
@@ -223,7 +225,7 @@ INSERT INTO booking (
     NOW()
 )
 RETURNING
-    id, facility_id, user_id, starts_at, ends_at, status, rules_accepted_at, channel, booked_by, holder_name, holder_phone, cancelled_at, cancelled_by, created_at, updated_at, checkin_token, checked_in_at, checked_in_device_id, checked_in_method, checked_in_by, invite_token, is_public
+    id, facility_id, user_id, starts_at, ends_at, status, rules_accepted_at, channel, booked_by, holder_name, holder_phone, cancelled_at, cancelled_by, created_at, updated_at, checkin_token, checked_in_at, checked_in_device_id, checked_in_method, checked_in_by, invite_token, is_public, public_description
 `
 
 type CreateBookingParams struct {
@@ -265,6 +267,7 @@ func (q *Queries) CreateBooking(ctx context.Context, arg CreateBookingParams) (B
 		&i.CheckedInBy,
 		&i.InviteToken,
 		&i.IsPublic,
+		&i.PublicDescription,
 	)
 	return i, err
 }
@@ -377,6 +380,7 @@ SELECT
     b.checkin_token,
     b.checked_in_at,
     b.is_public,
+    b.public_description,
     facility_took_checkin(f.id, b.starts_at)::BOOLEAN AS checkin_at_start,
     -- the ways in the facility offers now, for the check-in button
     (EXISTS (SELECT 1 FROM checkin_device d WHERE d.facility_id = f.id) AND COALESCE(c.qr_reader, TRUE))::BOOLEAN AS has_reader,
@@ -394,7 +398,7 @@ SELECT
     t.slug AS tenant_slug,
     t.name AS tenant_name,
     facility_sport(f.id)::TEXT AS facility_sport,
-    f.id, f.tenant_id, f.slug, f.name, f.description, f.address, f.latitude, f.longitude, f.capacity, f.accessibility_info, f.contact_phone, f.contact_email, f.image_ref, f.is_active, f.slot_minutes, f.custom_rules, f.max_advance_hours, f.min_advance_minutes, f.min_cancel_hours, f.max_active_bookings_per_user, f.max_bookings_per_day, f.max_turns_in_a_row, f.max_bookings_per_week, f.weekly_opening, f.opens_weekday, f.opens_minute, f.no_show_penalty, f.no_show_limit, f.no_show_window_days, f.no_show_block_days, f.min_age, f.usage_rules_text, f.created_at, f.updated_at -- what the booking details show: image, address, rules
+    f.id, f.tenant_id, f.slug, f.name, f.description, f.address, f.latitude, f.longitude, f.capacity, f.accessibility_info, f.contact_phone, f.contact_email, f.show_weather, f.image_ref, f.is_active, f.slot_minutes, f.custom_rules, f.max_advance_hours, f.min_advance_minutes, f.min_cancel_hours, f.max_active_bookings_per_user, f.max_bookings_per_day, f.max_turns_in_a_row, f.max_bookings_per_week, f.weekly_opening, f.opens_weekday, f.opens_minute, f.no_show_penalty, f.no_show_limit, f.no_show_window_days, f.no_show_block_days, f.min_age, f.usage_rules_text, f.created_at, f.updated_at -- what the booking details show: image, address, rules
 FROM
     booking b
     JOIN facility f ON f.id = b.facility_id
@@ -407,30 +411,31 @@ ORDER BY
 `
 
 type ListBookingsByUserRow struct {
-	ID             uuid.UUID       `json:"id"`
-	StartsAt       time.Time       `json:"starts_at"`
-	EndsAt         time.Time       `json:"ends_at"`
-	Status         BookingStatus   `json:"status"`
-	CheckinToken   uuid.UUID       `json:"checkin_token"`
-	CheckedInAt    sql.NullTime    `json:"checked_in_at"`
-	IsPublic       bool            `json:"is_public"`
-	CheckinAtStart bool            `json:"checkin_at_start"`
-	HasReader      bool            `json:"has_reader"`
-	PrintedQr      bool            `json:"printed_qr"`
-	EntryCode      bool            `json:"entry_code"`
-	StaffConfirm   bool            `json:"staff_confirm"`
-	StaffContacts  json.RawMessage `json:"staff_contacts"`
-	CheckinRadiusM int32           `json:"checkin_radius_m"`
-	TenantPhone    sql.NullString  `json:"tenant_phone"`
-	TenantEmail    sql.NullString  `json:"tenant_email"`
-	FacilityID     uuid.UUID       `json:"facility_id"`
-	FacilityName   string          `json:"facility_name"`
-	FacilitySlug   string          `json:"facility_slug"`
-	MinCancelHours int32           `json:"min_cancel_hours"`
-	TenantSlug     string          `json:"tenant_slug"`
-	TenantName     string          `json:"tenant_name"`
-	FacilitySport  string          `json:"facility_sport"`
-	Facility       Facility        `json:"facility"`
+	ID                uuid.UUID       `json:"id"`
+	StartsAt          time.Time       `json:"starts_at"`
+	EndsAt            time.Time       `json:"ends_at"`
+	Status            BookingStatus   `json:"status"`
+	CheckinToken      uuid.UUID       `json:"checkin_token"`
+	CheckedInAt       sql.NullTime    `json:"checked_in_at"`
+	IsPublic          bool            `json:"is_public"`
+	PublicDescription string          `json:"public_description"`
+	CheckinAtStart    bool            `json:"checkin_at_start"`
+	HasReader         bool            `json:"has_reader"`
+	PrintedQr         bool            `json:"printed_qr"`
+	EntryCode         bool            `json:"entry_code"`
+	StaffConfirm      bool            `json:"staff_confirm"`
+	StaffContacts     json.RawMessage `json:"staff_contacts"`
+	CheckinRadiusM    int32           `json:"checkin_radius_m"`
+	TenantPhone       sql.NullString  `json:"tenant_phone"`
+	TenantEmail       sql.NullString  `json:"tenant_email"`
+	FacilityID        uuid.UUID       `json:"facility_id"`
+	FacilityName      string          `json:"facility_name"`
+	FacilitySlug      string          `json:"facility_slug"`
+	MinCancelHours    int32           `json:"min_cancel_hours"`
+	TenantSlug        string          `json:"tenant_slug"`
+	TenantName        string          `json:"tenant_name"`
+	FacilitySport     string          `json:"facility_sport"`
+	Facility          Facility        `json:"facility"`
 }
 
 // checkin_at_start: the facility took check-ins when the turn began, so a
@@ -452,6 +457,7 @@ func (q *Queries) ListBookingsByUser(ctx context.Context, userID uuid.NullUUID) 
 			&i.CheckinToken,
 			&i.CheckedInAt,
 			&i.IsPublic,
+			&i.PublicDescription,
 			&i.CheckinAtStart,
 			&i.HasReader,
 			&i.PrintedQr,
@@ -480,6 +486,7 @@ func (q *Queries) ListBookingsByUser(ctx context.Context, userID uuid.NullUUID) 
 			&i.Facility.AccessibilityInfo,
 			&i.Facility.ContactPhone,
 			&i.Facility.ContactEmail,
+			&i.Facility.ShowWeather,
 			&i.Facility.ImageRef,
 			&i.Facility.IsActive,
 			&i.Facility.SlotMinutes,

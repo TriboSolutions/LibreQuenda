@@ -208,13 +208,14 @@ func (h *invitesHandler) SetPublic(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var input struct {
-		Public bool `json:"public"`
+		Public      bool    `json:"public"`
+		Description *string `json:"public_description"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
 		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_request_body")
 		return
 	}
-	if err := GetInvitesService(h.db).SetPublic(r.Context(), userId, bookingId, input.Public); err != nil {
+	if err := GetInvitesService(h.db).SetPublic(r.Context(), userId, bookingId, input.Public, input.Description); err != nil {
 		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
 		return
 	}

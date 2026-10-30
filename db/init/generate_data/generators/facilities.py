@@ -19,6 +19,7 @@ def generate(context: dict) -> list:
                     "description": f["description"],
                     "address": f["address"],
                     "image_ref": f["image_ref"],
+                    "show_weather": f.get("show_weather", False),
                     "latitude": f["latitude"],
                     "longitude": f["longitude"],
                     "capacity": f["capacity"],

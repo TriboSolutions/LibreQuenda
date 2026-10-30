@@ -68,7 +68,8 @@ SELECT
     f.capacity,
     f.min_age,
     t.timezone,
-    t.id AS tenant_id
+    t.id AS tenant_id,
+    f.name AS facility_name -- for the owner's notice
 FROM
     booking b
     JOIN facility f ON f.id = b.facility_id
@@ -224,7 +225,8 @@ SELECT
     f.capacity,
     f.min_age,
     t.timezone,
-    t.id AS tenant_id
+    t.id AS tenant_id,
+    f.name AS facility_name -- for the owner's notice
 FROM
     booking b
     JOIN facility f ON f.id = b.facility_id
@@ -239,6 +241,7 @@ FOR UPDATE OF b;
 UPDATE booking
 SET
     is_public  = sqlc.arg('is_public'),
+    public_description = COALESCE(sqlc.narg('public_description')::TEXT, public_description),
     updated_at = NOW()
 WHERE
     id = sqlc.arg('id')
@@ -251,6 +254,7 @@ WHERE
 -- owns nor has joined, until `until`; the API keeps those near them or like theirs.
 SELECT
     b.id,
+    b.public_description,
     b.starts_at,
     b.ends_at,
     f.id   AS facility_id,

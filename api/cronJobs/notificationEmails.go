@@ -123,13 +123,17 @@ func SendNotificationEmails(ctx context.Context, db *sql.DB) (int, error) {
 
 // shouldEmail: reminders follow the profile switch and only make sense before the
 // start; a confirmation of a booking already cancelled or over is dropped.
-// Cancellations always go out.
+// Cancellations go out while email notifications are enabled.
 func shouldEmail(row model.ListPendingEmailsRow, now time.Time) bool {
+	// the person turned emails off: the notice stays in the app only
+	if !row.EmailNotifications {
+		return false
+	}
 	var live = row.Status == model.BookingStatusConfirmed && row.EndsAt.After(now)
 	switch row.Type {
 	case model.NotificationTypeBookingReminder:
 		return row.EmailReminders && live && row.StartsAt.After(now)
-	case model.NotificationTypeBookingConfirmed, model.NotificationTypeBookingChanged:
+	case model.NotificationTypeBookingConfirmed, model.NotificationTypeBookingChanged, model.NotificationTypeBookingJoined:
 		return live
 	default:
 		return true
@@ -139,7 +143,8 @@ func shouldEmail(row model.ListPendingEmailsRow, now time.Time) bool {
 // usable: how to get in is explained while the booking can still be used.
 func usable(row model.ListPendingEmailsRow, now time.Time) bool {
 	return row.Status == model.BookingStatusConfirmed && row.EndsAt.After(now) &&
-		row.Type != model.NotificationTypeBookingCancelled && row.Type != model.NotificationTypeBookingCancelledByCouncil
+		row.Type != model.NotificationTypeBookingCancelled && row.Type != model.NotificationTypeBookingCancelledByCouncil &&
+		row.Type != model.NotificationTypeBookingJoined // a heads-up for the owner, not how to get in
 }
 
 // waysIn: the facility's ways in, in the order the email explains them.
@@ -246,7 +251,7 @@ func notificationEmail(row model.ListPendingEmailsRow, appName string, now time.
 
 	var view = emailView{
 		Greeting:  t("greeting_anonymous"),
-		Intro:     t(kind+".intro", row.FacilityName, row.TenantName, date, start, end),
+		Intro:     t(kind+".intro", row.FacilityName, row.TenantName, date, start, end, joinedName(row)),
 		Manage:    t("manage"),
 		ManageURL: shared.PUBLIC_URL + "/reservas",
 		Footer:    t("footer", appName),
@@ -410,4 +415,19 @@ func invitationEmail(row model.ListPendingInvitationEmailsRow, appName string) m
 		Text:    strings.Join([]string{view.Greeting, "", view.Intro, "", view.Manage + ": " + view.ManageURL, "", "--", view.Footer}, "\n"),
 		HTML:    html.String(),
 	}
+}
+
+// joinedName: who joined the person's booking (booking_joined's payload), a first name or "someone".
+func joinedName(row model.ListPendingEmailsRow) string {
+	if row.Type != model.NotificationTypeBookingJoined {
+		return ""
+	}
+	var payload struct {
+		Name string `json:"name"`
+	}
+	_ = json.Unmarshal(row.Payload, &payload)
+	if payload.Name == "" {
+		return helpers.GetI18nInstance().TranslateWithLanguageWithVars("email.someone", row.PreferredLanguage.String)
+	}
+	return payload.Name
 }

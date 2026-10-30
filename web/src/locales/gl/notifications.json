@@ -6,7 +6,7 @@
   "loadError": "Non se puideron cargar os teus avisos.",
   "seeBookings": "Ver as miñas reservas",
   "type": {
-    "booking_confirmed": "Reserva confirmada: {{facility}}, {{day}} ás {{time}}. O QR tamén está no teu correo.",
+    "booking_confirmed": "Reserva confirmada: {{facility}}, {{day}} ás {{time}}.",
     "booking_reminder": "Comeza en 15 minutos: {{facility}} ás {{time}}. Ten o QR á man.",
     "booking_changed": "Reserva modificada: {{facility}}, agora {{day}} ás {{time}}.",
     "booking_cancelled": "Reserva cancelada: {{facility}}, {{day}} ás {{time}}.",
@@ -15,8 +15,11 @@
     "booking_cancelled_by_staff": "Sentímolo: {{council}} cancelou a túa reserva en {{facility}} o {{day}} ás {{time}}.",
     "council_admin_granted": "Xa es administrador ou administradora de {{council}}. Abre a súa administración desde aquí ou desde o menú da túa conta.",
     "issue_solved": "Arranxado o problema que avisaches en {{facility}}.",
-    "issue_rejected": "O concello revisou o problema que avisaches en {{facility}} e non o vai tramitar."
+    "issue_rejected": "O concello revisou o problema que avisaches en {{facility}} e non o vai tramitar.",
+    "booking_joined": "{{name}} uniuse á túa reserva en {{facility}}, {{day}} ás {{time}}.",
+    "issue_reported": "Nova incidencia en {{facility}}."
   },
   "reason": "Motivo: {{reason}}",
-  "councilNote": "Nota do concello: {{reason}}"
+  "councilNote": "Nota do concello: {{reason}}",
+  "someone": "Alguén"
 }

@@ -36,7 +36,7 @@ function write(date: Date) {
 
 /** A date field with the shadcn calendar, in the app's language (not the browser's). */
 export function DatePicker({ id, value, onChange, min, max, defaultMonth, placeholder, className, ...rest }: Props) {
-  const { i18n } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [open, setOpen] = useState(false)
   // date-fns carries its own Galician: browsers' Intl may not have it
   const locale = locales[i18n.resolvedLanguage ?? 'gl'] ?? gl
@@ -59,7 +59,7 @@ export function DatePicker({ id, value, onChange, min, max, defaultMonth, placeh
           <CalendarIcon aria-hidden className="text-muted-foreground" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
+      <PopoverContent className="w-auto p-0" align="start" aria-label={label || t('day')}>
         <Calendar
           mode="single"
           locale={locale}

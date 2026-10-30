@@ -76,6 +76,7 @@ SELECT
     avatar_ref,
     preferred_language,
     email_reminders,
+    email_notifications,
     show_recommendations
 FROM
     app_user
@@ -97,6 +98,7 @@ UPDATE app_user
 SET
     preferred_language   = sqlc.narg('preferred_language'),
     email_reminders      = sqlc.arg('email_reminders'),
+    email_notifications  = sqlc.arg('email_notifications'),
     show_recommendations = sqlc.arg('show_recommendations')
 WHERE
     id = sqlc.arg('id');
@@ -144,3 +146,7 @@ UPDATE app_user SET calendar_token = NULL WHERE id = sqlc.arg('id');
 
 -- name: GetUserIdByCalendarToken :one
 SELECT id FROM app_user WHERE calendar_token = sqlc.arg('calendar_token');
+
+-- name: GetUserFullName :one
+-- Who joined a booking, for the owner's notice (their first name is shown).
+SELECT COALESCE(full_name, '')::TEXT AS full_name FROM app_user WHERE id = sqlc.arg('id');

@@ -9,7 +9,18 @@ export type Slot = {
   status: SlotStatus
 }
 
+export type PublicTurn = {
+  id: string
+  starts_at: string
+  ends_at: string
+  description: string
+  capacity: number
+  people: string[]
+}
+
 export type Facility = {
+  public_bookings?: PublicTurn[]
+  show_weather: boolean
   id: string
   slug: string
   name: string
@@ -144,6 +155,7 @@ export type AdminFacilitySummary = {
 }
 
 export type FacilityInput = {
+  show_weather: boolean
   slug: string
   name: string
   description: string
@@ -395,6 +407,7 @@ export type Booking = {
   can_change: boolean // owner only: another time of the same facility, on the same terms as cancelling
   cancel_until: string
   checkin_code: string // QR content; "" unless the booking is upcoming and confirmed
+  public_description?: string
   is_public?: boolean // owner only: anyone signed in finds it in «For you» and can join it
   checked_in_at: string | null
   checkin_ways?: CheckinMethod[] | null // owner only: the ways to check in the facility takes, for the check-in button
@@ -431,10 +444,12 @@ export type FacilityDetails = {
 export type NotificationType =
   | 'booking_confirmed'
   | 'booking_changed'
+  | 'booking_joined'
   | 'booking_cancelled'
   | 'booking_cancelled_by_council'
   | 'booking_reminder'
   | 'council_admin_granted'
+  | 'issue_reported'
   | 'issue_solved' // a problem the person reported was fixed (reason: the council's note)
   | 'issue_rejected'
 
@@ -445,6 +460,7 @@ export type AppNotification = {
   facility_slug: string // issue_solved, issue_rejected
   starts_at: string | null
   ends_at: string | null
+  name: string // first name of the person who joined
   reason: string // council cancellations
   closed_from: string | null // council cancellations caused by a closure
   closed_until: string | null
@@ -495,7 +511,7 @@ export type Recommendation = {
   because?: string // similar: the facility of theirs it is like
   shared_tags?: string[] // similar: the tags (slugs) they share
   // public_booking: someone's public booking to join; at most the owner's first name
-  booking?: { id: string; starts_at: string; ends_at: string; spots_left: number; owner_first_name: string }
+  booking?: { id: string; starts_at: string; ends_at: string; spots_left: number; owner_first_name: string; description?: string }
 }
 
 /** A problem residents report at a facility, for the council's maintenance list. */
@@ -503,7 +519,7 @@ export type IssueCategory = 'equipment' | 'lighting' | 'cleaning' | 'changing_ro
 export type IssueStatus = 'new' | 'in_progress' | 'solved' | 'rejected'
 export type IssueReport = {
   facility_id: string
-  booking_id?: string // the booking it is reported from
+  booking_id: string // the active booking it is reported from
   category: IssueCategory
   description: string
   photo_ref?: string // a storage reference under issues/
@@ -512,6 +528,7 @@ export type IssueReport = {
 }
 /** A report in the council's maintenance list. */
 export type CouncilIssue = {
+  facility_image_url: string
   id: string
   facility_id: string
   facility_name: string
@@ -526,6 +543,7 @@ export type CouncilIssue = {
   booking_starts_at: string | null
   reporter_name: string // first name only; "" after the account was deleted
   reporter_email: string // only when the reporter shared it
+  reporter_phone: string // optional profile phone, only when contact sharing was allowed
 }
 
 export type MyBookings = { upcoming: Booking[]; history: Booking[] }
@@ -543,6 +561,7 @@ export type Me = {
   avatar_ref: string
   avatar_url: string
   preferred_language: string
+  email_notifications: boolean
   email_reminders: boolean
   show_recommendations: boolean // "For you" on the home page
   profile_complete: boolean // the date of birth is required before booking
@@ -567,7 +586,7 @@ export type ProfileInput = {
 }
 
 /** How the app speaks and what it shows or sends them; saved without the personal data. */
-export type PreferencesInput = Pick<Me, 'preferred_language' | 'email_reminders' | 'show_recommendations'>
+export type PreferencesInput = Pick<Me, 'preferred_language' | 'email_notifications' | 'email_reminders' | 'show_recommendations'>
 
 // --- superadministrator area -------------------------------------------------
 
@@ -903,21 +922,21 @@ export const api = {
     request<{ recommendations: Recommendation[] }>('/me/recommendations', { token, method: 'POST', body: near ?? {} }),
   // "For you" on or off, also from the section itself
   setShowRecommendations: (token: string, show: boolean) => request<Me>('/me/recommendations', { token, method: 'PUT', body: { show } }),
-  // an outdoor facility's forecast, from MeteoGalicia through the API
+  // a facility's forecast when enabled, from MeteoGalicia through the API
   weather: (slug: string, facility: string, date: string) =>
     request<Weather>(`/tenants/${encodeURIComponent(slug)}/facilities/${encodeURIComponent(facility)}/weather?date=${date}`),
   facilityPage: (slug: string, facility: string, date?: string) =>
     request<FacilityPage>(`/tenants/${encodeURIComponent(slug)}/facilities/${encodeURIComponent(facility)}${date ? `?date=${date}` : ''}`),
   // acceptRules: the resident ticked "I have read the rules"; the API refuses the booking otherwise
   // isPublic: anyone signed in may find it in «For you» and join it (facilities with room for more than one)
-  book: (token: string, facilityId: string, startsAt: string, acceptRules: boolean, isPublic = false) =>
+  book: (token: string, facilityId: string, startsAt: string, acceptRules: boolean, isPublic = false, description = '') =>
     request<Booking>('/me/bookings', {
       token,
       method: 'POST',
-      body: { facility_id: facilityId, starts_at: startsAt, accept_rules: acceptRules, public: isPublic },
+      body: { facility_id: facilityId, starts_at: startsAt, accept_rules: acceptRules, public: isPublic, public_description: description },
     }),
-  setPublic: (token: string, bookingId: string, isPublic: boolean) =>
-    request<void>(`/me/bookings/${bookingId}/public`, { token, method: 'PUT', body: { public: isPublic } }),
+  setPublic: (token: string, bookingId: string, isPublic: boolean, description?: string) =>
+    request<void>(`/me/bookings/${bookingId}/public`, { token, method: 'PUT', body: { public: isPublic, public_description: description } }),
   joinPublic: (token: string, bookingId: string) => request<void>(`/me/bookings/${bookingId}/join`, { token, method: 'POST' }),
   // another free turn of the same facility, any day it can be booked
   changeBooking: (token: string, bookingId: string, startsAt: string) =>

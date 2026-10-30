@@ -146,5 +146,7 @@
   "preferencesSaved": "Preferències desades.",
   "unverifiedTitle": "Confirma el teu correu",
   "unverifiedBody": "Per reservar has de confirmar la teva adreça electrònica: al perfil, demana el codi i escriu-lo.",
-  "unverifiedAction": "Confirmar el correu"
+  "unverifiedAction": "Confirmar el correu",
+  "emails": "Rebre correus electrònics",
+  "emailsHelp": "Avisos de reserves i incidències, inclosos els recordatoris. En desactivar-ho, els avisos continuen a l’aplicació. Els correus de seguretat del compte no canvien."
 }

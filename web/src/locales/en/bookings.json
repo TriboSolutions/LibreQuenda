@@ -113,7 +113,26 @@
     "ways": "How you check in"
   },
   "public": {
+    "activity": "Activity",
+    "description": "Activity description (optional)",
+    "descriptionHelp": "Explain the activity, skill level or what to bring. Do not include contact details.",
+    "edit": "Edit description",
+    "cancel": "Cancel",
+    "save": "Save",
+    "turnTitle": "Public booking · {{facility}}",
+    "noDescription": "No description has been added.",
+    "people": "{{count}} of {{capacity}} people",
+    "person": "Participant",
+    "you": "You",
+    "started": "This booking has already started.",
+    "full": "There are no spots left.",
+    "login": "Sign in to join",
     "label": "Public",
-    "help": "Anyone with an account can see it in “For you” and join while spots are left."
+    "help": "Anyone with an account can see it in “For you” and join while spots are left.",
+    "confirmTitle": "Make this booking public?",
+    "confirmDescription": "Your booking at {{facility}} will appear in “For you”. Other people can find it and join while there are places available.",
+    "keepPrivate": "Keep private",
+    "confirm": "Make public",
+    "publishing": "Publishing…"
   }
 }

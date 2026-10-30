@@ -159,6 +159,7 @@ func (s *counciladminService) GetFacility(ctx context.Context, tenantId uuid.UUI
 		tags = []string{}
 	}
 	var detail = &FacilityDetailDto{
+		ShowWeather:       f.ShowWeather,
 		Id:                f.ID.String(),
 		Slug:              f.Slug,
 		Name:              f.Name,
@@ -230,6 +231,7 @@ func (s *counciladminService) CreateFacility(ctx context.Context, tenantId uuid.
 			ContactPhone:             nullString(input.ContactPhone),
 			ContactEmail:             nullString(input.ContactEmail),
 			ImageRef:                 nullString(input.ImageRef),
+			ShowWeather:              input.ShowWeather,
 			IsActive:                 input.IsActive,
 			SlotMinutes:              input.SlotMinutes,
 			CustomRules:              false,
@@ -290,6 +292,7 @@ func (s *counciladminService) UpdateFacility(ctx context.Context, tenantId uuid.
 			ContactPhone:      nullString(input.ContactPhone),
 			ContactEmail:      nullString(input.ContactEmail),
 			ImageRef:          nullString(input.ImageRef),
+			ShowWeather:       input.ShowWeather,
 			IsActive:          input.IsActive,
 			SlotMinutes:       input.SlotMinutes,
 			MinAge:            nullInt(input.MinAge),

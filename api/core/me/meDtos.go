@@ -27,6 +27,7 @@ type MeResponse struct {
 	AvatarUrl           string `json:"avatar_url"`
 	PreferredLanguage   string `json:"preferred_language"`
 	EmailReminders      bool   `json:"email_reminders"`
+	EmailNotifications  bool   `json:"email_notifications"`  // off: booking and problem notices in the app only
 	ShowRecommendations bool   `json:"show_recommendations"` // "For you" on the home page
 	ProfileComplete     bool   `json:"profile_complete"`     // the date of birth is required before booking
 
@@ -50,6 +51,7 @@ type ProfileInput struct {
 type PreferencesInput struct {
 	PreferredLanguage   string `json:"preferred_language"` // "" = the website's
 	EmailReminders      bool   `json:"email_reminders"`
+	EmailNotifications  bool   `json:"email_notifications"`  // off: booking and problem notices in the app only
 	ShowRecommendations bool   `json:"show_recommendations"` // "For you" on the home page
 }
 
@@ -62,6 +64,7 @@ func withProfile(response *MeResponse, profile model.GetUserProfileRow) *MeRespo
 	response.AvatarUrl = storage.URL(profile.AvatarRef.String)
 	response.PreferredLanguage = profile.PreferredLanguage.String
 	response.EmailReminders = profile.EmailReminders
+	response.EmailNotifications = profile.EmailNotifications
 	response.ShowRecommendations = profile.ShowRecommendations
 	response.ProfileComplete = profile.BirthDate.Valid
 	return response
