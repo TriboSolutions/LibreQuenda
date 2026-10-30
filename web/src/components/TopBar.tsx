@@ -3,7 +3,7 @@ import { Building2, CalendarDays, LogOut, QrCode, ShieldCheck, UserRound } from 
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import { Link, useNavigate } from 'react-router'
-import { BrandLogo, BrandName } from '@/components/Brand'
+import { BrandLockup } from '@/components/Brand'
 import { InvitationReminder } from '@/components/InvitationReminder'
 import { LanguageMenu } from '@/components/LanguageMenu'
 import { NotificationBell } from '@/components/NotificationBell'
@@ -64,8 +64,7 @@ export function TopBar({ tenants, tenantSlug }: Props) {
     <header className="border-b bg-card">
       <div className="mx-auto flex h-14 max-w-[1152px] items-center gap-3 px-4 sm:px-6">
         <Link to="/" className="flex shrink-0 items-center gap-2 rounded-md font-semibold" aria-label={t('common:home', { app: branding.name })}>
-          <BrandLogo className="size-7" />
-          <BrandName className="hidden max-w-60 truncate text-[17px] tracking-tight sm:inline" />
+          <BrandLockup />
         </Link>
 
         <div className="ml-auto flex shrink-0 items-center gap-1">
