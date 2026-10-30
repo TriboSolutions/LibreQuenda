@@ -51,9 +51,12 @@ Scope: bases §1.1 (minimum) + §1.2 (technical). See [architecture plan](docs/s
 - [x] CI in `.github/workflows/ci.yml`: Go (gofmt, sqlc diff, vet, tests), web (lint, types, build), the five images (published to ghcr.io on main and tags)
 - [x] Dependency and image scanning in CI (govulncheck, pnpm audit, Trivy)
 - [ ] `deploy/` production self-hosting kit
-- [ ] Zitadel bootstrap hardening (least-privilege `admin.pat`, split bootstrap volumes) — architecture §9.1
-- [ ] Short access-token lifetime (5–15 min)
-- [ ] Verify the `amr` claim for admin MFA
+- [x] Zitadel bootstrap hardening: split volumes (admin token apart from the login client's), an expiry for `admin.pat`, optional revocation of the setup token once configured — architecture §9.1 (#35). The setup user stays IAM_OWNER: the instance policies need it
+- [x] Short access tokens: 10 min by default, renewed silently with the refresh token (30 days idle, 90 in all) (#28)
+- [x] Admin second factor: Zitadel's access token carries no `amr`, so the API reads it by token introspection; council and platform admins need one when `REQUIRE_ADMIN_MFA` (on in production compose) (#32)
+- [x] A verified email before booking, joining a turn or booking at the door (#40)
+- [x] Rate limit at the proxy for sign-up (5 per hour per IP) and sign-in posts (30 per 10 min) (#39)
+- [ ] Captcha on sign-up, if the rate limit falls short (needs a fork of Zitadel's login app)
 - [ ] Cl@ve / Chave365: confirm the integration path with AMTEGA / AGASOL
 
 ## Activity log
