@@ -15,9 +15,9 @@
   "code": "Codi d’entrada",
   "codeHelp": "És al full de la porta o del taulell: sis xifres.",
   "locationNote": "Et demanarem la ubicació: has de ser a menys de {{metres}} m de la instal·lació. Es comprova i no es desa mai.",
-  "checkIn": "Registrar l’entrada",
+  "checkIn": "Registra l’entrada",
   "checking": "Comprovant…",
-  "bookAndCheckIn": "Reservar i entrar",
+  "bookAndCheckIn": "Reserva i entra",
   "slot": "{{facility}} · {{start}}–{{end}}",
   "inaccurateHelp": "Activa la ubicació precisa, o surt un moment a l’exterior, i torna-ho a provar.",
   "location": {
@@ -45,11 +45,11 @@
     "refused": "No s’ha pogut registrar l’entrada."
   },
   "scan": {
-    "open": "Obrir la càmera",
-    "again": "Tornar a escanejar",
+    "open": "Obre la càmera",
+    "again": "Torna a escanejar",
     "aim": "Apunta al QR imprès a la porta.",
     "notOurs": "Aquest QR no és el de l’entrada d’una instal·lació. Apunta al de la porta.",
-    "cancel": "Tancar la càmera",
+    "cancel": "Tanca la càmera",
     "locating": "Comprovant on ets…"
   },
   "distance": "Has de ser a menys de {{metres}} m de la instal·lació.",

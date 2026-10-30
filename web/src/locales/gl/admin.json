@@ -293,8 +293,8 @@
       "activeUsers": "Persoas activas",
       "activeUsersHint": "Con polo menos unha reserva, propia ou por invitación",
       "noShows": "Non presentadas",
-      "noShowsHint": "{{missed}} de {{finished}} reservas pasadas con lector QR",
-      "noShowsNone": "Sen reservas pasadas con lector QR"
+      "noShowsHint": "{{missed}} de {{finished}} reservas pasadas nas que se podía rexistrar a entrada",
+      "noShowsNone": "Non hai reservas pasadas nas que se puidese rexistrar a entrada"
     },
     "chartTitle": {
       "day": "Reservas por día",
@@ -502,7 +502,7 @@
     "checkedInMethod": {
       "reader": "Entrou co lector QR.",
       "printed_qr": "Entrou co QR impreso.",
-      "turn_code": "Entrou co código da quenda.",
+      "turn_code": "Entrou co código de entrada.",
       "staff": "Marcada polo persoal."
     },
     "checkinTooEarly": "A entrada pódese marcar desde as {{time}}.",
@@ -625,7 +625,7 @@
       "help": "O QR impreso e o código de entrada só funcionan co móbil a esta distancia do punto da instalación no mapa. O veciño ten que permitir a localización, que se comproba e nunca se garda.",
       "radius": "Distancia ao punto, en metros",
       "noPin": "Sitúa a instalación no mapa, na lapela Datos, para usar o QR impreso ou o código de entrada: a localización do móbil compárase con ese punto.",
-      "required": "Quen entre co QR impreso ou cun código de quenda ten que estar a menos de {{metres}} m da instalación."
+      "required": "Quen entre co QR impreso ou co código de entrada ten que estar a menos de {{metres}} m da instalación."
     },
     "loadError": "Non se puido cargar a configuración de entrada.",
     "save": "Gardar",

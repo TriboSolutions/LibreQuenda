@@ -6,19 +6,19 @@
   "createAccount": "Create account",
   "loading": "Loading bookings",
   "loadError": "Could not load your bookings.",
-  "empty": "No upcoming bookings. Pick a free turn in the availability.",
+  "empty": "No upcoming bookings. Pick a free slot in the availability.",
   "cancel": "Cancel",
   "change": "Change",
   "noCancel": "No cancellation",
-  "cancelDeadlinePassed": "Could only be cancelled until {{date}}",
-  "locked": "Changes and cancellation closed {{date}}",
+  "cancelDeadlinePassed": "Cancellation closed on {{date}}",
+  "locked": "Changes and cancellations closed on {{date}}",
   "history": "History",
   "status": {
     "cancelled": "Cancelled",
     "attended": "Attended",
     "noShow": "No-show",
     "ended": "Ended",
-    "checkedIn": "Inside"
+    "checkedIn": "Checked in"
   },
   "notice": {
     "booked": "Booking confirmed: {{facility}}, {{day}} at {{time}}.",
@@ -38,7 +38,7 @@
     "needLogin": "You need to sign in to book.",
     "error": "Could not make the booking.",
     "acceptRules": "I have read and accept the rules of use.",
-    "noRules": "This facility has no specific rules: the council's general rules apply.",
+    "noRules": "This facility has no specific rules: the council’s general rules apply.",
     "minAge": "Minimum age",
     "minAgeValue": "{{count}} years",
     "public": "Make the booking public",
@@ -46,7 +46,7 @@
   },
   "cancelDialog": {
     "title": "Cancel the booking?",
-    "description": "{{facility}}, {{day}} at {{time}}. The turn will be free for someone else.",
+    "description": "{{facility}}, {{day}} at {{time}}. The slot will be free for someone else.",
     "keep": "Keep the booking",
     "confirm": "Cancel the booking",
     "confirming": "Cancelling…",
@@ -76,12 +76,12 @@
     "hint": "Show it to the reader at the entrance, from 15 minutes before the start until the end of the booking.",
     "brightness": "If the reader does not pick it up, turn up the screen brightness.",
     "email": "It also comes in the confirmation and reminder emails.",
-    "checkedIn": "Entry registered at {{time}}",
+    "checkedIn": "Checked in at {{time}}",
     "close": "Close"
   },
   "countdown": {
     "startsIn": "Starts in {{time}}",
-    "open": "You can go in now",
+    "open": "You can check in now",
     "running": "Under way · ends in {{time}}",
     "in": "Checked in at {{time}}"
   },
@@ -90,7 +90,7 @@
     "from": "Check-in from {{time}}",
     "title": "Check in",
     "description": "{{facility}}, {{day}}, {{start}}–{{end}}",
-    "done": "You are checked in since {{time}}.",
+    "done": "You checked in at {{time}}.",
     "close": "Close",
     "entry_code": {
       "help": "Type the code shown at the door or the desk. We will ask for your location: it is checked and never stored.",

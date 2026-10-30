@@ -10,9 +10,9 @@
     "booking_reminder": "Starts in 15 minutes: {{facility}} at {{time}}. Have your QR ready.",
     "booking_changed": "Booking changed: {{facility}}, now {{day}} at {{time}}.",
     "booking_cancelled": "Booking cancelled: {{facility}}, {{day}} at {{time}}.",
-    "booking_cancelled_by_council": "We're sorry: {{facility}} has been closed, so your booking on {{day}} at {{time}} was cancelled.",
-    "booking_cancelled_by_closure": "We're sorry: {{facility}} is closed from {{from}} to {{until}}, so your booking on {{day}} at {{time}} was cancelled.",
-    "booking_cancelled_by_staff": "We're sorry: {{council}} cancelled your booking at {{facility}} on {{day}} at {{time}}.",
+    "booking_cancelled_by_council": "We’re sorry: {{facility}} has been closed, so your booking on {{day}} at {{time}} was cancelled.",
+    "booking_cancelled_by_closure": "We’re sorry: {{facility}} is closed from {{from}} to {{until}}, so your booking on {{day}} at {{time}} was cancelled.",
+    "booking_cancelled_by_staff": "We’re sorry: {{council}} cancelled your booking at {{facility}} on {{day}} at {{time}}.",
     "council_admin_granted": "You are now an administrator of {{council}}. Open its administration from here or from your account menu.",
     "issue_solved": "The problem you reported at {{facility}} is fixed.",
     "issue_rejected": "The council looked at the problem you reported at {{facility}} and will not take it further."

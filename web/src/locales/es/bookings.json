@@ -10,7 +10,7 @@
   "cancel": "Cancelar",
   "change": "Cambiar",
   "noCancel": "Sin cancelación",
-  "cancelDeadlinePassed": "Solo se podía cancelar hasta {{date}}",
+  "cancelDeadlinePassed": "Se podía cancelar hasta el {{date}}",
   "locked": "Cambios y cancelación cerrados el {{date}}",
   "history": "Historial",
   "status": {
@@ -18,7 +18,7 @@
     "attended": "Asistida",
     "noShow": "No presentada",
     "ended": "Finalizada",
-    "checkedIn": "Dentro"
+    "checkedIn": "Entrada registrada"
   },
   "notice": {
     "booked": "Reserva confirmada: {{facility}}, {{day}} a las {{time}}.",
