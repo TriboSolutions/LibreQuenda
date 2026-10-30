@@ -71,6 +71,9 @@ func (h *counciladminHandler) councilAdminUser(w http.ResponseWriter, r *http.Re
 		helpers.SendI18NErrorResponse(w, r, http.StatusForbidden, "errors.forbidden")
 		return uuid.Nil, uuid.Nil, false
 	}
+	if !me.AdminSecondFactor(w, r, session) {
+		return uuid.Nil, uuid.Nil, false
+	}
 	return tenant.ID, userId, true
 }
 
@@ -91,6 +94,9 @@ func (h *counciladminHandler) anyAdmin(w http.ResponseWriter, r *http.Request) b
 	}
 	if err != nil || !allowed {
 		helpers.SendI18NErrorResponse(w, r, http.StatusForbidden, "errors.forbidden")
+		return false
+	}
+	if !me.AdminSecondFactor(w, r, session) {
 		return false
 	}
 	return true

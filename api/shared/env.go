@@ -18,6 +18,12 @@ var ZITADEL_INTERNAL_URL = os.Getenv("ZITADEL_INTERNAL_URL")     // e.g. http://
 var RUNTIME_CONFIG_PATH = os.Getenv("RUNTIME_CONFIG_PATH")       // config.json written by zitadel-setup
 var ZITADEL_USERS_PAT_FILE = os.Getenv("ZITADEL_USERS_PAT_FILE") // token of the user-manager service account
 
+// Administrators must sign in with a second factor ("true"; off unless set, so a
+// local stack works with password-only accounts). Checked through token
+// introspection, with the API application's credentials written by zitadel-setup.
+var REQUIRE_ADMIN_MFA = os.Getenv("REQUIRE_ADMIN_MFA") == "true"
+var ZITADEL_INTROSPECTION_FILE = envOr("ZITADEL_INTROSPECTION_FILE", "/secrets/zitadel-introspection.json")
+
 // The first superadministrator: granted on this person's login with a verified email.
 var SUPERADMIN_EMAIL = strings.ToLower(strings.TrimSpace(os.Getenv("SUPERADMIN_EMAIL")))
 

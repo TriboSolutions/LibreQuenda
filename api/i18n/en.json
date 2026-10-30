@@ -163,7 +163,9 @@
     "daily_limit_reached": "You already have the bookings allowed per day at this facility.",
     "turns_in_a_row_limit": "You cannot book that many turns in a row at this facility.",
     "no_show_blocked": "You cannot book at this facility until {{0}}, after missing several bookings.",
-    "slot_too_soon": "That turn starts too soon to book it from the app."
+    "slot_too_soon": "That turn starts too soon to book it from the app.",
+    "mfa_required": "Administration needs a sign-in with a second factor (an authenticator app or a security key). Set one up in your account and sign in again.",
+    "mfa_check_failed": "The second factor could not be checked. Try again in a moment."
   },
   "email": {
     "greeting": "Hello {{0}},",

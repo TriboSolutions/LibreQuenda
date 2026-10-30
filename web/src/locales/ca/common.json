@@ -110,5 +110,11 @@
     "days": "{{count}} d",
     "hours": "{{count}} h",
     "minutes": "{{count}} min"
+  },
+  "mfa": {
+    "title": "L’administració necessita un segon factor.",
+    "body": "Afegeix una app d’autenticació, una clau de seguretat o una clau d’accés al teu compte i torna a iniciar la sessió amb ella.",
+    "setUp": "Configurar el segon factor",
+    "signInAgain": "Tornar a iniciar la sessió"
   }
 }

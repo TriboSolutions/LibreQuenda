@@ -47,6 +47,9 @@ func (h *platformHandler) superadmin(w http.ResponseWriter, r *http.Request) (uu
 		helpers.SendI18NErrorResponse(w, r, http.StatusForbidden, "errors.forbidden")
 		return uuid.Nil, false
 	}
+	if !me.AdminSecondFactor(w, r, session) {
+		return uuid.Nil, false
+	}
 	return userId, true
 }
 
@@ -67,6 +70,9 @@ func (h *platformHandler) councilAdmin(w http.ResponseWriter, r *http.Request, s
 		return uuid.Nil, false, false
 	}
 	if isSuperadmin {
+		if !me.AdminSecondFactor(w, r, session) {
+			return uuid.Nil, false, false
+		}
 		return userId, true, true
 	}
 	var tenant model.GetTenantForPlatformRow
@@ -78,6 +84,9 @@ func (h *platformHandler) councilAdmin(w http.ResponseWriter, r *http.Request, s
 	if err != nil || !allowed {
 		// a council that does not exist answers the same as one that is not theirs
 		helpers.SendI18NErrorResponse(w, r, http.StatusForbidden, "errors.forbidden")
+		return uuid.Nil, false, false
+	}
+	if !me.AdminSecondFactor(w, r, session) {
 		return uuid.Nil, false, false
 	}
 	return userId, false, true

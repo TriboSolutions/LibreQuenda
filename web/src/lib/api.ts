@@ -610,6 +610,9 @@ export type CouncilSmtpInput = { host: string; port: number; username: string; p
 
 export type Superadmin = { user_id: string; email: string; full_name: string; from_env: boolean; created_at: string }
 
+/** Fired when the administration refuses a sign-in without a second factor (REQUIRE_ADMIN_MFA). */
+export const MFA_REQUIRED_EVENT = 'librequenda:mfa-required'
+
 export class ApiError extends Error {
   status: number
 
@@ -649,6 +652,8 @@ async function request<T>(path: string, { token, method = 'GET', body }: Request
     let message = `HTTP ${res.status}`
     // the rate limiter answers in English only
     if (res.status === 429) throw new ApiError(429, i18n.t('common:rateLimited'))
+    // an administrator signed in without a second factor: MfaRequiredNotice explains how to set one up
+    if (res.status === 403 && res.headers.get('X-Mfa-Required')) window.dispatchEvent(new Event(MFA_REQUIRED_EVENT))
     try {
       const data = await res.json()
       message = data.error ?? message
