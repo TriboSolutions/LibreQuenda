@@ -707,7 +707,19 @@
     "useCouncilHelp": "Turn it off to give this facility its own advance, limits and penalty.",
     "facilityHelp": "How far ahead it can be booked, the limits per person and the no-show penalty at this facility.",
     "facilitySaved": "Window saved.",
-    "openCouncil": "See the council’s"
+    "openCouncil": "See the council’s",
+    "opening": "How booking opens",
+    "rolling": "Rolling window: up to some time ahead",
+    "weekly": "Weekly opening at a fixed time",
+    "rollingHelp": "Each turn can be booked from the advance you set.",
+    "weeklyHelp": "Until the opening only this week can be booked; from then on, next week too. Fairer when demand is high.",
+    "opensAt": "Next week opens",
+    "opensDay": "Opening day",
+    "opensTime": "Opening time",
+    "perWeek": "Bookings per person and week",
+    "sumWeekly": "Next week’s turns open on {{weekday}} at {{time}}.",
+    "sumPerWeek_one": "{{count}} booking per person and week.",
+    "sumPerWeek_other": "{{count}} bookings per person and week."
   },
   "councilSettings": {
     "title": "Council settings",

@@ -12,7 +12,7 @@ import (
 )
 
 // The booking window's limits per person, for a resident booking from the app
-// or at the door: bookings per day, turns in a row and the no-show block. Staff
+// or at the door: bookings per day and per week, turns in a row and the no-show block. Staff
 // booking for someone skip them. The cap on upcoming bookings is checked in book.
 
 // personalLimits refuses the turn when it would break one of them; exclude is
@@ -46,6 +46,20 @@ func (s *bookingsService) personalLimits(ctx context.Context, queries *model.Que
 		}
 		if count >= int64(facility.MaxBookingsPerDay) {
 			return &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.daily_limit_reached"}
+		}
+	}
+
+	if facility.MaxBookingsPerWeek > 0 {
+		var day = startOfDay(slot.Start, loc)
+		var monday = day.AddDate(0, 0, 1-int(schedule.ISOWeekday(day))) // the ISO week, in the council's zone
+		var count, countErr = queries.CountUserBookingsInRange(ctx, model.CountUserBookingsInRangeParams{
+			UserID: user, FacilityID: facility.ID, RangeStart: monday, RangeEnd: monday.AddDate(0, 0, 7), Exclude: exclude,
+		})
+		if countErr != nil {
+			return failed
+		}
+		if count >= int64(facility.MaxBookingsPerWeek) {
+			return &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.weekly_limit_reached"}
 		}
 	}
 

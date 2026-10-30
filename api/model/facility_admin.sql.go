@@ -42,6 +42,10 @@ SET
     max_active_bookings_per_user = r.max_active_bookings_per_user,
     max_bookings_per_day         = r.max_bookings_per_day,
     max_turns_in_a_row           = r.max_turns_in_a_row,
+    max_bookings_per_week        = r.max_bookings_per_week,
+    weekly_opening               = r.weekly_opening,
+    opens_weekday                = r.opens_weekday,
+    opens_minute                 = r.opens_minute,
     no_show_penalty              = r.no_show_penalty,
     no_show_limit                = r.no_show_limit,
     no_show_window_days          = r.no_show_window_days,
@@ -90,7 +94,8 @@ INSERT INTO facility (
     tenant_id, slug, name, description, address, latitude, longitude, capacity,
     accessibility_info, contact_phone, contact_email, image_ref, is_active, slot_minutes,
     custom_rules, max_advance_hours, min_advance_minutes, min_cancel_hours, max_active_bookings_per_user,
-    max_bookings_per_day, max_turns_in_a_row, no_show_penalty, no_show_limit, no_show_window_days, no_show_block_days,
+    max_bookings_per_day, max_turns_in_a_row, max_bookings_per_week, weekly_opening, opens_weekday, opens_minute,
+    no_show_penalty, no_show_limit, no_show_window_days, no_show_block_days,
     min_age, usage_rules_text
 ) VALUES (
     $1, $2, $3, $4,
@@ -99,7 +104,8 @@ INSERT INTO facility (
     $15, $16, $17, $18,
     $19, $20, $21,
     $22, $23, $24, $25,
-    $26, $27
+    $26, $27, $28, $29,
+    $30, $31
 )
 RETURNING
     id
@@ -127,6 +133,10 @@ type CreateFacilityParams struct {
 	MaxActiveBookingsPerUser int32           `json:"max_active_bookings_per_user"`
 	MaxBookingsPerDay        int32           `json:"max_bookings_per_day"`
 	MaxTurnsInARow           int32           `json:"max_turns_in_a_row"`
+	MaxBookingsPerWeek       int32           `json:"max_bookings_per_week"`
+	WeeklyOpening            bool            `json:"weekly_opening"`
+	OpensWeekday             int16           `json:"opens_weekday"`
+	OpensMinute              int32           `json:"opens_minute"`
 	NoShowPenalty            bool            `json:"no_show_penalty"`
 	NoShowLimit              int32           `json:"no_show_limit"`
 	NoShowWindowDays         int32           `json:"no_show_window_days"`
@@ -158,6 +168,10 @@ func (q *Queries) CreateFacility(ctx context.Context, arg CreateFacilityParams) 
 		arg.MaxActiveBookingsPerUser,
 		arg.MaxBookingsPerDay,
 		arg.MaxTurnsInARow,
+		arg.MaxBookingsPerWeek,
+		arg.WeeklyOpening,
+		arg.OpensWeekday,
+		arg.OpensMinute,
 		arg.NoShowPenalty,
 		arg.NoShowLimit,
 		arg.NoShowWindowDays,
@@ -212,7 +226,7 @@ func (q *Queries) EnsureTenantBookingRules(ctx context.Context, tenantID uuid.UU
 
 const getFacilityForAdmin = `-- name: GetFacilityForAdmin :one
 SELECT
-    id, tenant_id, slug, name, description, address, latitude, longitude, capacity, accessibility_info, contact_phone, contact_email, image_ref, is_active, slot_minutes, custom_rules, max_advance_hours, min_advance_minutes, min_cancel_hours, max_active_bookings_per_user, max_bookings_per_day, max_turns_in_a_row, no_show_penalty, no_show_limit, no_show_window_days, no_show_block_days, min_age, usage_rules_text, created_at, updated_at
+    id, tenant_id, slug, name, description, address, latitude, longitude, capacity, accessibility_info, contact_phone, contact_email, image_ref, is_active, slot_minutes, custom_rules, max_advance_hours, min_advance_minutes, min_cancel_hours, max_active_bookings_per_user, max_bookings_per_day, max_turns_in_a_row, max_bookings_per_week, weekly_opening, opens_weekday, opens_minute, no_show_penalty, no_show_limit, no_show_window_days, no_show_block_days, min_age, usage_rules_text, created_at, updated_at
 FROM
     facility
 WHERE
@@ -251,6 +265,10 @@ func (q *Queries) GetFacilityForAdmin(ctx context.Context, arg GetFacilityForAdm
 		&i.MaxActiveBookingsPerUser,
 		&i.MaxBookingsPerDay,
 		&i.MaxTurnsInARow,
+		&i.MaxBookingsPerWeek,
+		&i.WeeklyOpening,
+		&i.OpensWeekday,
+		&i.OpensMinute,
 		&i.NoShowPenalty,
 		&i.NoShowLimit,
 		&i.NoShowWindowDays,
@@ -264,7 +282,7 @@ func (q *Queries) GetFacilityForAdmin(ctx context.Context, arg GetFacilityForAdm
 }
 
 const getTenantBookingRules = `-- name: GetTenantBookingRules :one
-SELECT tenant_id, max_advance_hours, min_advance_minutes, min_cancel_hours, max_active_bookings_per_user, max_bookings_per_day, max_turns_in_a_row, no_show_penalty, no_show_limit, no_show_window_days, no_show_block_days, updated_at FROM tenant_booking_rules WHERE tenant_id = $1
+SELECT tenant_id, max_advance_hours, min_advance_minutes, min_cancel_hours, max_active_bookings_per_user, max_bookings_per_day, max_turns_in_a_row, max_bookings_per_week, weekly_opening, opens_weekday, opens_minute, no_show_penalty, no_show_limit, no_show_window_days, no_show_block_days, updated_at FROM tenant_booking_rules WHERE tenant_id = $1
 `
 
 func (q *Queries) GetTenantBookingRules(ctx context.Context, tenantID uuid.UUID) (TenantBookingRule, error) {
@@ -278,6 +296,10 @@ func (q *Queries) GetTenantBookingRules(ctx context.Context, tenantID uuid.UUID)
 		&i.MaxActiveBookingsPerUser,
 		&i.MaxBookingsPerDay,
 		&i.MaxTurnsInARow,
+		&i.MaxBookingsPerWeek,
+		&i.WeeklyOpening,
+		&i.OpensWeekday,
+		&i.OpensMinute,
 		&i.NoShowPenalty,
 		&i.NoShowLimit,
 		&i.NoShowWindowDays,
@@ -522,14 +544,18 @@ SET
     max_active_bookings_per_user = $5,
     max_bookings_per_day         = $6,
     max_turns_in_a_row           = $7,
-    no_show_penalty              = $8,
-    no_show_limit                = $9,
-    no_show_window_days          = $10,
-    no_show_block_days           = $11,
+    max_bookings_per_week        = $8,
+    weekly_opening               = $9,
+    opens_weekday                = $10,
+    opens_minute                 = $11,
+    no_show_penalty              = $12,
+    no_show_limit                = $13,
+    no_show_window_days          = $14,
+    no_show_block_days           = $15,
     updated_at                   = NOW()
 WHERE
-    id = $12
-    AND tenant_id = $13
+    id = $16
+    AND tenant_id = $17
 `
 
 type UpdateFacilityBookingRulesParams struct {
@@ -540,6 +566,10 @@ type UpdateFacilityBookingRulesParams struct {
 	MaxActiveBookingsPerUser int32     `json:"max_active_bookings_per_user"`
 	MaxBookingsPerDay        int32     `json:"max_bookings_per_day"`
 	MaxTurnsInARow           int32     `json:"max_turns_in_a_row"`
+	MaxBookingsPerWeek       int32     `json:"max_bookings_per_week"`
+	WeeklyOpening            bool      `json:"weekly_opening"`
+	OpensWeekday             int16     `json:"opens_weekday"`
+	OpensMinute              int32     `json:"opens_minute"`
 	NoShowPenalty            bool      `json:"no_show_penalty"`
 	NoShowLimit              int32     `json:"no_show_limit"`
 	NoShowWindowDays         int32     `json:"no_show_window_days"`
@@ -559,6 +589,10 @@ func (q *Queries) UpdateFacilityBookingRules(ctx context.Context, arg UpdateFaci
 		arg.MaxActiveBookingsPerUser,
 		arg.MaxBookingsPerDay,
 		arg.MaxTurnsInARow,
+		arg.MaxBookingsPerWeek,
+		arg.WeeklyOpening,
+		arg.OpensWeekday,
+		arg.OpensMinute,
 		arg.NoShowPenalty,
 		arg.NoShowLimit,
 		arg.NoShowWindowDays,
@@ -581,13 +615,17 @@ SET
     max_active_bookings_per_user = $4,
     max_bookings_per_day         = $5,
     max_turns_in_a_row           = $6,
-    no_show_penalty              = $7,
-    no_show_limit                = $8,
-    no_show_window_days          = $9,
-    no_show_block_days           = $10,
+    max_bookings_per_week        = $7,
+    weekly_opening               = $8,
+    opens_weekday                = $9,
+    opens_minute                 = $10,
+    no_show_penalty              = $11,
+    no_show_limit                = $12,
+    no_show_window_days          = $13,
+    no_show_block_days           = $14,
     updated_at                   = NOW()
 WHERE
-    tenant_id = $11
+    tenant_id = $15
 `
 
 type UpdateTenantBookingRulesParams struct {
@@ -597,6 +635,10 @@ type UpdateTenantBookingRulesParams struct {
 	MaxActiveBookingsPerUser int32     `json:"max_active_bookings_per_user"`
 	MaxBookingsPerDay        int32     `json:"max_bookings_per_day"`
 	MaxTurnsInARow           int32     `json:"max_turns_in_a_row"`
+	MaxBookingsPerWeek       int32     `json:"max_bookings_per_week"`
+	WeeklyOpening            bool      `json:"weekly_opening"`
+	OpensWeekday             int16     `json:"opens_weekday"`
+	OpensMinute              int32     `json:"opens_minute"`
 	NoShowPenalty            bool      `json:"no_show_penalty"`
 	NoShowLimit              int32     `json:"no_show_limit"`
 	NoShowWindowDays         int32     `json:"no_show_window_days"`
@@ -613,6 +655,10 @@ func (q *Queries) UpdateTenantBookingRules(ctx context.Context, arg UpdateTenant
 		arg.MaxActiveBookingsPerUser,
 		arg.MaxBookingsPerDay,
 		arg.MaxTurnsInARow,
+		arg.MaxBookingsPerWeek,
+		arg.WeeklyOpening,
+		arg.OpensWeekday,
+		arg.OpensMinute,
 		arg.NoShowPenalty,
 		arg.NoShowLimit,
 		arg.NoShowWindowDays,

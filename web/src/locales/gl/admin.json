@@ -707,7 +707,19 @@
     "useCouncilHelp": "Apágao para que esta instalación teña a súa propia antelación, límites e penalización.",
     "facilityHelp": "Ata canto antes se pode reservar, os límites por persoa e a penalización por ausencias nesta instalación.",
     "facilitySaved": "Ventá gardada.",
-    "openCouncil": "Ver a do concello"
+    "openCouncil": "Ver a do concello",
+    "opening": "Como se abre a reserva",
+    "rolling": "Ventá móbil: ata un tempo antes",
+    "weekly": "Apertura semanal a hora fixa",
+    "rollingHelp": "Cada quenda pódese reservar dende o tempo de antelación que poñas.",
+    "weeklyHelp": "Ata a apertura só se reserva esta semana; desde ela, tamén a seguinte. É máis xusto cando hai moita demanda.",
+    "opensAt": "A semana seguinte ábrese",
+    "opensDay": "Día da apertura",
+    "opensTime": "Hora da apertura",
+    "perWeek": "Reservas por persoa e semana",
+    "sumWeekly": "As quendas da semana seguinte ábrense o {{weekday}} ás {{time}}.",
+    "sumPerWeek_one": "{{count}} reserva por persoa e semana.",
+    "sumPerWeek_other": "{{count}} reservas por persoa e semana."
   },
   "councilSettings": {
     "title": "Axustes do concello",

@@ -62,6 +62,7 @@
     "flash_off": "Aquí el ayuntamiento no permite reservar un turno libre en la puerta. Reserva en la aplicación.",
     "daily_limit_reached": "Ya tienes las reservas que se permiten por día aquí.",
     "turns_in_a_row_limit": "No puedes reservar tantos turnos seguidos aquí.",
-    "no_show_blocked": "No puedes reservar aquí durante unos días, por no presentarte a varias reservas."
+    "no_show_blocked": "No puedes reservar aquí durante unos días, por no presentarte a varias reservas.",
+    "weekly_limit_reached": "Ya tienes las reservas que se permiten por semana aquí."
   }
 }

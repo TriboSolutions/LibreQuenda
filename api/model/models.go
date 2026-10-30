@@ -370,6 +370,10 @@ type Facility struct {
 	MaxActiveBookingsPerUser int32           `json:"max_active_bookings_per_user"`
 	MaxBookingsPerDay        int32           `json:"max_bookings_per_day"`
 	MaxTurnsInARow           int32           `json:"max_turns_in_a_row"`
+	MaxBookingsPerWeek       int32           `json:"max_bookings_per_week"`
+	WeeklyOpening            bool            `json:"weekly_opening"`
+	OpensWeekday             int16           `json:"opens_weekday"`
+	OpensMinute              int32           `json:"opens_minute"`
 	NoShowPenalty            bool            `json:"no_show_penalty"`
 	NoShowLimit              int32           `json:"no_show_limit"`
 	NoShowWindowDays         int32           `json:"no_show_window_days"`
@@ -466,6 +470,10 @@ type TenantBookingRule struct {
 	MaxActiveBookingsPerUser int32     `json:"max_active_bookings_per_user"`
 	MaxBookingsPerDay        int32     `json:"max_bookings_per_day"`
 	MaxTurnsInARow           int32     `json:"max_turns_in_a_row"`
+	MaxBookingsPerWeek       int32     `json:"max_bookings_per_week"`
+	WeeklyOpening            bool      `json:"weekly_opening"`
+	OpensWeekday             int16     `json:"opens_weekday"`
+	OpensMinute              int32     `json:"opens_minute"`
 	NoShowPenalty            bool      `json:"no_show_penalty"`
 	NoShowLimit              int32     `json:"no_show_limit"`
 	NoShowWindowDays         int32     `json:"no_show_window_days"`

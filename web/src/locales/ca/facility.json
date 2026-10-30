@@ -34,5 +34,8 @@
   "rulePerDay_one": "Com a màxim {{count}} reserva per persona i dia.",
   "rulePerDay_other": "Com a màxim {{count}} reserves per persona i dia.",
   "ruleInARow_one": "No es poden reservar torns seguits.",
-  "ruleInARow_other": "Com a màxim {{count}} torns seguits per persona."
+  "ruleInARow_other": "Com a màxim {{count}} torns seguits per persona.",
+  "ruleWeekly": "Els torns de la setmana següent s’obren el {{weekday}} a les {{time}}.",
+  "rulePerWeek_one": "Com a màxim {{count}} reserva per persona i setmana.",
+  "rulePerWeek_other": "Com a màxim {{count}} reserves per persona i setmana."
 }

@@ -707,7 +707,19 @@
     "useCouncilHelp": "Apaga-ho perquè aquesta instal·lació tingui la seva pròpia antelació, límits i penalització.",
     "facilityHelp": "Fins a quan abans es pot reservar, els límits per persona i la penalització per absències en aquesta instal·lació.",
     "facilitySaved": "Finestra desada.",
-    "openCouncil": "Veure la de l’ajuntament"
+    "openCouncil": "Veure la de l’ajuntament",
+    "opening": "Com s’obre la reserva",
+    "rolling": "Finestra mòbil: fins a un temps abans",
+    "weekly": "Obertura setmanal a hora fixa",
+    "rollingHelp": "Cada torn es pot reservar des de l’antelació que posis.",
+    "weeklyHelp": "Fins a l’obertura només es reserva aquesta setmana; des d’aleshores, també la següent. És més just quan hi ha molta demanda.",
+    "opensAt": "La setmana següent s’obre",
+    "opensDay": "Dia de l’obertura",
+    "opensTime": "Hora de l’obertura",
+    "perWeek": "Reserves per persona i setmana",
+    "sumWeekly": "Els torns de la setmana següent s’obren el {{weekday}} a les {{time}}.",
+    "sumPerWeek_one": "{{count}} reserva per persona i setmana.",
+    "sumPerWeek_other": "{{count}} reserves per persona i setmana."
   },
   "councilSettings": {
     "title": "Configuració de l’ajuntament",

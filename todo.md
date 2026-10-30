@@ -72,11 +72,13 @@ Scope: bases §1.1 (minimum) + §1.2 (technical). See [architecture plan](docs/s
 - [x] «For you» recommendations on the home page (can be turned off in the profile's Preferences)
 - [x] Profile photo copied to the person's Zitadel account; Zitadel signs up and in with a password (passkeys with `ZITADEL_PASSKEYS=true`)
 - [ ] NFC tag: still a preview in the Entrada tab (needs a public check-in address per tag and, for signed tags, NTAG 424 DNA verification)
-- [ ] Indicators: switching the QR reader off is not kept over time, so turns while it is off still count as no-shows
+- [x] Indicators: a history of when each facility could take check-ins (`facility_checkin_period`), so turns while the QR reader was off, or every way was off, are not no-shows (#31)
 - [x] Profile photo: checked end to end on 30 Oct, the app's photo reaches the Zitadel account. Zitadel's own sign-in pages (login v2, v4.20) always show initials, never the photo; its console shows it
-- [ ] Profile photo: removing a photo that only exists in Zitadel (none in the app) does not remove it there; maybe let the person crop or centre the photo in the circle
+- [x] Profile photo: framed in a circle (move and zoom) before it is uploaded, and reframed later (#27)
+- [ ] Profile photo: removing a photo that only exists in Zitadel (none in the app) does not remove it there
 - [ ] Try the camera and location flows on a real phone over HTTPS (door QR, entry code, reader)
-- [ ] Booking window, later if wanted: a weekly cap per person, limits across all the council's facilities, turns that open at a fixed hour
+- [x] Booking window: bookings per person and week, and next week's turns opening all at once at a fixed weekday and time instead of the rolling window
+- [ ] Booking window, later if wanted: limits across all the council's facilities
 - [ ] «For you» as the full signed-in feed of the README proposal (search on its own page, invitations, quiet hours, new facilities)
 
 ## Optional (bases §1.3, only if cheap)
