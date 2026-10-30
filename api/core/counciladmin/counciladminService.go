@@ -202,7 +202,8 @@ func (s *counciladminService) CreateFacility(ctx context.Context, tenantId uuid.
 	if key := input.validate(); key != "" {
 		return nil, &shared.ErrorResponse{Code: http.StatusUnprocessableEntity, Message: key}
 	}
-	var rules, rulesErr = s.effectiveRules(ctx, tenantId, input)
+	// a new facility starts with the council's booking window (its Reserva tab changes it)
+	var rules, rulesErr = s.councilRules(ctx, tenantId)
 	if rulesErr != nil {
 		return nil, rulesErr
 	}
@@ -231,7 +232,7 @@ func (s *counciladminService) CreateFacility(ctx context.Context, tenantId uuid.
 			ImageRef:                 nullString(input.ImageRef),
 			IsActive:                 input.IsActive,
 			SlotMinutes:              input.SlotMinutes,
-			CustomRules:              input.CustomRules,
+			CustomRules:              false,
 			MaxAdvanceHours:          rules.MaxAdvanceHours,
 			MinAdvanceMinutes:        rules.MinAdvanceMinutes,
 			MinCancelHours:           rules.MinCancelHours,
@@ -270,40 +271,25 @@ func (s *counciladminService) UpdateFacility(ctx context.Context, tenantId uuid.
 	if key := input.validate(); key != "" {
 		return nil, &shared.ErrorResponse{Code: http.StatusUnprocessableEntity, Message: key}
 	}
-	var rules, rulesErr = s.effectiveRules(ctx, tenantId, input)
-	if rulesErr != nil {
-		return nil, rulesErr
-	}
 	var err = db.WithTenant(ctx, s.db, tenantId, func(queries *model.Queries) error {
 		var _, updateErr = queries.UpdateFacility(ctx, model.UpdateFacilityParams{
-			ID:                       id,
-			TenantID:                 tenantId,
-			Slug:                     input.Slug,
-			Name:                     input.Name,
-			Description:              nullString(input.Description),
-			Address:                  nullString(input.Address),
-			Latitude:                 nullFloat(input.Latitude),
-			Longitude:                nullFloat(input.Longitude),
-			Capacity:                 nullInt(input.Capacity),
-			AccessibilityInfo:        nullString(input.AccessibilityInfo),
-			ContactPhone:             nullString(input.ContactPhone),
-			ContactEmail:             nullString(input.ContactEmail),
-			ImageRef:                 nullString(input.ImageRef),
-			IsActive:                 input.IsActive,
-			SlotMinutes:              input.SlotMinutes,
-			CustomRules:              input.CustomRules,
-			MaxAdvanceHours:          rules.MaxAdvanceHours,
-			MinAdvanceMinutes:        rules.MinAdvanceMinutes,
-			MinCancelHours:           rules.MinCancelHours,
-			MaxActiveBookingsPerUser: rules.MaxActiveBookingsPerUser,
-			MaxBookingsPerDay:        rules.MaxBookingsPerDay,
-			MaxTurnsInARow:           rules.MaxTurnsInARow,
-			NoShowPenalty:            rules.NoShowPenalty,
-			NoShowLimit:              rules.NoShowLimit,
-			NoShowWindowDays:         rules.NoShowWindowDays,
-			NoShowBlockDays:          rules.NoShowBlockDays,
-			MinAge:                   nullInt(input.MinAge),
-			UsageRulesText:           nullString(input.UsageRules),
+			ID:                id,
+			TenantID:          tenantId,
+			Slug:              input.Slug,
+			Name:              input.Name,
+			Description:       nullString(input.Description),
+			Address:           nullString(input.Address),
+			Latitude:          nullFloat(input.Latitude),
+			Longitude:         nullFloat(input.Longitude),
+			Capacity:          nullInt(input.Capacity),
+			AccessibilityInfo: nullString(input.AccessibilityInfo),
+			ContactPhone:      nullString(input.ContactPhone),
+			ContactEmail:      nullString(input.ContactEmail),
+			ImageRef:          nullString(input.ImageRef),
+			IsActive:          input.IsActive,
+			SlotMinutes:       input.SlotMinutes,
+			MinAge:            nullInt(input.MinAge),
+			UsageRulesText:    nullString(input.UsageRules),
 		})
 		if updateErr != nil {
 			return updateErr

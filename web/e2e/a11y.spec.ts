@@ -53,6 +53,7 @@ const pages: { name: string; path: string; signedIn?: boolean }[] = [
   { name: 'check-in QR to print', path: '/lugo/admin/facilities/f1/imprimir?que=qr' },
   { name: 'entry code to print', path: '/lugo/admin/facilities/f1/imprimir?que=codigo' },
   { name: 'council settings', path: '/lugo/admin/axustes' },
+  { name: 'facility editor, booking window', path: '/lugo/admin/facilities/f1?vista=reserva' },
   { name: 'entry code to print, in braille', path: '/lugo/admin/facilities/f1/imprimir?que=codigo&braille=1' },
   { name: 'check-in at the door, printed QR', path: '/lugo/padel-1/entrada?c=9a1f6c2e-3b4d-4e5f-8a7b-1c2d3e4f5a6b' },
   { name: 'check-in at the door, entry code', path: '/lugo/padel-1/entrada' },
@@ -284,6 +285,8 @@ test.describe('keyboard', () => {
   test('2.1.1 the check-in tab and its ways can be used with the keyboard alone', async ({ page }) => {
     await open(page, '/lugo/admin/facilities/f1')
     await page.getByRole('tab', { name: 'Datos' }).focus()
+    await page.keyboard.press('ArrowRight') // Reserva
+    await expect(page.getByRole('tab', { name: 'Reserva' })).toHaveAttribute('aria-selected', 'true')
     await page.keyboard.press('ArrowRight')
     await expect(page.getByRole('tab', { name: 'Entrada' })).toHaveAttribute('aria-selected', 'true')
     await expect(page).toHaveURL(/vista=entrada/)
@@ -520,6 +523,8 @@ test.describe('keyboard', () => {
 
   test('a facility inherits the council booking window until it keeps its own', async ({ page }) => {
     await open(page, '/lugo/admin/facilities/f1')
+    await page.getByRole('tab', { name: 'Reserva' }).click()
+    await expect(page).toHaveURL(/vista=reserva/)
     const inherit = page.getByRole('switch', { name: 'Usar a ventá de reserva do concello' })
     await expect(inherit).toBeChecked()
     await expect(page.getByText('Penalización: 3 ausencias en 30 días bloquean 7 días.')).toBeVisible()
@@ -528,8 +533,8 @@ test.describe('keyboard', () => {
     await expect(page.getByLabel('Antelación máxima')).toHaveValue('7')
     await expect(page.getByRole('switch', { name: 'Penalizar a quen non se presenta' })).toBeChecked()
     await page.getByLabel('Reservas por persoa e día').fill('2')
-    const saved = page.waitForRequest((r) => r.method() === 'PUT' && /\/admin\/facilities\/f1$/.test(r.url()))
-    await page.getByRole('button', { name: 'Gardar', exact: true }).first().click()
+    const saved = page.waitForRequest((r) => r.method() === 'PUT' && /\/admin\/facilities\/f1\/booking-rules$/.test(r.url()))
+    await page.getByRole('button', { name: 'Gardar a ventá' }).click()
     expect((await saved).postDataJSON()).toMatchObject({ custom_rules: true, rules: { max_advance_hours: 168, max_bookings_per_day: 2, no_show_penalty: true } })
   })
 

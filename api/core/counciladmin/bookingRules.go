@@ -114,10 +114,42 @@ func (s *counciladminService) SaveBookingRules(ctx context.Context, tenantId uui
 	return &input, nil
 }
 
-// effectiveRules: the window a facility saves, its own or the council's.
-func (s *counciladminService) effectiveRules(ctx context.Context, tenantId uuid.UUID, input FacilityInput) (BookingRulesDto, *shared.ErrorResponse) {
+// FacilityRulesInput: a facility's booking window, from its Reserva tab.
+type FacilityRulesInput struct {
+	CustomRules bool            `json:"custom_rules"` // false: the council's (Rules is ignored)
+	Rules       BookingRulesDto `json:"rules"`
+}
+
+// SaveFacilityRules: the facility's own window, or back to the council's.
+func (s *counciladminService) SaveFacilityRules(ctx context.Context, tenantId uuid.UUID, facilityId uuid.UUID, input FacilityRulesInput) (*FacilityDetailDto, *shared.ErrorResponse) {
+	var rules = input.Rules
 	if input.CustomRules {
-		return input.Rules, nil
+		if key := rules.validate(); key != "" {
+			return nil, &shared.ErrorResponse{Code: http.StatusUnprocessableEntity, Message: key}
+		}
+	} else {
+		var council, err = s.councilRules(ctx, tenantId)
+		if err != nil {
+			return nil, err
+		}
+		rules = council
 	}
-	return s.councilRules(ctx, tenantId)
+	var updated int64
+	var err = db.WithTenant(ctx, s.db, tenantId, func(queries *model.Queries) error {
+		var updateErr error
+		updated, updateErr = queries.UpdateFacilityBookingRules(ctx, model.UpdateFacilityBookingRulesParams{
+			ID: facilityId, TenantID: tenantId, CustomRules: input.CustomRules,
+			MaxAdvanceHours: rules.MaxAdvanceHours, MinAdvanceMinutes: rules.MinAdvanceMinutes, MinCancelHours: rules.MinCancelHours,
+			MaxActiveBookingsPerUser: rules.MaxActiveBookingsPerUser, MaxBookingsPerDay: rules.MaxBookingsPerDay, MaxTurnsInARow: rules.MaxTurnsInARow,
+			NoShowPenalty: rules.NoShowPenalty, NoShowLimit: rules.NoShowLimit, NoShowWindowDays: rules.NoShowWindowDays, NoShowBlockDays: rules.NoShowBlockDays,
+		})
+		return updateErr
+	})
+	if err != nil {
+		return nil, failed("errors.booking_rules_failed")
+	}
+	if updated == 0 {
+		return nil, &shared.ErrorResponse{Code: http.StatusNotFound, Message: "errors.facility_not_found"}
+	}
+	return s.GetFacility(ctx, tenantId, facilityId)
 }

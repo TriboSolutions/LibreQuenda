@@ -186,7 +186,8 @@
     "tagsNone": "Ninguna",
     "tagsClear": "Quitar todas",
     "tabDetails": "Datos",
-    "tabCheckin": "Entrada"
+    "tabCheckin": "Entrada",
+    "tabBooking": "Reserva"
   },
   "readers": {
     "title": "Lectores QR de la entrada",
@@ -703,7 +704,10 @@
     "saving": "Guardando…",
     "saved": "Ventana guardada y aplicada a las instalaciones que la heredan.",
     "useCouncil": "Usar la ventana de reserva del ayuntamiento",
-    "useCouncilHelp": "Apágalo para que esta instalación tenga su propia antelación, límites y penalización."
+    "useCouncilHelp": "Apágalo para que esta instalación tenga su propia antelación, límites y penalización.",
+    "facilityHelp": "Hasta cuánto antes se puede reservar, los límites por persona y la penalización por ausencias en esta instalación.",
+    "facilitySaved": "Ventana guardada.",
+    "openCouncil": "Ver la del ayuntamiento"
   },
   "councilSettings": {
     "title": "Ajustes del ayuntamiento",

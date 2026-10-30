@@ -132,8 +132,6 @@ export type FacilityInput = {
   image_ref: string // a storage reference, never a URL
   is_active: boolean
   slot_minutes: number
-  custom_rules: boolean // false: the council's booking window (rules is then ignored)
-  rules: BookingRules
   min_age: number | null // age control: null = none, else 1 to 80
   usage_rules: string
 }
@@ -154,7 +152,10 @@ export type BookingRules = {
 }
 
 export type AdminFacility = FacilityInput & {
-  council_rules: BookingRules // the council's window, to show what it inherits
+  // the booking window, saved from its Reserva tab: the council's (custom_rules false) or its own
+  custom_rules: boolean
+  rules: BookingRules // the window in force
+  council_rules: BookingRules // the council's, to show what it inherits
   id: string
   image_url: string
   booking_count: number
@@ -874,6 +875,8 @@ export const api = {
     exportIndicators,
     exportData: exportCouncilData,
     bookingRules: (token: string, slug: string) => request<BookingRules>(`/tenants/${encodeURIComponent(slug)}/admin/booking-rules`, { token }),
+    saveFacilityRules: (token: string, slug: string, facilityId: string, input: { custom_rules: boolean; rules: BookingRules }) =>
+      request<AdminFacility>(`/tenants/${encodeURIComponent(slug)}/admin/facilities/${facilityId}/booking-rules`, { token, method: 'PUT', body: input }),
     saveBookingRules: (token: string, slug: string, rules: BookingRules) =>
       request<BookingRules>(`/tenants/${encodeURIComponent(slug)}/admin/booking-rules`, { token, method: 'PUT', body: rules }),
     smtp: (token: string, slug: string) => request<CouncilSmtp>(`/tenants/${encodeURIComponent(slug)}/admin/smtp`, { token }),

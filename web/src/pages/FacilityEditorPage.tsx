@@ -5,7 +5,7 @@ import { useAuth } from 'react-oidc-context'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import { FacilityMap } from '@/components/FacilityMap'
 import { ImagePicker } from '@/components/ImagePicker'
-import { BookingRulesFields, BookingRulesSummary } from '@/components/admin/BookingRulesFields'
+import { FacilityBookingRules } from '@/components/admin/FacilityBookingRules'
 import { CheckinMethods } from '@/components/admin/CheckinMethods'
 import { ClosuresEditor } from '@/components/admin/ClosuresEditor'
 import { ScheduleEditor } from '@/components/admin/ScheduleEditor'
@@ -24,7 +24,6 @@ import { Textarea } from '@/components/ui/textarea'
 import { useAsync } from '@/hooks/useAsync'
 import { useCouncilAdmin } from '@/hooks/useCouncilAdmin'
 import { api, type AdminFacility, type FacilityInput, type GeocodeResult, type StoredImage, type WeeklyWindow, type Tenant } from '@/lib/api'
-import { DEFAULT_RULES } from '@/lib/bookingRules'
 import { slugify } from '@/lib/slug'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { SiteFooter } from '@/components/SiteFooter'
@@ -44,8 +43,6 @@ const EMPTY: FacilityInput = {
   image_ref: '',
   is_active: true,
   slot_minutes: 60,
-  custom_rules: false,
-  rules: DEFAULT_RULES,
   min_age: null,
   usage_rules: '',
 }
@@ -60,6 +57,8 @@ function toInput(f: AdminFacility): FacilityInput {
     closures: _closures,
     timezone: _tz,
     council_rules: _council,
+    custom_rules: _custom,
+    rules: _rules,
     ...input
   } = f
   return input
@@ -102,9 +101,6 @@ function Editor({ slug, facility, tenants, token }: { slug: string; facility: Ad
   const creating = facility === null
   const council = tenants.find((c) => c.slug === slug) // its contact is what an empty facility contact falls back to
   const [form, setForm] = useState<FacilityInput>(facility ? toInput(facility) : EMPTY)
-  // the council's booking window: what the facility inherits while it keeps none of its own
-  const councilRulesLoad = useAsync(creating ? () => api.council.bookingRules(token, slug) : null, `booking-rules:${slug}:${creating}`)
-  const councilRules = facility?.council_rules ?? councilRulesLoad.data ?? null
   const [image, setImage] = useState<StoredImage | null>(facility?.image_ref ? { ref: facility.image_ref, url: facility.image_url } : null)
   const [schedule, setSchedule] = useState<WeeklyWindow[]>(facility?.schedule ?? [])
   const [saving, setSaving] = useState(false)
@@ -122,10 +118,12 @@ function Editor({ slug, facility, tenants, token }: { slug: string; facility: Ad
   // deactivating keeps the bookings; cancelling them is an explicit choice with a reason
   const [cancelBookings, setCancelBookings] = useState(false)
   const [cancelReason, setCancelReason] = useState('')
-  // the tab lives in the address (?vista=entrada), like the council admin's
+  // the tab lives in the address (?vista=entrada, ?vista=reserva), like the council admin's
   const [searchParams, setSearchParams] = useSearchParams()
-  const view = searchParams.get('vista') === 'entrada' ? 'checkin' : 'details'
-  const changeView = (value: string) => setSearchParams(value === 'checkin' ? { vista: 'entrada' } : {}, { replace: true })
+  const vista = searchParams.get('vista')
+  const view = vista === 'entrada' ? 'checkin' : vista === 'reserva' ? 'booking' : 'details'
+  const changeView = (value: string) =>
+    setSearchParams(value === 'checkin' ? { vista: 'entrada' } : value === 'booking' ? { vista: 'reserva' } : {}, { replace: true })
 
   const set = <K extends keyof FacilityInput>(field: K, value: FacilityInput[K]) => setForm((f) => ({ ...f, [field]: value }))
   const number = (value: string) => (value === '' ? 0 : Number(value))
@@ -339,32 +337,6 @@ function Editor({ slug, facility, tenants, token }: { slug: string; facility: Ad
                 </div>
               ))}
             </div>
-            <div className="grid gap-4 rounded-md border p-4">
-              <div className="flex items-start gap-3">
-                <Switch
-                  id="f-council-rules"
-                  checked={!form.custom_rules}
-                  aria-describedby="f-council-rules-help"
-                  // its own window starts from the council's, to change only what differs
-                  onCheckedChange={(inherit) =>
-                    setForm((f) => ({ ...f, custom_rules: !inherit, rules: inherit || f.custom_rules ? f.rules : (councilRules ?? f.rules) }))
-                  }
-                />
-                <div className="grid gap-1">
-                  <Label htmlFor="f-council-rules">{t('admin:rules.useCouncil')}</Label>
-                  <p id="f-council-rules-help" className="text-sm text-muted-foreground">
-                    {t('admin:rules.useCouncilHelp')}
-                  </p>
-                </div>
-              </div>
-              {form.custom_rules ? (
-                <BookingRulesFields id="f-own-rules" value={form.rules} onChange={(rules) => set('rules', rules)} />
-              ) : councilRules ? (
-                <BookingRulesSummary rules={councilRules} />
-              ) : (
-                <Skeleton className="h-24 w-full" />
-              )}
-            </div>
             <div className="grid gap-2">
               <Label htmlFor="f-rules">{t('admin:editor.usageRules')}</Label>
               <Textarea id="f-rules" rows={4} maxLength={5000} value={form.usage_rules} aria-describedby="f-rules-help" onChange={(e) => set('usage_rules', e.target.value)} />
@@ -558,9 +530,13 @@ function Editor({ slug, facility, tenants, token }: { slug: string; facility: Ad
           <Tabs value={view} onValueChange={changeView} className="mt-6 gap-6">
             <TabsList>
               <TabsTrigger value="details">{t('admin:editor.tabDetails')}</TabsTrigger>
+              <TabsTrigger value="booking">{t('admin:editor.tabBooking')}</TabsTrigger>
               <TabsTrigger value="checkin">{t('admin:editor.tabCheckin')}</TabsTrigger>
             </TabsList>
             <TabsContent value="details">{layout}</TabsContent>
+            <TabsContent value="booking">
+              {saved && <FacilityBookingRules slug={slug} facility={saved} token={token} onSaved={setSaved} />}
+            </TabsContent>
             <TabsContent value="checkin">
               <CheckinMethods slug={slug} facilityId={facility.id} facilitySlug={facility.slug} token={token} />
             </TabsContent>
