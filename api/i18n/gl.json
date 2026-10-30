@@ -163,7 +163,9 @@
     "daily_limit_reached": "Xa tes as reservas que se permiten por día nesta instalación.",
     "turns_in_a_row_limit": "Non podes reservar tantas quendas seguidas nesta instalación.",
     "no_show_blocked": "Non podes reservar nesta instalación ata o {{0}}, por non presentarte a varias reservas.",
-    "slot_too_soon": "Esa quenda comeza moi pronto para reservala dende a app."
+    "slot_too_soon": "Esa quenda comeza moi pronto para reservala dende a app.",
+    "mfa_required": "A administración require entrar cun segundo factor (unha app de autenticación ou unha chave de seguridade). Configúrao na túa conta e volve iniciar sesión.",
+    "mfa_check_failed": "Non se puido comprobar o segundo factor. Téntao de novo nun momento."
   },
   "email": {
     "greeting": "Ola {{0}},",

@@ -96,6 +96,10 @@ func (h *mediaHandler) Upload(w http.ResponseWriter, r *http.Request) {
 		helpers.SendI18NErrorResponse(w, r, http.StatusForbidden, "errors.forbidden")
 		return
 	}
+	// images for facilities, councils or the installation are admin work
+	if session, _ := auth.SessionFromContext(r.Context()); folder != "users" && !me.AdminSecondFactor(w, r, session) {
+		return
+	}
 	var file, header, fileErr = r.FormFile("file")
 	if fileErr != nil {
 		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.upload_invalid")

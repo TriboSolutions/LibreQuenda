@@ -522,6 +522,21 @@ test.describe('keyboard', () => {
     await expect(page.getByRole('button', { name: 'Encadrar' })).toBeVisible()
   })
 
+  test('an administrator without a second factor is told how to set one up', async ({ page }) => {
+    await open(page, '/lugo/admin')
+    // the general mock answers everything else; this route, added after it, wins
+    await page.route('**/api/tenants/lugo/admin/facilities', (route) =>
+      route.fulfill({ status: 403, headers: { 'X-Mfa-Required': '1' }, json: { error: 'A administración require entrar cun segundo factor.' } }),
+    )
+    await page.reload()
+    const notice = page.getByRole('alert').filter({ hasText: 'A administración precisa un segundo factor.' })
+    await expect(notice).toBeVisible()
+    await expect(notice.getByRole('link', { name: 'Configurar o segundo factor' })).toHaveAttribute('href', /\/ui\/v2\/login\/mfa\/set\?loginName=ana%40example\.org$/)
+    await expect(notice.getByRole('button', { name: 'Iniciar sesión de novo' })).toBeVisible()
+    await page.waitForTimeout(300)
+    await expectAccessible(page)
+  })
+
   test('signed out, the home page has no recommendations', async ({ page }) => {
     await open(page, '/', { signedIn: false })
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()

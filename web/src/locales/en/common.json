@@ -110,5 +110,11 @@
     "days": "{{count}} d",
     "hours": "{{count}} h",
     "minutes": "{{count}} min"
+  },
+  "mfa": {
+    "title": "The administration needs a second factor.",
+    "body": "Add an authenticator app, a security key or a passkey to your account and sign in again with it.",
+    "setUp": "Set up a second factor",
+    "signInAgain": "Sign in again"
   }
 }
