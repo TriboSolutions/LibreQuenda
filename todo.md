@@ -56,6 +56,11 @@ Scope: bases §1.1 (minimum) + §1.2 (technical). See [architecture plan](docs/s
 - [ ] Verify the `amr` claim for admin MFA
 - [ ] Cl@ve / Chave365: confirm the integration path with AMTEGA / AGASOL
 
+## Activity log
+
+- [x] Audit log of administrative changes (superadmins: all; council admins: their council), append-only, `AUDIT_RETENTION_DAYS` retention, pseudonymised on account erasure, CSV download
+- [ ] Add a line to `audit/actions.go` for each new administrative route (until then they are logged as "other")
+
 ## Contest submission
 
 - [ ] Project report (memoria) for the bases

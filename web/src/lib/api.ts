@@ -683,6 +683,48 @@ function indicatorsParams({ days, from, to, facility, compare }: IndicatorsQuery
   return params
 }
 
+/** One line of the audit log: what an administrator (or the system) did. Names come from the accounts as they are now. */
+export type AuditEntry = {
+  id: string
+  at: string
+  actor_name: string
+  actor_role: 'superadmin' | 'council_admin' | 'resident' | 'system'
+  actor_deleted: boolean // the account was erased
+  tenant_slug: string
+  tenant_name: string
+  action: string // a stable code, e.g. facility.updated
+  target_type: string
+  target_id: string
+  target_name: string
+  target_exists: boolean // a facility that still exists, to link to
+  summary: string
+}
+export type AuditPage = { entries: AuditEntry[]; next: string | null }
+/** What the log is narrowed to: an action code or prefix, days (YYYY-MM-DD), a council (superadmins), and a page. */
+export type AuditFilters = { action?: string; from?: string; to?: string; council?: string; before?: string }
+
+function auditParams(filters: AuditFilters) {
+  const params = new URLSearchParams()
+  for (const [key, value] of Object.entries(filters)) if (value) params.set(key, value)
+  return params
+}
+
+/** The filtered audit log as a CSV, fetched with the token and saved. */
+async function downloadAudit(token: string, path: string, filters: AuditFilters) {
+  const params = auditParams(filters)
+  params.set('format', 'csv')
+  const res = await fetch(`/api${path}?${params}`, {
+    headers: { Authorization: `Bearer ${token}`, 'Accept-Language': i18n.resolvedLanguage ?? 'gl' },
+  })
+  if (!res.ok) throw new ApiError(res.status, `HTTP ${res.status}`)
+  const url = URL.createObjectURL(await res.blob())
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `audit-log-${new Date().toISOString().slice(0, 10)}.csv`
+  link.click()
+  URL.revokeObjectURL(url)
+}
+
 /** GET …/indicators/export: the CSV comes with the token, so it is fetched and saved as a file. */
 async function exportIndicators(token: string, slug: string, query: IndicatorsQuery, { kind, excel }: IndicatorsExport) {
   const params = indicatorsParams(query)
@@ -827,6 +869,10 @@ export const api = {
   },
 
   council: {
+    audit: (token: string, slug: string, filters: AuditFilters) =>
+      request<AuditPage>(`/tenants/${encodeURIComponent(slug)}/admin/audit?${auditParams(filters)}`, { token }),
+    downloadAudit: (token: string, slug: string, filters: AuditFilters) =>
+      downloadAudit(token, `/tenants/${encodeURIComponent(slug)}/admin/audit`, filters),
     facilities: (token: string, slug: string) =>
       request<{ facilities: AdminFacilitySummary[] }>(`/tenants/${encodeURIComponent(slug)}/admin/facilities`, { token }),
     facility: (token: string, slug: string, id: string) =>
@@ -937,6 +983,8 @@ export const api = {
   },
 
   admin: {
+    audit: (token: string, filters: AuditFilters) => request<AuditPage>(`/admin/audit?${auditParams(filters)}`, { token }),
+    downloadAudit: (token: string, filters: AuditFilters) => downloadAudit(token, '/admin/audit', filters),
     councils: (token: string) => request<{ tenants: CouncilSummary[] }>('/admin/tenants', { token }),
     council: (token: string, slug: string) => request<CouncilDetail>(`/admin/tenants/${encodeURIComponent(slug)}`, { token }),
     createCouncil: (token: string, input: CouncilInput) =>

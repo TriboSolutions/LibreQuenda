@@ -2,6 +2,7 @@ package platform
 
 import (
 	"database/sql"
+	"librequenda/audit"
 	"librequenda/middlewares"
 	"net/http"
 	"sync"
@@ -51,9 +52,11 @@ func (r *platformRoutes) RegisterRoutes() {
 		{Path: "/admin/tags/{id}", Method: http.MethodPut, Handler: h.UpdateTag},
 		{Path: "/admin/tags/{id}", Method: http.MethodDelete, Handler: h.DeleteTag},
 		{Path: "/admin/branding", Method: http.MethodPut, Handler: h.UpdateBranding},
+		{Path: "/admin/audit", Method: http.MethodGet, Handler: h.GetAudit},
 	}
 	for _, route := range routes {
-		route.Handler = middlewares.AuthMiddleware(route.Handler)
+		// every change is logged once it succeeded (audit), inside the authentication
+		route.Handler = middlewares.AuthMiddleware(audit.Route(r.db, string(route.Method), route.Path, route.Handler))
 		route.AdditionalMethods = []router.HTTPMethod{router.OPTIONS}
 		r.router.NewRoute(route)
 	}

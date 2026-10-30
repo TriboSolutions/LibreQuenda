@@ -2,6 +2,7 @@ package counciladmin
 
 import (
 	"database/sql"
+	"librequenda/audit"
 	"librequenda/middlewares"
 	"net/http"
 	"sync"
@@ -59,6 +60,7 @@ func (r *counciladminRoutes) RegisterRoutes() {
 		{Path: "/tenants/{slug}/admin/facilities/{id}/booking-rules", Method: http.MethodPut, Handler: h.SaveFacilityRules},
 		{Path: "/tenants/{slug}/admin/booking-rules", Method: http.MethodGet, Handler: h.GetBookingRules},
 		{Path: "/tenants/{slug}/admin/booking-rules", Method: http.MethodPut, Handler: h.SaveBookingRules},
+		{Path: "/tenants/{slug}/admin/audit", Method: http.MethodGet, Handler: h.GetAudit},
 		{Path: "/tenants/{slug}/admin/smtp", Method: http.MethodGet, Handler: h.GetSmtp},
 		{Path: "/tenants/{slug}/admin/smtp", Method: http.MethodPut, Handler: h.SaveSmtp},
 		{Path: "/tenants/{slug}/admin/smtp", Method: http.MethodDelete, Handler: h.DeleteSmtp},
@@ -66,7 +68,8 @@ func (r *counciladminRoutes) RegisterRoutes() {
 		{Path: "/geocode", Method: http.MethodGet, Handler: h.Geocode},
 	}
 	for _, route := range routes {
-		route.Handler = middlewares.AuthMiddleware(route.Handler)
+		// every change is logged once it succeeded (audit), inside the authentication
+		route.Handler = middlewares.AuthMiddleware(audit.Route(r.db, string(route.Method), route.Path, route.Handler))
 		route.AdditionalMethods = []router.HTTPMethod{router.OPTIONS}
 		r.router.NewRoute(route)
 	}

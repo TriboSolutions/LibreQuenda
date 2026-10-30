@@ -6,7 +6,7 @@ Residents look up facilities, book, change or cancel their bookings, see their h
 
 LibreQuenda is Tribo Solutions' proposal for the [I Certame GOBTEC de Software Libre](https://www.agasol.gal/i-certame-gobtec/) (AGASOL, 2026).
 
-> **Status:** in development. Residents browse councils and facilities, book, change and cancel, invite others to fill a booking, check in at the door in several ways (QR reader, printed QR, entry code, staff), get notifications and emails, and see recommendations from their own bookings. Council admins manage facilities, opening hours, closures, usage rules, images, ways to check in and booking windows, and follow live indicators they can export as CSV, along with the council's full data. Superadministrators manage councils, their admins and the app's name and logo. See [features.md](features.md), the [architecture plan](docs/specs/architecture.md) and [todo.md](todo.md).
+> **Status:** in development. Residents browse councils and facilities, book, change and cancel, invite others to fill a booking, check in at the door in several ways (QR reader, printed QR, entry code, staff), get notifications and emails, and see recommendations from their own bookings. Council admins manage facilities, opening hours, closures, usage rules, images, ways to check in and booking windows, and follow live indicators they can export as CSV, along with the council's full data. Superadministrators manage councils, their admins and the app's name and logo, and an activity log records every administrative change. See [features.md](features.md), the [architecture plan](docs/specs/architecture.md) and [todo.md](todo.md).
 
 ## Stack
 
@@ -161,6 +161,17 @@ What the ones not built yet would need:
 **Privacy:** the feed only uses what LibreQuenda already keeps for the booking itself (the person's own bookings and the preferences they choose). It does not track pages viewed or clicks, does not share anything between residents or with the council, and the location is only used in the browser when they allow it, never stored. `/perfil` would say what the feed uses and let them reset their preferences.
 
 **Open questions:** which cards councils care most about for the GOBTEC demo, whether favourites are explicit (a star) or inferred from bookings, and whether the feed should also arrive by email (a weekly "your usual turn is free").
+
+## Activity log (audit)
+
+Every change made through the administration is logged once it succeeded, for accountability (GDPR Art. 5(2) and 32, and the ENS): facilities, opening hours, closures and the bookings they cancelled, ways to check in, readers, booking windows, staff bookings, cancellations and check-ins for someone, the email relay, data exports (saying whether they carried residents' personal data), councils, administrators, superadministrators, the tag catalogue and the app's name and logo. A change through an administrative route not listed yet is still logged, as "other". Residents' own bookings are not logged here (they are the bookings themselves); downloading their data or deleting their account is, without content.
+
+- **Who sees it:** superadministrators see everything at `/admin` → Activity log; a council's administrators see their council's entries in its administration → Activity log (row-level security enforces it in the database). Both can download the filtered view as CSV.
+- **What an entry holds:** when, the account that did it and its role then, the council, a stable action code, the target (a facility's or tag's name, or a person's account id) and a short summary built from field names and non-personal values (e.g. `max_bookings_per_day: 0 → 1`, `description changed`, `staff_contacts: 1 → 2`). Never passwords, keys, tokens, residents' contact details, free text written by residents, nor locations. People's names are read from their account when shown, not copied.
+- **Append-only:** the API's database role can only insert and read entries (`UPDATE`/`DELETE` revoked); entries leave only through the retention purge.
+- **Retention:** `AUDIT_RETENTION_DAYS` (730 by default); a daily job deletes older entries.
+- **Erasure:** when a person deletes their account, their entries stay but no longer point to them ("deleted account").
+- The council's full data export does not include the log: it is the administration's own accountability record, not the council's service data.
 
 ## Documentation
 

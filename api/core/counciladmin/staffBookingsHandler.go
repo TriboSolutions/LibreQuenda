@@ -1,7 +1,10 @@
 package counciladmin
 
 import (
+	"github.com/google/uuid"
+	"librequenda/audit"
 	"librequenda/core/bookings"
+	"librequenda/model"
 	"net/http"
 
 	"github.com/angelbarreiros/Penguin/router/helpers"
@@ -33,6 +36,12 @@ func (h *counciladminHandler) CreateStaffBooking(w http.ResponseWriter, r *http.
 		return
 	}
 	var response, err = bookings.GetBookingsService(h.db).StaffBook(r.Context(), tenantId, staffId, input)
+	if err == nil {
+		// who it is for stays out of the log: the booking holds it, and forgets it
+		var label, _ = model.New(h.db).GetFacilityNameForAudit(r.Context(), input.FacilityId)
+		audit.Target(r.Context(), "booking", uuid.MustParse(response.Id), label)
+		audit.Describe(r.Context(), "turn %s, with an account: %v", response.StartsAt.Format("2006-01-02 15:04"), response.HasAccount)
+	}
 	send(w, r, response, err)
 }
 
