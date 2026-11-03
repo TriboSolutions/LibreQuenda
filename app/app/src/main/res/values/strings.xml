@@ -9,6 +9,7 @@
          translate every string. Same words as web/src/locales. -->
     <!-- sign-in -->
     <string name="sign_in">Iniciar sesión</string>
+    <string name="sign_in_to_book">Inicia sesión para reservar</string>
     <string name="sign_out">Pechar sesión</string>
     <string name="create_account">Crear conta</string>
     <string name="welcome_title">Reserva as instalacións deportivas do teu concello</string>

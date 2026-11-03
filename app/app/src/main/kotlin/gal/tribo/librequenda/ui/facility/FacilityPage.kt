@@ -121,6 +121,8 @@ private fun Pushed(open: Boolean, onBack: () -> Unit, content: @Composable () ->
 @Composable
 fun FacilityPage(
     target: FacilityTarget?,
+    signedIn: Boolean,
+    onSignIn: () -> Unit, // signed out, the page is to look at: booking asks to sign in
     onBack: () -> Unit,
     onCheckout: (Checkout) -> Unit, // book a free turn, or join a public booking: both confirm first
 ) {
@@ -245,6 +247,7 @@ fun FacilityPage(
             HorizontalDivider(color = Lq.colors.border)
             Box(Modifier.navigationBarsPadding().padding(16.dp)) {
                 when {
+                    !signedIn -> PrimaryButton(stringResource(R.string.sign_in_to_book), onSignIn, Modifier.fillMaxWidth())
                     turn != null && !turn.startsAt.isAfter(now) -> PrimaryButton(stringResource(R.string.public_started), {}, Modifier.fillMaxWidth(), enabled = false)
                     turn != null && turn.spotsLeft <= 0 -> PrimaryButton(stringResource(R.string.public_full), {}, Modifier.fillMaxWidth(), enabled = false)
                     turn != null -> PrimaryButton("${stringResource(R.string.join)} · ${time(turn.startsAt)}", { if (d != null) onCheckout(Checkout(d, turn.startsAt, turn.endsAt, turn)) }, Modifier.fillMaxWidth())

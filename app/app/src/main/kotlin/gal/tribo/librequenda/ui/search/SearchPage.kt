@@ -9,7 +9,6 @@ import gal.tribo.librequenda.ui.components.ConfirmSheet
 import gal.tribo.librequenda.ui.components.MultiChoiceSheet
 import gal.tribo.librequenda.ui.components.DateSheet
 import gal.tribo.librequenda.ui.components.SingleChoiceSheet
-import gal.tribo.librequenda.ui.components.Notice
 import gal.tribo.librequenda.ui.profile.ProfileActions
 import gal.tribo.librequenda.ui.profile.Texts
 import gal.tribo.librequenda.ui.profile.userMessage
@@ -145,44 +144,6 @@ fun SearchPage(
         enter = slideInHorizontally(tween(260)) { it },
         exit = slideOutHorizontally(tween(220)) { it },
     ) {
-        var results by remember { mutableStateOf<List<DayFacility>?>(null) }
-        var total by remember { mutableIntStateOf(0) }
-        var nextPage by remember { mutableStateOf<Int?>(null) } // the API has more: the next page, loaded at the list's end
-        var loadingMore by remember { mutableStateOf(false) }
-        val scope = rememberCoroutineScope()
-        var failed by remember { mutableStateOf(false) }
-        var catalogue by remember { mutableStateOf<List<TagCategory>>(emptyList()) }
-        var sheet by remember { mutableStateOf(false) }
-        var attempt by remember { mutableIntStateOf(0) }
-        var notice by remember { mutableStateOf<String?>(null) }
-
-        var councilList by remember { mutableStateOf(councils) } // every council (the facilities come a page at a time)
-        LaunchedEffect(Unit) { runCatching { fetchTags() }.onSuccess { catalogue = it } }
-        LaunchedEffect(Unit) { runCatching { fetchCouncils() }.onSuccess { councilList = it } }
-        // the API filters, sorts (nearest first) and pages; typing waits a moment before asking
-        val query = filters.toQuery(location)
-        LaunchedEffect(query, attempt) {
-            if (query.words.isNotEmpty()) kotlinx.coroutines.delay(300)
-            failed = false; results = null; nextPage = null
-            try {
-                val page = fetchFacilitiesDay(query)
-                results = page.items; total = page.total; nextPage = if (page.hasMore) page.page + 1 else null
-            } catch (c: CancellationException) { throw c } catch (_: Exception) { failed = true }
-        }
-        fun loadMore() {
-            val next = nextPage ?: return
-            if (loadingMore) return
-            loadingMore = true
-            scope.launch {
-                try {
-                    val page = fetchFacilitiesDay(query, next)
-                    results = results.orEmpty() + page.items; nextPage = if (page.hasMore) page.page + 1 else null
-                } catch (c: CancellationException) { throw c } catch (_: Exception) { /* the next scroll tries again */ }
-                loadingMore = false
-            }
-        }
-        val shown = results
-
         Column(
             Modifier
                 .fillMaxSize()
@@ -202,38 +163,91 @@ fun SearchPage(
                     modifier = Modifier.align(Alignment.Center).semantics { heading() },
                 )
             }
-            SearchBox(filters.query) { onFilters(filters.copy(query = it)) }
-            Spacer(Modifier.height(12.dp))
-            ChipsRow(filters, catalogue, councilList, onFilters, onMore = { sheet = true })
-            Spacer(Modifier.height(8.dp))
+            FacilitySearch(filters, onFilters, councils, location, onSlot)
+        }
+    }
+}
 
-            when {
-                failed -> Text(stringResource(R.string.search_load_error), color = Lq.colors.destructive, modifier = Modifier.padding(16.dp))
-                shown == null -> LinearProgressIndicator(Modifier.fillMaxWidth().padding(16.dp))
-                shown.isEmpty() -> Text(stringResource(R.string.search_no_results), color = Lq.colors.mutedForeground, modifier = Modifier.padding(16.dp))
-                else -> LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 40.dp)) {
-                    item {
-                        Text(
-                            pluralStringResource(R.plurals.results_count, total, total),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Lq.colors.mutedForeground,
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                        )
-                    }
-                    if (notice != null) item { Box(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) { Notice(notice, error = false) } }
-                    itemsIndexed(shown, key = { _, f -> f.id }) { i, f ->
-                        // near the end of what came, the next page
-                        if (i >= shown.size - 5) LaunchedEffect(shown.size) { loadMore() }
-                        // a public booking opens the facility with it chosen, to join it there
-                        ResultRow(f, filters, onOpen = { onSlot(f, null) }, onSlot = { onSlot(f, it) }, onGame = { game -> onSlot(f, game.startsAt) })
-                    }
-                    if (nextPage != null) item { LinearProgressIndicator(Modifier.fillMaxWidth().padding(16.dp)) }
+/**
+ * The search itself: the box, the chips and every facility that matches, a page
+ * at a time. The search page shows it under its bar; signed out, it is the home.
+ */
+@Composable
+fun FacilitySearch(
+    filters: SearchFilters,
+    onFilters: (SearchFilters) -> Unit,
+    councils: List<Pair<String, String>>, // slug to name
+    location: GeoPoint?,
+    onSlot: (DayFacility, Instant?) -> Unit, // a turn, or null for the facility itself
+    modifier: Modifier = Modifier,
+) {
+    var results by remember { mutableStateOf<List<DayFacility>?>(null) }
+    var total by remember { mutableIntStateOf(0) }
+    var nextPage by remember { mutableStateOf<Int?>(null) } // the API has more: the next page, loaded at the list's end
+    var loadingMore by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    var failed by remember { mutableStateOf(false) }
+    var catalogue by remember { mutableStateOf<List<TagCategory>>(emptyList()) }
+    var sheet by remember { mutableStateOf(false) }
+
+    var councilList by remember { mutableStateOf(councils) } // every council (the facilities come a page at a time)
+    LaunchedEffect(Unit) { runCatching { fetchTags() }.onSuccess { catalogue = it } }
+    LaunchedEffect(Unit) { runCatching { fetchCouncils() }.onSuccess { councilList = it } }
+    // the API filters, sorts (nearest first) and pages; typing waits a moment before asking
+    val query = filters.toQuery(location)
+    LaunchedEffect(query) {
+        if (query.words.isNotEmpty()) kotlinx.coroutines.delay(300)
+        failed = false; results = null; nextPage = null
+        try {
+            val page = fetchFacilitiesDay(query)
+            results = page.items; total = page.total; nextPage = if (page.hasMore) page.page + 1 else null
+        } catch (c: CancellationException) { throw c } catch (_: Exception) { failed = true }
+    }
+    fun loadMore() {
+        val next = nextPage ?: return
+        if (loadingMore) return
+        loadingMore = true
+        scope.launch {
+            try {
+                val page = fetchFacilitiesDay(query, next)
+                results = results.orEmpty() + page.items; nextPage = if (page.hasMore) page.page + 1 else null
+            } catch (c: CancellationException) { throw c } catch (_: Exception) { /* the next scroll tries again */ }
+            loadingMore = false
+        }
+    }
+    val shown = results
+
+    Column(modifier.fillMaxSize()) {
+        SearchBox(filters.query) { onFilters(filters.copy(query = it)) }
+        Spacer(Modifier.height(12.dp))
+        ChipsRow(filters, catalogue, councilList, onFilters, onMore = { sheet = true })
+        Spacer(Modifier.height(8.dp))
+
+        when {
+            failed -> Text(stringResource(R.string.search_load_error), color = Lq.colors.destructive, modifier = Modifier.padding(16.dp))
+            shown == null -> LinearProgressIndicator(Modifier.fillMaxWidth().padding(16.dp))
+            shown.isEmpty() -> Text(stringResource(R.string.search_no_results), color = Lq.colors.mutedForeground, modifier = Modifier.padding(16.dp))
+            else -> LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 40.dp)) {
+                item {
+                    Text(
+                        pluralStringResource(R.plurals.results_count, total, total),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Lq.colors.mutedForeground,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                    )
                 }
+                itemsIndexed(shown, key = { _, f -> f.id }) { i, f ->
+                    // near the end of what came, the next page
+                    if (i >= shown.size - 5) LaunchedEffect(shown.size) { loadMore() }
+                    // a public booking opens the facility with it chosen, to join it there
+                    ResultRow(f, filters, onOpen = { onSlot(f, null) }, onSlot = { onSlot(f, it) }, onGame = { game -> onSlot(f, game.startsAt) })
+                }
+                if (nextPage != null) item { LinearProgressIndicator(Modifier.fillMaxWidth().padding(16.dp)) }
             }
         }
-
-        if (sheet) FiltersSheet(filters, catalogue, councilList, onApply = { onFilters(it); sheet = false }, onDismiss = { sheet = false })
     }
+
+    if (sheet) FiltersSheet(filters, catalogue, councilList, onApply = { onFilters(it); sheet = false }, onDismiss = { sheet = false })
 }
 
 /** The filters as the API takes them: «from now» is the time now, in the councils' zone. */
