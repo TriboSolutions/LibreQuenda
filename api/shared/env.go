@@ -35,6 +35,11 @@ var STORAGE_ACCESS_KEY = os.Getenv("STORAGE_ACCESS_KEY")
 var STORAGE_SECRET_KEY = os.Getenv("STORAGE_SECRET_KEY")
 var STORAGE_USE_SSL = os.Getenv("STORAGE_USE_SSL") == "true"
 
+// Support: who people write to or call when they do not understand something in the app.
+// Each installation is its own (self-hosted), so they come from the environment; "" = not shown.
+var SUPPORT_EMAIL = strings.TrimSpace(os.Getenv("SUPPORT_EMAIL"))
+var SUPPORT_PHONE = strings.TrimSpace(os.Getenv("SUPPORT_PHONE"))
+
 // Address search for facility map pins (OpenStreetMap Nominatim, or a self-hosted one)
 var GEOCODER_URL = strings.TrimRight(envOr("GEOCODER_URL", "https://nominatim.openstreetmap.org"), "/")
 

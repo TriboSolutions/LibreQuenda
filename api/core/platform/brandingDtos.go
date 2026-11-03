@@ -12,6 +12,9 @@ type BrandingDto struct {
 	CustomName string `json:"custom_name"` // "" = LibreQuenda
 	LogoRef    string `json:"logo_ref"`    // sent back unchanged when the form is saved; "" = the LibreQuenda logo
 	LogoUrl    string `json:"logo_url"`
+	// support contact, from SUPPORT_EMAIL and SUPPORT_PHONE; "" = not set
+	SupportEmail string `json:"support_email"`
+	SupportPhone string `json:"support_phone"`
 }
 
 type BrandingInput struct {

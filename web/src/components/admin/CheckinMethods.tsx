@@ -10,18 +10,17 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
 import { useAsync } from '@/hooks/useAsync'
 import { api, type CheckinSettings, type CheckinSettingsInput, type StaffContact } from '@/lib/api'
-import { entranceUrl } from '@/lib/entrance'
+import { entranceUrl, nfcUrl } from '@/lib/entrance'
 
 type Props = { slug: string; facilityId: string; facilitySlug: string; token: string }
 
 type Method = 'reader' | 'printedQr' | 'nfc' | 'entryCode' | 'staff'
 
-type SavedKey = 'printed_qr' | 'entry_code' | 'staff_confirm' | 'qr_reader'
+type SavedKey = 'printed_qr' | 'nfc' | 'entry_code' | 'staff_confirm' | 'qr_reader'
 
 // the ways in from the README's "Check-in at the entrance". saved: switched on
 // and off with the facility's settings; the rest is a preview
@@ -29,16 +28,17 @@ const METHODS: { key: Method; icon: typeof QrCode; built?: boolean; saved?: Save
   { key: 'reader', icon: ScanLine, built: true, saved: 'qr_reader' },
   { key: 'printedQr', icon: QrCode, built: true, saved: 'printed_qr' },
   { key: 'entryCode', icon: Hash, built: true, saved: 'entry_code' },
-  { key: 'nfc', icon: Nfc },
+  { key: 'nfc', icon: Nfc, built: true, saved: 'nfc' },
   { key: 'staff', icon: UserCheck, built: true, saved: 'staff_confirm' },
 ]
 
 // the ways that check the phone's location against the facility's map pin
-const needsPin = (key?: SavedKey) => key === 'printed_qr' || key === 'entry_code'
+const needsPin = (key?: SavedKey) => key === 'printed_qr' || key === 'entry_code' || key === 'nfc'
 
 function toInput(settings: CheckinSettings): CheckinSettingsInput {
   return {
     printed_qr: settings.printed_qr,
+    nfc: settings.nfc,
     entry_code: settings.entry_code,
     radius_m: settings.radius_m,
     flash_booking: settings.flash_booking,
@@ -86,15 +86,13 @@ function Methods({ slug, facilityId, facilitySlug, token, initial }: Props & { i
   const [status, setStatus] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   // which print gets a new token or code: the ones already printed stop working
-  const [rotateOpen, setRotateOpen] = useState<'printedQr' | 'entryCode' | null>(null)
+  const [rotateOpen, setRotateOpen] = useState<'printedQr' | 'entryCode' | 'nfc' | null>(null)
   const [rotating, setRotating] = useState(false)
 
-  // the ways that are only a preview: switched locally, never saved
-  const [preview, setPreview] = useState<Record<'nfc', boolean>>({ nfc: false })
-  const [tagType, setTagType] = useState('signed')
+  const [copied, setCopied] = useState(false)
 
   const dirty = JSON.stringify(draft) !== JSON.stringify(toInput(saved))
-  const needsLocation = draft.printed_qr || draft.entry_code
+  const needsLocation = draft.printed_qr || draft.entry_code || draft.nfc
 
   const set = <K extends keyof CheckinSettingsInput>(key: K, value: CheckinSettingsInput[K]) => setDraft((d) => ({ ...d, [key]: value }))
 
@@ -113,14 +111,17 @@ function Methods({ slug, facilityId, facilitySlug, token, initial }: Props & { i
     }
   }
 
-  const rotate = async (which: 'printedQr' | 'entryCode') => {
+  const rotate = async (which: 'printedQr' | 'entryCode' | 'nfc') => {
     setRotating(true)
     setError(null)
     try {
       const updated =
         which === 'printedQr'
           ? await api.council.rotateCheckinQr(token, slug, facilityId)
-          : await api.council.rotateCheckinCode(token, slug, facilityId)
+          : which === 'nfc'
+            ? await api.council.rotateCheckinNfc(token, slug, facilityId)
+            : await api.council.rotateCheckinCode(token, slug, facilityId)
+      setCopied(false)
       setSaved(updated)
       setStatus(t(`admin:checkin.${which}.rotated`))
     } catch (e) {
@@ -132,9 +133,8 @@ function Methods({ slug, facilityId, facilitySlug, token, initial }: Props & { i
   }
 
   const printBase = `/${slug}/admin/facilities/${facilityId}/imprimir`
-  const isOn = (key: Method, saved?: SavedKey) => (saved ? draft[saved] : preview[key as keyof typeof preview])
-  const toggle = (key: Method, on: boolean, savedKey?: SavedKey) =>
-    savedKey ? set(savedKey, on) : setPreview((p) => ({ ...p, [key]: on }))
+  const isOn = (_key: Method, saved?: SavedKey) => (saved ? draft[saved] : false)
+  const toggle = (_key: Method, on: boolean, savedKey?: SavedKey) => savedKey && set(savedKey, on)
 
   const settings: Record<Method, ReactNode> = {
     reader: <CheckinDevices nested slug={slug} facilityId={facilityId} token={token} />,
@@ -195,19 +195,30 @@ function Methods({ slug, facilityId, facilitySlug, token, initial }: Props & { i
       </>
     ),
     nfc: (
-      <div className="grid gap-2 sm:max-w-sm">
-        <Label htmlFor="ci-tag">{t('admin:checkin.nfc.tag')}</Label>
-        <Select value={tagType} onValueChange={setTagType}>
-          <SelectTrigger id="ci-tag" className="w-full">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="signed">{t('admin:checkin.nfc.signed')}</SelectItem>
-            <SelectItem value="plain">{t('admin:checkin.nfc.plain')}</SelectItem>
-          </SelectContent>
-        </Select>
-        <p className="text-sm text-muted-foreground">{tagType === 'signed' ? t('admin:checkin.nfc.signedHelp') : t('admin:checkin.nfc.plainHelp')}</p>
-      </div>
+      <>
+        <p className="text-sm text-muted-foreground">{t('admin:checkin.nfc.write')}</p>
+        {saved.nfc ? (
+          <div className="grid gap-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <Input readOnly value={nfcUrl(slug, facilitySlug, saved.nfc_token)} aria-label={t('admin:checkin.nfc.addressLabel')} className="font-mono text-xs sm:max-w-md" />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => void navigator.clipboard.writeText(nfcUrl(slug, facilitySlug, saved.nfc_token)).then(() => setCopied(true))}
+              >
+                {copied ? t('admin:checkin.nfc.copied') : t('admin:checkin.nfc.copy')}
+              </Button>
+              <Button type="button" variant="ghost" onClick={() => setRotateOpen('nfc')}>
+                <RefreshCw aria-hidden />
+                {t('admin:checkin.nfc.newTag')}
+              </Button>
+            </div>
+            <p className="text-sm text-muted-foreground">{t('admin:checkin.nfc.plainHelp')}</p>
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">{t('admin:checkin.nfc.saveToWrite')}</p>
+        )}
+      </>
     ),
     staff: (
       <>

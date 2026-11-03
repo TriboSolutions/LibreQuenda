@@ -1,5 +1,10 @@
 import type { EntranceInput } from '@/lib/api'
 
+/** The address written on the facility's NFC tag: the same entrance page, with the tag's own token. */
+export function nfcUrl(slug: string, facilitySlug: string, nfcToken: string) {
+  return `${window.location.origin}/${slug}/${facilitySlug}/entrada?n=${nfcToken}`
+}
+
 /** The address the printed QR opens: the facility's entrance page, with the token that makes it work. */
 export function entranceUrl(slug: string, facilitySlug: string, qrToken: string) {
   return `${window.location.origin}/${slug}/${facilitySlug}/entrada?c=${qrToken}`

@@ -143,6 +143,25 @@ RETURNING
     q.user_id,
     u.full_name;
 
+-- name: SetUserQrTokenBooking :exec
+-- The flash booking a reader made with a personal QR, for the phone showing it.
+UPDATE user_qr_token
+SET
+    booking_id = sqlc.arg('booking_id')
+WHERE
+    token = sqlc.arg('token');
+
+-- name: GetUserQrTokenUse :one
+-- Whether the person's personal QR was used at a reader, and the booking it made; no row once gone.
+SELECT
+    used_at,
+    booking_id
+FROM
+    user_qr_token
+WHERE
+    token = sqlc.arg('token')
+    AND user_id = sqlc.arg('user_id');
+
 -- name: ReleaseUserQrToken :exec
 -- Gives a scanned personal QR back when the reader refused it, so it can be shown again.
 UPDATE user_qr_token
@@ -185,6 +204,8 @@ ON CONFLICT (facility_id) DO NOTHING;
 SELECT
     c.printed_qr,
     c.qr_token,
+    c.nfc,
+    c.nfc_token,
     c.entry_code,
     c.code_secret,
     c.radius_m,
@@ -204,6 +225,7 @@ WHERE
 UPDATE facility_checkin
 SET
     printed_qr    = sqlc.arg('printed_qr'),
+    nfc           = sqlc.arg('nfc'),
     entry_code    = sqlc.arg('entry_code'),
     radius_m      = sqlc.arg('radius_m'),
     flash_booking = sqlc.arg('flash_booking'),
@@ -216,6 +238,8 @@ WHERE
 RETURNING
     printed_qr,
     qr_token,
+    nfc,
+    nfc_token,
     entry_code,
     code_secret,
     radius_m,
@@ -235,6 +259,18 @@ WHERE
     facility_id = sqlc.arg('facility_id')
 RETURNING
     qr_token;
+
+-- name: RotateFacilityNfcToken :one
+-- Row-level security: runs as the facility's council (db.WithTenant). The NFC
+-- tags already written stop working.
+UPDATE facility_checkin
+SET
+    nfc_token  = gen_random_uuid(),
+    updated_at = NOW()
+WHERE
+    facility_id = sqlc.arg('facility_id')
+RETURNING
+    nfc_token;
 
 -- name: RotateFacilityCodeSecret :one
 -- Row-level security: runs as the facility's council (db.WithTenant). The code
@@ -271,6 +307,8 @@ SELECT
     t.timezone,
     COALESCE(c.printed_qr, FALSE)::BOOLEAN    AS printed_qr,
     c.qr_token,
+    COALESCE(c.nfc, FALSE)::BOOLEAN           AS nfc,
+    c.nfc_token,
     COALESCE(c.entry_code, FALSE)::BOOLEAN    AS entry_code,
     c.code_secret,
     COALESCE(c.radius_m, 100)::INT            AS radius_m,
@@ -287,7 +325,7 @@ WHERE
 
 -- name: ListNearbyFacilities :many
 -- What the phone can find by its location: the facilities that book with their
--- entry code, have a QR on the door (checked before the camera opens), or have
+-- entry code, have a QR or an NFC tag on the door, or have
 -- staff confirmation (someone to ask). The phone's
 -- distance to each is checked in the API.
 SELECT
@@ -300,6 +338,7 @@ SELECT
     c.radius_m,
     (c.entry_code AND c.flash_booking)::BOOLEAN AS entry_code,
     c.printed_qr,
+    c.nfc,
     c.staff_confirm,
     c.staff_contacts,
     -- who to ask without staff contacts: the facility's, else the council's
@@ -312,7 +351,7 @@ FROM
     JOIN tenant t ON t.id = f.tenant_id
     JOIN facility_checkin c ON c.facility_id = f.id
 WHERE
-    ((c.entry_code AND c.flash_booking) OR c.printed_qr OR c.staff_confirm)
+    ((c.entry_code AND c.flash_booking) OR c.printed_qr OR c.nfc OR c.staff_confirm)
     AND f.latitude IS NOT NULL
     AND f.longitude IS NOT NULL
     AND f.is_active = TRUE

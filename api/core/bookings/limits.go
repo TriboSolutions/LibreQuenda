@@ -131,8 +131,9 @@ type councilQueries interface {
 // that locks the person's bookings (LockUserBookings), so two requests at once
 // cannot both pass:
 //   - one council at a time (a platform setting, on by default): while they hold
-//     an upcoming booking, own or joined, in another council, they can neither
-//     book nor join here;
+//     an upcoming booking of their own in another council, they cannot book here.
+//     Joining someone's game is not booking: it neither counts nor is refused by
+//     this rule (only by overlapping their own times, checked before);
 //   - own: the council's cap on their own upcoming bookings across its facilities.
 //     Joining someone's booking does not count towards it, like the facility's cap.
 //
@@ -144,7 +145,7 @@ func CouncilLimits(ctx context.Context, queries councilQueries, userId, tenantId
 	if err != nil {
 		return failed
 	}
-	if policy.OneCouncilPerAccount {
+	if own && policy.OneCouncilPerAccount {
 		var other, otherErr = queries.GetUserBookingInOtherCouncil(ctx, model.GetUserBookingInOtherCouncilParams{TenantID: tenantId, UserID: user})
 		switch {
 		case otherErr == nil:

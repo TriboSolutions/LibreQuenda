@@ -63,6 +63,7 @@ func (s *entranceService) Get(ctx context.Context, session auth.Session, tenantS
 		TenantSlug:   facility.TenantSlug,
 		Timezone:     facility.Timezone,
 		PrintedQr:    facility.PrintedQr && facility.Latitude.Valid,
+		Nfc:          facility.Nfc && facility.Latitude.Valid,
 		EntryCode:    facility.EntryCode && facility.Latitude.Valid,
 		RadiusM:      int(facility.RadiusM),
 		FlashBooking: facility.FlashBooking,
@@ -84,7 +85,7 @@ func (s *entranceService) Get(ctx context.Context, session auth.Session, tenantS
 	return response, nil
 }
 
-// CheckIn: the phone proves it is at the door (printed QR or entry code, and its
+// CheckIn: the phone proves it is at the door (printed QR, NFC tag or entry code, and its
 // location); then the person's booking goes in, or, when asked, a free turn is
 // booked on the spot. Both through the reader's own check-in.
 func (s *entranceService) CheckIn(ctx context.Context, session auth.Session, tenantSlug, facilitySlug string, input CheckinInput) (*CheckinResultDto, *shared.ErrorResponse) {
@@ -106,8 +107,11 @@ func (s *entranceService) CheckIn(ctx context.Context, session auth.Session, ten
 		return nil, err
 	}
 	var entry = reader.Entry{Method: model.CheckinMethodEntryCode}
-	if input.QrToken != "" {
+	switch {
+	case input.QrToken != "":
 		entry.Method = model.CheckinMethodPrintedQr
+	case input.NfcToken != "":
+		entry.Method = model.CheckinMethodNfc
 	}
 	var result *reader.CheckinResultDto
 	switch {
@@ -121,7 +125,16 @@ func (s *entranceService) CheckIn(ctx context.Context, session auth.Session, ten
 	if err != nil {
 		return nil, err
 	}
-	return &CheckinResultDto{CheckinResultDto: *result}, nil
+	var response = &CheckinResultDto{CheckinResultDto: *result}
+	// in: which booking, so the phone can open it (the one booked on the spot included)
+	if result.Granted {
+		if token, found, _ = s.bookingToken(ctx, userId, facility.ID); found {
+			if booking, getErr := model.New(s.db).GetBookingByCheckinToken(ctx, token); getErr == nil {
+				response.BookingId = booking.ID.String()
+			}
+		}
+	}
+	return response, nil
 }
 
 // prove checks the proof of being at the door; "" when it holds, else the result to answer.
@@ -133,6 +146,15 @@ func prove(facility model.GetFacilityEntranceRow, input CheckinInput) string {
 		}
 		var token, err = uuid.Parse(input.QrToken)
 		if err != nil || !facility.QrToken.Valid || token != facility.QrToken.UUID {
+			return ResultInvalidQr
+		}
+	case input.NfcToken != "":
+		if !facility.Nfc {
+			return ResultMethodOff
+		}
+		// a tag written with an old address (a new one was made) is like an old print
+		var token, err = uuid.Parse(input.NfcToken)
+		if err != nil || !facility.NfcToken.Valid || token != facility.NfcToken.UUID {
 			return ResultInvalidQr
 		}
 	case input.Code != "":
@@ -214,6 +236,7 @@ func nearby(rows []model.ListNearbyFacilitiesRow, position checkin.Position) []N
 			TenantSlug:    f.row.TenantSlug,
 			EntryCode:     f.row.EntryCode,
 			PrintedQr:     f.row.PrintedQr,
+			Nfc:           f.row.Nfc,
 			RadiusM:       int(f.row.RadiusM),
 			StaffContacts: staffContacts(f.row),
 		})

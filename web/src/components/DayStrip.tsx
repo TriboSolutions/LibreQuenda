@@ -60,7 +60,7 @@ type Props = {
 function outsideHours(facility: Facility, axis: Axis) {
   const gaps: { start: number; end: number }[] = []
   let from = axis.start
-  for (const w of [...facility.windows].sort((a, b) => a.opens_at.localeCompare(b.opens_at))) {
+  for (const w of facility.windows) { // the API sends them by opening time
     const opens = clockToMinutes(w.opens_at)
     if (opens > from) gaps.push({ start: from, end: opens })
     from = Math.max(from, clockToMinutes(w.closes_at) || 24 * 60)

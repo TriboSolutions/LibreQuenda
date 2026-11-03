@@ -1,0 +1,42 @@
+{
+  "group": "Informació legal",
+  "updated": "Última actualització: 3 de novembre de 2026",
+  "terms": {
+    "title": "Condicions d'ús",
+    "sub": "Les normes per fer servir el servei i reservar",
+    "intro": "Aquestes condicions expliquen com fer servir {{app}} per reservar instal·lacions esportives. En crear un compte o reservar les acceptes.",
+    "sections": [
+      { "title": "Què és {{app}}", "body": ["{{app}} és un servei per consultar i reservar instal·lacions esportives públiques dels concellos que el fan servir. Cada concello gestiona les seves instal·lacions, els seus horaris i les seves normes.", "Està fet amb LibreQuenda, programari lliure: qualsevol pot veure'n el codi."] },
+      { "title": "El teu compte", "body": ["Per reservar necessites un compte personal amb el teu nom, la teva data de naixement i un correu confirmat. Les dades han de ser certes i el compte és només teu: no el comparteixis.", "Pots eliminar el compte quan vulguis des del teu perfil."] },
+      { "title": "Reserves", "body": ["Cada instal·lació té les seves normes d'ús, que has de llegir i acceptar abans de reservar, i pot limitar quantes reserves tens alhora, amb quanta antelació reserves i fins quan pots cancel·lar.", "Si reserves en públic, altres persones es poden unir a la teva partida. Pots sortir d'una partida a la qual et vas unir fins a 15 minuts abans que comenci."] },
+      { "title": "Registrar l'entrada", "body": ["En arribar, registra la teva entrada amb la manera que admeti la instal·lació: el lector QR, el codi o el QR de la porta, l'etiqueta NFC o el personal. Si no ho fas, la reserva compta com a absència, i acumular absències pot bloquejar les noves reserves durant un temps."] },
+      { "title": "Bon ús", "body": ["No reservis per revendre ni en nom d'una altra persona sense el seu permís, no comparteixis el teu QR personal ni els codis d'entrada, cuida les instal·lacions i avisa de les incidències que vegis.", "El concello pot cancel·lar reserves per tancaments, obres o mal ús; en aquest cas t'avisarem."] },
+      { "title": "El servei", "body": ["Fem el possible perquè el servei funcioni sempre, però hi pot haver interrupcions per manteniment o avaries. La disponibilitat de les instal·lacions depèn de cada concello."] },
+      { "title": "Canvis", "body": ["Aquestes condicions poden canviar. Si ho fan de manera important, t'avisarem a l'app abans que s'apliquin."] },
+      { "title": "Dubtes", "body": ["Si tens dubtes, contacta amb el suport (al menú) o amb el concello de la instal·lació."] }
+    ]
+  },
+  "privacy": {
+    "title": "Política de privacitat",
+    "sub": "Quines dades guardem, per a què i els teus drets",
+    "intro": "Aquesta política explica quines dades personals tracta {{app}}, per a què i quins drets tens, segons el Reglament general de protecció de dades (RGPD) i la Llei orgànica 3/2018.",
+    "sections": [
+      { "title": "Qui n'és responsable", "body": ["L'entitat que gestiona aquesta instal·lació de {{app}} és la responsable del teu compte. Cada concello és responsable de les reserves a les seves instal·lacions."] },
+      { "title": "Quines dades tractem", "body": ["Compte: el teu nom i el teu correu, gestionats pel servei d'inici de sessió.", "Perfil: data de naixement, telèfon, foto (opcional) i idioma.", "Ús: les teves reserves, les partides a què t'uneixes, els registres d'entrada, les absències, les incidències que comuniques, els avisos i les teves preferències.", "Ubicació: només quan la demanes, per mostrar distàncies o comprovar que ets a la instal·lació en registrar l'entrada. Es comprova al moment i mai no es desa."] },
+      { "title": "Per a què", "body": ["Per gestionar les teves reserves i comprovar els requisits de cada instal·lació (com l'edat mínima), registrar la teva entrada, enviar-te avisos i recordatoris, i mostrar-te «Per a tu» a partir de les teves reserves.", "Els concellos veuen estadístiques d'ús agregades, sense dades de persones concretes."] },
+      { "title": "Base legal", "body": ["Prestar-te el servei que demanes (art. 6.1.b RGPD) i la gestió pública de les instal·lacions municipals (art. 6.1.e RGPD). L'opcional, com la foto, els correus o «Per a tu», depèn de tu i ho pots canviar a les preferències."] },
+      { "title": "Qui les veu", "body": ["El personal del concello on reserves veu el teu nom i les teves reserves a les seves instal·lacions. A les partides públiques, les altres persones veuen el teu nom. Cap concello no veu les reserves d'un altre.", "No venem ni cedim les teves dades, no les fem servir per a publicitat i no hi ha rastrejadors."] },
+      { "title": "Quant de temps", "body": ["Mentre tinguis compte. Si l'elimines, s'esborren les teves dades personals, les reserves futures es cancel·len i les passades queden sense ningú associat, només per a les estadístiques.", "El registre del que fan els administradors es desa fins a dos anys."] },
+      { "title": "Els teus drets", "body": ["Pots accedir a les teves dades, corregir-les, eliminar-les, descarregar-les (al teu perfil, «Les teves dades»), oposar-te al seu tractament o limitar-lo. Escriu al suport per a qualsevol d'aquests drets.", "Si creus que no les tractem bé, pots reclamar davant l'Agència Espanyola de Protecció de Dades (www.aepd.es)."] },
+      { "title": "Seguretat", "body": ["Les connexions van xifrades, cada persona només accedeix al que li correspon i els administradors entren amb verificació en dos passos."] }
+    ]
+  },
+  "support": {
+    "group": "Suport",
+    "title": "Ajuda i suport",
+    "sub": "Si no entens alguna cosa de l'app",
+    "help": "Tens dubtes sobre l'app o alguna cosa no funciona? Escriu-nos o truca'ns.",
+    "email": "Escriure un correu",
+    "phone": "Trucar"
+  }
+}

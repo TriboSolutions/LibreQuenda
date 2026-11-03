@@ -3,7 +3,7 @@ import type { Branding } from '@/lib/api'
 
 export const DEFAULT_APP_NAME = 'LibreQuenda'
 
-export const DEFAULT_BRANDING: Branding = { name: DEFAULT_APP_NAME, custom_name: '', logo_ref: '', logo_url: '' }
+export const DEFAULT_BRANDING: Branding = { name: DEFAULT_APP_NAME, custom_name: '', logo_ref: '', logo_url: '', support_email: '', support_phone: '' }
 
 export type BrandingState = { branding: Branding; reload: () => void }
 

@@ -36,7 +36,7 @@ func (h *platformHandler) superadmin(w http.ResponseWriter, r *http.Request) (uu
 	var session, _ = auth.SessionFromContext(r.Context())
 	var userId, userErr = me.CurrentUserId(r.Context(), h.db, session)
 	if userErr != nil {
-		helpers.SendI18NErrorResponse(w, r, userErr.Code, userErr.Message)
+		helpers.SendI18NErrorResponse(w, r, userErr.Code, userErr.Message, userErr.Args...)
 		return uuid.Nil, false
 	}
 	var allowed, err = model.New(h.db).IsPlatformAdmin(r.Context(), userId)
@@ -61,7 +61,7 @@ func (h *platformHandler) councilAdmin(w http.ResponseWriter, r *http.Request, s
 	var session, _ = auth.SessionFromContext(r.Context())
 	var userId, userErr = me.CurrentUserId(r.Context(), h.db, session)
 	if userErr != nil {
-		helpers.SendI18NErrorResponse(w, r, userErr.Code, userErr.Message)
+		helpers.SendI18NErrorResponse(w, r, userErr.Code, userErr.Message, userErr.Args...)
 		return uuid.Nil, false, false
 	}
 	var queries = model.New(h.db)
@@ -121,7 +121,7 @@ func pathUUID(w http.ResponseWriter, r *http.Request, name string) (uuid.UUID, b
 
 func send(w http.ResponseWriter, r *http.Request, data any, err *shared.ErrorResponse) {
 	if err != nil {
-		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
 		return
 	}
 	if data == nil {

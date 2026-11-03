@@ -57,6 +57,8 @@ type CheckinResultDto struct {
 	Result  string             `json:"result"`
 	Reason  string             `json:"reason,omitempty"` // not_booked only: why, e.g. "no_turn_soon", "slot_booked", "use_booking_qr", "flash_off"
 	Booking *CheckinBookingDto `json:"booking"`          // nil for an unknown or cancelled booking
+	// the booking made on the spot, for the person's own phone: never sent to the reader
+	BookingId string `json:"-"`
 }
 
 type CheckinBookingDto struct {

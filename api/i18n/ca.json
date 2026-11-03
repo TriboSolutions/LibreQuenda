@@ -109,7 +109,7 @@
     "invite_failed": "No s’ha pogut actualitzar la invitació. Torna-ho a provar.",
     "participant_not_found": "Aquesta persona ja no és a la reserva.",
     "leave_failed": "No s’ha pogut sortir de la reserva. Torna-ho a provar.",
-    "leave_too_late": "La reserva ja ha començat.",
+    "leave_too_late": "Ja no pots sortir: queden menys de 15 minuts perquè comenci la reserva.",
     "invalid_guest_name": "Escriu un nom de fins a 80 caràcters.",
     "invalid_guest_age": "L’edat ha de ser entre 1 i 120.",
     "guest_age_restricted": "Aquesta instal·lació té una edat mínima que la persona convidada no compleix.",

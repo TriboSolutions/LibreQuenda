@@ -50,6 +50,8 @@ services:
 
       # First superadministrator (creates councils); defaults to the Zitadel admin
       SUPERADMIN_EMAIL: ${SUPERADMIN_EMAIL:-${ZITADEL_ADMIN_EMAIL}}
+      SUPPORT_EMAIL: ${SUPPORT_EMAIL:-}
+      SUPPORT_PHONE: ${SUPPORT_PHONE:-}
 
       # Image storage (Garage, S3 protocol)
       STORAGE_ENDPOINT: storage:3900

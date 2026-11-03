@@ -25,7 +25,7 @@ type Props = {
 }
 
 // the same order as the flash booking's tabs
-const ORDER: CheckinMethod[] = ['reader', 'entry_code', 'printed_qr', 'staff']
+const ORDER: CheckinMethod[] = ['reader', 'entry_code', 'printed_qr', 'nfc', 'staff']
 
 /** Every way to check in the booking's facility takes, one tab each, like the flash booking. */
 export function CheckinDialog({ booking, token, timeZone, today, onClose, onCheckedIn }: Props) {
@@ -98,6 +98,13 @@ export function CheckinDialog({ booking, token, timeZone, today, onClose, onChec
         <p className="text-muted-foreground">{t('checkin.printed_qr.help')}</p>
         <DistanceNotice metres={booking.checkin_radius_m} />
         <DoorQrScanner book={false} facility={{ slug: booking.tenant_slug, facility: booking.facility_slug }} onCheckedIn={onCheckedIn} />
+      </div>
+    ),
+    // the tag opens the entrance page, which checks in (the phone's location is checked there)
+    nfc: (
+      <div className="grid gap-4">
+        <p className="text-muted-foreground">{t('checkin.nfc.help')}</p>
+        <DistanceNotice metres={booking.checkin_radius_m} />
       </div>
     ),
     reader: (

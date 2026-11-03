@@ -41,7 +41,7 @@ func TestCouncilLimits(t *testing.T) {
 	}{
 		{"nothing elsewhere, no cap", fakeCouncil{oneCouncil: true}, true, ""},
 		{"bookings in another council", fakeCouncil{oneCouncil: true, other: "Concello de Lugo"}, true, "errors.other_council_booking"},
-		{"joining is one council too", fakeCouncil{oneCouncil: true, other: "Concello de Lugo"}, false, "errors.other_council_booking"},
+		{"joining someone's game is not held to one council", fakeCouncil{oneCouncil: true, other: "Concello de Lugo"}, false, ""},
 		{"the platform allows several councils", fakeCouncil{oneCouncil: false, other: "Concello de Lugo"}, true, ""},
 		{"under the council's cap", fakeCouncil{cap: 3, upcoming: 2}, true, ""},
 		{"at the council's cap", fakeCouncil{cap: 3, upcoming: 3}, true, "errors.council_limit_reached"},

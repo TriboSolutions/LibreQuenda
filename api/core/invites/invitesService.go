@@ -319,7 +319,8 @@ func (s *invitesService) Leave(ctx context.Context, userId uuid.UUID, bookingId 
 	if err != nil {
 		return failed("errors.leave_failed")
 	}
-	if booking.Status == model.BookingStatusConfirmed && !time.Now().Before(booking.StartsAt) {
+	// from 15 minutes before it starts the spot is kept (bookings.LeaveCutoff)
+	if booking.Status == model.BookingStatusConfirmed && !bookings.CanLeaveAt(booking.Status, booking.StartsAt, time.Now()) {
 		return &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.leave_too_late"}
 	}
 	if _, err = queries.LeaveBooking(ctx, model.LeaveBookingParams{BookingID: bookingId, UserID: user}); err != nil {

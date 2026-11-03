@@ -33,7 +33,7 @@ func (h *invitesHandler) currentUser(w http.ResponseWriter, r *http.Request) (uu
 	var session, _ = auth.SessionFromContext(r.Context())
 	var userId, err = me.CurrentUserId(r.Context(), h.db, session)
 	if err != nil {
-		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
 		return uuid.Nil, false
 	}
 	return userId, true
@@ -61,7 +61,7 @@ func (h *invitesHandler) GetInvite(w http.ResponseWriter, r *http.Request) {
 	}
 	var response, err = GetInvitesService(h.db).GetInvite(r.Context(), userId, bookingId)
 	if err != nil {
-		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
 		return
 	}
 	helpers.SendSuccessResponse(w, response)
@@ -78,7 +78,7 @@ func (h *invitesHandler) ShareInvite(w http.ResponseWriter, r *http.Request) {
 	}
 	var response, err = GetInvitesService(h.db).ShareInvite(r.Context(), userId, bookingId)
 	if err != nil {
-		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
 		return
 	}
 	helpers.SendSuccessResponse(w, response)
@@ -98,7 +98,7 @@ func (h *invitesHandler) RemoveParticipant(w http.ResponseWriter, r *http.Reques
 		return
 	}
 	if err := GetInvitesService(h.db).RemoveParticipant(r.Context(), userId, bookingId, participantId); err != nil {
-		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
 		return
 	}
 	helpers.SendNoContentResponse(w)
@@ -116,7 +116,7 @@ func (h *invitesHandler) Leave(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := GetInvitesService(h.db).Leave(r.Context(), userId, bookingId); err != nil {
-		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
 		return
 	}
 	helpers.SendNoContentResponse(w)
@@ -132,7 +132,7 @@ func (h *invitesHandler) JoinAsUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := GetInvitesService(h.db).JoinAsUser(r.Context(), userId, token); err != nil {
-		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
 		return
 	}
 	helpers.SendNoContentResponse(w)
@@ -150,7 +150,7 @@ func (h *invitesHandler) GetPublicInvite(w http.ResponseWriter, r *http.Request)
 	}
 	var response, err = GetInvitesService(h.db).GetPublicInvite(r.Context(), token)
 	if err != nil {
-		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
 		return
 	}
 	helpers.SendSuccessResponse(w, response)
@@ -174,7 +174,7 @@ func (h *invitesHandler) JoinAsGuest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := GetInvitesService(h.db).JoinAsGuest(r.Context(), token, body); err != nil {
-		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
 		return
 	}
 	helpers.SendNoContentResponse(w)
@@ -191,7 +191,7 @@ func (h *invitesHandler) JoinPublic(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := GetInvitesService(h.db).JoinPublic(r.Context(), userId, bookingId); err != nil {
-		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
 		return
 	}
 	helpers.SendNoContentResponse(w)
@@ -216,7 +216,7 @@ func (h *invitesHandler) SetPublic(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := GetInvitesService(h.db).SetPublic(r.Context(), userId, bookingId, input.Public, input.Description); err != nil {
-		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
 		return
 	}
 	helpers.SendNoContentResponse(w)

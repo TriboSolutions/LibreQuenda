@@ -9,3 +9,10 @@ type PersonalQrDto struct {
 	ExpiresAt      time.Time `json:"expires_at"`
 	RefreshSeconds int       `json:"refresh_seconds"`
 }
+
+// PersonalQrStatusDto: whether a reader used the QR (a refused try gives it back unused), and
+// the booking it made then. Unknown or long gone, it is simply not used.
+type PersonalQrStatusDto struct {
+	Used      bool   `json:"used"`
+	BookingId string `json:"booking_id,omitempty"`
+}

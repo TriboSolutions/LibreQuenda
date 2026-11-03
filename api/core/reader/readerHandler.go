@@ -76,7 +76,7 @@ func (h *readerHandler) CheckIn(w http.ResponseWriter, r *http.Request) {
 	}
 	var response, err = GetReaderService(h.db).CheckIn(r.Context(), device, body.Code)
 	if err != nil {
-		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
 		return
 	}
 	helpers.SendSuccessResponse(w, response)

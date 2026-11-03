@@ -29,7 +29,7 @@ func decodeInto(w http.ResponseWriter, r *http.Request, into any) bool {
 
 func reply(w http.ResponseWriter, r *http.Request, data any, err *shared.ErrorResponse) {
 	if err != nil {
-		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
 		return
 	}
 	if data == nil {

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- LibreQuenda mark (docs/brand/librequenda-icona-app.svg): a clock face crossed by a band.
+     The 200-unit mark is scaled into the adaptive icon's 66dp safe zone. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group android:translateX="21" android:translateY="21" android:scaleX="0.33" android:scaleY="0.33">
+        <path android:fillColor="#FFFFFF" android:pathData="M20,100a80,80 0,1 0,160 0a80,80 0,1 0,-160 0z" />
+        <group>
+            <clip-path android:pathData="M20,100a80,80 0,1 0,160 0a80,80 0,1 0,-160 0z" />
+            <group android:rotation="45" android:pivotX="100" android:pivotY="100">
+                <path android:fillColor="#0098D4" android:pathData="M-60,77h320v46h-320z" />
+            </group>
+        </group>
+        <path android:strokeColor="#0B2545" android:strokeWidth="7" android:strokeLineCap="round"
+            android:pathData="M100,34v12M154,100h12M100,154v12M34,100h12" />
+        <path android:strokeColor="#FFFFFF" android:strokeWidth="16"
+            android:pathData="M20,100a80,80 0,1 0,160 0a80,80 0,1 0,-160 0z" />
+    </group>
+</vector>

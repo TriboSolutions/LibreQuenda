@@ -59,8 +59,9 @@ export function ClosuresEditor({ slug, facilityId, token, timeZone, initial }: P
 
   const create = () =>
     attempt(async () => {
-      const { closure, cancelled } = await api.council.createClosure(token, slug, facilityId, form)
-      setClosures((list) => [...list, closure].sort((a, b) => a.starts_at.localeCompare(b.starts_at)))
+      // the API answers with the whole list, soonest first
+      const { closures: list, cancelled } = await api.council.createClosure(token, slug, facilityId, form)
+      setClosures(list)
       setFields(blank)
       setToConfirm(null)
       setNotice(cancelled > 0 ? t('admin:closures.saved', { count: cancelled }) : t('admin:closures.savedNone'))
