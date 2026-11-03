@@ -18,3 +18,29 @@ FROM tenant t WHERE t.slug = 'lalin';
 
 INSERT INTO audit_log (at, actor_role, action, target_type, target_label, summary)
 VALUES (NOW() - INTERVAL '6 days', 'system', 'tag.created', 'tag', 'Pádel', '"Pádel"');
+
+-- …and {EXTRA_AUDIT} more from the system over the last three months, across the councils
+SELECT setseed(0.37);
+INSERT INTO audit_log (at, actor_role, tenant_id, tenant_label, action, target_type, target_id, target_label, summary)
+SELECT NOW() - make_interval(mins => floor(x.ago_roll * 90 * 24 * 60)::INT), 'system', t.id, t.name, a.action, 'facility', f.id, f.name, a.summary
+FROM (
+    SELECT g, random() AS facility_roll, random() AS action_roll, random() AS ago_roll FROM generate_series(1, {EXTRA_AUDIT}) AS g
+) x
+CROSS JOIN LATERAL (SELECT id, tenant_id, name FROM facility ORDER BY id OFFSET floor(x.facility_roll * (SELECT count(*) FROM facility))::INT LIMIT 1) f
+JOIN tenant t ON t.id = f.tenant_id
+CROSS JOIN LATERAL (
+    SELECT * FROM (VALUES
+        ('facility.updated', 'usage_rules_text: changed'),
+        ('facility.updated', 'capacity: 4 → 6'),
+        ('facility.updated', 'description: changed'),
+        ('facility.schedule_changed', 'opening hours: 2 windows'),
+        ('closure.created', 'closed for maintenance; bookings cancelled: 0'),
+        ('closure.deleted', 'closure removed'),
+        ('booking_window.facility_changed', 'max_bookings_per_day: 0 → 1'),
+        ('checkin.code_renewed', 'entry code renewed'),
+        ('checkin.settings_changed', 'entry_code: false → true'),
+        ('issue.changed', 'status: new → in_progress'),
+        ('issue.changed', 'status: in_progress → solved')
+    ) AS d (action, summary)
+    OFFSET floor(x.action_roll * 11)::INT LIMIT 1
+) a;

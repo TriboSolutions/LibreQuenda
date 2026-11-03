@@ -3,16 +3,19 @@
 -- of each day is only known then). Seeded random numbers: the same pattern every time.
 --   more demand in the evening and at weekends, and growing over the period;
 --   ~7 % cancelled by the resident; a closure cancels what it catches (council);
---   ~88 % checked in where there is a QR reader; some bookings take invited people.
+--   ~88 % checked in where there is a QR reader; some bookings take invited people;
+--   a few booked by staff for someone without an account.
+-- Owners and invited people live in the facility's council (the local tester too).
 SELECT setseed(0.42);
 
 CREATE TEMP TABLE seed_history AS
 WITH people AS (
-    SELECT array_agg(id ORDER BY id) AS ids, count(*)::INT AS n FROM app_user WHERE idp_subject LIKE 'seed-%'
+    SELECT tenant_id, array_agg(user_id ORDER BY user_id) AS ids, count(*)::INT AS n FROM seed_user_home GROUP BY tenant_id
 ),
 turns AS (
     SELECT
         f.id AS facility_id,
+        f.tenant_id,
         f.slug,
         f.capacity,
         day::DATE AS day,
@@ -39,11 +42,12 @@ SELECT
     random() AS cancel_roll,
     random() AS checkin_roll,
     random() AS guest_roll,
+    random() AS staff_roll,
     p.ids AS people,
     p.n AS people_count,
     floor(random() * p.n)::INT AS owner_index
 FROM
-    turns t, people p;
+    turns t JOIN people p ON p.tenant_id = t.tenant_id;
 
 -- how likely each turn is to be booked
 ALTER TABLE seed_history ADD COLUMN demand FLOAT8;
@@ -65,11 +69,14 @@ UPDATE checkin_device SET created_at = ({LOCAL_DAY} - {HISTORY_DAYS} - 1)::TIMES
 UPDATE facility_checkin_period p SET starts_at = ({LOCAL_DAY} - {HISTORY_DAYS} - 1)::TIMESTAMP AT TIME ZONE '{TIMEZONE}'
 WHERE p.ends_at IS NULL AND EXISTS (SELECT 1 FROM checkin_device d WHERE d.facility_id = p.facility_id);
 
-INSERT INTO booking (id, facility_id, user_id, starts_at, ends_at, status, cancelled_by, cancelled_at, created_at, rules_accepted_at, checked_in_at, checked_in_device_id, checked_in_method)
+INSERT INTO booking (id, facility_id, user_id, channel, holder_name, starts_at, ends_at, status, cancelled_by, cancelled_at, created_at, rules_accepted_at, checked_in_at, checked_in_device_id, checked_in_method)
 SELECT
     h.booking_id,
     h.facility_id,
-    h.people[1 + h.owner_index],
+    CASE WHEN h.staff_roll >= 0.05 THEN h.people[1 + h.owner_index] END,
+    CASE WHEN h.staff_roll >= 0.05 THEN 'online' ELSE 'staff' END::booking_channel,
+    -- staff bookings for someone without an account: the name is forgotten 30 days after
+    CASE WHEN h.staff_roll < 0.05 AND h.ends_at > NOW() - INTERVAL '30 days' THEN 'Reserva por teléfono' END,
     h.starts_at,
     h.ends_at,
     CASE WHEN closed OR h.cancel_roll < 0.07 THEN 'cancelled' ELSE 'confirmed' END::booking_status,
@@ -111,6 +118,7 @@ FROM
     JOIN seed_history h ON h.booking_id = b.id
 WHERE
     b.status = 'confirmed'
+    AND b.user_id IS NOT NULL
     AND h.capacity > 1
     AND h.guest_roll < 0.4;
 

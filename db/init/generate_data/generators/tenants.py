@@ -1,11 +1,11 @@
-from config import COUNCILS, TIMEZONE
+from config import TIMEZONE
 
 from generators.base import stable_uuid
 
 
 def generate(context: dict) -> list:
     rows = []
-    for council in COUNCILS:
+    for council in context["seed"]["councils"]:
         tenant_id = stable_uuid("tenant", council["key"])
         context["tenants"][council["key"]] = tenant_id
         rows.append(
