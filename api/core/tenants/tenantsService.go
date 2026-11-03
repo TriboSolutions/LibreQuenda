@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/angelbarreiros/Penguin/router/helpers"
 	"librequenda/model"
 	"librequenda/rating"
 	"librequenda/schedule"
@@ -77,11 +78,12 @@ func (s *tenantsService) GetTenants(ctx context.Context) (*TenantsResponse, *sha
 // GetFacilities is every active facility of every active council, for the home
 // page's list and map. Like freeToday it reuses the day view, a few queries per
 // council; a council that fails to load is left out rather than failing the page.
-func (s *tenantsService) GetFacilities(ctx context.Context) (*FacilitiesResponse, *shared.ErrorResponse) {
+func (s *tenantsService) GetFacilities(ctx context.Context, near *Near, filters Filters, page helpers.PaginationParams) (*FacilitiesResponse, *shared.ErrorResponse) {
 	var tenants, err = model.New(s.db).ListTenants(ctx)
 	if err != nil {
 		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.tenants_load_failed"}
 	}
+	var names = s.tagNames(ctx)
 	var response = &FacilitiesResponse{Facilities: []FacilityCardDto{}}
 	for _, tenant := range tenants {
 		var day, _, _, dayErr = s.loadDay(ctx, tenant.Slug, "")
@@ -95,21 +97,86 @@ func (s *tenantsService) GetFacilities(ctx context.Context) (*FacilitiesResponse
 					free++
 				}
 			}
+			var km = distanceKm(near, f.Latitude, f.Longitude)
+			if !near.within(km) || !filters.matches(f.Name, day.Tenant.Slug, day.Tenant.Name, f.Sport, f.Tags, names) {
+				continue
+			}
 			response.Facilities = append(response.Facilities, FacilityCardDto{
-				Id:        f.Id,
-				Slug:      f.Slug,
-				Name:      f.Name,
-				Sport:     f.Sport,
-				Tags:      f.Tags,
-				ImageUrl:  f.ImageUrl,
-				Address:   f.Address,
-				Latitude:  f.Latitude,
-				Longitude: f.Longitude,
-				FreeToday: free,
-				Council:   day.Tenant,
+				Id:         f.Id,
+				Slug:       f.Slug,
+				Name:       f.Name,
+				Sport:      f.Sport,
+				Tags:       f.Tags,
+				ImageUrl:   f.ImageUrl,
+				Address:    f.Address,
+				Latitude:   f.Latitude,
+				Longitude:  f.Longitude,
+				FreeToday:  free,
+				Council:    day.Tenant,
+				DistanceKm: km,
 			})
 		}
 	}
+	if near != nil {
+		byDistance(response.Facilities, func(f FacilityCardDto) *float64 { return f.DistanceKm })
+	}
+	response.Pagination = shared.NewPageDto(page, int64(len(response.Facilities)))
+	response.Facilities = shared.Slice(response.Facilities, page)
+	return response, nil
+}
+
+// tagNames: every tag's name by slug, for searching words in them; empty if it fails.
+func (s *tenantsService) tagNames(ctx context.Context) map[string]string {
+	var names = map[string]string{}
+	if tags, err := model.New(s.db).ListTags(ctx); err == nil {
+		for _, tag := range tags {
+			names[tag.Slug] = tag.Name
+		}
+	}
+	return names
+}
+
+// GetFacilitiesDay: every council's facilities with their turns for one day
+// (?date=, today by default), nearest first with ?lat=&lon=. The search's list.
+func (s *tenantsService) GetFacilitiesDay(ctx context.Context, dateParam string, near *Near, filters Filters, page helpers.PaginationParams) (*FacilitiesDayResponse, *shared.ErrorResponse) {
+	var tenants, err = model.New(s.db).ListTenants(ctx)
+	if err != nil {
+		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.tenants_load_failed"}
+	}
+	var names = s.tagNames(ctx)
+	var now = time.Now()
+	var response = &FacilitiesDayResponse{Facilities: []FacilityAnyDayDto{}}
+	for _, tenant := range tenants {
+		var day, _, loc, dayErr = s.loadDay(ctx, tenant.Slug, dateParam)
+		if dayErr != nil {
+			if dayErr.Code == http.StatusBadRequest {
+				return nil, dayErr // a malformed date is the same for every council
+			}
+			continue // one council down still shows the others
+		}
+		response.Date = day.Date
+		for _, f := range day.Facilities {
+			var km = distanceKm(near, f.Latitude, f.Longitude)
+			if !near.within(km) || !filters.matches(f.Name, day.Tenant.Slug, day.Tenant.Name, f.Sport, f.Tags, names) {
+				continue
+			}
+			var kept, any = filters.narrowDay(f, loc, now)
+			if !any {
+				continue
+			}
+			f = kept
+			response.Facilities = append(response.Facilities, FacilityAnyDayDto{
+				FacilityDayDto: f,
+				Council:        day.Tenant,
+				DistanceKm:     km,
+			})
+		}
+	}
+	if near != nil {
+		byDistance(response.Facilities, func(f FacilityAnyDayDto) *float64 { return f.DistanceKm })
+	}
+	response.Pagination = shared.NewPageDto(page, int64(len(response.Facilities)))
+	response.Facilities = shared.Slice(response.Facilities, page)
 	return response, nil
 }
 

@@ -582,15 +582,22 @@
     },
     "nfc": {
       "name": "NFC tag",
-      "how": "The resident taps a sticker on the door with their phone, which opens the check-in page.",
+      "how": "The resident holds their phone to a sticker on the door, which opens the entrance page.",
       "door": "an NFC sticker",
       "cost": "a few euros per door",
-      "cheat": "low with a plain tag, high with a signed one",
-      "tag": "Kind of tag",
-      "signed": "Signs every tap (NTAG 424 DNA)",
-      "plain": "Plain tag",
-      "signedHelp": "Each tap carries a signature and a counter that the server checks, so a copied or recorded tap does not work.",
-      "plainHelp": "A plain tag only holds the address and can be copied: add the location check."
+      "cheat": "low: a copied tag only works at the door, as the location is always checked",
+      "write": "Write this address on an NFC tag (NTAG213 or similar) as a link, with a tag-writing app, and stick it on the door.",
+      "addressLabel": "NFC tag address",
+      "copy": "Copy",
+      "copied": "Copied",
+      "newTag": "New address",
+      "saveToWrite": "Save the changes to see the address to write.",
+      "plainHelp": "A plain tag only holds the address and can be copied: that is why the phone’s location is always checked.",
+      "newTitle": "Create a new address?",
+      "newBody": "The tags already written stop working at once. Write the new address on the doors’ tags.",
+      "newConfirm": "Create a new address",
+      "keep": "Keep this address",
+      "rotated": "New address ready. Write it on the doors’ tags."
     },
     "entryCode": {
       "name": "Entry code",
@@ -885,7 +892,7 @@
   "bookingPolicy": {
     "title": "Platform booking rules",
     "oneCouncil": "One council at a time per account",
-    "oneCouncilHelp": "With upcoming bookings in one council (own or joined), a person cannot book or join in another until they are over. No council sees another's bookings.",
+    "oneCouncilHelp": "With upcoming bookings of their own in one council, a person cannot book in another until they end. Joining someone else's game does not count: it is only checked against their own times. No council sees another's bookings.",
     "saved": "Saved."
   }
 }

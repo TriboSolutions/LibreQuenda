@@ -49,7 +49,7 @@ func (h *counciladminHandler) councilAdminUser(w http.ResponseWriter, r *http.Re
 	var session, _ = auth.SessionFromContext(r.Context())
 	var userId, userErr = me.CurrentUserId(r.Context(), h.db, session)
 	if userErr != nil {
-		helpers.SendI18NErrorResponse(w, r, userErr.Code, userErr.Message)
+		helpers.SendI18NErrorResponse(w, r, userErr.Code, userErr.Message, userErr.Args...)
 		return uuid.Nil, uuid.Nil, false
 	}
 	var queries = model.New(h.db)
@@ -83,7 +83,7 @@ func (h *counciladminHandler) anyAdmin(w http.ResponseWriter, r *http.Request) b
 	var session, _ = auth.SessionFromContext(r.Context())
 	var userId, userErr = me.CurrentUserId(r.Context(), h.db, session)
 	if userErr != nil {
-		helpers.SendI18NErrorResponse(w, r, userErr.Code, userErr.Message)
+		helpers.SendI18NErrorResponse(w, r, userErr.Code, userErr.Message, userErr.Args...)
 		return false
 	}
 	var queries = model.New(h.db)
@@ -399,7 +399,7 @@ func (h *counciladminHandler) ExportIndicators(w http.ResponseWriter, r *http.Re
 	var write, err = GetCounciladminService(h.db).ExportIndicators(r.Context(), tenantId, query, kind, csvFormat{excel: r.URL.Query().Get("excel") == "1"})
 	audit.Describe(r.Context(), "kind: %s", kind)
 	if err != nil {
-		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
 		return
 	}
 	var slug, _ = helpers.GetStringPathValue("slug", r)
@@ -421,7 +421,7 @@ func (h *counciladminHandler) ExportCouncil(w http.ResponseWriter, r *http.Reque
 	// with residents' personal data, as the GDPR asks to account for it
 	audit.Describe(r.Context(), "personal data: %v", personal)
 	if err != nil {
-		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
 		return
 	}
 	if personal {
@@ -493,7 +493,7 @@ func (h *counciladminHandler) TestSmtp(w http.ResponseWriter, r *http.Request) {
 	var session, _ = auth.SessionFromContext(r.Context())
 	var userId, userErr = me.CurrentUserId(r.Context(), h.db, session)
 	if userErr != nil {
-		helpers.SendI18NErrorResponse(w, r, userErr.Code, userErr.Message)
+		helpers.SendI18NErrorResponse(w, r, userErr.Code, userErr.Message, userErr.Args...)
 		return
 	}
 	var language = r.Header.Get("Accept-Language")

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"librequenda/auth"
+	"librequenda/shared"
 	"net/http"
 	"sync"
 
@@ -29,17 +30,43 @@ func TenantsHandler(db *sql.DB) *tenantsHandler {
 func (h *tenantsHandler) GetTenants(w http.ResponseWriter, r *http.Request) {
 	var response, err = GetTenantsService(h.db).GetTenants(r.Context())
 	if err != nil {
-		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
 		return
 	}
 	helpers.SendSuccessResponse(w, response)
 }
 
-// GetFacilities returns every active facility of every council, for the home page.
+// GetFacilities returns every active facility of every council, for the home
+// page; with ?lat=&lon=, nearest first and each one's distance_km.
 func (h *tenantsHandler) GetFacilities(w http.ResponseWriter, r *http.Request) {
-	var response, err = GetTenantsService(h.db).GetFacilities(r.Context())
+	var near, ok = nearFromQuery(r)
+	var filters, filtersOk = filtersFromQuery(r, false)
+	var page, pageErr = shared.Page(r)
+	if !ok || !filtersOk || pageErr != nil {
+		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_query_params")
+		return
+	}
+	var response, err = GetTenantsService(h.db).GetFacilities(r.Context(), near, filters, page)
 	if err != nil {
-		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
+		return
+	}
+	helpers.SendSuccessResponse(w, response)
+}
+
+// GetFacilitiesDay: GET /facilities/day?date=YYYY-MM-DD&lat=&lon=, every council's
+// facilities with their turns that day, nearest first when the position is given.
+func (h *tenantsHandler) GetFacilitiesDay(w http.ResponseWriter, r *http.Request) {
+	var near, ok = nearFromQuery(r)
+	var filters, filtersOk = filtersFromQuery(r, true)
+	var page, pageErr = shared.Page(r)
+	if !ok || !filtersOk || pageErr != nil {
+		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_query_params")
+		return
+	}
+	var response, err = GetTenantsService(h.db).GetFacilitiesDay(r.Context(), r.URL.Query().Get("date"), near, filters, page)
+	if err != nil {
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
 		return
 	}
 	helpers.SendSuccessResponse(w, response)
@@ -55,7 +82,7 @@ func (h *tenantsHandler) GetFacility(w http.ResponseWriter, r *http.Request) {
 	}
 	var response, err = GetTenantsService(h.db).GetFacilityPage(r.Context(), slug, facility, r.URL.Query().Get("date"))
 	if err != nil {
-		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
 		return
 	}
 	helpers.SendSuccessResponse(w, response)
@@ -72,7 +99,7 @@ func (h *tenantsHandler) GetDay(w http.ResponseWriter, r *http.Request) {
 
 	var response, err = GetTenantsService(h.db).GetDay(r.Context(), slug, r.URL.Query().Get("date"))
 	if err != nil {
-		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
 		return
 	}
 	helpers.SendSuccessResponse(w, response)
@@ -95,7 +122,7 @@ func (h *tenantsHandler) Recommendations(w http.ResponseWriter, r *http.Request)
 	}
 	var response, err = GetTenantsService(h.db).Recommendations(r.Context(), session, position)
 	if err != nil {
-		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
 		return
 	}
 	w.Header().Set("Cache-Control", "no-store")
@@ -112,7 +139,7 @@ func (h *tenantsHandler) Weather(w http.ResponseWriter, r *http.Request) {
 	}
 	var response, err = GetTenantsService(h.db).Weather(r.Context(), slug, facility, r.URL.Query().Get("date"))
 	if err != nil {
-		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
 		return
 	}
 	w.Header().Set("Cache-Control", "public, max-age=600")

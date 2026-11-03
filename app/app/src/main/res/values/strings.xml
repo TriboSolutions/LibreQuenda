@@ -1,0 +1,118 @@
+<resources>
+    <string name="app_name" translatable="false">LibreQuenda</string>
+    <plurals name="free_today">
+        <item quantity="one">%1$d quenda libre hoxe</item>
+        <item quantity="other">%1$d quendas libres hoxe</item>
+    </plurals>
+
+    <!-- Galician is the default, as on the web (fallbackLng: gl); values-es, values-ca and values-en
+         translate every string. Same words as web/src/locales. -->
+    <!-- sign-in -->
+    <string name="sign_in">Iniciar sesión</string>
+    <string name="sign_out">Pechar sesión</string>
+    <string name="create_account">Crear conta</string>
+    <string name="welcome_title">Reserva as instalacións deportivas do teu concello</string>
+    <string name="welcome_body">Pistas, pavillóns e piscinas municipais: mira as quendas libres e reserva desde o móbil.</string>
+    <string name="welcome_explore">Explorar sen conta</string>
+    <string name="sign_in_error">Non se puido iniciar sesión. Comproba a conexión e téntao de novo.</string>
+    <string name="sign_in_cancelled">Cancelaches o inicio de sesión.</string>
+    <string name="email_not_verified">Correo sen verificar</string>
+    <string name="home">Inicio de LibreQuenda</string>
+
+    <!-- main layout: top bar and bottom navigation -->
+    <string name="tab_home">Inicio</string>
+    <string name="tab_flash">Reserva flash</string>
+    <string name="menu">Menú</string>
+    <string name="back">Volver</string>
+    <string name="close">Pechar</string>
+    <string name="notifications">Avisos</string>
+    <plurals name="notifications_unread">
+        <item quantity="one">Avisos, %1$d sen ler</item>
+        <item quantity="other">Avisos, %1$d sen ler</item>
+    </plurals>
+    <string name="notifications_empty">Aínda non tes avisos.</string>
+    <string name="notifications_signed_out">Inicia sesión para ver os avisos das túas reservas.</string>
+    <string name="notification_booking_confirmed">Reserva confirmada</string>
+    <string name="notification_booking_reminder">A túa reserva comeza axiña</string>
+    <string name="notification_booking_cancelled">Reserva cancelada</string>
+    <string name="notification_booking_cancelled_by_council">O concello cancelou a túa reserva</string>
+    <string name="notification_issue_solved">Problema resolto</string>
+    <string name="notification_issue_rejected">Problema rexeitado</string>
+    <string name="notification_council_admin_granted">Agora xestionas %1$s</string>
+
+    <string name="flash_title">Reserva flash</string>
+    <string name="flash_body">Amosa o teu QR persoal no lector da porta: se a quenda que está a comezar está libre, resérvase no momento.</string>
+    <string name="flash_signed_out">Inicia sesión para usar a reserva flash.</string>
+
+    <!-- Home -->
+    <string name="for_you_title">Para ti</string>
+    <string name="for_you_help">Segundo as túas reservas e o que tes preto.</string>
+    <string name="for_you_help_signed_out">Instalacións con quendas libres hoxe.</string>
+    <string name="public_title">Partidas públicas</string>
+    <string name="public_help">Reservas doutras persoas con prazas libres: únete.</string>
+    <string name="free_at">Libre ás %1$s</string>
+    <string name="distance_km">%1$s km</string>
+    <plurals name="spots_left">
+        <item quantity="one">%1$d praza</item>
+        <item quantity="other">%1$d prazas</item>
+    </plurals>
+
+    <!-- language, in the menu -->
+    <string name="language_system">O do teléfono</string>
+    <string name="menu_account">A túa conta</string>
+    <string name="menu_profile_sub">Datos persoais, conta de acceso, calendario e os teus datos</string>
+    <string name="menu_preferences_sub">Idioma, correos e «Para ti»</string>
+    <string name="app_language">Idioma da aplicación</string>
+    <string name="app_language_help">Como che fala a aplicación neste teléfono.</string>
+    <string name="language_auto_app">O mesmo ca a aplicación</string>
+    <string name="export_saved">Descarga gardada.</string>
+    <string name="account_load_error">Non se puido cargar a conta.</string>
+    <string name="generic_error">Algo fallou. Téntao de novo.</string>
+    <string name="tab_bookings">Reservas</string>
+    <string name="greeting_named">Ola, %1$s. Con ganas de xogar?</string>
+    <string name="greeting">Con ganas de xogar?</string>
+    <string name="quick_book">Reservar</string>
+    <string name="quick_near">Preto de ti</string>
+    <string name="quick_now">Libre agora</string>
+    <string name="next_booking">A túa próxima reserva</string>
+    <string name="today">Hoxe</string>
+    <string name="tomorrow">Mañá</string>
+    <string name="filters">Filtros</string>
+    <string name="any_sport">Calquera deporte</string>
+    <string name="time_any">Todo o día</string>
+    <string name="time_morning">Mañá (ata as 14)</string>
+    <string name="time_afternoon">Tarde (14–20)</string>
+    <string name="time_evening">Noite (desde as 20)</string>
+    <string name="time_now">Desde agora</string>
+    <string name="apply">Aplicar</string>
+    <string name="clear_filters">Limpar</string>
+    <string name="facilities_title">Instalacións</string>
+    <string name="quick_join">Únete</string>
+    <string name="day">Día</string>
+    <string name="time_of_day">Hora</string>
+    <string name="show">Amosar</string>
+    <string name="free_turns">Quendas libres</string>
+    <string name="sport">Deporte</string>
+    <string name="channel_reminders">Recordatorios</string>
+    <string name="channel_reminders_help">Antes de cada reserva, co tempo xusto para chegar.</string>
+    <string name="channel_notices">Avisos</string>
+    <string name="channel_notices_help">Cancelacións, xente que se une ás túas partidas, problemas resoltos…</string>
+    <string name="reminder_text">Comeza ás %1$s. Lembra rexistrar a entrada.</string>
+    <string name="see_booking">Ver reserva</string>
+    <string name="in_progress">En curso</string>
+    <string name="checkin_now">Rexistra a túa entrada</string>
+    <string name="checkin_done">Xa rexistraches a entrada</string>
+    <string name="mark_read">Marcar como lidos</string>
+    <string name="loc_denied">Necesitamos a túa localización precisa para rexistrar a entrada. Permítea para LibreQuenda e téntao de novo.</string>
+    <string name="loc_unavailable">Non se puido obter a túa localización. Activa a localización do móbil e téntao de novo.</string>
+    <string name="open_camera">Abrir a cámara</string>
+    <string name="qr_not_entrance">Ese QR non é o da porta desta instalación.</string>
+    <string name="call">Chamar</string>
+    <string name="nfc_ready">Achega o móbil á etiqueta NFC da porta</string>
+    <string name="nfc_missing">Este móbil non ten NFC: usa outra forma de entrar.</string>
+    <string name="nfc_off">O NFC está desactivado.</string>
+    <string name="nfc_turn_on">Activar o NFC</string>
+    <string name="nfc_not_entrance">Esa etiqueta non é a da entrada desta instalación.</string>
+    <string name="nfc_flash_help">Con esta páxina aberta, achega o móbil á etiqueta NFC da porta: se a quenda está libre, resérvase e entras. Pedirémosche a localización, que se comproba e nunca se garda.</string>
+    <string name="nfc_checkin_help">Con esta páxina aberta, achega o móbil á etiqueta NFC da porta e rexistras a entrada. Pedirémosche a localización, que se comproba e nunca se garda.</string>
+</resources>

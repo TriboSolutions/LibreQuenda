@@ -65,6 +65,8 @@ const pages: { name: string; path: string; signedIn?: boolean }[] = [
   { name: 'platform admin', path: '/admin' },
   { name: 'entrance reader', path: '/lector' },
   { name: 'accessibility statement', path: '/accesibilidade', signedIn: false },
+  { name: 'terms of use', path: '/condicions', signedIn: false },
+  { name: 'privacy policy', path: '/privacidade', signedIn: false },
 ]
 
 for (const theme of ['light', 'dark'] as const) {
@@ -221,7 +223,8 @@ for (const theme of ['light', 'dark'] as const) {
       // turning a way on can show more switches (the location check), so until none is left off
       const off = page.getByRole('switch', { checked: false })
       while ((await off.count()) > 0) await off.first().click()
-      await expect(page.getByLabel('Tipo de etiqueta')).toBeVisible()
+      // the NFC tag's address to write shows once saved
+      await expect(page.getByText('Garda os cambios para ver o enderezo que hai que gravar.')).toBeVisible()
       await expectAccessible(page)
     })
 
@@ -328,7 +331,7 @@ test.describe('keyboard', () => {
     await nfc.focus()
     await page.keyboard.press('Space')
     await expect(nfc).toBeChecked()
-    await expect(page.getByLabel('Tipo de etiqueta')).toBeVisible()
+    await expect(page.getByText('Garda os cambios para ver o enderezo que hai que gravar.')).toBeVisible()
   })
 
   test('2.1.1 a flash booking with the entry code works with the keyboard alone', async ({ page, context }) => {
@@ -895,7 +898,7 @@ test.describe('structure', () => {
 
   test("an installation's own name replaces LibreQuenda's in the bar and the title, not in the footer", async ({ page }) => {
     const name = 'Reservas de Lugo'
-    await open(page, '/lugo/padel-1', { branding: { name, custom_name: name, logo_ref: '', logo_url: '' } })
+    await open(page, '/lugo/padel-1', { branding: { name, custom_name: name, logo_ref: '', logo_url: '', support_email: '', support_phone: '' } })
     await expect(page).toHaveTitle(`Pista de pádel 1 · Concello de Lugo · ${name}`)
     await expect(page.getByRole('link', { name: `${name}, inicio` })).toBeVisible()
     await expect(page.locator('footer')).toContainText('LibreQuenda é software libre')

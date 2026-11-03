@@ -501,7 +501,7 @@ const reader: Reader = {
 }
 
 // check-in from the resident's phone: both ways on, so the tab shows the QR and the code
-const checkinSettings = { printed_qr: true, qr_token: '9a1f6c2e-3b4d-4e5f-8a7b-1c2d3e4f5a6b', entry_code: true, code: '482915', radius_m: 100, flash_booking: true, staff_confirm: true, qr_reader: true, staff_contacts: [{ name: 'Marta Rey', phone: '982 000 111', place: 'Conserxería, á entrada' }], has_location: true }
+const checkinSettings = { printed_qr: true, qr_token: '9a1f6c2e-3b4d-4e5f-8a7b-1c2d3e4f5a6b', nfc: false, nfc_token: '3c4d5e6f-7a8b-4c9d-8e1f-2a3b4c5d6e7f', entry_code: true, code: '482915', radius_m: 100, flash_booking: true, staff_confirm: true, qr_reader: true, staff_contacts: [{ name: 'Marta Rey', phone: '982 000 111', place: 'Conserxería, á entrada' }], has_location: true }
 const entrance = {
   facility_name: 'Pista de pádel 1',
   facility_slug: 'padel-1',
@@ -654,7 +654,7 @@ function fulfil(route: Route, body: unknown, status = 200) {
   return route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(body) })
 }
 
-export const defaultBranding: Branding = { name: 'LibreQuenda', custom_name: '', logo_ref: '', logo_url: '' }
+export const defaultBranding: Branding = { name: 'LibreQuenda', custom_name: '', logo_ref: '', logo_url: '', support_email: 'soporte@example.gal', support_phone: '+34 981 000 000' }
 
 export type MockOptions = { signedIn?: boolean; theme?: 'light' | 'dark'; lang?: string; branding?: Branding; outdoor?: boolean; outdoorTagOnly?: boolean }
 

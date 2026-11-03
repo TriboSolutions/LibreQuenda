@@ -3,6 +3,7 @@ package notifications
 import (
 	"encoding/json"
 	"librequenda/model"
+	"librequenda/shared"
 	"time"
 
 	"github.com/google/uuid"
@@ -31,6 +32,7 @@ type NotificationDto struct {
 type NotificationsResponse struct {
 	UnreadCount   int64             `json:"unread_count"`
 	Notifications []NotificationDto `json:"notifications"` // most recent first
+	Pagination    shared.PageDto    `json:"pagination"`
 }
 
 // payload is what bookings.NotificationPayload, CancelBookingsInRange,

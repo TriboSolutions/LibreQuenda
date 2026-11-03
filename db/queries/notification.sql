@@ -107,7 +107,7 @@ WHERE
     id = sqlc.arg('id');
 
 -- name: ListNotificationsByUser :many
--- The bell: the most recent notices first.
+-- The bell: the most recent notices first, a page at a time.
 SELECT
     id,
     booking_id,
@@ -120,8 +120,19 @@ FROM
 WHERE
     user_id = sqlc.arg('user_id')
 ORDER BY
-    created_at DESC
-LIMIT sqlc.arg('max_rows');
+    created_at DESC,
+    id DESC
+LIMIT sqlc.arg('max_rows')
+OFFSET sqlc.arg('skip');
+
+-- name: CountNotificationsByUser :one
+-- How many notices the bell has, for its pages.
+SELECT
+    COUNT(*)
+FROM
+    notification
+WHERE
+    user_id = sqlc.arg('user_id');
 
 -- name: CountUnreadNotifications :one
 SELECT

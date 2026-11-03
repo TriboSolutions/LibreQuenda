@@ -1,4 +1,5 @@
 import { Route, Routes } from 'react-router'
+import { LegalPage } from '@/pages/LegalPage'
 import { AccessibilityPage } from '@/pages/AccessibilityPage'
 import { CouncilAdminPage } from '@/pages/CouncilAdminPage'
 import { CouncilSettingsPage } from '@/pages/CouncilSettingsPage'
@@ -26,6 +27,8 @@ function App() {
       <Route path="/lector" element={<ReaderPage />} />
       <Route path="/reservas" element={<MyBookingsPage />} />
       <Route path="/accesibilidade" element={<AccessibilityPage />} />
+      <Route path="/condicions" element={<LegalPage which="terms" />} />
+      <Route path="/privacidade" element={<LegalPage which="privacy" />} />
       <Route path="/invitacion/:token" element={<InvitePage />} />
       <Route path="/:slug" element={<CouncilPage />} />
       {/* embedded in a council's website (the proxy lets only these be framed) */}

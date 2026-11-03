@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The app's languages, as the web's (web/src/locales); Android 13+ lists them under the app's language setting. -->
+<locale-config xmlns:android="http://schemas.android.com/apk/res/android">
+    <locale android:name="gl" />
+    <locale android:name="es" />
+    <locale android:name="ca" />
+    <locale android:name="en" />
+</locale-config>

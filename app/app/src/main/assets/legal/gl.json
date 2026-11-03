@@ -1,0 +1,42 @@
+{
+  "group": "Información legal",
+  "updated": "Última actualización: 3 de novembro de 2026",
+  "terms": {
+    "title": "Condicións de uso",
+    "sub": "As normas para usar o servizo e reservar",
+    "intro": "Estas condicións explican como usar {{app}} para reservar instalacións deportivas. Ao crear unha conta ou reservar acéptalas.",
+    "sections": [
+      { "title": "Que é {{app}}", "body": ["{{app}} é un servizo para consultar e reservar instalacións deportivas públicas dos concellos que o usan. Cada concello xestiona as súas instalacións, os seus horarios e as súas normas.", "Está feito con LibreQuenda, software libre: calquera pode ver o seu código."] },
+      { "title": "A túa conta", "body": ["Para reservar necesitas unha conta persoal co teu nome, a túa data de nacemento e un correo confirmado. Os datos teñen que ser verdadeiros e a conta é só túa: non a compartas.", "Podes eliminar a conta cando queiras dende o teu perfil."] },
+      { "title": "Reservas", "body": ["Cada instalación ten as súas normas de uso, que tes que ler e aceptar antes de reservar, e pode limitar cantas reservas tes á vez, con canta antelación reservas e ata cando podes cancelar.", "Se reservas en público, outras persoas poden unirse á túa partida. Podes saír dunha partida á que te uniches ata 15 minutos antes de que comece."] },
+      { "title": "Rexistrar a entrada", "body": ["Ao chegar, rexistra a túa entrada coa forma que admita a instalación: o lector QR, o código ou o QR da porta, a etiqueta NFC ou o persoal. Se non o fas, a reserva conta como ausencia, e acumular ausencias pode bloquear as novas reservas durante un tempo."] },
+      { "title": "Bo uso", "body": ["Non reserves para revender nin en nome doutra persoa sen o seu permiso, non compartas o teu QR persoal nin os códigos de entrada, coida as instalacións e avisa das incidencias que vexas.", "O concello pode cancelar reservas por peches, obras ou mal uso; nese caso avisarémoste."] },
+      { "title": "O servizo", "body": ["Facemos o posible para que o servizo funcione sempre, pero pode haber interrupcións por mantemento ou avarías. A dispoñibilidade das instalacións depende de cada concello."] },
+      { "title": "Cambios", "body": ["Estas condicións poden cambiar. Se o fan de forma importante, avisarémoste na app antes de que se apliquen."] },
+      { "title": "Dúbidas", "body": ["Se tes dúbidas, contacta co soporte (no menú) ou co concello da instalación."] }
+    ]
+  },
+  "privacy": {
+    "title": "Política de privacidade",
+    "sub": "Que datos gardamos, para que e os teus dereitos",
+    "intro": "Esta política explica que datos persoais trata {{app}}, para que e que dereitos tes, segundo o Regulamento Xeral de Protección de Datos (RXPD) e a Lei Orgánica 3/2018.",
+    "sections": [
+      { "title": "Quen é responsable", "body": ["A entidade que xestiona esta instalación de {{app}} é a responsable da túa conta. Cada concello é responsable das reservas nas súas instalacións."] },
+      { "title": "Que datos tratamos", "body": ["Conta: o teu nome e o teu correo, xestionados polo servizo de inicio de sesión.", "Perfil: data de nacemento, teléfono, foto (opcional) e idioma.", "Uso: as túas reservas, as partidas ás que te unes, os rexistros de entrada, as ausencias, as incidencias que comunicas, os avisos e as túas preferencias.", "Localización: só cando a pides, para amosar distancias ou comprobar que estás na instalación ao rexistrar a entrada. Compróbase no momento e nunca se garda."] },
+      { "title": "Para que", "body": ["Para xestionar as túas reservas e comprobar os requisitos de cada instalación (como a idade mínima), rexistrar a túa entrada, enviarche avisos e recordatorios, e amosarche «Para ti» a partir das túas reservas.", "Os concellos ven estatísticas de uso agregadas, sen datos de persoas concretas."] },
+      { "title": "Base legal", "body": ["Prestarche o servizo que pides (art. 6.1.b RXPD) e a xestión pública das instalacións municipais (art. 6.1.e RXPD). O opcional, como a foto, os correos ou «Para ti», depende de ti e podes cambialo nas preferencias."] },
+      { "title": "Quen os ve", "body": ["O persoal do concello onde reservas ve o teu nome e as túas reservas nas súas instalacións. Nas partidas públicas, as outras persoas ven o teu nome. Ningún concello ve as reservas doutro.", "Non vendemos nin cedemos os teus datos, non os usamos para publicidade e non hai rastrexadores."] },
+      { "title": "Canto tempo", "body": ["Mentres teñas conta. Se a eliminas, bórranse os teus datos persoais, as reservas futuras cancélanse e as pasadas quedan sen ninguén asociado, só para as estatísticas.", "O rexistro do que fan os administradores gárdase ata dous anos."] },
+      { "title": "Os teus dereitos", "body": ["Podes acceder aos teus datos, corrixilos, eliminalos, descargalos (no teu perfil, «Os teus datos»), opoñerte ao seu tratamento ou limitalo. Escribe ao soporte para calquera deles.", "Se cres que non os tratamos ben, podes reclamar ante a Axencia Española de Protección de Datos (www.aepd.es)."] },
+      { "title": "Seguridade", "body": ["As conexións van cifradas, cada persoa só accede ao que lle corresponde e os administradores entran con verificación en dous pasos."] }
+    ]
+  },
+  "support": {
+    "group": "Soporte",
+    "title": "Axuda e soporte",
+    "sub": "Se non entendes algo da app",
+    "help": "Tes dúbidas sobre a app ou algo non funciona? Escríbenos ou chámanos.",
+    "email": "Escribir un correo",
+    "phone": "Chamar"
+  }
+}

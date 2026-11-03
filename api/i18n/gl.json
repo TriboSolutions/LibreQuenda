@@ -109,7 +109,7 @@
     "invite_failed": "Non se puido actualizar o convite. Téntao de novo.",
     "participant_not_found": "Esa persoa xa non está na reserva.",
     "leave_failed": "Non se puido saír da reserva. Téntao de novo.",
-    "leave_too_late": "A reserva xa comezou.",
+    "leave_too_late": "Xa non podes saír: quedan menos de 15 minutos para que comece a reserva.",
     "invalid_guest_name": "Escribe un nome de ata 80 caracteres.",
     "invalid_guest_age": "A idade debe estar entre 1 e 120.",
     "guest_age_restricted": "Esta instalación ten unha idade mínima que a persoa convidada non cumpre.",

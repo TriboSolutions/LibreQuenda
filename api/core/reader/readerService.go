@@ -167,8 +167,15 @@ func (s *readerService) personalCheckIn(ctx context.Context, device model.GetChe
 	var response, flashErr = s.FlashCheckIn(ctx, owner.UserID, owner.FullName.String, device.FacilityID, ReaderEntry(device.ID))
 	if flashErr != nil || !response.Granted {
 		s.release(ctx, queries, qrToken)
+		return response, flashErr
 	}
-	return response, flashErr
+	// the phone showing the QR asks for it (GET /me/qr/status) to open the booking
+	if id, parseErr := uuid.Parse(response.BookingId); parseErr == nil {
+		if err := queries.SetUserQrTokenBooking(ctx, model.SetUserQrTokenBookingParams{Token: qrToken, BookingID: uuid.NullUUID{UUID: id, Valid: true}}); err != nil {
+			shared.Logger.Error("failed to keep the personal QR's booking: %v", err)
+		}
+	}
+	return response, nil
 }
 
 // FlashCheckIn books the turn under way or about to start for the person
@@ -200,8 +207,9 @@ func (s *readerService) FlashCheckIn(ctx context.Context, userId uuid.UUID, full
 		checkedInAt = sql.NullTime{Time: time.Now(), Valid: true}
 	}
 	return &CheckinResultDto{
-		Granted: true,
-		Result:  ResultBooked,
+		Granted:   true,
+		Result:    ResultBooked,
+		BookingId: booking.Id,
 		Booking: &CheckinBookingDto{
 			FacilityName: booking.FacilityName,
 			FirstName:    firstName(fullName),

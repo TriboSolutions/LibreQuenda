@@ -20,8 +20,9 @@ type Props = {
 
 /** A time of day from a menu, in 24 hours whatever the browser's locale (no AM/PM). */
 export function TimeSelect({ id, value, onChange, className, ...rest }: Props) {
-  // a saved time off the 15-minute grid still shows, in its place
-  const options = value && !QUARTERS.includes(value) ? [...QUARTERS, value].sort() : QUARTERS
+  // a saved time off the 15-minute grid still shows, put in its place (no sorting: the grid is in order)
+  const at = value && !QUARTERS.includes(value) ? QUARTERS.findIndex((q) => q > value) : -2
+  const options = at === -2 ? QUARTERS : at === -1 ? [...QUARTERS, value] : [...QUARTERS.slice(0, at), value, ...QUARTERS.slice(at)]
   return (
     <Select value={value} onValueChange={onChange}>
       <SelectTrigger id={id} aria-label={rest['aria-label']} className={cn('num', className)}>

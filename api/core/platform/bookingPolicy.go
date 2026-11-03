@@ -9,7 +9,7 @@ import (
 
 // BookingPolicyDto: the booking rules that span every council, set by the
 // superadministrators. OneCouncilPerAccount: a person holds upcoming bookings
-// (own or joined) in one council at a time (api/core/bookings.CouncilLimits).
+// of their own in one council at a time; joining someone's game does not count (api/core/bookings.CouncilLimits).
 type BookingPolicyDto struct {
 	OneCouncilPerAccount bool `json:"one_council_per_account"`
 }

@@ -77,6 +77,7 @@ SELECT
     (EXISTS (SELECT 1 FROM checkin_device d WHERE d.facility_id = f.id) AND COALESCE(c.qr_reader, TRUE))::BOOLEAN AS has_reader,
     (COALESCE(c.printed_qr, FALSE) AND f.latitude IS NOT NULL)::BOOLEAN AS printed_qr,
     (COALESCE(c.entry_code, FALSE) AND f.latitude IS NOT NULL)::BOOLEAN AS entry_code,
+    (COALESCE(c.nfc, FALSE) AND f.latitude IS NOT NULL)::BOOLEAN AS nfc,
     COALESCE(c.staff_confirm, FALSE)::BOOLEAN AS staff_confirm,
     COALESCE(c.staff_contacts, '[]'::JSONB) AS staff_contacts,
     COALESCE(c.radius_m, 100)::INT AS checkin_radius_m, -- how close the phone must be for the code or the door QR
@@ -309,8 +310,8 @@ SELECT
     COALESCE((SELECT r.max_active_bookings_council FROM tenant_booking_rules r WHERE r.tenant_id = sqlc.arg('tenant_id')), 0)::INT AS council_max_active;
 
 -- name: GetUserBookingInOtherCouncil :one
--- The council of the person's next upcoming booking (own or joined) outside
--- `tenant_id`, if any.
+-- The council of the person's next upcoming booking of their own outside
+-- `tenant_id`, if any. Games they joined are someone else's booking: they do not count.
 SELECT
     t.name
 FROM
@@ -321,10 +322,7 @@ WHERE
     b.status = 'confirmed'
     AND b.ends_at > NOW()
     AND f.tenant_id <> sqlc.arg('tenant_id')
-    AND (
-        b.user_id = sqlc.arg('user_id')
-        OR EXISTS (SELECT 1 FROM booking_participant p WHERE p.booking_id = b.id AND p.user_id = sqlc.arg('user_id'))
-    )
+    AND b.user_id = sqlc.arg('user_id')
 ORDER BY
     b.starts_at
 LIMIT 1;

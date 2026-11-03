@@ -348,10 +348,7 @@ WHERE
     b.status = 'confirmed'
     AND b.ends_at > NOW()
     AND f.tenant_id <> $1
-    AND (
-        b.user_id = $2
-        OR EXISTS (SELECT 1 FROM booking_participant p WHERE p.booking_id = b.id AND p.user_id = $2)
-    )
+    AND b.user_id = $2
 ORDER BY
     b.starts_at
 LIMIT 1
@@ -362,8 +359,8 @@ type GetUserBookingInOtherCouncilParams struct {
 	UserID   uuid.NullUUID `json:"user_id"`
 }
 
-// The council of the person's next upcoming booking (own or joined) outside
-// `tenant_id`, if any.
+// The council of the person's next upcoming booking of their own outside
+// `tenant_id`, if any. Games they joined are someone else's booking: they do not count.
 func (q *Queries) GetUserBookingInOtherCouncil(ctx context.Context, arg GetUserBookingInOtherCouncilParams) (string, error) {
 	row := q.db.QueryRowContext(ctx, getUserBookingInOtherCouncil, arg.TenantID, arg.UserID)
 	var name string
@@ -386,6 +383,7 @@ SELECT
     (EXISTS (SELECT 1 FROM checkin_device d WHERE d.facility_id = f.id) AND COALESCE(c.qr_reader, TRUE))::BOOLEAN AS has_reader,
     (COALESCE(c.printed_qr, FALSE) AND f.latitude IS NOT NULL)::BOOLEAN AS printed_qr,
     (COALESCE(c.entry_code, FALSE) AND f.latitude IS NOT NULL)::BOOLEAN AS entry_code,
+    (COALESCE(c.nfc, FALSE) AND f.latitude IS NOT NULL)::BOOLEAN AS nfc,
     COALESCE(c.staff_confirm, FALSE)::BOOLEAN AS staff_confirm,
     COALESCE(c.staff_contacts, '[]'::JSONB) AS staff_contacts,
     COALESCE(c.radius_m, 100)::INT AS checkin_radius_m, -- how close the phone must be for the code or the door QR
@@ -423,6 +421,7 @@ type ListBookingsByUserRow struct {
 	HasReader         bool            `json:"has_reader"`
 	PrintedQr         bool            `json:"printed_qr"`
 	EntryCode         bool            `json:"entry_code"`
+	Nfc               bool            `json:"nfc"`
 	StaffConfirm      bool            `json:"staff_confirm"`
 	StaffContacts     json.RawMessage `json:"staff_contacts"`
 	CheckinRadiusM    int32           `json:"checkin_radius_m"`
@@ -462,6 +461,7 @@ func (q *Queries) ListBookingsByUser(ctx context.Context, userID uuid.NullUUID) 
 			&i.HasReader,
 			&i.PrintedQr,
 			&i.EntryCode,
+			&i.Nfc,
 			&i.StaffConfirm,
 			&i.StaffContacts,
 			&i.CheckinRadiusM,
