@@ -58,8 +58,11 @@
   },
   "manage": {
     "details": "Details",
+    "detailsHelp": "The name, logo and contact details residents see on the council's page.",
+    "save": "Save details",
     "viewPage": "Open its page",
     "admins": "Administrators",
+    "adminsHelp": "Who can manage the facilities, the bookings and these settings.",
     "noAdmins": "Nobody has accepted an invitation yet.",
     "pending": "Pending invitation",
     "inviteLabel": "Invite by email",

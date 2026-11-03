@@ -77,7 +77,9 @@ export function CouncilPage() {
   const [notice, setNotice] = useState<string | null>(null)
 
   const timeZone = day.data?.timezone ?? FALLBACK_TIME_ZONE
-  const today = day.data ? councilToday(day.data) : ''
+  // until the day loads, the device's clock: bookings already in memory show at once, and need a today to say "tomorrow"
+  const [opened] = useState(() => new Date().toISOString())
+  const today = day.data ? councilToday(day.data) : localDate(opened, timeZone)
   const selectedDate = day.data?.date ?? date ?? ''
 
   // ?etiqueta=<tag>&etiqueta=…: only the facilities with all of them (kept in the address, so a filtered list can be shared)
@@ -159,7 +161,7 @@ export function CouncilPage() {
               <Skeleton className="mt-2 h-5 w-80 max-w-full" />
             )}
           </div>
-          {today && <DayPicker today={today} value={selectedDate} onChange={setDate} />}
+          {day.data && <DayPicker today={today} value={selectedDate} onChange={setDate} />}
         </div>
 
         {groups.length > 0 && (

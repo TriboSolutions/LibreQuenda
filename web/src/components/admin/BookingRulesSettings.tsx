@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BookingRulesFields } from '@/components/admin/BookingRulesFields'
+import { SettingsRow } from '@/components/SettingsRow'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -40,39 +41,35 @@ export function BookingRulesSettings({ slug, token }: { slug: string; token: str
   }
 
   return (
-    <section aria-labelledby="sheet-rules" className="grid content-start gap-3 rounded-lg border bg-card p-5">
-      <div>
-        <h2 id="sheet-rules" className="text-lg font-semibold">
-          {t('rules.councilTitle')}
-        </h2>
-        <p className="text-sm text-muted-foreground">{t('rules.councilHelp')}</p>
+    <SettingsRow id="sheet-rules" title={t('rules.councilTitle')} description={t('rules.councilHelp')}>
+      <div className="rounded-lg border bg-card p-5">
+        {saved.error ? (
+          <p className="text-destructive">{saved.error.message}</p>
+        ) : !form ? (
+          <Skeleton className="h-40 w-full" />
+        ) : (
+          <form onSubmit={(e) => void save(e)} className="grid gap-4">
+            <BookingRulesFields id="council-rules" value={form} onChange={setForm} council />
+            <div aria-live="polite" className="empty:hidden">
+              {notice && (
+                <Alert className="border-0 bg-pill-positive-bg text-pill-positive-ink">
+                  <AlertDescription className="text-pill-positive-ink">{notice}</AlertDescription>
+                </Alert>
+              )}
+              {error && (
+                <Alert variant="destructive">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+            </div>
+            <div className="flex justify-end border-t pt-4">
+              <Button type="submit" disabled={busy}>
+                {busy ? t('rules.saving') : t('rules.save')}
+              </Button>
+            </div>
+          </form>
+        )}
       </div>
-      {saved.error ? (
-        <p className="text-destructive">{saved.error.message}</p>
-      ) : !form ? (
-        <Skeleton className="h-40 w-full" />
-      ) : (
-        <form onSubmit={(e) => void save(e)} className="grid gap-4">
-          <BookingRulesFields id="council-rules" value={form} onChange={setForm} council />
-          <div aria-live="polite" className="empty:hidden">
-            {notice && (
-              <Alert className="border-0 bg-pill-positive-bg text-pill-positive-ink">
-                <AlertDescription className="text-pill-positive-ink">{notice}</AlertDescription>
-              </Alert>
-            )}
-            {error && (
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-          </div>
-          <div>
-            <Button type="submit" disabled={busy}>
-              {busy ? t('rules.saving') : t('rules.save')}
-            </Button>
-          </div>
-        </form>
-      )}
-    </section>
+    </SettingsRow>
   )
 }

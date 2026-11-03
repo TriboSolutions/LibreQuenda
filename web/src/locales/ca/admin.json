@@ -58,8 +58,11 @@
   },
   "manage": {
     "details": "Dades",
+    "detailsHelp": "El nom, el logotip i el contacte que veu el veïnat a la pàgina de l'ajuntament.",
+    "save": "Desa les dades",
     "viewPage": "Obre la seva pàgina",
     "admins": "Persones administradores",
+    "adminsHelp": "Qui pot gestionar les instal·lacions, les reserves i aquesta configuració.",
     "noAdmins": "Encara ningú no ha acceptat cap invitació.",
     "pending": "Invitació pendent",
     "inviteLabel": "Convida per correu",

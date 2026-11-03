@@ -1,14 +1,15 @@
-import { ArrowLeft, ExternalLink } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import { Link, useLocation, useNavigate, useParams } from 'react-router'
 import { BookingRulesSettings } from '@/components/admin/BookingRulesSettings'
+import { CouncilDetailsSettings } from '@/components/admin/CouncilDetailsSettings'
 import { CouncilExport } from '@/components/admin/CouncilExport'
-import { CouncilFormDialog } from '@/components/admin/CouncilFormDialog'
 import { SmtpSettings } from '@/components/admin/SmtpSettings'
 import { WidgetSettings } from '@/components/admin/WidgetSettings'
 import { CouncilHeading } from '@/components/CouncilHeading'
+import { SettingsRow } from '@/components/SettingsRow'
 import { SiteFooter } from '@/components/SiteFooter'
 import { TopBar } from '@/components/TopBar'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -24,9 +25,9 @@ import { usePageTitle } from '@/hooks/usePageTitle'
 import { api } from '@/lib/api'
 
 /**
- * /:slug/admin/axustes: everything about one council, like a facility's editor:
- * its details, administrators, booking window, email relay, data export, and
- * (superadministrators) deleting it.
+ * /:slug/admin/axustes: everything about one council, laid out like the profile:
+ * its details, administrators, booking window, email relay, widget, data export,
+ * and (superadministrators) deleting it.
  */
 export function CouncilSettingsPage() {
   const { slug = '' } = useParams()
@@ -41,11 +42,11 @@ export function CouncilSettingsPage() {
   const token = auth.user?.access_token ?? ''
   const tenants = useAsync(() => api.tenants(), 'tenants')
   const council = useAsync(allowed ? () => api.admin.council(token, slug) : null, `council:${slug}:${allowed}`)
-  const [editing, setEditing] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [inviteEmail, setInviteEmail] = useState('')
   const [notice, setNotice] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const heading = tenants.data?.tenants.find((c) => c.slug === slug)
   usePageTitle(t('admin:councilSettings.title'), heading?.name)
@@ -75,13 +76,13 @@ export function CouncilSettingsPage() {
 
   const remove = async () => {
     setBusy(true)
-    setError(null)
+    setDeleteError(null)
     try {
       await api.admin.deleteCouncil(token, slug)
       navigate('/admin')
     } catch (e) {
       setConfirmDelete(false)
-      setError(e instanceof Error ? e.message : String(e))
+      setDeleteError(e instanceof Error ? e.message : String(e))
     } finally {
       setBusy(false)
     }
@@ -103,67 +104,28 @@ export function CouncilSettingsPage() {
     body = council.error ? <p className="mt-6 text-destructive">{council.error.message}</p> : <Skeleton className="mt-6 h-64 w-full" />
   } else {
     body = (
-      <>
-        <div aria-live="polite" className="mt-6 empty:hidden">
-          {notice && (
-            <Alert className="border-0 bg-pill-positive-bg text-pill-positive-ink">
-              <AlertDescription className="text-pill-positive-ink">{notice}</AlertDescription>
-            </Alert>
-          )}
-          {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-        </div>
-        <div className="mt-6 grid gap-6 lg:grid-cols-2 lg:items-start">
-          <div className="grid gap-6">
-          <section aria-labelledby="sheet-details" className="grid content-start gap-3 rounded-lg border bg-card p-5">
-            <div className="flex items-center justify-between gap-3">
-              <h2 id="sheet-details" className="text-lg font-semibold">
-                {t('admin:manage.details')}
-              </h2>
-              <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
-                {t('admin:manage.edit')}
-              </Button>
-            </div>
-            <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5">
-              <dt className="text-muted-foreground">{t('admin:councils.colStatus')}</dt>
-              <dd>{data.is_active ? t('admin:councils.active') : t('admin:councils.inactive')}</dd>
-              <dt className="text-muted-foreground">{t('admin:form.timezone')}</dt>
-              <dd>{data.timezone}</dd>
-              <dt className="text-muted-foreground">{t('admin:form.contactEmail')}</dt>
-              <dd className="truncate">{data.contact_email || '—'}</dd>
-              <dt className="text-muted-foreground">{t('admin:form.contactPhone')}</dt>
-              <dd>{data.contact_phone || '—'}</dd>
-              <dt className="text-muted-foreground">{t('admin:councils.colBookings')}</dt>
-              <dd className="num">{data.booking_count}</dd>
-            </dl>
-            <div className="flex flex-wrap gap-x-5 gap-y-1">
-              {superadmin && (
-                <Link to={`/${slug}/admin`} className="inline-flex items-center gap-1.5 text-primary hover:underline">
-                  {t('admin:manage.facilities')}
-                </Link>
-              )}
-              {data.is_active && (
-                <Link target="_blank" rel="noopener noreferrer" to={`/${slug}`} className="inline-flex items-center gap-1.5 text-primary hover:underline">
-                  {t('admin:manage.viewPage')}
-                  <ExternalLink className="size-3.5" aria-hidden="true" />
-                </Link>
-              )}
-            </div>
-          </section>
+      <div className="mt-6">
+        <CouncilDetailsSettings
+          key={data.slug}
+          council={data}
+          token={token}
+          canDeactivate={superadmin}
+          onSaved={(saved) => {
+            council.reload()
+            tenants.reload()
+            // its address changed: this page moves with it
+            if (saved.slug !== slug) navigate(`/${saved.slug}/admin/axustes`, { replace: true })
+          }}
+        />
 
-          <section aria-labelledby="sheet-admins" className="grid content-start gap-3 rounded-lg border bg-card p-5">
-            <h2 id="sheet-admins" className="text-lg font-semibold">
-              {t('admin:manage.admins')}
-            </h2>
+        <SettingsRow id="sheet-admins" title={t('admin:manage.admins')} description={t('admin:manage.adminsHelp')}>
+          <div className="grid content-start gap-4 rounded-lg border bg-card p-5">
             {data.admins.length === 0 && data.invitations.length === 0 ? (
               <p className="text-muted-foreground">{t('admin:manage.noAdmins')}</p>
             ) : (
               <ul>
                 {data.admins.map((admin) => (
-                  <li key={admin.user_id} className="flex items-center justify-between gap-3 border-t py-2.5 first:border-t-0">
+                  <li key={admin.user_id} className="flex items-center justify-between gap-3 border-t py-2.5 first:border-t-0 first:pt-0">
                     <div className="min-w-0">
                       <p className="truncate font-medium">{admin.full_name || admin.email}</p>
                       <p className="truncate text-muted-foreground">{admin.email}</p>
@@ -183,12 +145,10 @@ export function CouncilSettingsPage() {
                   </li>
                 ))}
                 {data.invitations.map((invitation) => (
-                  <li key={invitation.id} className="flex items-center justify-between gap-3 border-t py-2.5 first:border-t-0">
+                  <li key={invitation.id} className="flex items-center justify-between gap-3 border-t py-2.5 first:border-t-0 first:pt-0">
                     <div className="min-w-0">
                       <p className="truncate font-medium">{invitation.email}</p>
-                      <span className="rounded-full bg-pill-accent-bg px-2 py-0.5 text-xs font-medium text-pill-accent-ink">
-                        {t('admin:manage.pending')}
-                      </span>
+                      <span className="rounded-full bg-pill-accent-bg px-2 py-0.5 text-xs font-medium text-pill-accent-ink">{t('admin:manage.pending')}</span>
                     </div>
                     <Button
                       variant="ghost"
@@ -202,7 +162,7 @@ export function CouncilSettingsPage() {
                 ))}
               </ul>
             )}
-            <form onSubmit={(e) => void invite(e)} className="grid gap-2">
+            <form onSubmit={(e) => void invite(e)} className="grid gap-2 border-t pt-4">
               <Label htmlFor="invite-email">{t('admin:manage.inviteLabel')}</Label>
               <div className="flex gap-2">
                 <Input id="invite-email" type="email" required value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} />
@@ -212,37 +172,49 @@ export function CouncilSettingsPage() {
               </div>
               <p className="text-xs text-muted-foreground">{t('admin:form.adminEmailHelp')}</p>
             </form>
-          </section>
+            <div aria-live="polite" className="empty:hidden">
+              {notice && (
+                <Alert className="border-0 bg-pill-positive-bg text-pill-positive-ink">
+                  <AlertDescription className="text-pill-positive-ink">{notice}</AlertDescription>
+                </Alert>
+              )}
+              {error && (
+                <Alert variant="destructive">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+            </div>
+          </div>
+        </SettingsRow>
 
+        <BookingRulesSettings slug={slug} token={token} />
+        <SmtpSettings slug={slug} token={token} />
+        <WidgetSettings slug={slug} token={token} />
+        <CouncilExport slug={slug} token={token} />
 
-          {superadmin && (
-            <section aria-labelledby="sheet-delete" className="grid content-start gap-3 rounded-lg border bg-card p-5">
-              <h2 id="sheet-delete" className="text-lg font-semibold">
-                {t('admin:manage.deleteTitle')}
-              </h2>
+        {superadmin && (
+          <SettingsRow id="sheet-delete" title={t('admin:manage.deleteTitle')} description={t('admin:manage.deleteHelp')}>
+            <div className="grid content-start gap-4 rounded-lg border bg-card p-5">
               {data.booking_count > 0 ? (
                 <p className="text-muted-foreground">{t('admin:manage.deleteBlocked', { count: data.booking_count })}</p>
               ) : (
-                <>
-                  <p className="text-muted-foreground">{t('admin:manage.deleteHelp')}</p>
-                  <div>
-                    <Button variant="outline" className="text-destructive hover:text-destructive" onClick={() => setConfirmDelete(true)}>
-                      {t('admin:manage.delete')}
-                    </Button>
-                  </div>
-                </>
+                <div>
+                  <Button variant="destructive" onClick={() => setConfirmDelete(true)}>
+                    {t('admin:manage.delete')}
+                  </Button>
+                </div>
               )}
-            </section>
-          )}
-          </div>
-          <div className="grid gap-6">
-            <BookingRulesSettings slug={slug} token={token} />
-            <SmtpSettings slug={slug} token={token} />
-            <CouncilExport slug={slug} token={token} />
-            <WidgetSettings slug={slug} token={token} />
-          </div>
-        </div>
-      </>
+              <div aria-live="polite" className="empty:hidden">
+                {deleteError && (
+                  <Alert variant="destructive">
+                    <AlertDescription>{deleteError}</AlertDescription>
+                  </Alert>
+                )}
+              </div>
+            </div>
+          </SettingsRow>
+        )}
+      </div>
     )
   }
 
@@ -271,22 +243,6 @@ export function CouncilSettingsPage() {
         {body}
       </main>
       <SiteFooter />
-      {editing && data && (
-        <CouncilFormDialog
-          council={data}
-          canDeactivate={superadmin}
-          onClose={() => setEditing(false)}
-          onSaved={(saved) => {
-            setEditing(false)
-            setNotice(t('admin:notice.saved'))
-            council.reload()
-            tenants.reload()
-            // its address changed: this page moves with it
-            if (saved.slug !== slug) navigate(`/${saved.slug}/admin/axustes`, { replace: true })
-          }}
-        />
-      )}
-
       {confirmDelete && data && (
         <Dialog open onOpenChange={(open) => !open && setConfirmDelete(false)}>
           <DialogContent className="sm:max-w-md">
