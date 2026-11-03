@@ -2,7 +2,7 @@ import { CalendarClock, CircleCheck, MapPin, Users } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
-import { Link, useParams } from 'react-router'
+import { Link, Navigate, useParams } from 'react-router'
 import { FacilityInfo } from '@/components/FacilityInfo'
 import { SpotsMeter } from '@/components/SpotsMeter'
 import { TopBar } from '@/components/TopBar'
@@ -105,12 +105,26 @@ function InviteCard({ invite, inviteToken, onChanged }: { invite: PublicInvite; 
   // joining with an account needs what booking needs: a birth date and a verified email
   const { me } = useMe()
   const notReady = auth.isAuthenticated && me !== null && (!me.profile_complete || !me.email_verified)
+  // the owner opening their own link goes to their bookings: no joining, and no adding guests in other people's names
+  const token = auth.user?.access_token
+  const mine = useAsync(token ? () => api.myBookings(token) : null, `invite-own:${inviteToken}:${token ? 'in' : 'out'}`)
+  const ownBooking = mine.data?.upcoming.some(
+    (b) =>
+      b.role === 'owner' &&
+      b.status === 'confirmed' &&
+      b.tenant_slug === invite.tenant_slug &&
+      b.facility_slug === invite.facility_slug &&
+      Date.parse(b.starts_at) === Date.parse(invite.starts_at),
+  )
+  const checkingOwn = Boolean(token) && !mine.data && !mine.error
   useEffect(() => {
-    if (!auth.isAuthenticated || !me || notReady || invite.state !== 'open' || autoJoined.current) return
+    if (!auth.isAuthenticated || !me || notReady || checkingOwn || ownBooking || invite.state !== 'open' || autoJoined.current) return
     autoJoined.current = true
     void join('account', true)
     // eslint-disable-next-line react-hooks/exhaustive-deps -- once per page, when the session is there
-  }, [auth.isAuthenticated, me, notReady, invite.state])
+  }, [auth.isAuthenticated, me, notReady, checkingOwn, ownBooking, invite.state])
+
+  if (ownBooking) return <Navigate to="/reservas" replace />
 
   return (
     <div className="mt-6 grid max-w-[640px] gap-6">
