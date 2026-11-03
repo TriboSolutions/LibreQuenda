@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"librequenda/model"
+	"librequenda/rating"
 	"librequenda/schedule"
 	"librequenda/shared"
 	"librequenda/storage"
@@ -306,7 +307,12 @@ func (s *tenantsService) GetFacilityPage(ctx context.Context, slug string, facil
 		for _, h := range hours {
 			schedule = append(schedule, WeeklyWindowDto{Weekday: h.Weekday, OpensAt: h.OpensAt.Format("15:04"), ClosesAt: h.ClosesAt.Format("15:04")})
 		}
+		var stars, starsErr = model.New(s.db).GetFacilityRatingSummary(ctx, id)
+		if starsErr != nil {
+			return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.day_load_failed"}
+		}
 		return &FacilityPageResponse{
+			Rating:   rating.Of(stars.Average, stars.Count),
 			Tenant:   day.Tenant,
 			Timezone: day.Timezone,
 			Date:     day.Date,

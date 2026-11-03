@@ -134,5 +134,24 @@
     "keepPrivate": "Keep private",
     "confirm": "Make public",
     "publishing": "Publishing…"
+  },
+  "rating": {
+    "button": "Rate",
+    "title": "Rate your booking",
+    "when": "{{facility}}, {{day}} at {{time}}",
+    "loading": "Loading the rating…",
+    "loadError": "Could not load the rating.",
+    "facility": "How was {{facility}}?",
+    "peopleTitle": "The people who played with you",
+    "peopleHelp": "It was a public booking: rate the others, 1 to 5 stars. Skip anyone you prefer not to rate.",
+    "private": "Nobody sees who gave which stars, only the average. You can change your rating until {{date}}.",
+    "closed": "This booking can no longer be rated.",
+    "save": "Save rating",
+    "saving": "Saving…",
+    "saveError": "Could not save your rating.",
+    "later": "Later",
+    "close": "Close",
+    "thanksTitle": "Thank you",
+    "thanks": "Your rating is saved. It helps the council and the people who play."
   }
 }

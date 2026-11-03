@@ -134,5 +134,24 @@
     "keepPrivate": "Mantenir privada",
     "confirm": "Fer pública",
     "publishing": "Publicant…"
+  },
+  "rating": {
+    "button": "Valorar",
+    "title": "Valora la teva reserva",
+    "when": "{{facility}}, {{day}} a les {{time}}",
+    "loading": "Carregant la valoració…",
+    "loadError": "No s’ha pogut carregar la valoració.",
+    "facility": "Què tal {{facility}}?",
+    "peopleTitle": "Qui ha jugat amb tu",
+    "peopleHelp": "Era una reserva pública: valora els altres d’1 a 5 estrelles. Deixa sense valorar qui prefereixis.",
+    "private": "Ningú no veu qui ha donat cada estrella, només la mitjana. Pots canviar la teva valoració fins al {{date}}.",
+    "closed": "Aquesta reserva ja no es pot valorar.",
+    "save": "Desa la valoració",
+    "saving": "Desant…",
+    "saveError": "No s’ha pogut desar la teva valoració.",
+    "later": "Més tard",
+    "close": "Tanca",
+    "thanksTitle": "Gràcies",
+    "thanks": "La teva valoració s’ha desat. Ajuda l’ajuntament i qui hi juga."
   }
 }

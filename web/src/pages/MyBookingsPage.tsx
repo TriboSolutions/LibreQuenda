@@ -1,8 +1,8 @@
-import { CalendarClock, CalendarPlus, ChevronDown, DoorOpen, ExternalLink, MapPin, UserPlus, Wrench } from 'lucide-react'
+import { CalendarClock, CalendarPlus, ChevronDown, DoorOpen, ExternalLink, MapPin, Star, UserPlus, Wrench } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
-import { Link } from 'react-router'
+import { Link, useSearchParams } from 'react-router'
 import { BookingOutcome } from '@/components/BookingOutcome'
 import { CancelDialog } from '@/components/CancelDialog'
 import { CheckinDialog } from '@/components/CheckinDialog'
@@ -11,6 +11,7 @@ import { ChangeBookingDialog } from '@/components/ChangeBookingDialog'
 import { InviteDialog } from '@/components/InviteDialog'
 import { ReportIssueDialog } from '@/components/ReportIssueDialog'
 import { LeaveDialog } from '@/components/LeaveDialog'
+import { RateDialog } from '@/components/RateDialog'
 import { PeopleList } from '@/components/PeopleList'
 import { SpotsMeter } from '@/components/SpotsMeter'
 import { TopBar } from '@/components/TopBar'
@@ -62,6 +63,18 @@ export function MyBookingsPage() {
   const [toInvite, setToInvite] = useState<Booking | null>(null)
   const [toReport, setToReport] = useState<Booking | null>(null)
   const [toCheckIn, setToCheckIn] = useState<Booking | null>(null)
+  // ?valorar=<booking id>: the rating notice opens the dialog straight away
+  const [searchParams, setSearchParams] = useSearchParams()
+  const toRate = searchParams.get('valorar')
+  const rate = (bookingId: string | null) =>
+    setSearchParams(
+      (params) => {
+        if (bookingId) params.set('valorar', bookingId)
+        else params.delete('valorar')
+        return params
+      },
+      { replace: true },
+    )
   const ticking = useNow()
   const [notice, setNotice] = useState<string | null>(null)
 
@@ -214,7 +227,7 @@ export function MyBookingsPage() {
           ) : (
             <ul className="mt-2">
               {history.map((booking) => (
-                <HistoryRow key={booking.id} booking={booking} today={today} />
+                <HistoryRow key={booking.id} booking={booking} today={today} onRate={() => rate(booking.id)} />
               ))}
             </ul>
           )}
@@ -258,6 +271,7 @@ export function MyBookingsPage() {
         onClose={() => setToInvite(null)}
         onChanged={bookings.reload}
       />
+      <RateDialog key={`rate-${toRate ?? 'none'}`} bookingId={auth.isAuthenticated ? toRate : null} timeZone={TIME_ZONE} today={today} onClose={() => rate(null)} />
       <CheckinDialog
         key={toCheckIn?.id ?? 'none'}
         booking={toCheckIn}
@@ -369,8 +383,9 @@ function Countdown({ booking, now }: { booking: Booking; now: number }) {
   return <span className={`num ${live ? pill.positive : pill.neutral}`}>{text}</span>
 }
 
-/** A past booking, in one line: what, when, and how it ended. */
-function HistoryRow({ booking, today }: { booking: Booking; today: string }) {
+/** A past booking, in one line: what, when, and how it ended; rated from here for 30 days. */
+function HistoryRow({ booking, today, onRate }: { booking: Booking; today: string; onRate: () => void }) {
+  const { t } = useTranslation('bookings')
   return (
     <li className="grid gap-0.5 border-t py-3 first:border-t-0">
       <div className="flex items-start justify-between gap-3">
@@ -382,6 +397,15 @@ function HistoryRow({ booking, today }: { booking: Booking; today: string }) {
       <p className="num text-sm text-muted-foreground">
         {formatBookingDay(booking.starts_at, TIME_ZONE, today)}, {formatTime(booking.starts_at, TIME_ZONE)}–{formatTime(booking.ends_at, TIME_ZONE)} · {booking.tenant_name}
       </p>
+      {booking.can_rate && (
+        <div>
+          <Button variant="outline" size="sm" className="mt-1" onClick={onRate}>
+            <Star aria-hidden />
+            {t('rating.button')}
+            <span className="sr-only">: {booking.facility_name}</span>
+          </Button>
+        </div>
+      )}
     </li>
   )
 }

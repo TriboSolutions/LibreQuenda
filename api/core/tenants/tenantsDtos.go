@@ -1,6 +1,7 @@
 package tenants
 
 import (
+	"librequenda/rating"
 	"librequenda/schedule"
 	"time"
 )
@@ -127,6 +128,7 @@ type FacilityPageResponse struct {
 	Now      time.Time         `json:"now"`
 	Facility FacilityDayDto    `json:"facility"`
 	Schedule []WeeklyWindowDto `json:"schedule"`
+	Rating   *rating.Summary   `json:"rating"` // residents' stars after their bookings; null until someone rated
 }
 
 // WeeklyOpeningDto: next week's turns open on Weekday (ISO, 7 = Sunday) at At ("20:00", council time).

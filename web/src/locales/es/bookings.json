@@ -134,5 +134,24 @@
     "keepPrivate": "Mantener privada",
     "confirm": "Hacer pública",
     "publishing": "Publicando…"
+  },
+  "rating": {
+    "button": "Valorar",
+    "title": "Valora tu reserva",
+    "when": "{{facility}}, {{day}} a las {{time}}",
+    "loading": "Cargando la valoración…",
+    "loadError": "No se pudo cargar la valoración.",
+    "facility": "¿Qué tal {{facility}}?",
+    "peopleTitle": "Quien jugó contigo",
+    "peopleHelp": "Era una reserva pública: valora a los demás de 1 a 5 estrellas. Deja sin valorar a quien prefieras.",
+    "private": "Nadie ve quién dio cada estrella, solo la media. Puedes cambiar tu valoración hasta el {{date}}.",
+    "closed": "Esta reserva ya no se puede valorar.",
+    "save": "Guardar valoración",
+    "saving": "Guardando…",
+    "saveError": "No se pudo guardar tu valoración.",
+    "later": "Más tarde",
+    "close": "Cerrar",
+    "thanksTitle": "Gracias",
+    "thanks": "Tu valoración está guardada. Ayuda al ayuntamiento y a quien juega."
   }
 }

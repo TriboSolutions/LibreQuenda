@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import { Link } from 'react-router'
 import { CalendarClock, ChevronDown, EyeOff, Repeat, Sparkles, Users } from 'lucide-react'
+import { RatingBadge } from '@/components/Stars'
 import { Mark } from '@/components/Mark'
 import { Button } from '@/components/ui/button'
 import { useAsync } from '@/hooks/useAsync'
@@ -160,7 +161,10 @@ function PublicBookingCard({ item, booking }: { item: Recommendation; booking: N
         </h3>
         <p className="flex items-start gap-1.5 text-sm text-muted-foreground">
           <Users className="mt-0.5 size-3.5 shrink-0" aria-hidden />
-          <span>{booking.owner_first_name ? t('forYou.publicBy', { name: booking.owner_first_name }) : t('forYou.public')}</span>
+          <span>
+            {booking.owner_first_name ? t('forYou.publicBy', { name: booking.owner_first_name }) : t('forYou.public')}
+            <RatingBadge rating={booking.owner_rating} className="ml-1.5 align-top" />
+          </span>
         </p>
         <p className="num text-sm">{when}</p>
         {booking.description && <p className="whitespace-pre-wrap break-words text-sm">{booking.description}</p>}

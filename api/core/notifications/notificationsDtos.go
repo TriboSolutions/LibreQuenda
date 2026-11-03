@@ -4,12 +4,16 @@ import (
 	"encoding/json"
 	"librequenda/model"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type NotificationDto struct {
 	Name         string     `json:"name"`
 	Id           string     `json:"id"`
-	Type         string     `json:"type"` // booking_confirmed, booking_reminder, booking_cancelled, booking_cancelled_by_council…
+	BookingId    string     `json:"booking_id"` // "" for notices about no booking
+	IsPublic     bool       `json:"is_public"`  // rating_requested: the others can be rated too
+	Type         string     `json:"type"`       // booking_confirmed, booking_reminder, booking_cancelled, booking_cancelled_by_council…
 	FacilityName string     `json:"facility_name"`
 	FacilitySlug string     `json:"facility_slug"` // issue_solved, issue_rejected
 	StartsAt     *time.Time `json:"starts_at"`
@@ -43,6 +47,7 @@ type payload struct {
 	ByStaff      bool       `json:"by_staff"`
 	TenantName   string     `json:"tenant_name"`
 	TenantSlug   string     `json:"tenant_slug"`
+	IsPublic     bool       `json:"is_public"`
 }
 
 func MapNotifications(rows []model.ListNotificationsByUserRow, unread int64) *NotificationsResponse {
@@ -52,6 +57,8 @@ func MapNotifications(rows []model.ListNotificationsByUserRow, unread int64) *No
 		_ = json.Unmarshal(row.Payload, &data) // an unreadable payload still shows its type
 		response.Notifications = append(response.Notifications, NotificationDto{
 			Id:           row.ID.String(),
+			BookingId:    bookingId(row.BookingID),
+			IsPublic:     data.IsPublic,
 			Name:         data.Name,
 			Type:         string(row.Type),
 			FacilityName: data.FacilityName,
@@ -69,4 +76,11 @@ func MapNotifications(rows []model.ListNotificationsByUserRow, unread int64) *No
 		})
 	}
 	return response
+}
+
+func bookingId(id uuid.NullUUID) string {
+	if !id.Valid {
+		return ""
+	}
+	return id.UUID.String()
 }

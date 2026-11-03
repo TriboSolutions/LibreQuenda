@@ -183,7 +183,12 @@
     "council_limit_reached": "You already have {{0}} upcoming bookings at this council's facilities, the most it allows.",
     "booking_policy_failed": "The platform's booking rules could not be saved.",
     "email_unverified": "Confirm your email address before booking: you can ask for the code and type it in your profile.",
-    "too_many_booking_issues": "This booking already has 5 reports. No more can be submitted."
+    "too_many_booking_issues": "This booking already has 5 reports. No more can be submitted.",
+    "invalid_rating": "Give each rating from 1 to 5 stars.",
+    "rating_load_failed": "Could not load the rating.",
+    "rating_save_failed": "Could not save your rating. Try again.",
+    "rating_closed": "This booking can no longer be rated.",
+    "rating_not_in_booking": "You can only rate the people who played with you in a public booking."
   },
   "email": {
     "greeting": "Hello {{0}},",

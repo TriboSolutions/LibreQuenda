@@ -341,6 +341,9 @@ SELECT
     f.id   AS facility_id,
     f.capacity,
     split_part(trim(COALESCE(u.full_name, '')), ' ', 1)::TEXT AS owner_first_name,
+    -- what others gave the owner after public bookings
+    (SELECT COALESCE(AVG(r.stars), 0) FROM user_rating r WHERE r.rated_id = b.user_id)::FLOAT8 AS owner_rating_average,
+    (SELECT COUNT(*) FROM user_rating r WHERE r.rated_id = b.user_id) AS owner_rating_count,
     (SELECT COUNT(*) FROM booking_participant p WHERE p.booking_id = b.id) AS participant_count
 FROM
     booking b
@@ -369,14 +372,16 @@ type ListJoinablePublicBookingsParams struct {
 }
 
 type ListJoinablePublicBookingsRow struct {
-	ID                uuid.UUID     `json:"id"`
-	PublicDescription string        `json:"public_description"`
-	StartsAt          time.Time     `json:"starts_at"`
-	EndsAt            time.Time     `json:"ends_at"`
-	FacilityID        uuid.UUID     `json:"facility_id"`
-	Capacity          sql.NullInt32 `json:"capacity"`
-	OwnerFirstName    string        `json:"owner_first_name"`
-	ParticipantCount  int64         `json:"participant_count"`
+	ID                 uuid.UUID     `json:"id"`
+	PublicDescription  string        `json:"public_description"`
+	StartsAt           time.Time     `json:"starts_at"`
+	EndsAt             time.Time     `json:"ends_at"`
+	FacilityID         uuid.UUID     `json:"facility_id"`
+	Capacity           sql.NullInt32 `json:"capacity"`
+	OwnerFirstName     string        `json:"owner_first_name"`
+	OwnerRatingAverage float64       `json:"owner_rating_average"`
+	OwnerRatingCount   int64         `json:"owner_rating_count"`
+	ParticipantCount   int64         `json:"participant_count"`
 }
 
 // «For you»: upcoming public bookings with spots left that the person neither
@@ -398,6 +403,8 @@ func (q *Queries) ListJoinablePublicBookings(ctx context.Context, arg ListJoinab
 			&i.FacilityID,
 			&i.Capacity,
 			&i.OwnerFirstName,
+			&i.OwnerRatingAverage,
+			&i.OwnerRatingCount,
 			&i.ParticipantCount,
 		); err != nil {
 			return nil, err

@@ -1,5 +1,6 @@
 import type { Page, Route } from '@playwright/test'
 import type {
+  BookingRating,
   Account,
   AdminFacility,
   AdminFacilitySummary,
@@ -135,6 +136,7 @@ const facilityPage: FacilityPage = {
   now: iso(now),
   facility: facilities[0],
   schedule,
+  rating: { average: 4.3, count: 12 },
 }
 
 const details: FacilityDetails = {
@@ -167,6 +169,7 @@ function booking(id: string, hoursFromNow: number, extra: Partial<Booking> = {})
     checkin_code: 'LQ-123456',
     checked_in_at: null,
     attendance: '',
+    can_rate: false,
     role: 'owner',
     owner_name: '',
     capacity: 4,
@@ -197,9 +200,28 @@ const myBookings: MyBookings = {
     booking('b2', 26, { role: 'participant', owner_name: 'Uxía', can_cancel: false, can_change: false, can_leave: true }),
   ],
   history: [
-    booking('b3', -30, { checkin_code: '', checked_in_at: at(-30), attendance: 'attended', can_cancel: false, can_change: false }),
+    booking('b3', -30, { checkin_code: '', checked_in_at: at(-30), attendance: 'attended', can_rate: true, can_cancel: false, can_change: false }),
     booking('b4', -60, { status: 'cancelled', checkin_code: '', can_cancel: false, can_change: false }),
     booking('b5', -80, { checkin_code: '', attendance: 'no_show', can_cancel: false, can_change: false }),
+  ],
+}
+
+// after a public booking: the facility already rated, the others not yet
+const bookingRating: BookingRating = {
+  booking_id: 'b3',
+  facility_name: 'Pista de pádel 1',
+  facility_slug: 'padel-1',
+  tenant_slug: 'lugo',
+  tenant_name: 'Concello de Lugo',
+  starts_at: at(-30),
+  ends_at: at(-29),
+  is_public: true,
+  can_rate: true,
+  rate_until: at(30 * 24 - 29),
+  facility_stars: 4,
+  people: [
+    { user_id: 'u2', name: 'Uxía Lago', is_owner: true, stars: 0 },
+    { user_id: 'u3', name: 'Brais Vidal', is_owner: false, stars: 5 },
   ],
 }
 
@@ -218,6 +240,7 @@ const me: Me = {
   email_notifications: true,
   email_reminders: true,
   show_recommendations: true,
+  rating: { average: 4.8, count: 5 },
   profile_complete: true,
   pending_invitations: [],
 }
@@ -234,11 +257,12 @@ const account: Account = {
 }
 
 const notifications: Notifications = {
-  unread_count: 2,
+  unread_count: 3,
   notifications: [
-    { name: '', id: 'n1', type: 'booking_confirmed', facility_name: 'Pista de pádel 1', starts_at: at(3), ends_at: at(4), reason: '', closed_from: null, closed_until: null, by_staff: false, tenant_name: 'Concello de Lugo', tenant_slug: 'lugo', facility_slug: '', created_at: at(-1), read: false },
-    { name: '', id: 'n2', type: 'booking_cancelled_by_council', facility_name: 'Pavillón municipal', starts_at: at(30), ends_at: at(31), reason: 'Obras', closed_from: at(29), closed_until: at(40), by_staff: false, tenant_name: 'Concello de Lugo', tenant_slug: 'lugo', facility_slug: '', created_at: at(-5), read: false },
-    { name: '', id: 'n3', type: 'issue_solved', facility_name: 'Pista de pádel 1', starts_at: null, ends_at: null, reason: 'Rede nova colocada.', closed_from: null, closed_until: null, by_staff: false, tenant_name: 'Concello de Lugo', tenant_slug: 'lugo', facility_slug: 'padel-1', created_at: at(-30), read: true },
+    { name: '', id: 'n0', booking_id: 'b3', is_public: true, type: 'rating_requested', facility_name: 'Pista de pádel 1', starts_at: at(-30), ends_at: at(-29), reason: '', closed_from: null, closed_until: null, by_staff: false, tenant_name: 'Concello de Lugo', tenant_slug: 'lugo', facility_slug: 'padel-1', created_at: at(-29), read: false },
+    { name: '', id: 'n1', type: 'booking_confirmed', facility_name: 'Pista de pádel 1', starts_at: at(3), ends_at: at(4), reason: '', closed_from: null, closed_until: null, by_staff: false, booking_id: '', is_public: false, tenant_name: 'Concello de Lugo', tenant_slug: 'lugo', facility_slug: '', created_at: at(-1), read: false },
+    { name: '', id: 'n2', type: 'booking_cancelled_by_council', facility_name: 'Pavillón municipal', starts_at: at(30), ends_at: at(31), reason: 'Obras', closed_from: at(29), closed_until: at(40), by_staff: false, booking_id: '', is_public: false, tenant_name: 'Concello de Lugo', tenant_slug: 'lugo', facility_slug: '', created_at: at(-5), read: false },
+    { name: '', id: 'n3', type: 'issue_solved', facility_name: 'Pista de pádel 1', starts_at: null, ends_at: null, reason: 'Rede nova colocada.', closed_from: null, closed_until: null, by_staff: false, booking_id: '', is_public: false, tenant_name: 'Concello de Lugo', tenant_slug: 'lugo', facility_slug: 'padel-1', created_at: at(-30), read: true },
   ],
 }
 
@@ -515,7 +539,7 @@ const recommendations = {
       kind: 'public_booking',
       facility: facilityCards[0],
       starts_at: at(5),
-      booking: { id: 'pb1', starts_at: at(5), ends_at: at(6), spots_left: 2, owner_first_name: 'Uxía' },
+      booking: { id: 'pb1', starts_at: at(5), ends_at: at(6), spots_left: 2, owner_first_name: 'Uxía', owner_rating: { average: 4.5, count: 8 } },
     },
   ],
 }
@@ -616,6 +640,7 @@ const routes: [RegExp, () => unknown][] = [
   [/^\/tenants\/[^/]+\/admin\/audit/, () => auditPage],
   [/^\/me\/recommendations$/, () => recommendations],
   [/^\/me\/bookings\/[^/]+\/invite$/, () => invite],
+  [/^\/me\/bookings\/[^/]+\/rating$/, () => bookingRating],
   [/^\/me\/notifications$/, () => notifications],
   [/^\/invites\/[^/]+$/, () => publicInvite],
   [/^\/admin\/tenants$/, () => ({ tenants: councils })],
