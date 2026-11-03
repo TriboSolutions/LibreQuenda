@@ -17,7 +17,9 @@
     "issue_solved": "Arreglado el problema que avisaste en {{facility}}.",
     "issue_rejected": "El ayuntamiento revisó el problema que avisaste en {{facility}} y no lo va a tramitar.",
     "booking_joined": "{{name}} se ha unido a tu reserva en {{facility}}, {{day}} a las {{time}}.",
-    "issue_reported": "Nueva incidencia en {{facility}}."
+    "issue_reported": "Nueva incidencia en {{facility}}.",
+    "rating_requested": "¿Qué tal {{facility}}? Valórala de 1 a 5 estrellas.",
+    "rating_requested_public": "¿Qué tal {{facility}}? Valórala, y también a quien jugó contigo."
   },
   "reason": "Motivo: {{reason}}",
   "councilNote": "Nota del ayuntamiento: {{reason}}",

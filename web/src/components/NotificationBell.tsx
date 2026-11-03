@@ -1,4 +1,4 @@
-import { AlarmClock, Bell, CalendarCheck, CalendarClock, CalendarX, ShieldCheck, UserPlus, Wrench } from 'lucide-react'
+import { AlarmClock, Bell, CalendarCheck, CalendarClock, CalendarX, ShieldCheck, Star, UserPlus, Wrench } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
@@ -29,10 +29,12 @@ const icons: Record<NotificationType, typeof Bell> = {
   issue_reported: Wrench,
   issue_solved: Wrench,
   issue_rejected: Wrench,
+  rating_requested: Star,
 }
 
-/** Where a notice leads: the council's administration, the facility of a reported problem, or My bookings. */
+/** Where a notice leads: the council's administration, the facility of a reported problem, the rating dialog, or My bookings. */
 function target(n: AppNotification) {
+  if (n.type === 'rating_requested' && n.booking_id) return `/reservas?valorar=${encodeURIComponent(n.booking_id)}`
   if (n.type === 'issue_reported') return `/${n.tenant_slug}/admin?vista=incidencias`
   if (n.type === 'council_admin_granted') return `/${n.tenant_slug}/admin`
   if ((n.type === 'issue_solved' || n.type === 'issue_rejected') && n.facility_slug) return `/${n.tenant_slug}/${n.facility_slug}`
@@ -107,7 +109,7 @@ function NotificationItem({ notification: n, today, highlighted, onSelect }: Ite
       <Icon aria-hidden className={`mt-0.5 shrink-0 ${sorry ? 'text-destructive' : 'text-muted-foreground'}`} />
       <span className="min-w-0 whitespace-normal">
         <span className={`block text-sm ${highlighted ? 'font-medium' : ''}`}>
-          {t(n.closed_from && n.closed_until ? 'type.booking_cancelled_by_closure' : n.by_staff ? 'type.booking_cancelled_by_staff' : `type.${n.type}`, {
+          {t(n.closed_from && n.closed_until ? 'type.booking_cancelled_by_closure' : n.by_staff ? 'type.booking_cancelled_by_staff' : n.type === 'rating_requested' && n.is_public ? 'type.rating_requested_public' : `type.${n.type}`, {
             name: n.name || t('someone'),
             facility: n.facility_name,
             day: n.starts_at ? formatBookingDay(n.starts_at, TIME_ZONE, today) : '',

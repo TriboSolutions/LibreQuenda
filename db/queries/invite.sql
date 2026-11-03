@@ -260,6 +260,9 @@ SELECT
     f.id   AS facility_id,
     f.capacity,
     split_part(trim(COALESCE(u.full_name, '')), ' ', 1)::TEXT AS owner_first_name,
+    -- what others gave the owner after public bookings
+    (SELECT COALESCE(AVG(r.stars), 0) FROM user_rating r WHERE r.rated_id = b.user_id)::FLOAT8 AS owner_rating_average,
+    (SELECT COUNT(*) FROM user_rating r WHERE r.rated_id = b.user_id) AS owner_rating_count,
     (SELECT COUNT(*) FROM booking_participant p WHERE p.booking_id = b.id) AS participant_count
 FROM
     booking b

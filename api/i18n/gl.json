@@ -183,7 +183,12 @@
     "council_limit_reached": "Xa tes {{0}} reservas próximas nas instalacións deste concello, o máximo que permite.",
     "booking_policy_failed": "Non se puideron gardar as normas de reserva da plataforma.",
     "email_unverified": "Confirma o teu correo electrónico antes de reservar: no teu perfil podes pedir o código e escribilo.",
-    "too_many_booking_issues": "Esta reserva xa ten 5 incidencias. Non se poden enviar máis."
+    "too_many_booking_issues": "Esta reserva xa ten 5 incidencias. Non se poden enviar máis.",
+    "invalid_rating": "Dá cada valoración de 1 a 5 estrelas.",
+    "rating_load_failed": "Non se puido cargar a valoración.",
+    "rating_save_failed": "Non se puido gardar a túa valoración. Téntao de novo.",
+    "rating_closed": "Esta reserva xa non se pode valorar.",
+    "rating_not_in_booking": "Só podes valorar a quen xogou contigo nunha reserva pública."
   },
   "email": {
     "greeting": "Ola {{0}},",

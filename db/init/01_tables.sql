@@ -38,7 +38,8 @@ CREATE TYPE notification_type AS ENUM (
     'council_admin_granted',        -- made administrator of a council (no booking)
     'issue_reported',               -- new issue for the council administrators
     'issue_solved',                 -- a problem the person reported was fixed (issue_id)
-    'issue_rejected'                -- …or turned down, with the council's reason
+    'issue_rejected',               -- …or turned down, with the council's reason
+    'rating_requested'              -- a booking ended: rate the facility (and, if it was public, the others who played)
 );
 
 -- A problem a resident reports at a facility, in the council's maintenance list.
@@ -430,6 +431,42 @@ CREATE TABLE booking_participant (
         (user_id IS NOT NULL AND guest_name IS NULL AND guest_age IS NULL)
         OR (user_id IS NULL AND guest_name IS NOT NULL AND guest_age IS NOT NULL)
     )
+);
+
+
+-- ============================================================
+--  RATINGS (valoracións)
+-- ============================================================
+
+-- 1 to 5 stars, given after a confirmed booking ended by someone who was in it
+-- (the owner, or a participant with an account), one per booking and person;
+-- it can be changed while the booking can still be rated (30 days). Nobody sees
+-- who gave which stars: only the average and how many. An erased account's
+-- ratings of facilities stay, anonymous.
+CREATE TABLE facility_rating (
+    id          UUID         PRIMARY KEY DEFAULT uuidv7(),
+    facility_id UUID         NOT NULL REFERENCES facility(id) ON DELETE CASCADE,
+    booking_id  UUID         NOT NULL REFERENCES booking(id)  ON DELETE CASCADE,
+    user_id     UUID         NULL REFERENCES app_user(id)     ON DELETE SET NULL,
+    stars       SMALLINT     NOT NULL CHECK (stars BETWEEN 1 AND 5),
+    created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    updated_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    UNIQUE (booking_id, user_id)
+);
+
+-- People rate each other only after a public booking (strangers who met
+-- through «For you»), never themselves; guests without an account are not rated.
+-- Gone with either account.
+CREATE TABLE user_rating (
+    id          UUID         PRIMARY KEY DEFAULT uuidv7(),
+    booking_id  UUID         NOT NULL REFERENCES booking(id)  ON DELETE CASCADE,
+    rater_id    UUID         NOT NULL REFERENCES app_user(id) ON DELETE CASCADE,
+    rated_id    UUID         NOT NULL REFERENCES app_user(id) ON DELETE CASCADE,
+    stars       SMALLINT     NOT NULL CHECK (stars BETWEEN 1 AND 5),
+    created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    updated_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    UNIQUE (booking_id, rater_id, rated_id),
+    CHECK (rater_id <> rated_id)
 );
 
 
