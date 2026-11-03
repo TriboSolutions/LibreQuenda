@@ -4,6 +4,7 @@
         <item quantity="other">%1$d free slots today</item>
     </plurals>
     <string name="sign_in">Sign in</string>
+    <string name="sign_in_to_book">Sign in to book</string>
     <string name="sign_out">Sign out</string>
     <string name="create_account">Create account</string>
     <string name="welcome_title">Book your council’s sports facilities</string>

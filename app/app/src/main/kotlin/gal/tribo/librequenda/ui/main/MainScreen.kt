@@ -154,6 +154,7 @@ fun MainScreen(
     var historyOpen by rememberSaveable { mutableStateOf(false) } // survives the language change (the activity is recreated)
     var searchOpen by rememberSaveable { mutableStateOf(false) }
     var searchFilters by remember { mutableStateOf(SearchFilters()) }
+    var browseFilters by remember { mutableStateOf(SearchFilters()) } // signed out, the home's own search
     val bookings = rememberBookingsState(session, actions)
     var flashDone by remember { mutableStateOf<Pair<String, String?>?>(null) } // booked on the spot and in (words, booking): the celebration, then the booking
 
@@ -205,6 +206,10 @@ fun MainScreen(
                     onFacility = { f, at ->
                         facilityOpen = FacilityTarget(f.councilSlug, f.slug, at?.atZone(java.time.ZoneId.of("Europe/Madrid"))?.toLocalDate() ?: java.time.LocalDate.now(), at)
                     },
+                    browse = browseFilters,
+                    onBrowse = { browseFilters = it },
+                    // signed out, the facility opens to look at; booking there asks to sign in
+                    onBrowseFacility = { f, slot -> facilityOpen = FacilityTarget(f.councilSlug, f.slug, browseFilters.day, slot) },
                     modifier = modifier,
                 )
                 Tab.Flash -> FlashScreen(session, actions, onSignIn, onProfile = { profileOpen = true }, onBooked = { message, id -> flashDone = message to id }, modifier = modifier)
@@ -234,11 +239,10 @@ fun MainScreen(
             location = home.location,
             onBack = { searchOpen = false },
             onSignIn = onSignIn,
-            // signed out, a turn asks to sign in first; booking it is the facility page, next
-            // signed out, it asks to sign in first; then the facility, with that turn chosen
-            onSlot = { f, slot -> if (!session.signedIn) onSignIn() else facilityOpen = FacilityTarget(f.councilSlug, f.slug, searchFilters.day, slot) },
+            // the facility, with that turn chosen; signed out, booking there asks to sign in
+            onSlot = { f, slot -> facilityOpen = FacilityTarget(f.councilSlug, f.slug, searchFilters.day, slot) },
         )
-        FacilityPage(facilityOpen, onBack = { facilityOpen = null }, onCheckout = { confirming = it })
+        FacilityPage(facilityOpen, signedIn = session.signedIn, onSignIn = onSignIn, onBack = { facilityOpen = null }, onCheckout = { confirming = it })
         ConfirmBookingPage(confirming, actions, onBack = { confirming = null }, onBooked = { id ->
             // booked: on to it, the way back to the bookings
             confirming = null; facilityOpen = null; searchOpen = false

@@ -5,6 +5,7 @@
         <item quantity="other">%1$d torns lliures avui</item>
     </plurals>
     <string name="sign_in">Inicia la sessió</string>
+    <string name="sign_in_to_book">Inicia la sessió per reservar</string>
     <string name="sign_out">Tanca la sessió</string>
     <string name="create_account">Crea un compte</string>
     <string name="welcome_title">Reserva les instal·lacions esportives del teu ajuntament</string>
