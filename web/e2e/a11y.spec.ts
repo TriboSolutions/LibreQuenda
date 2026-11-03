@@ -648,8 +648,11 @@ test.describe('keyboard', () => {
     await expect(widget.getByLabel('Código para pegar na web')).toHaveValue(/\/lugo\/widget\?theme=dark"/)
   })
 
-  test('a resident reports a problem from a booking, by keyboard', async ({ page }) => {
+  test('a resident reports a problem from a booking, by keyboard', async ({ page, context }) => {
     await page.clock.setFixedTime(new Date(Date.now() + 10 * 60_000))
+    // only from the facility: the location goes with the report
+    await context.grantPermissions(['geolocation'])
+    await context.setGeolocation({ latitude: 43.0097, longitude: -7.5568, accuracy: 10 })
     await open(page, '/reservas')
     await page.getByRole('button', { name: 'Avisar dun problema' }).first().click()
     const dialog = page.getByRole('dialog')
@@ -660,7 +663,7 @@ test.describe('keyboard', () => {
     await dialog.getByLabel('É urxente').check()
     const sent = page.waitForRequest((r) => r.method() === 'POST' && r.url().endsWith('/me/issues'))
     await dialog.getByRole('button', { name: 'Enviar o aviso' }).click()
-    expect((await sent).postDataJSON()).toMatchObject({ booking_id: 'b0', category: 'lighting', description: 'Non acende a luz da pista.', urgent: true, share_contact: false })
+    expect((await sent).postDataJSON()).toMatchObject({ booking_id: 'b0', category: 'lighting', description: 'Non acende a luz da pista.', urgent: true, share_contact: false, latitude: 43.0097, longitude: -7.5568, accuracy: 10 })
     await expect(dialog.getByRole('status')).toContainText('O concello recibiu o aviso')
   })
 

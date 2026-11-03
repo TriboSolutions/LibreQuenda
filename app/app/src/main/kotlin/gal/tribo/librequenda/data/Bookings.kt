@@ -28,6 +28,7 @@ data class Booking(
     // checking in (owner only): how the facility takes it, and the booking's QR for the reader
     val councilSlug: String = "",
     val facilitySlug: String = "",
+    val facilityId: String = "", // for a problem report
     val checkinWays: List<String> = emptyList(), // reader, entry_code, printed_qr, staff
     val checkinCode: String = "", // the QR's content; "" unless upcoming and confirmed
     val checkedInAt: Instant? = null,
@@ -68,6 +69,7 @@ private fun JSONObject.toBooking() = Booking(
     checkedInAt = if (isNull("checked_in_at")) null else optString("checked_in_at").takeIf { it.isNotBlank() }?.let { runCatching { java.time.OffsetDateTime.parse(it).toInstant() }.getOrNull() },
     councilSlug = optString("tenant_slug"),
     facilitySlug = optString("facility_slug"),
+    facilityId = optString("facility_id"),
     checkinWays = optJSONArray("checkin_ways")?.let { a -> List(a.length()) { a.getString(it) } }.orEmpty(),
     checkinCode = optString("checkin_code"),
     checkinRadiusM = optInt("checkin_radius_m"),
@@ -128,4 +130,26 @@ suspend fun setPublic(token: String, id: String, public: Boolean, description: S
 /** DELETE /me/bookings/{id}/participation: leave someone else's booking. */
 suspend fun leaveBooking(token: String, id: String) {
     Api.send("DELETE", Api.baseUrl + "/me/bookings/$id/participation", token)
+}
+
+/** PATCH /me/bookings/{id}: another free turn of the same facility; who joined, the QR and the invite stay with it. */
+suspend fun changeBooking(token: String, id: String, startsAt: Instant) {
+    Api.send("PATCH", Api.baseUrl + "/me/bookings/$id", token, JSONObject().put("starts_at", startsAt.toString()))
+}
+
+/** The kinds of problem a resident can report, as the web lists them. */
+val ISSUE_CATEGORIES = listOf("equipment", "lighting", "cleaning", "changing_rooms", "accessibility", "safety", "other")
+
+/** POST /me/issues: a problem at the facility, from a booking under way; it lands in the council's maintenance list. */
+suspend fun reportIssue(
+    token: String, facilityId: String, bookingId: String, category: String, description: String,
+    photoRef: String?, urgent: Boolean, shareContact: Boolean, position: Position,
+) {
+    // only from the facility: where the phone is goes with it, checked and never stored
+    val body = JSONObject()
+        .put("facility_id", facilityId).put("booking_id", bookingId).put("category", category)
+        .put("description", description).put("urgent", urgent).put("share_contact", shareContact)
+        .put("latitude", position.latitude).put("longitude", position.longitude).put("accuracy", position.accuracy.toDouble())
+    photoRef?.let { body.put("photo_ref", it) }
+    Api.send("POST", Api.baseUrl + "/me/issues", token, body)
 }

@@ -86,13 +86,15 @@ fun LqTextField(
     keyboardType: KeyboardType = KeyboardType.Text,
     error: String? = null,
     enabled: Boolean = true,
+    minLines: Int = 1, // more: a text of several lines
 ) {
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Text(label, style = MaterialTheme.typography.labelLarge, color = Lq.colors.foreground)
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
-            singleLine = true,
+            singleLine = minLines == 1,
+            minLines = minLines,
             enabled = enabled,
             isError = error != null,
             visualTransformation = if (password) PasswordVisualTransformation() else androidx.compose.ui.text.input.VisualTransformation.None,

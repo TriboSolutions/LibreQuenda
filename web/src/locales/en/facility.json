@@ -50,6 +50,7 @@
     "whatHelp": "Where it is and what you see: for example, “the net of court 2 is torn in the middle”. Up to 1000 characters.",
     "photo": "Photo (optional)",
     "urgent": "It is urgent",
+    "locationNote": "We will ask for your location: problems can only be reported from the facility. It is checked and never stored.",
     "urgentHelp": "For example, if it is dangerous or the facility cannot be used.",
     "shareContact": "Let council staff see my email and profile phone number, if saved, to contact me",
     "send": "Send the report",
