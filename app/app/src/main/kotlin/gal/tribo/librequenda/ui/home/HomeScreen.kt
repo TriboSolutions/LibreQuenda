@@ -1,5 +1,7 @@
 package gal.tribo.librequenda.ui.home
 
+import gal.tribo.librequenda.ui.search.FacilitySearch
+
 import android.Manifest
 import gal.tribo.librequenda.ui.components.Pill
 import androidx.compose.material3.HorizontalDivider
@@ -82,6 +84,8 @@ import java.util.Locale
  * Home: their next booking first, when there is one; what they still need to book
  * (date of birth, a confirmed email); a greeting with quick ways into the search;
  * then «For you» and the public bookings (only when there are some) as carousels.
+ * Signed out, none of that: the facilities alone, as on the search page, to look
+ * through (booking asks to sign in).
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -96,11 +100,24 @@ fun HomeScreen(
     onProfile: () -> Unit,
     onBookings: () -> Unit,
     onFacility: (FacilityCard, Instant?) -> Unit,
+    browse: SearchFilters,
+    onBrowse: (SearchFilters) -> Unit,
+    onBrowseFacility: (DayFacility, Instant?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LocationRequest(onLocation)
-    // signed out, a facility asks to sign in first (its page, to book, comes next)
-    val onOpen: (FacilityCard, Instant?) -> Unit = { f, at -> if (!session.signedIn) onSignIn() else onFacility(f, at) }
+    if (!session.signedIn) {
+        FacilitySearch(
+            filters = browse,
+            onFilters = onBrowse,
+            councils = home.facilities.map { it.councilSlug to it.councilName }.distinct(),
+            location = home.location,
+            onSlot = onBrowseFacility,
+            modifier = modifier.padding(top = 16.dp),
+        )
+        return
+    }
+    val onOpen: (FacilityCard, Instant?) -> Unit = onFacility
 
     PullToRefreshBox(
         isRefreshing = home.loading && home.facilities.isNotEmpty(),
