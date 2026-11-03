@@ -163,7 +163,6 @@ export function MyBookingsPage() {
                 <BookingRow key={booking.id} booking={booking} today={today} now={ticking}>
                   {booking.role === 'owner' ? (
                     <>
-                      {booking.checkin_ways?.length ? <CheckinButton booking={booking} now={ticking} onOpen={() => setToCheckIn(booking)} /> : null}
                       {booking.capacity > 0 && booking.starts_at > now && <PublicSwitch booking={booking} token={token} onChanged={bookings.reload} />}
                       {booking.capacity > 0 && booking.starts_at > now && (
                         <Button variant="outline" size="sm" onClick={() => setToInvite(booking)}>
@@ -196,6 +195,10 @@ export function MyBookingsPage() {
                       {t('facility:issue.report')}
                     </Button>
                   )}
+                  {/* the main action last, at the right: public, invite, report, then check in */}
+                  {booking.role === 'owner' && booking.checkin_ways?.length ? (
+                    <CheckinButton booking={booking} now={ticking} onOpen={() => setToCheckIn(booking)} />
+                  ) : null}
                 </BookingRow>
               ))}
             </ul>
