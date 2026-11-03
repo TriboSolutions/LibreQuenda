@@ -47,7 +47,7 @@ func (h *entranceHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 	var response, err = GetEntranceService(h.db).Get(r.Context(), session, slug, facility)
 	if err != nil {
-		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
 		return
 	}
 	w.Header().Set("Cache-Control", "no-store")
@@ -66,7 +66,7 @@ func (h *entranceHandler) CheckIn(w http.ResponseWriter, r *http.Request) {
 	}
 	var response, err = GetEntranceService(h.db).CheckIn(r.Context(), session, slug, facility, body)
 	if err != nil {
-		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
 		return
 	}
 	helpers.SendSuccessResponse(w, response)
@@ -81,7 +81,7 @@ func (h *entranceHandler) Nearby(w http.ResponseWriter, r *http.Request) {
 	}
 	var response, err = GetEntranceService(h.db).Nearby(r.Context(), body)
 	if err != nil {
-		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
 		return
 	}
 	w.Header().Set("Cache-Control", "no-store")

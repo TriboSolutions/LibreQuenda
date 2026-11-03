@@ -17,7 +17,7 @@ import { useAsync } from '@/hooks/useAsync'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { useTags } from '@/hooks/useTags'
 import { api, type FacilityCard, type GeoPoint } from '@/lib/api'
-import { distanceKm, inView, type MapView } from '@/lib/geo'
+import { inView, type MapView } from '@/lib/geo'
 import { cn } from '@/lib/utils'
 
 // Distances offered once the browser knows where the resident is; 0 = any distance
@@ -40,13 +40,19 @@ type Position = { state: 'off' } | { state: 'locating' } | { state: 'denied' } |
 export function HomePage() {
   const { t } = useTranslation(['councils', 'common', 'home'])
   const tenants = useAsync(() => api.tenants(), 'tenants')
-  const facilities = useAsync(() => api.facilities(), 'facilities')
   const catalogue = useTags()
   const [query, setQuery] = useState('')
   const [council, setCouncil] = useState('')
   const [tags, setTags] = useState<string[]>([])
   const [position, setPosition] = useState<Position>({ state: 'off' })
   const [radius, setRadius] = useState(0)
+  // nearest first, within the radius, is the API's job: it gets where the person is
+  const near = position.state === 'on' ? position.point : null
+  const me = near
+  const facilities = useAsync(
+    () => api.facilities(near, radius),
+    `facilities:${near ? `${near.latitude.toFixed(4)},${near.longitude.toFixed(4)}` : ''}:${radius}`,
+  )
   const [highlighted, setHighlighted] = useState<string | null>(null)
   const [view, setView] = useState<MapView | null>(null)
   const [fitKey, setFitKey] = useState(0)
@@ -75,20 +81,14 @@ export function HomePage() {
 
   // every word has to appear in the facility's name, its council, its sport or its tags
   const words = normalise(query).split(/\s+/).filter(Boolean)
-  const me = position.state === 'on' ? position.point : null
-  let shown: { facility: FacilityCard; km: number | null }[] = all.flatMap((facility) => {
+  // in the API's order; the words, council and tags only leave some out
+  const shown: { facility: FacilityCard; km: number | null }[] = all.flatMap((facility) => {
     if (council && facility.council.slug !== council) return []
     if (!tags.every((tag) => facility.tags.includes(tag))) return []
     const text = normalise([facility.name, facility.council.name, facility.sport, ...facility.tags.map(catalogue.label)].join(' '))
     if (!words.every((word) => text.includes(word))) return []
-    const km = me && facility.latitude !== null && facility.longitude !== null ? distanceKm(me, { latitude: facility.latitude, longitude: facility.longitude }) : null
-    return [{ facility, km }]
+    return [{ facility, km: facility.distance_km ?? null }]
   })
-  if (me) {
-    if (radius > 0) shown = shown.filter(({ km }) => km !== null && km <= radius)
-    // nearest first; facilities without a map pin go last
-    shown = [...shown].sort((a, b) => (a.km ?? Infinity) - (b.km ?? Infinity))
-  }
   // the list follows the map: zoomed or panned in, only what is in view (and then not the
   // facilities without a pin); while the map frames every match, all of them
   const pinnedOf = (f: FacilityCard) => (f.latitude !== null && f.longitude !== null ? { latitude: f.latitude, longitude: f.longitude } : null)

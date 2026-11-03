@@ -109,7 +109,7 @@
     "invite_failed": "No se pudo actualizar la invitación. Inténtalo de nuevo.",
     "participant_not_found": "Esa persona ya no está en la reserva.",
     "leave_failed": "No se pudo salir de la reserva. Inténtalo de nuevo.",
-    "leave_too_late": "La reserva ya ha empezado.",
+    "leave_too_late": "Ya no puedes salir: quedan menos de 15 minutos para que empiece la reserva.",
     "invalid_guest_name": "Escribe un nombre de hasta 80 caracteres.",
     "invalid_guest_age": "La edad debe estar entre 1 y 120.",
     "guest_age_restricted": "Esta instalación tiene una edad mínima que la persona invitada no cumple.",

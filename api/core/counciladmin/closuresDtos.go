@@ -69,6 +69,7 @@ type ClosurePreviewDto struct {
 }
 
 type ClosureResultDto struct {
-	Closure   ClosureDto `json:"closure"`
-	Cancelled int64      `json:"cancelled"`
+	Closure   ClosureDto   `json:"closure"`
+	Cancelled int64        `json:"cancelled"`
+	Closures  []ClosureDto `json:"closures"` // the facility's current and upcoming ones, soonest first: the list to show
 }

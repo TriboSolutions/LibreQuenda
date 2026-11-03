@@ -36,7 +36,7 @@ func (h *calendarHandler) currentUser(w http.ResponseWriter, r *http.Request) (u
 	var session, _ = auth.SessionFromContext(r.Context())
 	var userId, err = me.CurrentUserId(r.Context(), h.db, session)
 	if err != nil {
-		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
 		return uuid.Nil, false
 	}
 	return userId, true
@@ -44,7 +44,7 @@ func (h *calendarHandler) currentUser(w http.ResponseWriter, r *http.Request) (u
 
 func reply(w http.ResponseWriter, r *http.Request, data *CalendarFeedDto, err *shared.ErrorResponse) {
 	if err != nil {
-		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
 		return
 	}
 	w.Header().Set("Cache-Control", "no-store") // the address is a secret
@@ -75,7 +75,7 @@ func (h *calendarHandler) TurnOffFeed(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := GetCalendarService(h.db).TurnOff(r.Context(), userId); err != nil {
-		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
 		return
 	}
 	helpers.SendNoContentResponse(w)
@@ -92,7 +92,7 @@ func (h *calendarHandler) Ics(w http.ResponseWriter, r *http.Request) {
 	}
 	var rows, err = GetCalendarService(h.db).Feed(r.Context(), token)
 	if err != nil {
-		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
 		return
 	}
 	w.Header().Set("Content-Type", "text/calendar; charset=utf-8")

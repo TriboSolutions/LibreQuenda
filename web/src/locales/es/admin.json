@@ -582,15 +582,22 @@
     },
     "nfc": {
       "name": "Etiqueta NFC",
-      "how": "El vecino acerca el móvil a una pegatina en la puerta, que abre la página de entrada.",
-      "door": "una pegatina NFC",
+      "how": "El vecino acerca el móvil a un adhesivo en la puerta, que abre la página de entrada.",
+      "door": "un adhesivo NFC",
       "cost": "unos euros por puerta",
-      "cheat": "bajo con una etiqueta simple, alto con una firmada",
-      "tag": "Tipo de etiqueta",
-      "signed": "Firma cada lectura (NTAG 424 DNA)",
-      "plain": "Etiqueta simple",
-      "signedHelp": "Cada lectura lleva una firma y un contador que comprueba el servidor, así que una lectura copiada o grabada no sirve.",
-      "plainHelp": "Una etiqueta simple solo guarda la dirección y se puede copiar: añade la comprobación de ubicación."
+      "cheat": "bajo: una etiqueta copiada solo sirve en la puerta, porque siempre se comprueba la ubicación",
+      "write": "Graba esta dirección en una etiqueta NFC (NTAG213 o similar) como enlace, con una app para grabar etiquetas, y pégala en la puerta.",
+      "addressLabel": "Dirección de la etiqueta NFC",
+      "copy": "Copiar",
+      "copied": "Copiado",
+      "newTag": "Nueva dirección",
+      "saveToWrite": "Guarda los cambios para ver la dirección que hay que grabar.",
+      "plainHelp": "Una etiqueta simple solo guarda la dirección y se puede copiar: por eso siempre se comprueba la ubicación del móvil.",
+      "newTitle": "¿Crear una dirección nueva?",
+      "newBody": "Las etiquetas ya grabadas dejan de funcionar en el momento. Graba la nueva dirección en las etiquetas de las puertas.",
+      "newConfirm": "Crear una dirección nueva",
+      "keep": "Mantener esta dirección",
+      "rotated": "Dirección nueva lista. Grábala en las etiquetas de las puertas."
     },
     "entryCode": {
       "name": "Código de entrada",
@@ -885,7 +892,7 @@
   "bookingPolicy": {
     "title": "Normas de reserva de la plataforma",
     "oneCouncil": "Un ayuntamiento cada vez por cuenta",
-    "oneCouncilHelp": "Con reservas próximas en un ayuntamiento (propias o a las que se unió), una persona no puede reservar ni unirse en otro hasta que terminen. Ningún ayuntamiento ve las reservas de otro.",
+    "oneCouncilHelp": "Con reservas propias próximas en un concello, una persona no puede reservar en otro hasta que terminen. Unirse a la partida de otra persona no cuenta: solo se comprueba que no coincida con sus horas. Ningún concello ve las reservas de otro.",
     "saved": "Guardado."
   }
 }

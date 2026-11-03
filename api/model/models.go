@@ -146,6 +146,7 @@ const (
 	CheckinMethodReader    CheckinMethod = "reader"
 	CheckinMethodPrintedQr CheckinMethod = "printed_qr"
 	CheckinMethodEntryCode CheckinMethod = "entry_code"
+	CheckinMethodNfc       CheckinMethod = "nfc"
 	CheckinMethodStaff     CheckinMethod = "staff"
 )
 
@@ -510,6 +511,8 @@ type FacilityCheckin struct {
 	FlashBooking  bool            `json:"flash_booking"`
 	StaffConfirm  bool            `json:"staff_confirm"`
 	QrReader      bool            `json:"qr_reader"`
+	Nfc           bool            `json:"nfc"`
+	NfcToken      uuid.UUID       `json:"nfc_token"`
 	StaffContacts json.RawMessage `json:"staff_contacts"`
 	UpdatedAt     time.Time       `json:"updated_at"`
 }
@@ -653,10 +656,11 @@ type TenantSmtp struct {
 }
 
 type UserQrToken struct {
-	Token     uuid.UUID    `json:"token"`
-	UserID    uuid.UUID    `json:"user_id"`
-	ExpiresAt time.Time    `json:"expires_at"`
-	UsedAt    sql.NullTime `json:"used_at"`
+	Token     uuid.UUID     `json:"token"`
+	UserID    uuid.UUID     `json:"user_id"`
+	ExpiresAt time.Time     `json:"expires_at"`
+	UsedAt    sql.NullTime  `json:"used_at"`
+	BookingID uuid.NullUUID `json:"booking_id"`
 }
 
 type UserRating struct {

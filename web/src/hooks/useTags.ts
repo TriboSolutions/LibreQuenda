@@ -9,16 +9,14 @@ import { api, type TagCategory } from '@/lib/api'
 export function useTags() {
   const catalogue = useAsync(() => api.tags(), 'tags')
   const categories = catalogue.data?.categories ?? []
-  const order = new Map(categories.flatMap((c) => c.tags).map((tag, i) => [tag.slug, i]))
   const names = new Map(categories.flatMap((c) => c.tags).map((tag) => [tag.slug, tag.name]))
 
   const label = (slug: string) => names.get(slug) ?? slug
-  const sort = (slugs: Iterable<string>) => [...new Set(slugs)].filter((slug) => order.has(slug)).sort((a, b) => order.get(a)! - order.get(b)!)
   /** The categories with only the given tags, empty ones left out. */
   const grouped = (slugs: Iterable<string>): TagCategory[] => {
     const present = new Set(slugs)
     return categories.map((c) => ({ ...c, tags: c.tags.filter((tag) => present.has(tag.slug)) })).filter((c) => c.tags.length > 0)
   }
 
-  return { categories, label, sort, grouped, loading: catalogue.loading, error: catalogue.error, reload: catalogue.reload }
+  return { categories, label, grouped, loading: catalogue.loading, error: catalogue.error, reload: catalogue.reload }
 }

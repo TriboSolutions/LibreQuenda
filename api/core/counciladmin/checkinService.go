@@ -38,6 +38,8 @@ func mapCheckinSettings(row model.GetFacilityCheckinRow, hasLocation bool) *Chec
 	return &CheckinSettingsDto{
 		PrintedQr:     row.PrintedQr,
 		QrToken:       row.QrToken.String(),
+		Nfc:           row.Nfc,
+		NfcToken:      row.NfcToken.String(),
 		EntryCode:     row.EntryCode,
 		Code:          checkin.EntryCode(row.CodeSecret),
 		RadiusM:       int(row.RadiusM),
@@ -85,6 +87,7 @@ func (s *counciladminService) SaveCheckinSettings(ctx context.Context, tenantId 
 		var updateErr error
 		row, updateErr = queries.UpdateFacilityCheckin(ctx, model.UpdateFacilityCheckinParams{
 			PrintedQr:     input.PrintedQr,
+			Nfc:           input.Nfc,
 			EntryCode:     input.EntryCode,
 			RadiusM:       int32(input.RadiusM),
 			FlashBooking:  input.FlashBooking,
@@ -114,6 +117,27 @@ func (s *counciladminService) RotateCheckinQr(ctx context.Context, tenantId uuid
 	var err = db.WithTenant(ctx, s.db, tenantId, func(queries *model.Queries) error {
 		var rotateErr error
 		row.QrToken, rotateErr = queries.RotateFacilityQrToken(ctx, facilityId)
+		return rotateErr
+	})
+	if err != nil {
+		return nil, failed("errors.checkin_settings_failed")
+	}
+	return mapCheckinSettings(row, facility.Latitude != nil), nil
+}
+
+// RotateCheckinNfc: a new address for the NFC tags; the tags already written stop working.
+func (s *counciladminService) RotateCheckinNfc(ctx context.Context, tenantId uuid.UUID, facilityId uuid.UUID) (*CheckinSettingsDto, *shared.ErrorResponse) {
+	var facility, notFound = s.GetFacility(ctx, tenantId, facilityId)
+	if notFound != nil {
+		return nil, notFound
+	}
+	var row, settingsErr = s.checkinSettings(ctx, tenantId, facilityId)
+	if settingsErr != nil {
+		return nil, settingsErr
+	}
+	var err = db.WithTenant(ctx, s.db, tenantId, func(queries *model.Queries) error {
+		var rotateErr error
+		row.NfcToken, rotateErr = queries.RotateFacilityNfcToken(ctx, facilityId)
 		return rotateErr
 	})
 	if err != nil {

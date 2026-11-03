@@ -5,6 +5,7 @@ import (
 	"librequenda/checkin"
 	"librequenda/core/ratings"
 	"librequenda/model"
+	"librequenda/shared"
 	"librequenda/storage"
 	"sort"
 	"strings"
@@ -143,10 +144,10 @@ func people(owner PersonDto, joined []model.ListPeopleByBookingsRow, me uuid.UUI
 
 type MyBookingsResponse struct {
 	Upcoming []BookingDto `json:"upcoming"` // soonest first
-	History  []BookingDto `json:"history"`  // most recent first
+	History  []BookingDto `json:"history"`  // most recent first, a page of it
+	// where that page of the history sits (the upcoming ones always come whole)
+	HistoryPagination shared.PageDto `json:"history_pagination"`
 }
-
-const historyLimit = 100
 
 const (
 	RoleOwner       = "owner"
@@ -213,7 +214,7 @@ func MapMyBookings(rows []model.ListBookingsByUserRow, joined []model.ListPartic
 		}
 	}
 	for _, booking := range all {
-		if (booking.Status != string(model.BookingStatusConfirmed) || !booking.EndsAt.After(now)) && len(response.History) < historyLimit {
+		if booking.Status != string(model.BookingStatusConfirmed) || !booking.EndsAt.After(now) {
 			response.History = append(response.History, booking)
 		}
 	}
@@ -243,7 +244,7 @@ func mapParticipation(row model.ListParticipationsByUserRow, now time.Time) Book
 		OwnerName:        row.OwnerName,
 		Capacity:         invitableCapacity(row.Capacity),
 		ParticipantCount: int(row.ParticipantCount),
-		CanLeave:         row.Status == model.BookingStatusConfirmed && now.Before(row.StartsAt),
+		CanLeave:         CanLeaveAt(row.Status, row.StartsAt, now),
 		Facility:         FacilityDetails(row.Facility, row.FacilitySport),
 	}
 }
@@ -295,6 +296,7 @@ func checkinWays(row model.ListBookingsByUserRow) []string {
 	}{
 		{row.EntryCode, model.CheckinMethodEntryCode},
 		{row.PrintedQr, model.CheckinMethodPrintedQr},
+		{row.Nfc, model.CheckinMethodNfc},
 		{row.HasReader, model.CheckinMethodReader},
 		{row.StaffConfirm, model.CheckinMethodStaff},
 	} {
@@ -313,4 +315,14 @@ func staffContacts(row model.ListBookingsByUserRow) []checkin.StaffContact {
 	}
 	return checkin.StaffOrFallback(row.StaffContacts, row.FacilityName, row.Facility.ContactPhone.String, row.Facility.ContactEmail.String,
 		row.TenantName, row.TenantPhone.String, row.TenantEmail.String)
+}
+
+// LeaveCutoff: someone who joined a booking can leave it until this long before
+// it starts, so the owner is not left short at the last minute (the entrance
+// opens then too, checkin.EarlyWindow).
+const LeaveCutoff = 15 * time.Minute
+
+// CanLeaveAt: a participant may still leave a confirmed booking at now.
+func CanLeaveAt(status model.BookingStatus, startsAt time.Time, now time.Time) bool {
+	return status == model.BookingStatusConfirmed && now.Before(startsAt.Add(-LeaveCutoff))
 }

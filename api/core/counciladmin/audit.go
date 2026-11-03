@@ -66,6 +66,7 @@ func describeCheckin(ctx context.Context, before, after *CheckinSettingsDto) {
 	}
 	audit.Changed(ctx, "qr_reader", before.QrReader, after.QrReader)
 	audit.Changed(ctx, "printed_qr", before.PrintedQr, after.PrintedQr)
+	audit.Changed(ctx, "nfc", before.Nfc, after.Nfc)
 	audit.Changed(ctx, "entry_code", before.EntryCode, after.EntryCode)
 	audit.Changed(ctx, "staff_confirm", before.StaffConfirm, after.StaffConfirm)
 	audit.Changed(ctx, "flash_booking", before.FlashBooking, after.FlashBooking)

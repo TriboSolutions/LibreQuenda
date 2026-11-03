@@ -100,6 +100,10 @@
       "help": "Obre la càmera i apunta al QR imprès a la porta. Abans et demanarem la ubicació, que es comprova i mai no es desa.",
       "tab": "QR de la porta"
     },
+    "nfc": {
+      "tab": "Etiqueta NFC",
+      "help": "Apropa el mòbil a l’etiqueta NFC de la porta: s’obre la pàgina d’entrada i registres l’entrada. Et demanarem la ubicació, que es comprova i mai no es desa."
+    },
     "reader": {
       "help": "Apropa aquest QR al lector de l’entrada.",
       "tab": "Lector QR"

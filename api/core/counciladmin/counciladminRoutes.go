@@ -44,6 +44,7 @@ func (r *counciladminRoutes) RegisterRoutes() {
 		{Path: "/tenants/{slug}/admin/facilities/{id}/checkin", Method: http.MethodGet, Handler: h.GetCheckinSettings},
 		{Path: "/tenants/{slug}/admin/facilities/{id}/checkin", Method: http.MethodPut, Handler: h.SaveCheckinSettings},
 		{Path: "/tenants/{slug}/admin/facilities/{id}/checkin/qr", Method: http.MethodPost, Handler: h.RotateCheckinQr},
+		{Path: "/tenants/{slug}/admin/facilities/{id}/checkin/nfc", Method: http.MethodPost, Handler: h.RotateCheckinNfc},
 		{Path: "/tenants/{slug}/admin/facilities/{id}/checkin/code", Method: http.MethodPost, Handler: h.RotateCheckinCode},
 		{Path: "/tenants/{slug}/admin/facilities/{id}/active", Method: http.MethodPut, Handler: h.SetActive},
 		{Path: "/tenants/{slug}/admin/facilities/{id}/closures/preview", Method: http.MethodPost, Handler: h.PreviewClosure},

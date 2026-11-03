@@ -20,13 +20,14 @@ import { formatTime } from '@/lib/time'
 
 /**
  * /:slug/:facility/entrada: check in from the resident's own phone at the door.
- * The printed QR opens it with ?c=<token>; otherwise the resident types the
+ * The printed QR opens it with ?c=<token>, the NFC tag with ?n=<token>; otherwise the resident types the
  * facility's entry code. Either way the phone's location is checked.
  */
 export function EntrancePage() {
   const { slug = '', facility: facilitySlug = '' } = useParams()
   const [params] = useSearchParams()
   const qrToken = params.get('c') ?? ''
+  const nfcToken = params.get('n') ?? '' // the NFC tag on the door opens /entrada?n=<token>
   const { t } = useTranslation(['entrance', 'reader', 'common'])
   const auth = useAuth()
   const token = auth.user?.access_token
@@ -45,7 +46,8 @@ export function EntrancePage() {
 
   const data = entrance.data
   const byQr = qrToken !== '' && !!data?.printed_qr
-  const byCode = !byQr && !!data?.entry_code
+  const byNfc = !byQr && nfcToken !== '' && !!data?.nfc
+  const byCode = !byQr && !byNfc && !!data?.entry_code
   const timeZone = data?.timezone ?? 'Europe/Madrid'
 
   const send = async (book: boolean) => {
@@ -65,7 +67,7 @@ export function EntrancePage() {
         }
         setPosition(where)
       }
-      const proof = byQr ? { qr_token: qrToken } : { code }
+      const proof = byQr ? { qr_token: qrToken } : byNfc ? { nfc_token: nfcToken } : { code }
       const answer = await api.entrance.checkIn(token, slug, facilitySlug, { ...proof, ...where, book })
       setResult(answer)
       if (GRANTED.includes(answer.result)) entrance.reload()
@@ -103,10 +105,10 @@ export function EntrancePage() {
         </Button>
       </div>
     )
-  } else if (!byQr && !byCode) {
+  } else if (!byQr && !byNfc && !byCode) {
     body = (
       <Alert>
-        <AlertDescription>{qrToken ? t('entrance:qrOff') : data.printed_qr ? t('entrance:scanQr') : t('entrance:notHere')}</AlertDescription>
+        <AlertDescription>{qrToken || nfcToken ? t('entrance:qrOff') : data.printed_qr ? t('entrance:scanQr') : t('entrance:notHere')}</AlertDescription>
       </Alert>
     )
   } else {

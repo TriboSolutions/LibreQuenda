@@ -11,7 +11,7 @@ import (
 var reservedSlugs = map[string]bool{
 	"admin": true, "api": true, "callback": true, "me": true, "config": true,
 	"assets": true, "static": true, "login": true, "logout": true, "new": true, "perfil": true, "lector": true,
-	"reservas": true, "invitacion": true, "accesibilidade": true,
+	"reservas": true, "invitacion": true, "accesibilidade": true, "condicions": true, "privacidade": true,
 }
 
 type TenantInput struct {

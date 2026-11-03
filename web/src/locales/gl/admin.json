@@ -585,12 +585,19 @@
       "how": "O veciño achega o móbil a un adhesivo na porta, que abre a páxina de entrada.",
       "door": "un adhesivo NFC",
       "cost": "uns euros por porta",
-      "cheat": "baixo cunha etiqueta simple, alto cunha asinada",
-      "tag": "Tipo de etiqueta",
-      "signed": "Asina cada lectura (NTAG 424 DNA)",
-      "plain": "Etiqueta simple",
-      "signedHelp": "Cada lectura leva unha sinatura e un contador que comproba o servidor, así que unha lectura copiada ou gravada non serve.",
-      "plainHelp": "Unha etiqueta simple só garda o enderezo e pódese copiar: engade a comprobación de localización."
+      "cheat": "baixo: unha etiqueta copiada só serve á porta, porque sempre se comproba a localización",
+      "write": "Grava este enderezo nunha etiqueta NFC (NTAG213 ou similar) como ligazón, cunha app de gravar etiquetas, e pégaa na porta.",
+      "addressLabel": "Enderezo da etiqueta NFC",
+      "copy": "Copiar",
+      "copied": "Copiado",
+      "newTag": "Novo enderezo",
+      "saveToWrite": "Garda os cambios para ver o enderezo que hai que gravar.",
+      "plainHelp": "Unha etiqueta simple só garda o enderezo e pódese copiar: por iso sempre se comproba a localización do móbil.",
+      "newTitle": "Crear un enderezo novo?",
+      "newBody": "As etiquetas xa gravadas deixan de funcionar no momento. Grava o novo enderezo nas etiquetas das portas.",
+      "newConfirm": "Crear un enderezo novo",
+      "keep": "Manter este enderezo",
+      "rotated": "Enderezo novo listo. Gravao nas etiquetas das portas."
     },
     "entryCode": {
       "name": "Código de entrada",
@@ -885,7 +892,7 @@
   "bookingPolicy": {
     "title": "Normas de reserva da plataforma",
     "oneCouncil": "Un concello de cada vez por conta",
-    "oneCouncilHelp": "Con reservas próximas nun concello (propias ou ás que se uniu), unha persoa non pode reservar nin unirse noutro ata que rematen. Ningún concello ve as reservas doutro.",
+    "oneCouncilHelp": "Con reservas propias próximas nun concello, unha persoa non pode reservar noutro ata que rematen. Unirse á partida doutra persoa non conta: só se comproba que non coincida coas súas horas. Ningún concello ve as reservas doutro.",
     "saved": "Gardado."
   }
 }

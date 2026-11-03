@@ -14,6 +14,7 @@ type EntranceDto struct {
 	TenantSlug   string `json:"tenant_slug"`
 	Timezone     string `json:"timezone"`
 	PrintedQr    bool   `json:"printed_qr"` // the QR on the door works
+	Nfc          bool   `json:"nfc"`        // the NFC tag on the door works
 	EntryCode    bool   `json:"entry_code"` // the facility's entry code works
 	RadiusM      int    `json:"radius_m"`
 	FlashBooking bool   `json:"flash_booking"` // a free turn can be booked on the spot
@@ -30,7 +31,8 @@ type EntranceBookingDto struct {
 // CheckinInput: the proof of being at the door (the printed QR's token or the
 // entry code) and where the phone is. The location is checked, never stored.
 type CheckinInput struct {
-	QrToken   string   `json:"qr_token"`
+	QrToken   string   `json:"qr_token"`  // read from the QR printed on the door
+	NfcToken  string   `json:"nfc_token"` // read from the NFC tag on the door
 	Code      string   `json:"code"`
 	Latitude  *float64 `json:"latitude"`
 	Longitude *float64 `json:"longitude"`
@@ -49,7 +51,8 @@ const (
 
 type CheckinResultDto struct {
 	reader.CheckinResultDto
-	CanBook bool `json:"can_book"` // no_booking only: a free turn can be booked on the spot
+	CanBook   bool   `json:"can_book"`             // no_booking only: a free turn can be booked on the spot
+	BookingId string `json:"booking_id,omitempty"` // when in: the booking (made on the spot or not), to open it
 }
 
 // NearbyInput: where the phone is, to find the facilities it could book at the
@@ -74,6 +77,7 @@ type NearbyFacilityDto struct {
 	TenantSlug   string `json:"tenant_slug"`
 	EntryCode    bool   `json:"entry_code"` // books with its entry code
 	PrintedQr    bool   `json:"printed_qr"` // has a QR on the door
+	Nfc          bool   `json:"nfc"`        // has an NFC tag on the door
 	RadiusM      int    `json:"radius_m"`   // how close the phone must be
 	// staff to ask on site, when the facility has staff confirmation
 	StaffContacts []checkin.StaffContact `json:"staff_contacts"`

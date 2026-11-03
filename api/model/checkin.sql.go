@@ -264,6 +264,8 @@ const getFacilityCheckin = `-- name: GetFacilityCheckin :one
 SELECT
     c.printed_qr,
     c.qr_token,
+    c.nfc,
+    c.nfc_token,
     c.entry_code,
     c.code_secret,
     c.radius_m,
@@ -287,6 +289,8 @@ type GetFacilityCheckinParams struct {
 type GetFacilityCheckinRow struct {
 	PrintedQr     bool            `json:"printed_qr"`
 	QrToken       uuid.UUID       `json:"qr_token"`
+	Nfc           bool            `json:"nfc"`
+	NfcToken      uuid.UUID       `json:"nfc_token"`
 	EntryCode     bool            `json:"entry_code"`
 	CodeSecret    []byte          `json:"code_secret"`
 	RadiusM       int32           `json:"radius_m"`
@@ -302,6 +306,8 @@ func (q *Queries) GetFacilityCheckin(ctx context.Context, arg GetFacilityCheckin
 	err := row.Scan(
 		&i.PrintedQr,
 		&i.QrToken,
+		&i.Nfc,
+		&i.NfcToken,
 		&i.EntryCode,
 		&i.CodeSecret,
 		&i.RadiusM,
@@ -325,6 +331,8 @@ SELECT
     t.timezone,
     COALESCE(c.printed_qr, FALSE)::BOOLEAN    AS printed_qr,
     c.qr_token,
+    COALESCE(c.nfc, FALSE)::BOOLEAN           AS nfc,
+    c.nfc_token,
     COALESCE(c.entry_code, FALSE)::BOOLEAN    AS entry_code,
     c.code_secret,
     COALESCE(c.radius_m, 100)::INT            AS radius_m,
@@ -356,6 +364,8 @@ type GetFacilityEntranceRow struct {
 	Timezone     string          `json:"timezone"`
 	PrintedQr    bool            `json:"printed_qr"`
 	QrToken      uuid.NullUUID   `json:"qr_token"`
+	Nfc          bool            `json:"nfc"`
+	NfcToken     uuid.NullUUID   `json:"nfc_token"`
 	EntryCode    bool            `json:"entry_code"`
 	CodeSecret   []byte          `json:"code_secret"`
 	RadiusM      int32           `json:"radius_m"`
@@ -377,6 +387,8 @@ func (q *Queries) GetFacilityEntrance(ctx context.Context, arg GetFacilityEntran
 		&i.Timezone,
 		&i.PrintedQr,
 		&i.QrToken,
+		&i.Nfc,
+		&i.NfcToken,
 		&i.EntryCode,
 		&i.CodeSecret,
 		&i.RadiusM,
@@ -455,6 +467,35 @@ func (q *Queries) GetUserCheckinTokenAtFacility(ctx context.Context, arg GetUser
 	return checkin_token, err
 }
 
+const getUserQrTokenUse = `-- name: GetUserQrTokenUse :one
+SELECT
+    used_at,
+    booking_id
+FROM
+    user_qr_token
+WHERE
+    token = $1
+    AND user_id = $2
+`
+
+type GetUserQrTokenUseParams struct {
+	Token  uuid.UUID `json:"token"`
+	UserID uuid.UUID `json:"user_id"`
+}
+
+type GetUserQrTokenUseRow struct {
+	UsedAt    sql.NullTime  `json:"used_at"`
+	BookingID uuid.NullUUID `json:"booking_id"`
+}
+
+// Whether the person's personal QR was used at a reader, and the booking it made; no row once gone.
+func (q *Queries) GetUserQrTokenUse(ctx context.Context, arg GetUserQrTokenUseParams) (GetUserQrTokenUseRow, error) {
+	row := q.db.QueryRowContext(ctx, getUserQrTokenUse, arg.Token, arg.UserID)
+	var i GetUserQrTokenUseRow
+	err := row.Scan(&i.UsedAt, &i.BookingID)
+	return i, err
+}
+
 const listCheckinDevices = `-- name: ListCheckinDevices :many
 SELECT
     d.id,
@@ -525,6 +566,7 @@ SELECT
     c.radius_m,
     (c.entry_code AND c.flash_booking)::BOOLEAN AS entry_code,
     c.printed_qr,
+    c.nfc,
     c.staff_confirm,
     c.staff_contacts,
     -- who to ask without staff contacts: the facility's, else the council's
@@ -537,7 +579,7 @@ FROM
     JOIN tenant t ON t.id = f.tenant_id
     JOIN facility_checkin c ON c.facility_id = f.id
 WHERE
-    ((c.entry_code AND c.flash_booking) OR c.printed_qr OR c.staff_confirm)
+    ((c.entry_code AND c.flash_booking) OR c.printed_qr OR c.nfc OR c.staff_confirm)
     AND f.latitude IS NOT NULL
     AND f.longitude IS NOT NULL
     AND f.is_active = TRUE
@@ -554,6 +596,7 @@ type ListNearbyFacilitiesRow struct {
 	RadiusM       int32           `json:"radius_m"`
 	EntryCode     bool            `json:"entry_code"`
 	PrintedQr     bool            `json:"printed_qr"`
+	Nfc           bool            `json:"nfc"`
 	StaffConfirm  bool            `json:"staff_confirm"`
 	StaffContacts json.RawMessage `json:"staff_contacts"`
 	FacilityPhone sql.NullString  `json:"facility_phone"`
@@ -563,7 +606,7 @@ type ListNearbyFacilitiesRow struct {
 }
 
 // What the phone can find by its location: the facilities that book with their
-// entry code, have a QR on the door (checked before the camera opens), or have
+// entry code, have a QR or an NFC tag on the door, or have
 // staff confirmation (someone to ask). The phone's
 // distance to each is checked in the API.
 func (q *Queries) ListNearbyFacilities(ctx context.Context) ([]ListNearbyFacilitiesRow, error) {
@@ -585,6 +628,7 @@ func (q *Queries) ListNearbyFacilities(ctx context.Context) ([]ListNearbyFacilit
 			&i.RadiusM,
 			&i.EntryCode,
 			&i.PrintedQr,
+			&i.Nfc,
 			&i.StaffConfirm,
 			&i.StaffContacts,
 			&i.FacilityPhone,
@@ -675,6 +719,26 @@ func (q *Queries) RotateFacilityCodeSecret(ctx context.Context, facilityID uuid.
 	return code_secret, err
 }
 
+const rotateFacilityNfcToken = `-- name: RotateFacilityNfcToken :one
+UPDATE facility_checkin
+SET
+    nfc_token  = gen_random_uuid(),
+    updated_at = NOW()
+WHERE
+    facility_id = $1
+RETURNING
+    nfc_token
+`
+
+// Row-level security: runs as the facility's council (db.WithTenant). The NFC
+// tags already written stop working.
+func (q *Queries) RotateFacilityNfcToken(ctx context.Context, facilityID uuid.UUID) (uuid.UUID, error) {
+	row := q.db.QueryRowContext(ctx, rotateFacilityNfcToken, facilityID)
+	var nfc_token uuid.UUID
+	err := row.Scan(&nfc_token)
+	return nfc_token, err
+}
+
 const rotateFacilityQrToken = `-- name: RotateFacilityQrToken :one
 UPDATE facility_checkin
 SET
@@ -693,6 +757,25 @@ func (q *Queries) RotateFacilityQrToken(ctx context.Context, facilityID uuid.UUI
 	var qr_token uuid.UUID
 	err := row.Scan(&qr_token)
 	return qr_token, err
+}
+
+const setUserQrTokenBooking = `-- name: SetUserQrTokenBooking :exec
+UPDATE user_qr_token
+SET
+    booking_id = $1
+WHERE
+    token = $2
+`
+
+type SetUserQrTokenBookingParams struct {
+	BookingID uuid.NullUUID `json:"booking_id"`
+	Token     uuid.UUID     `json:"token"`
+}
+
+// The flash booking a reader made with a personal QR, for the phone showing it.
+func (q *Queries) SetUserQrTokenBooking(ctx context.Context, arg SetUserQrTokenBookingParams) error {
+	_, err := q.db.ExecContext(ctx, setUserQrTokenBooking, arg.BookingID, arg.Token)
+	return err
 }
 
 const touchCheckinDevice = `-- name: TouchCheckinDevice :exec
@@ -747,18 +830,21 @@ const updateFacilityCheckin = `-- name: UpdateFacilityCheckin :one
 UPDATE facility_checkin
 SET
     printed_qr    = $1,
-    entry_code    = $2,
-    radius_m      = $3,
-    flash_booking = $4,
-    staff_confirm = $5,
-    qr_reader     = $6,
-    staff_contacts = $7,
+    nfc           = $2,
+    entry_code    = $3,
+    radius_m      = $4,
+    flash_booking = $5,
+    staff_confirm = $6,
+    qr_reader     = $7,
+    staff_contacts = $8,
     updated_at    = NOW()
 WHERE
-    facility_id = $8
+    facility_id = $9
 RETURNING
     printed_qr,
     qr_token,
+    nfc,
+    nfc_token,
     entry_code,
     code_secret,
     radius_m,
@@ -770,6 +856,7 @@ RETURNING
 
 type UpdateFacilityCheckinParams struct {
 	PrintedQr     bool            `json:"printed_qr"`
+	Nfc           bool            `json:"nfc"`
 	EntryCode     bool            `json:"entry_code"`
 	RadiusM       int32           `json:"radius_m"`
 	FlashBooking  bool            `json:"flash_booking"`
@@ -782,6 +869,8 @@ type UpdateFacilityCheckinParams struct {
 type UpdateFacilityCheckinRow struct {
 	PrintedQr     bool            `json:"printed_qr"`
 	QrToken       uuid.UUID       `json:"qr_token"`
+	Nfc           bool            `json:"nfc"`
+	NfcToken      uuid.UUID       `json:"nfc_token"`
 	EntryCode     bool            `json:"entry_code"`
 	CodeSecret    []byte          `json:"code_secret"`
 	RadiusM       int32           `json:"radius_m"`
@@ -795,6 +884,7 @@ type UpdateFacilityCheckinRow struct {
 func (q *Queries) UpdateFacilityCheckin(ctx context.Context, arg UpdateFacilityCheckinParams) (UpdateFacilityCheckinRow, error) {
 	row := q.db.QueryRowContext(ctx, updateFacilityCheckin,
 		arg.PrintedQr,
+		arg.Nfc,
 		arg.EntryCode,
 		arg.RadiusM,
 		arg.FlashBooking,
@@ -807,6 +897,8 @@ func (q *Queries) UpdateFacilityCheckin(ctx context.Context, arg UpdateFacilityC
 	err := row.Scan(
 		&i.PrintedQr,
 		&i.QrToken,
+		&i.Nfc,
+		&i.NfcToken,
 		&i.EntryCode,
 		&i.CodeSecret,
 		&i.RadiusM,

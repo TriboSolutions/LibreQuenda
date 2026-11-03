@@ -117,6 +117,13 @@ func (s *tenantsService) Recommendations(ctx context.Context, session auth.Sessi
 	if len(out) > maxRecommendations {
 		out = out[:maxRecommendations]
 	}
+	// how far each one is, from where the person said they are
+	if position.Latitude != nil && position.Longitude != nil {
+		var near = &Near{Latitude: *position.Latitude, Longitude: *position.Longitude}
+		for i := range out {
+			out[i].Facility.DistanceKm = distanceKm(near, out[i].Facility.Latitude, out[i].Facility.Longitude)
+		}
+	}
 	response.Recommendations = out
 	return response, nil
 }

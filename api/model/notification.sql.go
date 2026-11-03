@@ -14,6 +14,23 @@ import (
 	"github.com/google/uuid"
 )
 
+const countNotificationsByUser = `-- name: CountNotificationsByUser :one
+SELECT
+    COUNT(*)
+FROM
+    notification
+WHERE
+    user_id = $1
+`
+
+// How many notices the bell has, for its pages.
+func (q *Queries) CountNotificationsByUser(ctx context.Context, userID uuid.UUID) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countNotificationsByUser, userID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const countUnreadNotifications = `-- name: CountUnreadNotifications :one
 SELECT
     COUNT(*)
@@ -120,12 +137,15 @@ FROM
 WHERE
     user_id = $1
 ORDER BY
-    created_at DESC
-LIMIT $2
+    created_at DESC,
+    id DESC
+LIMIT $3
+OFFSET $2
 `
 
 type ListNotificationsByUserParams struct {
 	UserID  uuid.UUID `json:"user_id"`
+	Skip    int32     `json:"skip"`
 	MaxRows int32     `json:"max_rows"`
 }
 
@@ -138,9 +158,9 @@ type ListNotificationsByUserRow struct {
 	ReadAt    sql.NullTime     `json:"read_at"`
 }
 
-// The bell: the most recent notices first.
+// The bell: the most recent notices first, a page at a time.
 func (q *Queries) ListNotificationsByUser(ctx context.Context, arg ListNotificationsByUserParams) ([]ListNotificationsByUserRow, error) {
-	rows, err := q.db.QueryContext(ctx, listNotificationsByUser, arg.UserID, arg.MaxRows)
+	rows, err := q.db.QueryContext(ctx, listNotificationsByUser, arg.UserID, arg.Skip, arg.MaxRows)
 	if err != nil {
 		return nil, err
 	}

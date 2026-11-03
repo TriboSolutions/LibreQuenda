@@ -131,6 +131,10 @@
       "tab": "QR de la puerta",
       "help": "Abre la cámara y apunta al QR impreso en la puerta: si el turno está libre, se reserva y entras. Antes te pediremos la ubicación, que se comprueba y nunca se guarda."
     },
+    "nfc": {
+      "tab": "Etiqueta NFC",
+      "help": "Acerca el móvil a la etiqueta NFC de la puerta: se abre la página de entrada y, si el turno está libre, se reserva y entras. Te pediremos la ubicación, que se comprueba y nunca se guarda."
+    },
     "staff": {
       "tab": "Personal",
       "help": "Pide en el mostrador o al personal que te reserven el turno libre: pueden hacerlo con tu cuenta o solo con tu nombre. Buscamos con la ubicación la instalación donde estás para mostrarte a quién preguntar.",

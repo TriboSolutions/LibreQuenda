@@ -109,7 +109,7 @@
     "invite_failed": "Could not update the invite. Try again.",
     "participant_not_found": "That person is no longer in the booking.",
     "leave_failed": "Could not leave the booking. Try again.",
-    "leave_too_late": "The booking has already started.",
+    "leave_too_late": "You can no longer leave: the booking starts in less than 15 minutes.",
     "invalid_guest_name": "Write a name of up to 80 characters.",
     "invalid_guest_age": "The age must be between 1 and 120.",
     "guest_age_restricted": "This facility has a minimum age that the guest does not meet.",

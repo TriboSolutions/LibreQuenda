@@ -12,7 +12,10 @@ import (
 func TestProve(t *testing.T) {
 	var secret = []byte("a facility secret of 32 bytes...")
 	var token = uuid.New()
+	var nfcToken = uuid.New()
 	var facility = model.GetFacilityEntranceRow{
+		Nfc:        true,
+		NfcToken:   uuid.NullUUID{UUID: nfcToken, Valid: true},
 		Latitude:   sql.NullFloat64{Float64: 42.66453, Valid: true},
 		Longitude:  sql.NullFloat64{Float64: -8.10815, Valid: true},
 		PrintedQr:  true,
@@ -32,6 +35,8 @@ func TestProve(t *testing.T) {
 	qrOff.PrintedQr = false
 	var codesOff = facility
 	codesOff.EntryCode = false
+	var nfcOff = facility
+	nfcOff.Nfc = false
 	var noPin = facility
 	noPin.Latitude, noPin.Longitude = sql.NullFloat64{}, sql.NullFloat64{}
 
@@ -43,6 +48,11 @@ func TestProve(t *testing.T) {
 	}{
 		{"printed QR at the door", facility, with(func(i *CheckinInput) { i.QrToken = token.String() }), ""},
 		{"entry code at the door", facility, with(func(i *CheckinInput) { i.Code = checkin.EntryCode(secret) }), ""},
+		{"NFC tag at the door", facility, with(func(i *CheckinInput) { i.NfcToken = nfcToken.String() }), ""},
+		{"NFC turned off", nfcOff, with(func(i *CheckinInput) { i.NfcToken = nfcToken.String() }), ResultMethodOff},
+		{"old NFC tag", facility, with(func(i *CheckinInput) { i.NfcToken = uuid.NewString() }), ResultInvalidQr},
+		{"the QR's token on a tag", facility, with(func(i *CheckinInput) { i.NfcToken = token.String() }), ResultInvalidQr},
+		{"NFC far away", facility, with(func(i *CheckinInput) { i.NfcToken = nfcToken.String(); i.Latitude = &far }), checkin.LocationTooFar},
 		{"no proof", facility, here, ResultMethodOff},
 		{"printed QR turned off", qrOff, with(func(i *CheckinInput) { i.QrToken = token.String() }), ResultMethodOff},
 		{"old print", facility, with(func(i *CheckinInput) { i.QrToken = uuid.NewString() }), ResultInvalidQr},
