@@ -115,4 +115,5 @@
     <string name="nfc_not_entrance">Esa etiqueta non é a da entrada desta instalación.</string>
     <string name="nfc_flash_help">Con esta páxina aberta, achega o móbil á etiqueta NFC da porta: se a quenda está libre, resérvase e entras. Pedirémosche a localización, que se comproba e nunca se garda.</string>
     <string name="nfc_checkin_help">Con esta páxina aberta, achega o móbil á etiqueta NFC da porta e rexistras a entrada. Pedirémosche a localización, que se comproba e nunca se garda.</string>
+    <string name="change_done">Reserva cambiada</string>
 </resources>

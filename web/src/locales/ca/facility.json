@@ -50,6 +50,7 @@
     "whatHelp": "On és i què es veu: per exemple, «la xarxa de la pista 2 està trencada pel mig». Fins a 1000 caràcters.",
     "photo": "Foto (opcional)",
     "urgent": "És urgent",
+    "locationNote": "Et demanarem la ubicació: només es pot avisar d'un problema des de la instal·lació. Es comprova i mai no es desa.",
     "urgentHelp": "Per exemple, si és perillós o impedeix fer servir la instal·lació.",
     "shareContact": "Permetre que el personal de l’ajuntament vegi el meu correu i el telèfon del perfil, si el tinc desat, per contactar amb mi",
     "send": "Envia l’avís",

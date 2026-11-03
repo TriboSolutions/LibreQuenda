@@ -95,7 +95,7 @@ data class FacilityTarget(val councilSlug: String, val facilitySlug: String, val
 
 /** A page pushed in from the right, over everything, with the back arrow alone at the top. */
 @Composable
-private fun Pushed(open: Boolean, onBack: () -> Unit, content: @Composable () -> Unit) {
+internal fun Pushed(open: Boolean, onBack: () -> Unit, content: @Composable () -> Unit) {
     BackHandler(enabled = open, onBack = onBack)
     AnimatedVisibility(visible = open, enter = slideInHorizontally(tween(260)) { it }, exit = slideOutHorizontally(tween(220)) { it }) {
         Column(

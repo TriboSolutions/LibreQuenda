@@ -30,6 +30,10 @@ type Report struct {
 	PhotoRef     string `json:"photo_ref"` // optional, a storage reference under issues/
 	Urgent       bool   `json:"urgent"`
 	ShareContact bool   `json:"share_contact"` // the council's staff may see their email and profile phone
+	// where the phone is: the reporter must be at the facility. Checked, never stored.
+	Latitude  *float64 `json:"latitude"`
+	Longitude *float64 `json:"longitude"`
+	Accuracy  *float64 `json:"accuracy"` // metres
 }
 
 // Clean trims the report and checks it; the error is an i18n key.

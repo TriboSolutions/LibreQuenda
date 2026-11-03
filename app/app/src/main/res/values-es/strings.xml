@@ -106,4 +106,5 @@
     <string name="nfc_not_entrance">Esa etiqueta no es la de la entrada de esta instalación.</string>
     <string name="nfc_flash_help">Con esta página abierta, acerca el móvil a la etiqueta NFC de la puerta: si el turno está libre, se reserva y entras. Te pediremos la ubicación, que se comprueba y nunca se guarda.</string>
     <string name="nfc_checkin_help">Con esta página abierta, acerca el móvil a la etiqueta NFC de la puerta y registras la entrada. Te pediremos la ubicación, que se comprueba y nunca se guarda.</string>
+    <string name="change_done">Reserva cambiada</string>
 </resources>

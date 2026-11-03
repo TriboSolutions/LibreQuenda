@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { api, type IssueCategory, type StoredImage } from '@/lib/api'
+import { locate, type Position } from '@/lib/entrance'
 
 const ISSUE_CATEGORIES: IssueCategory[] = ['equipment', 'lighting', 'cleaning', 'changing_rooms', 'accessibility', 'safety', 'other']
 const MAX_DESCRIPTION = 1000
@@ -23,7 +24,7 @@ type Props = {
 
 /** A resident tells the council about a problem at a facility: it lands in the council's maintenance list. */
 export function ReportIssueDialog({ facility, bookingId, onClose }: Props) {
-  const { t } = useTranslation('facility')
+  const { t } = useTranslation(['facility', 'entrance'])
   const auth = useAuth()
   const [category, setCategory] = useState<IssueCategory | ''>('')
   const [description, setDescription] = useState('')
@@ -47,7 +48,16 @@ export function ReportIssueDialog({ facility, bookingId, onClose }: Props) {
     setBusy(true)
     setError(null)
     try {
+      // only from the facility: where the phone is goes with it, checked and never kept
+      let where: Position
+      try {
+        where = await locate()
+      } catch (e) {
+        setError(t(`entrance:location.${e instanceof Error ? e.message : 'unavailable'}`))
+        return
+      }
       await api.reportIssue(token, {
+        ...where,
         facility_id: facility.id,
         booking_id: bookingId,
         category,
@@ -132,6 +142,7 @@ export function ReportIssueDialog({ facility, bookingId, onClose }: Props) {
                 {t('issue.shareContact')}
               </Label>
             </div>
+            <p className="text-sm text-muted-foreground">{t('issue.locationNote')}</p>
             <div aria-live="polite" className="empty:hidden">
               {error && (
                 <Alert variant="destructive">
