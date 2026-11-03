@@ -58,8 +58,11 @@
   },
   "manage": {
     "details": "Datos",
+    "detailsHelp": "O nome, o logotipo e o contacto que ven a veciñanza na páxina do concello.",
+    "save": "Gardar os datos",
     "viewPage": "Abrir a súa páxina",
     "admins": "Persoas administradoras",
+    "adminsHelp": "Quen pode xestionar as instalacións, as reservas e estes axustes.",
     "noAdmins": "Aínda ninguén aceptou unha invitación.",
     "pending": "Invitación pendente",
     "inviteLabel": "Invitar por correo",

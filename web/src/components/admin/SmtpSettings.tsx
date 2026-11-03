@@ -1,5 +1,6 @@
 import { useState, type ChangeEvent, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
+import { SettingsRow } from '@/components/SettingsRow'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -109,147 +110,141 @@ export function SmtpSettings({ slug, token }: Props) {
   }
 
   return (
-    <section aria-labelledby="sheet-smtp" className="grid content-start gap-3 rounded-lg border bg-card p-5">
-      <div>
-        <div className="flex flex-wrap items-center gap-3">
-          <h2 id="sheet-smtp" className="text-lg font-semibold">
-            {t('admin:smtp.title')}
-          </h2>
-          {status}
-        </div>
-        <p className="mt-1 max-w-[70ch] text-muted-foreground">{t('admin:smtp.help', { app: branding.name })}</p>
-      </div>
+    <SettingsRow id="sheet-smtp" title={t('admin:smtp.title')} description={t('admin:smtp.help', { app: branding.name })}>
+      <div className="grid content-start gap-4 rounded-lg border bg-card p-5">
+        {status && <div>{status}</div>}
 
-      {data && !data.configured && !data.env_relay && (
-        <Alert variant="destructive">
-          <AlertDescription>{t('admin:smtp.noneWarning')}</AlertDescription>
-        </Alert>
-      )}
-      {data?.unreadable && (
-        <Alert variant="destructive">
-          <AlertDescription>{t('admin:smtp.unreadable')}</AlertDescription>
-        </Alert>
-      )}
-      {error && (
-        <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-      {notice && (
-        <Alert className="border-0 bg-pill-positive-bg text-pill-positive-ink">
-          <AlertDescription className="text-pill-positive-ink">{notice}</AlertDescription>
-        </Alert>
-      )}
+        {data && !data.configured && !data.env_relay && (
+          <Alert variant="destructive">
+            <AlertDescription>{t('admin:smtp.noneWarning')}</AlertDescription>
+          </Alert>
+        )}
+        {data?.unreadable && (
+          <Alert variant="destructive">
+            <AlertDescription>{t('admin:smtp.unreadable')}</AlertDescription>
+          </Alert>
+        )}
+        {error && (
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+        {notice && (
+          <Alert className="border-0 bg-pill-positive-bg text-pill-positive-ink">
+            <AlertDescription className="text-pill-positive-ink">{notice}</AlertDescription>
+          </Alert>
+        )}
 
-      {smtp.error ? (
-        <div className="flex items-center justify-between gap-4 rounded-md bg-pill-negative-bg px-4 py-3 text-pill-negative-ink">
-          <p>{smtp.error.message}</p>
-          <Button variant="ghost" size="sm" onClick={smtp.reload}>
-            {t('common:retry')}
-          </Button>
-        </div>
-      ) : !data ? (
-        <Skeleton className="h-64 w-full" />
-      ) : (
-        <form onSubmit={save} className="grid gap-4">
-          <div className="grid gap-4 sm:grid-cols-[1fr_8rem]">
+        {smtp.error ? (
+          <div className="flex items-center justify-between gap-4 rounded-md bg-pill-negative-bg px-4 py-3 text-pill-negative-ink">
+            <p>{smtp.error.message}</p>
+            <Button variant="ghost" size="sm" onClick={smtp.reload}>
+              {t('common:retry')}
+            </Button>
+          </div>
+        ) : !data ? (
+          <Skeleton className="h-64 w-full" />
+        ) : (
+          <form onSubmit={save} className="grid gap-4">
+            <div className="grid gap-4 sm:grid-cols-[1fr_8rem]">
+              <div className="grid gap-1.5">
+                <Label htmlFor="smtp-host">{t('admin:smtp.host')}</Label>
+                <Input
+                  id="smtp-host"
+                  value={form.host}
+                  onChange={set('host')}
+                  placeholder="smtp.concello.gal"
+                  maxLength={255}
+                  required
+                  autoComplete="off"
+                />
+              </div>
+              <div className="grid gap-1.5">
+                <Label htmlFor="smtp-port">{t('admin:smtp.port')}</Label>
+                <Input
+                  id="smtp-port"
+                  type="number"
+                  inputMode="numeric"
+                  min={1}
+                  max={65535}
+                  value={form.port || ''}
+                  onChange={set('port')}
+                  className="num"
+                />
+              </div>
+            </div>
             <div className="grid gap-1.5">
-              <Label htmlFor="smtp-host">{t('admin:smtp.host')}</Label>
+              <Label htmlFor="smtp-from">{t('admin:smtp.from')}</Label>
               <Input
-                id="smtp-host"
-                value={form.host}
-                onChange={set('host')}
-                placeholder="smtp.concello.gal"
+                id="smtp-from"
+                value={form.from}
+                onChange={set('from')}
+                placeholder={t('admin:smtp.fromPlaceholder')}
                 maxLength={255}
                 required
-                autoComplete="off"
               />
+              <p className="text-muted-foreground">{t('admin:smtp.fromHelp')}</p>
             </div>
-            <div className="grid gap-1.5">
-              <Label htmlFor="smtp-port">{t('admin:smtp.port')}</Label>
-              <Input
-                id="smtp-port"
-                type="number"
-                inputMode="numeric"
-                min={1}
-                max={65535}
-                value={form.port || ''}
-                onChange={set('port')}
-                className="num"
-              />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-1.5">
+                <Label htmlFor="smtp-username">{t('admin:smtp.username')}</Label>
+                <Input id="smtp-username" value={form.username} onChange={set('username')} maxLength={255} autoComplete="off" />
+              </div>
+              <div className="grid gap-1.5">
+                <Label htmlFor="smtp-password">{t('admin:smtp.password')}</Label>
+                <Input
+                  id="smtp-password"
+                  type="password"
+                  value={form.password}
+                  onChange={set('password')}
+                  placeholder={data.has_password ? t('admin:smtp.passwordKept') : ''}
+                  disabled={form.username.trim() === ''}
+                  autoComplete="new-password"
+                />
+              </div>
             </div>
-          </div>
-          <div className="grid gap-1.5">
-            <Label htmlFor="smtp-from">{t('admin:smtp.from')}</Label>
-            <Input
-              id="smtp-from"
-              value={form.from}
-              onChange={set('from')}
-              placeholder={t('admin:smtp.fromPlaceholder')}
-              maxLength={255}
-              required
-            />
-            <p className="text-muted-foreground">{t('admin:smtp.fromHelp')}</p>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="grid gap-1.5">
-              <Label htmlFor="smtp-username">{t('admin:smtp.username')}</Label>
-              <Input id="smtp-username" value={form.username} onChange={set('username')} maxLength={255} autoComplete="off" />
-            </div>
-            <div className="grid gap-1.5">
-              <Label htmlFor="smtp-password">{t('admin:smtp.password')}</Label>
-              <Input
-                id="smtp-password"
-                type="password"
-                value={form.password}
-                onChange={set('password')}
-                placeholder={data.has_password ? t('admin:smtp.passwordKept') : ''}
-                disabled={form.username.trim() === ''}
-                autoComplete="new-password"
-              />
-            </div>
-          </div>
-          <p className="text-muted-foreground">{t('admin:smtp.tlsHelp')}</p>
-          <div className="flex flex-wrap gap-3">
-            <Button type="submit" disabled={busy !== null}>
-              {busy === 'save' ? t('admin:smtp.saving') : t('admin:smtp.save')}
-            </Button>
-            <Button type="button" variant="outline" disabled={busy !== null || (!data.configured && !data.env_relay)} onClick={test}>
-              {busy === 'test' ? t('admin:smtp.testing') : t('admin:smtp.test')}
-            </Button>
-            {data.configured && (
-              <Button
-                type="button"
-                variant="ghost"
-                className="text-destructive hover:text-destructive"
-                disabled={busy !== null}
-                onClick={() => setConfirmRemove(true)}
-              >
-                {t('admin:smtp.remove')}
+            <p className="text-muted-foreground">{t('admin:smtp.tlsHelp')}</p>
+            <div className="flex flex-wrap gap-3">
+              <Button type="submit" disabled={busy !== null}>
+                {busy === 'save' ? t('admin:smtp.saving') : t('admin:smtp.save')}
               </Button>
-            )}
-          </div>
-        </form>
-      )}
+              <Button type="button" variant="outline" disabled={busy !== null || (!data.configured && !data.env_relay)} onClick={test}>
+                {busy === 'test' ? t('admin:smtp.testing') : t('admin:smtp.test')}
+              </Button>
+              {data.configured && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="text-destructive hover:text-destructive"
+                  disabled={busy !== null}
+                  onClick={() => setConfirmRemove(true)}
+                >
+                  {t('admin:smtp.remove')}
+                </Button>
+              )}
+            </div>
+          </form>
+        )}
 
-      {confirmRemove && (
-        <Dialog open onOpenChange={(open) => !open && setConfirmRemove(false)}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>{t('admin:smtp.removeTitle')}</DialogTitle>
-              <DialogDescription>{data?.env_relay ? t('admin:smtp.removeBodyPlatform') : t('admin:smtp.removeBodyNone')}</DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setConfirmRemove(false)}>
-                {t('admin:form.cancel')}
-              </Button>
-              <Button variant="destructive" onClick={remove}>
-                {t('admin:smtp.removeConfirm')}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
-    </section>
+        {confirmRemove && (
+          <Dialog open onOpenChange={(open) => !open && setConfirmRemove(false)}>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>{t('admin:smtp.removeTitle')}</DialogTitle>
+                <DialogDescription>{data?.env_relay ? t('admin:smtp.removeBodyPlatform') : t('admin:smtp.removeBodyNone')}</DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setConfirmRemove(false)}>
+                  {t('admin:form.cancel')}
+                </Button>
+                <Button variant="destructive" onClick={remove}>
+                  {t('admin:smtp.removeConfirm')}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
+      </div>
+    </SettingsRow>
   )
 }
