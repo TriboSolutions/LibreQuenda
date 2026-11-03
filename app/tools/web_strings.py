@@ -61,6 +61,18 @@ KEYS = {
  'search_placeholder': (K,'search'), 'search_no_results': (K,'noResults'), 'search_load_error': (K,'loadError'),
  'join': (H,'forYou.join'), 'joining': (H,'forYou.joining'), 'joined': (H,'forYou.joined'),
  'all_councils': (K,'allCouncils'),
+ # reporting a problem at the facility, during the booking (the web's ReportIssueDialog)
+ 'issue_report': (F,'issue.report'), 'issue_intro': (F,'issue.description'), 'issue_category': (F,'issue.category'),
+ 'issue_choose': (F,'issue.chooseCategory'), 'issue_what': (F,'issue.what'), 'issue_what_help': (F,'issue.whatHelp'),
+ 'issue_photo': (F,'issue.photo'), 'issue_urgent': (F,'issue.urgent'), 'issue_urgent_help': (F,'issue.urgentHelp'),
+ 'issue_share': (F,'issue.shareContact'), 'issue_location_note': (F,'issue.locationNote'), 'issue_send': (F,'issue.send'), 'issue_sending': (F,'issue.sending'), 'issue_sent': (F,'issue.sent'),
+ 'issue_cat_equipment': (F,'issue.categories.equipment'), 'issue_cat_lighting': (F,'issue.categories.lighting'),
+ 'issue_cat_cleaning': (F,'issue.categories.cleaning'), 'issue_cat_changing_rooms': (F,'issue.categories.changing_rooms'),
+ 'issue_cat_accessibility': (F,'issue.categories.accessibility'), 'issue_cat_safety': (F,'issue.categories.safety'), 'issue_cat_other': (F,'issue.categories.other'),
+ # changing a booking to another turn (the web's ChangeBookingDialog)
+ 'change': (B,'change'), 'change_intro': (B,'changeDialog.description'), 'change_when': (B,'changeDialog.when'),
+ 'change_current': (B,'changeDialog.current'), 'change_closed_day': (B,'changeDialog.closedDay'), 'change_pick': (B,'changeDialog.pick'),
+ 'change_confirm': (B,'changeDialog.confirm'), 'change_saving': (B,'changeDialog.saving'), 'change_error': (B,'changeDialog.error'),
  # legal information and support (the texts themselves go to assets/legal, below)
  'legal_group': (L,'group'), 'legal_updated': (L,'updated'), 'terms_title': (L,'terms.title'), 'terms_sub': (L,'terms.sub'),
  'privacy_title': (L,'privacy.title'), 'privacy_sub': (L,'privacy.sub'), 'support_group': (L,'support.group'),

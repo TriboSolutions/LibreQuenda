@@ -50,6 +50,7 @@
     "whatHelp": "Dónde está y qué se ve: por ejemplo, «la red de la pista 2 está rota por el medio». Hasta 1000 caracteres.",
     "photo": "Foto (opcional)",
     "urgent": "Es urgente",
+    "locationNote": "Te pediremos la ubicación: solo se puede avisar de un problema desde la instalación. Se comprueba y nunca se guarda.",
     "urgentHelp": "Por ejemplo, si es peligroso o impide usar la instalación.",
     "shareContact": "Permitir que el personal del ayuntamiento vea mi correo y el teléfono del perfil, si lo tengo guardado, para contactar conmigo",
     "send": "Enviar el aviso",

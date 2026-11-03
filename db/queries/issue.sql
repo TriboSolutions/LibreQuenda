@@ -2,13 +2,18 @@
 
 -- name: GetFacilityForIssue :one
 -- The facility a problem is reported at: it must be active, in an active council.
+-- Its pin and check-in radius: the reporter must be there (when it has a pin).
 SELECT
     f.id,
     f.tenant_id,
-    f.name
+    f.name,
+    f.latitude,
+    f.longitude,
+    COALESCE(c.radius_m, 100)::INT AS radius_m
 FROM
     facility f
     JOIN tenant t ON t.id = f.tenant_id
+    LEFT JOIN facility_checkin c ON c.facility_id = f.id
 WHERE
     f.id = sqlc.arg('facility_id')
     AND f.is_active = TRUE

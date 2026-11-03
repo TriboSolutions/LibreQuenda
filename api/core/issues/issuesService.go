@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"librequenda/auth"
+	"librequenda/checkin"
 	"librequenda/core/me"
 	"librequenda/issue"
 	"librequenda/model"
@@ -36,8 +37,10 @@ type ReportResponse struct {
 	Id string `json:"id"`
 }
 
-// Report requires a confirmed booking held or joined by the reporter,
-// during its booked interval. It lands in the council's maintenance list.
+// Report requires a confirmed booking held or joined by the reporter, during
+// its booked interval, and the reporter at the facility (its check-in radius
+// around its pin; the location is checked, never stored). It lands in the
+// council's maintenance list.
 func (s *issuesService) Report(ctx context.Context, session auth.Session, input issue.Report) (*ReportResponse, *shared.ErrorResponse) {
 	if key := input.Clean(); key != "" {
 		return nil, &shared.ErrorResponse{Code: http.StatusUnprocessableEntity, Message: key}
@@ -84,6 +87,9 @@ func (s *issuesService) Report(ctx context.Context, session auth.Session, input 
 	if !issue.Reportable(row.StartsAt, row.EndsAt, time.Now()) {
 		return nil, &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.issue_active_booking_required"}
 	}
+	if problem := atFacility(input, facility); problem != "" {
+		return nil, &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.issue_" + problem}
+	}
 	var booking = uuid.NullUUID{UUID: row.ID, Valid: true}
 
 	var total, countErr = queries.CountIssuesByBooking(ctx, booking)
@@ -114,4 +120,18 @@ func (s *issuesService) Report(ctx context.Context, session auth.Session, input 
 		return nil, failed
 	}
 	return &ReportResponse{Id: id.String()}, nil
+}
+
+// atFacility: "" when the phone is at the facility, or the location problem
+// (location_required, location_inaccurate, too_far). A facility without a pin
+// cannot be checked, so it is not asked for.
+func atFacility(input issue.Report, facility model.GetFacilityForIssueRow) string {
+	if !facility.Latitude.Valid || !facility.Longitude.Valid {
+		return ""
+	}
+	var position *checkin.Position
+	if input.Latitude != nil && input.Longitude != nil && input.Accuracy != nil {
+		position = &checkin.Position{Latitude: *input.Latitude, Longitude: *input.Longitude, Accuracy: *input.Accuracy}
+	}
+	return checkin.CheckLocation(position, facility.Latitude.Float64, facility.Longitude.Float64, int(facility.RadiusM))
 }

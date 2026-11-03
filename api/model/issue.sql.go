@@ -274,10 +274,14 @@ const getFacilityForIssue = `-- name: GetFacilityForIssue :one
 SELECT
     f.id,
     f.tenant_id,
-    f.name
+    f.name,
+    f.latitude,
+    f.longitude,
+    COALESCE(c.radius_m, 100)::INT AS radius_m
 FROM
     facility f
     JOIN tenant t ON t.id = f.tenant_id
+    LEFT JOIN facility_checkin c ON c.facility_id = f.id
 WHERE
     f.id = $1
     AND f.is_active = TRUE
@@ -285,17 +289,28 @@ WHERE
 `
 
 type GetFacilityForIssueRow struct {
-	ID       uuid.UUID `json:"id"`
-	TenantID uuid.UUID `json:"tenant_id"`
-	Name     string    `json:"name"`
+	ID        uuid.UUID       `json:"id"`
+	TenantID  uuid.UUID       `json:"tenant_id"`
+	Name      string          `json:"name"`
+	Latitude  sql.NullFloat64 `json:"latitude"`
+	Longitude sql.NullFloat64 `json:"longitude"`
+	RadiusM   int32           `json:"radius_m"`
 }
 
 // Problems residents report at a facility, and the council's maintenance list.
 // The facility a problem is reported at: it must be active, in an active council.
+// Its pin and check-in radius: the reporter must be there (when it has a pin).
 func (q *Queries) GetFacilityForIssue(ctx context.Context, facilityID uuid.UUID) (GetFacilityForIssueRow, error) {
 	row := q.db.QueryRowContext(ctx, getFacilityForIssue, facilityID)
 	var i GetFacilityForIssueRow
-	err := row.Scan(&i.ID, &i.TenantID, &i.Name)
+	err := row.Scan(
+		&i.ID,
+		&i.TenantID,
+		&i.Name,
+		&i.Latitude,
+		&i.Longitude,
+		&i.RadiusM,
+	)
 	return i, err
 }
 

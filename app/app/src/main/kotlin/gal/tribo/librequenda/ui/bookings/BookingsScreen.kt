@@ -28,6 +28,8 @@ import gal.tribo.librequenda.data.leaveBooking
 import gal.tribo.librequenda.data.setPublic
 import gal.tribo.librequenda.data.shareInvite
 import androidx.compose.foundation.background
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.material3.Icon
@@ -234,6 +236,8 @@ fun BookingPage(bookingId: String?, state: BookingsState, actions: ProfileAction
         var error by remember { mutableStateOf<String?>(null) }
         var publishing by remember { mutableStateOf(false) } // the sheet to make it public, or edit its description
         var checkingIn by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) } // the check-in page, over this one (kept across the camera)
+        var changing by remember { mutableStateOf(false) } // another turn, on a page over this one
+        var reporting by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) } // a problem at the facility (kept across the photo picker)
         val shareText = stringResource(R.string.invite_share_text, booking.facilityName, bookingDayInline(booking.startsAt), time(booking.startsAt))
 
         Column(
@@ -272,8 +276,19 @@ fun BookingPage(bookingId: String?, state: BookingsState, actions: ProfileAction
                 onCancel = { toCancel = booking },
                 onLeave = { toLeave = booking },
                 onCheckin = { checkingIn = true },
+                onChange = { changing = true },
+                onReport = { reporting = true },
             )
         }
+
+        ChangeBookingPage(
+            booking = if (changing) booking else null,
+            actions = actions,
+            onBack = { changing = false },
+            // moved: back to the booking, at its new time
+            onChanged = { state.reload(); changing = false },
+        )
+        ReportIssuePage(booking = if (reporting) booking else null, actions = actions, onBack = { reporting = false })
 
         CheckinPage(
             booking = if (checkingIn) booking else null,
@@ -476,12 +491,17 @@ private fun BookingContent(
     onCancel: () -> Unit,
     onLeave: () -> Unit,
     onCheckin: () -> Unit,
+    onChange: () -> Unit,
+    onReport: () -> Unit,
 ) {
     val now = Instant.now()
     // the entrance opens 15 minutes before; their own booking, at a facility that takes some way in
     val canCheckIn = booking.owner && !booking.checkedIn && booking.checkinWays.isNotEmpty() &&
         !now.isBefore(booking.startsAt.minusSeconds(15 * 60)) && now.isBefore(booking.endsAt)
     val upcoming = booking.startsAt.isAfter(now)
+    // as on the web: the owner moves it while it can still be cancelled; anyone in it reports a problem while it is under way
+    val canChange = booking.owner && booking.canChange
+    val underWay = !booking.cancelled && !now.isBefore(booking.startsAt) && now.isBefore(booking.endsAt)
     val takesPeople = booking.owner && booking.capacity > 1 && upcoming
     val f = booking.facility
     val hasMap = f.latitude != null && f.longitude != null
@@ -532,11 +552,17 @@ private fun BookingContent(
                 )
             }
             // quick actions, round as the Home's
-            if (takesPeople || hasMap || canCheckIn) item {
-                Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 16.dp), horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+            if (takesPeople || hasMap || canCheckIn || canChange || underWay) item {
+                // a row that scrolls sideways when they do not all fit
+                Row(
+                    Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(24.dp),
+                ) {
                     if (canCheckIn) RoundAction(R.drawable.ic_log_in, stringResource(R.string.checkin_button)) { onCheckin() }
                     if (takesPeople) RoundAction(R.drawable.ic_user_plus, stringResource(R.string.invite)) { onInvite() }
+                    if (canChange) RoundAction(R.drawable.ic_calendar_clock, stringResource(R.string.change)) { onChange() }
                     if (hasMap) RoundAction(R.drawable.ic_map_pin, stringResource(R.string.directions)) { onDirections() }
+                    if (underWay) RoundAction(R.drawable.ic_wrench, stringResource(R.string.issue_report)) { onReport() }
                 }
             }
             if (takesPeople) item {
@@ -662,7 +688,7 @@ private fun locale(): Locale = LocalConfiguration.current.locales[0]
 
 /** "Hoxe" is not in the web's strings: the date reads in full, in the app's language. */
 @Composable
-private fun bookingDay(instant: Instant): String {
+internal fun bookingDay(instant: Instant): String {
     val date = instant.atZone(ZONE).toLocalDate()
     val pattern = if (date.year == LocalDate.now(ZONE).year) "EEEE d MMMM" else null
     val formatter = pattern?.let { DateTimeFormatter.ofPattern(it, locale()) }
@@ -672,10 +698,10 @@ private fun bookingDay(instant: Instant): String {
 
 /** The day inside a sentence: «martes 3 novembro», in lower case where the language writes it so. */
 @Composable
-private fun bookingDayInline(instant: Instant): String {
+internal fun bookingDayInline(instant: Instant): String {
     val date = instant.atZone(ZONE).toLocalDate()
     return date.format(DateTimeFormatter.ofPattern("EEEE d MMMM", locale()))
 }
 
 @Composable
-private fun time(instant: Instant): String = instant.atZone(ZONE).format(DateTimeFormatter.ofPattern("HH:mm", locale()))
+internal fun time(instant: Instant): String = instant.atZone(ZONE).format(DateTimeFormatter.ofPattern("HH:mm", locale()))

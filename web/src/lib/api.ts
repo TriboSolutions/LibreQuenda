@@ -575,6 +575,10 @@ export type IssueReport = {
   photo_ref?: string // a storage reference under issues/
   urgent: boolean
   share_contact: boolean // the council's staff may see the reporter's email
+  // where the phone is: the reporter must be at the facility (checked, never stored)
+  latitude?: number
+  longitude?: number
+  accuracy?: number
 }
 /** A report in the council's maintenance list. */
 export type CouncilIssue = {
