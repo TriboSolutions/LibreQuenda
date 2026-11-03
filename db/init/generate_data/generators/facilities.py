@@ -1,11 +1,9 @@
-from config import COUNCILS
-
 from generators.base import stable_uuid
 
 
 def generate(context: dict) -> list:
     rows = []
-    for council in COUNCILS:
+    for council in context["seed"]["councils"]:
         for f in council["facilities"]:
             key = f"{council['key']}/{f['key']}"
             facility_id = stable_uuid("facility", key)
@@ -24,6 +22,8 @@ def generate(context: dict) -> list:
                     "longitude": f["longitude"],
                     "capacity": f["capacity"],
                     "slot_minutes": f["slot_minutes"],
+                    "accessibility_info": f.get("accessibility_info"),
+                    "min_age": f.get("min_age"),
                     # every facility uses its council's booking window (custom_rules off,
                     # the window columns at the same defaults as tenant_booking_rules)
                     "usage_rules_text": f["usage_rules_text"],

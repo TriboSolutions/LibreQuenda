@@ -1,12 +1,10 @@
-from config import CLOSURES
-
 from generators.base import stable_uuid
 
 
 # Relative rows: converted to timestamps when the database is created (see sql_writer.py)
 def generate(context: dict) -> list:
     rows = []
-    for facility_key, day_offset, start, end, reason in CLOSURES:
+    for facility_key, day_offset, start, end, reason in context["seed"]["closures"]:
         rows.append(
             {
                 "id": stable_uuid("closure", f"{facility_key}:{day_offset}:{start}"),

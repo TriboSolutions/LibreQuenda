@@ -2,7 +2,7 @@ import csv
 import os
 from pathlib import Path
 
-from config import HISTORY_DAYS, TIMEZONE
+from config import TIMEZONE
 
 # Path where csv_data/ lives inside the Docker container
 CONTAINER_CSV_DIR = "/docker-initdb-staging/csv_data"
@@ -14,9 +14,10 @@ TABLE_ORDER = [
     "facility_tag",
     "opening_hours",
     "checkin_device",
+    "facility_checkin",
     "app_user",
+    "user_home",
     "closure",
-    "booking",
 ]
 
 # Tables loaded into a temporary table first and converted on the way in: a day
@@ -38,13 +39,8 @@ RELATIVE_TABLES = {
         "       reason\n"
         "FROM seed_closure;"
     ),
-    "booking": (
-        "INSERT INTO booking (id, facility_id, user_id, starts_at, ends_at)\n"
-        "SELECT id, facility_id, user_id,\n"
-        f"       ({LOCAL_DAY} + day_offset + start_time) AT TIME ZONE '{TIMEZONE}',\n"
-        f"       ({LOCAL_DAY} + day_offset + end_time) AT TIME ZONE '{TIMEZONE}'\n"
-        "FROM seed_booking;"
-    ),
+    # where each resident books: only a temporary table, read by the SQL below
+    "user_home": None,
 }
 RELATIVE_COLUMN_TYPES = {
     "id": "UUID",
@@ -55,15 +51,21 @@ RELATIVE_COLUMN_TYPES = {
     "end_time": "TIME",
     "reason": "TEXT",
     "tag_slug": "TEXT",
+    "tenant_id": "UUID",
 }
 
-# Generated in SQL once the schedule is loaded, after the CSV tables
-HISTORY_SQL = Path(__file__).parent / "history.sql"
-CHECKIN_SQL = Path(__file__).parent / "checkin.sql"
-AUDIT_SQL = Path(__file__).parent / "audit.sql"
-PUBLIC_SQL = Path(__file__).parent / "public.sql"
-ISSUES_SQL = Path(__file__).parent / "issues.sql"
-TESTER_SQL = Path(__file__).parent / "tester.sql"
+# Generated in SQL once the CSV tables are in, in this order: (file, what it adds).
+# {LOCAL_DAY}, {TIMEZONE} and the profile's numbers (profiles.py) are filled in.
+HERE = Path(__file__).parent
+SQL_PARTS = [
+    ("upcoming.sql", "upcoming bookings  (today and the next days, staff ones too)"),
+    ("public.sql", "public and shared bookings  (notes, invite links, people and guests who joined)"),
+    ("history.sql", "booking history"),
+    ("issues.sql", "reported problems  (the councils' maintenance lists)"),
+    ("audit.sql", "audit log"),
+    ("notifications.sql", "notifications  (already emailed: nothing goes out)"),
+]
+TESTER_SQL = HERE / "tester.sql"
 ENV_FILE = Path(__file__).parent.parent.parent.parent / ".env"
 
 
@@ -77,11 +79,11 @@ def tester_email() -> str:
     return email
 
 
-def generate_sql(csv_dir: Path, sql_file: Path) -> None:
+def generate_sql(csv_dir: Path, sql_file: Path, seed: dict) -> None:
     lines = [
         "-- ============================================================",
         "--  INITIAL DATA  (auto-generated — do not edit manually)",
-        "--  Re-generate by running:  python generate_data/main.py",
+        f"--  Profile: {seed['name']}. Re-generate with:  python generate_data/main.py --profile {seed['name']}",
         "-- ============================================================",
         "",
     ]
@@ -110,7 +112,8 @@ def generate_sql(csv_dir: Path, sql_file: Path) -> None:
                 f"FROM '{container_path}'\n"
                 f"WITH (FORMAT CSV, HEADER TRUE);"
             )
-            lines.append(RELATIVE_TABLES[table])
+            if RELATIVE_TABLES[table]:
+                lines.append(RELATIVE_TABLES[table])
         else:
             lines.append(
                 f'COPY "{table}" ({col_list})\n'
@@ -122,36 +125,24 @@ def generate_sql(csv_dir: Path, sql_file: Path) -> None:
 
         print(f"  [sql]     {table}  ({row_count} rows)")
 
-    lines.append("-- public bookings (public.sql)")
-    lines.append(PUBLIC_SQL.read_text(encoding="utf-8"))
-    print("  [sql]     public bookings  (every other upcoming one where others fit)")
+    values = {"LOCAL_DAY": LOCAL_DAY, "TIMEZONE": TIMEZONE, **{k: str(v) for k, v in seed["sql"].items()}}
 
-    lines.append("-- ways to check in (checkin.sql)")
-    lines.append(CHECKIN_SQL.read_text(encoding="utf-8"))
-    print("  [sql]     ways to check in  (staff contacts, entry codes)")
+    def fill(text: str) -> str:
+        for key, value in values.items():
+            text = text.replace("{" + key + "}", value)
+        return text
 
-    lines.append("-- audit log (audit.sql)")
-    lines.append(AUDIT_SQL.read_text(encoding="utf-8"))
-    print("  [sql]     audit log  (a few entries)")
-
-    lines.append("-- reported problems (issues.sql)")
-    lines.append(ISSUES_SQL.read_text(encoding="utf-8"))
-    print("  [sql]     reported problems  (the councils' maintenance lists)")
-
+    # the tester first: their booking takes the first free turn, before the generated ones fill them
     email = tester_email()
     if email:
         lines.append("-- the local tester (tester.sql)")
-        lines.append(TESTER_SQL.read_text(encoding="utf-8").replace("{TESTER_EMAIL}", email.replace("'", "''")))
+        lines.append(fill(TESTER_SQL.read_text(encoding="utf-8")).replace("{TESTER_EMAIL}", email.replace("'", "''")))
         print(f"  [sql]     tester  ({email}, a booking from the next full hour)")
 
-    lines.append("-- booking history (history.sql)")
-    lines.append(
-        HISTORY_SQL.read_text(encoding="utf-8")
-        .replace("{LOCAL_DAY}", LOCAL_DAY)
-        .replace("{HISTORY_DAYS}", str(HISTORY_DAYS))
-        .replace("{TIMEZONE}", TIMEZONE)
-    )
-    print(f"  [sql]     booking history  ({HISTORY_DAYS} days)")
+    for name, what in SQL_PARTS:
+        lines.append(f"-- {name}")
+        lines.append(fill((HERE / name).read_text(encoding="utf-8")))
+        print(f"  [sql]     {what}")
 
     sql_file.write_text("\n".join(lines), encoding="utf-8")
     print(f"\n  Written -> {sql_file.relative_to(sql_file.parent.parent.parent)}")
