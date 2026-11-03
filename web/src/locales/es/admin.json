@@ -58,8 +58,11 @@
   },
   "manage": {
     "details": "Datos",
+    "detailsHelp": "El nombre, el logotipo y el contacto que ven los vecinos en la página del ayuntamiento.",
+    "save": "Guardar los datos",
     "viewPage": "Abrir su página",
     "admins": "Personas administradoras",
+    "adminsHelp": "Quién puede gestionar las instalaciones, las reservas y estos ajustes.",
     "noAdmins": "Todavía nadie ha aceptado una invitación.",
     "pending": "Invitación pendiente",
     "inviteLabel": "Invitar por correo",
