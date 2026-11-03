@@ -53,6 +53,18 @@ func (s *meService) Export(ctx context.Context, session auth.Session) (*ExportRe
 	if issues, err = queries.ListIssuesByReporter(ctx, owner); err != nil {
 		return nil, failed
 	}
+	var facilityRatings []model.ExportFacilityRatingsByUserRow
+	if facilityRatings, err = queries.ExportFacilityRatingsByUser(ctx, owner); err != nil {
+		return nil, failed
+	}
+	var peopleRatings []model.ExportPeopleRatingsByUserRow
+	if peopleRatings, err = queries.ExportPeopleRatingsByUser(ctx, userId); err != nil {
+		return nil, failed
+	}
+	var received model.GetUserRatingSummaryRow
+	if received, err = queries.GetUserRatingSummary(ctx, userId); err != nil {
+		return nil, failed
+	}
 
 	return &ExportResponse{
 		GeneratedAt:    time.Now().UTC(),
@@ -63,6 +75,7 @@ func (s *meService) Export(ctx context.Context, session auth.Session) (*ExportRe
 		Participations: mapExportParticipations(participations),
 		Notifications:  mapExportNotifications(notifications),
 		Issues:         mapExportIssues(issues),
+		Ratings:        mapExportRatings(facilityRatings, peopleRatings, received),
 	}, nil
 }
 

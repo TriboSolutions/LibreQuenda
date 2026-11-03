@@ -116,5 +116,11 @@
     "body": "Añade una app de autenticación, una llave de seguridad o una clave de acceso a tu cuenta y vuelve a iniciar sesión con ella.",
     "setUp": "Configurar el segundo factor",
     "signInAgain": "Iniciar sesión de nuevo"
+  },
+  "rating": {
+    "summary_one": "Valoración de {{average}} sobre 5, de {{count}} persona",
+    "summary_other": "Valoración de {{average}} sobre 5, de {{count}} personas",
+    "stars_one": "{{count}} estrella",
+    "stars_other": "{{count}} estrellas"
   }
 }

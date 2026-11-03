@@ -84,6 +84,17 @@ for (const theme of ['light', 'dark'] as const) {
       await expectAccessible(page, { overlay: true })
     })
 
+    test('rating dialog, after a public booking', async ({ page }) => {
+      await open(page, '/reservas?valorar=b3', { theme })
+      await expect(page.getByRole('dialog').getByRole('group', { name: /Uxía Lago/ })).toBeVisible()
+      await page.waitForTimeout(300)
+      await expectAccessible(page, { overlay: true })
+      // arrow keys move between the stars, as in any radio group
+      await page.getByRole('dialog').getByRole('radio', { name: '4 estrelas' }).first().focus()
+      await page.keyboard.press('ArrowRight')
+      await expect(page.getByRole('dialog').getByRole('radio', { name: '5 estrelas' }).first()).toBeChecked()
+    })
+
     test('notifications menu', async ({ page }) => {
       await open(page, '/lugo', { theme })
       await page.getByRole('button', { name: /notifica|aviso/i }).click()

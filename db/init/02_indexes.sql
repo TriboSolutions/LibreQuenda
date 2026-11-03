@@ -51,3 +51,8 @@ CREATE INDEX idx_booking_public ON booking (starts_at) WHERE is_public AND statu
 -- reported problems: the council's list by facility and status, and the open ones per person
 CREATE INDEX idx_facility_issue_facility  ON facility_issue (facility_id, status, created_at DESC);
 CREATE INDEX idx_facility_issue_reporter  ON facility_issue (reporter_id, status);
+
+-- ratings: the averages on the facility page and next to people
+CREATE INDEX idx_facility_rating_facility ON facility_rating (facility_id);
+CREATE INDEX idx_user_rating_rated        ON user_rating (rated_id);
+CREATE INDEX idx_user_rating_rater        ON user_rating (rater_id);

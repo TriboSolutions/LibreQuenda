@@ -2,6 +2,7 @@ package me
 
 import (
 	"librequenda/model"
+	"librequenda/rating"
 	"librequenda/storage"
 )
 
@@ -30,6 +31,8 @@ type MeResponse struct {
 	EmailNotifications  bool   `json:"email_notifications"`  // off: booking and problem notices in the app only
 	ShowRecommendations bool   `json:"show_recommendations"` // "For you" on the home page
 	ProfileComplete     bool   `json:"profile_complete"`     // the date of birth is required before booking
+	// what others gave them after public bookings; null until someone did
+	Rating *rating.Summary `json:"rating"`
 
 	// roles waiting for this person: they are granted once the email is verified
 	PendingInvitations []PendingInvitationDto `json:"pending_invitations"`
@@ -67,6 +70,7 @@ func withProfile(response *MeResponse, profile model.GetUserProfileRow) *MeRespo
 	response.EmailNotifications = profile.EmailNotifications
 	response.ShowRecommendations = profile.ShowRecommendations
 	response.ProfileComplete = profile.BirthDate.Valid
+	response.Rating = rating.Of(profile.RatingAverage, profile.RatingCount)
 	return response
 }
 

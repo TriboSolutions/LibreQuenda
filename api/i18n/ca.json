@@ -183,7 +183,12 @@
     "council_limit_reached": "Ja tens {{0}} reserves properes a les instal·lacions d’aquest ajuntament, el màxim que permet.",
     "booking_policy_failed": "No s’han pogut desar les normes de reserva de la plataforma.",
     "email_unverified": "Confirma la teva adreça electrònica abans de reservar: al teu perfil pots demanar el codi i escriure’l.",
-    "too_many_booking_issues": "Aquesta reserva ja té 5 incidències. No se’n poden enviar més."
+    "too_many_booking_issues": "Aquesta reserva ja té 5 incidències. No se’n poden enviar més.",
+    "invalid_rating": "Dona cada valoració d’1 a 5 estrelles.",
+    "rating_load_failed": "No s’ha pogut carregar la valoració.",
+    "rating_save_failed": "No s’ha pogut desar la teva valoració. Torna-ho a provar.",
+    "rating_closed": "Aquesta reserva ja no es pot valorar.",
+    "rating_not_in_booking": "Només pots valorar qui ha jugat amb tu en una reserva pública."
   },
   "email": {
     "greeting": "Hola {{0}},",

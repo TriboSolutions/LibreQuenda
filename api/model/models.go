@@ -288,6 +288,7 @@ const (
 	NotificationTypeIssueReported             NotificationType = "issue_reported"
 	NotificationTypeIssueSolved               NotificationType = "issue_solved"
 	NotificationTypeIssueRejected             NotificationType = "issue_rejected"
+	NotificationTypeRatingRequested           NotificationType = "rating_requested"
 )
 
 func (e *NotificationType) Scan(src interface{}) error {
@@ -538,6 +539,16 @@ type FacilityIssue struct {
 	UpdatedAt    time.Time      `json:"updated_at"`
 }
 
+type FacilityRating struct {
+	ID         uuid.UUID     `json:"id"`
+	FacilityID uuid.UUID     `json:"facility_id"`
+	BookingID  uuid.UUID     `json:"booking_id"`
+	UserID     uuid.NullUUID `json:"user_id"`
+	Stars      int16         `json:"stars"`
+	CreatedAt  time.Time     `json:"created_at"`
+	UpdatedAt  time.Time     `json:"updated_at"`
+}
+
 type FacilityTag struct {
 	FacilityID uuid.UUID `json:"facility_id"`
 	TagID      uuid.UUID `json:"tag_id"`
@@ -646,4 +657,14 @@ type UserQrToken struct {
 	UserID    uuid.UUID    `json:"user_id"`
 	ExpiresAt time.Time    `json:"expires_at"`
 	UsedAt    sql.NullTime `json:"used_at"`
+}
+
+type UserRating struct {
+	ID        uuid.UUID `json:"id"`
+	BookingID uuid.UUID `json:"booking_id"`
+	RaterID   uuid.UUID `json:"rater_id"`
+	RatedID   uuid.UUID `json:"rated_id"`
+	Stars     int16     `json:"stars"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }

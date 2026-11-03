@@ -17,7 +17,9 @@
     "issue_solved": "Arreglat el problema que vas avisar a {{facility}}.",
     "issue_rejected": "L’ajuntament ha revisat el problema que vas avisar a {{facility}} i no el tramitarà.",
     "booking_joined": "{{name}} s’ha unit a la teva reserva a {{facility}}, {{day}} a les {{time}}.",
-    "issue_reported": "Nova incidència a {{facility}}."
+    "issue_reported": "Nova incidència a {{facility}}.",
+    "rating_requested": "Què tal {{facility}}? Valora-la d’1 a 5 estrelles.",
+    "rating_requested_public": "Què tal {{facility}}? Valora-la, i també qui ha jugat amb tu."
   },
   "reason": "Motiu: {{reason}}",
   "councilNote": "Nota de l’ajuntament: {{reason}}",

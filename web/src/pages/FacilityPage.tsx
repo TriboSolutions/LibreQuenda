@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import { Link, useParams, useSearchParams } from 'react-router'
+import { RatingBadge } from '@/components/Stars'
 import { PublicTurnDialog } from '@/components/PublicTurnDialog'
 import { BookingDialog } from '@/components/BookingDialog'
 import { DatePicker } from '@/components/DatePicker'
@@ -128,6 +129,7 @@ export function FacilityPage() {
       <div className="mt-3">
         <h1 className="text-[28px] leading-9 font-bold tracking-[-0.02em] sm:text-[32px] sm:leading-10">{f.name}</h1>
         <p className="mt-1 text-base text-muted-foreground">{[f.sport, f.address].filter(Boolean).join(' · ')}</p>
+        <RatingBadge rating={data.rating} className="mt-1" />
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start">

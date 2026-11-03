@@ -110,6 +110,7 @@ WHERE
 -- The bell: the most recent notices first.
 SELECT
     id,
+    booking_id,
     type,
     payload,
     created_at,

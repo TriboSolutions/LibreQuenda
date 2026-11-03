@@ -6,6 +6,7 @@ import (
 	"librequenda/checkin"
 	"librequenda/core/me"
 	"librequenda/model"
+	"librequenda/rating"
 	"librequenda/schedule"
 	"librequenda/shared"
 	"net/http"
@@ -61,6 +62,8 @@ type PublicBookingDto struct {
 	EndsAt         time.Time `json:"ends_at"`
 	SpotsLeft      int       `json:"spots_left"`
 	OwnerFirstName string    `json:"owner_first_name"` // "" when unknown
+	// what others gave the owner after public bookings; null until someone did
+	OwnerRating *rating.Summary `json:"owner_rating"`
 }
 
 // Position: where the person is, when the browser shares it; checked, never stored.
@@ -154,7 +157,7 @@ func publicBookings(rows []model.ListJoinablePublicBookingsRow, patterns []model
 			Kind:     RecommendPublic,
 			Facility: f.card,
 			StartsAt: row.StartsAt,
-			Booking:  &PublicBookingDto{Id: row.ID.String(), StartsAt: row.StartsAt, EndsAt: row.EndsAt, SpotsLeft: spots, OwnerFirstName: row.OwnerFirstName, Description: row.PublicDescription},
+			Booking:  &PublicBookingDto{Id: row.ID.String(), StartsAt: row.StartsAt, EndsAt: row.EndsAt, SpotsLeft: spots, OwnerFirstName: row.OwnerFirstName, OwnerRating: rating.Of(row.OwnerRatingAverage, row.OwnerRatingCount), Description: row.PublicDescription},
 		})
 		if len(out) == maxPublic {
 			break

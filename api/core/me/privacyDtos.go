@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"io"
 	"librequenda/model"
+	"librequenda/rating"
 	"librequenda/shared"
 	"librequenda/storage"
 	"strconv"
@@ -23,6 +24,42 @@ type ExportResponse struct {
 	Participations []ExportParticipation `json:"participations"` // bookings of someone else the user joined
 	Notifications  []ExportNotification  `json:"notifications"`
 	Issues         []ExportIssue         `json:"issues"` // problems the user reported at facilities
+	Ratings        ExportRatings         `json:"ratings"`
+}
+
+// ExportRatings: the stars the user gave, and the average others gave them.
+type ExportRatings struct {
+	Facilities []ExportFacilityRating `json:"facilities"`
+	People     []ExportPersonRating   `json:"people"`   // who was rated is left out, like other people's details
+	Received   *rating.Summary        `json:"received"` // null until someone rated them
+}
+
+type ExportFacilityRating struct {
+	Facility  string    `json:"facility"`
+	BookingId string    `json:"booking_id"`
+	Stars     int16     `json:"stars"`
+	RatedAt   time.Time `json:"rated_at"`
+}
+
+type ExportPersonRating struct {
+	BookingId string    `json:"booking_id"`
+	Stars     int16     `json:"stars"`
+	RatedAt   time.Time `json:"rated_at"`
+}
+
+func mapExportRatings(facilities []model.ExportFacilityRatingsByUserRow, people []model.ExportPeopleRatingsByUserRow, received model.GetUserRatingSummaryRow) ExportRatings {
+	var ratings = ExportRatings{
+		Facilities: make([]ExportFacilityRating, 0, len(facilities)),
+		People:     make([]ExportPersonRating, 0, len(people)),
+		Received:   rating.Of(received.Average, received.Count),
+	}
+	for _, r := range facilities {
+		ratings.Facilities = append(ratings.Facilities, ExportFacilityRating{Facility: r.FacilityName, BookingId: r.BookingID.String(), Stars: r.Stars, RatedAt: r.UpdatedAt})
+	}
+	for _, r := range people {
+		ratings.People = append(ratings.People, ExportPersonRating{BookingId: r.BookingID.String(), Stars: r.Stars, RatedAt: r.UpdatedAt})
+	}
+	return ratings
 }
 
 type ExportAccount struct {

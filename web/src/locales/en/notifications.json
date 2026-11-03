@@ -17,7 +17,9 @@
     "issue_solved": "The problem you reported at {{facility}} is fixed.",
     "issue_rejected": "The council looked at the problem you reported at {{facility}} and will not take it further.",
     "booking_joined": "{{name}} joined your booking at {{facility}}, {{day}} at {{time}}.",
-    "issue_reported": "New issue at {{facility}}."
+    "issue_reported": "New issue at {{facility}}.",
+    "rating_requested": "How was {{facility}}? Rate it with 1 to 5 stars.",
+    "rating_requested_public": "How was {{facility}}? Rate it, and the people who played with you."
   },
   "reason": "Reason: {{reason}}",
   "councilNote": "Note from the council: {{reason}}",

@@ -138,7 +138,35 @@ export type FacilityPage = {
   now: string
   facility: Facility
   schedule: WeeklyWindow[]
+  rating: RatingSummary | null // residents' stars after their bookings; null until someone rated
 }
+
+// --- ratings ------------------------------------------------------------------
+
+/** 1 to 5 stars: the average (one decimal) and how many gave them, never who. */
+export type RatingSummary = { average: number; count: number }
+
+/** Someone else in a public booking, with the stars the signed-in person gave them (0 = not yet). */
+export type PersonToRate = { user_id: string; name: string; is_owner: boolean; stars: number }
+
+/** The rating of one booking: the facility's stars and, after a public booking, the others'. */
+export type BookingRating = {
+  booking_id: string
+  facility_name: string
+  facility_slug: string
+  tenant_slug: string
+  tenant_name: string
+  starts_at: string
+  ends_at: string
+  is_public: boolean
+  can_rate: boolean // ended, not a no-show, within 30 days
+  rate_until: string
+  facility_stars: number // 0 = not yet
+  people: PersonToRate[] // public bookings only
+}
+
+/** 0 leaves that rating as it is. */
+export type RatingInput = { facility_stars: number; people: { user_id: string; stars: number }[] }
 
 // --- council administration -----------------------------------------------
 
@@ -415,6 +443,7 @@ export type Booking = {
   checkin_radius_m?: number // owner only: how close the phone must be for the code or the door QR
   // past confirmed bookings only, from the QR readers: unknown = no reader when it began, so nobody could check in
   attendance: '' | 'attended' | 'no_show' | 'unknown'
+  can_rate: boolean // ended, not a no-show, within 30 days: the rating dialog
   // invites: the owner shares a link and others fill the facility's capacity
   role: 'owner' | 'participant' // participant: joined someone else's booking through an invite
   owner_name: string // participant only
@@ -452,9 +481,12 @@ export type NotificationType =
   | 'issue_reported'
   | 'issue_solved' // a problem the person reported was fixed (reason: the council's note)
   | 'issue_rejected'
+  | 'rating_requested' // a booking ended: rate the facility and, if it was public, the others
 
 export type AppNotification = {
   id: string
+  booking_id: string // "" for notices about no booking
+  is_public: boolean // rating_requested: the others can be rated too
   type: NotificationType
   facility_name: string
   facility_slug: string // issue_solved, issue_rejected
@@ -511,7 +543,15 @@ export type Recommendation = {
   because?: string // similar: the facility of theirs it is like
   shared_tags?: string[] // similar: the tags (slugs) they share
   // public_booking: someone's public booking to join; at most the owner's first name
-  booking?: { id: string; starts_at: string; ends_at: string; spots_left: number; owner_first_name: string; description?: string }
+  booking?: {
+    id: string
+    starts_at: string
+    ends_at: string
+    spots_left: number
+    owner_first_name: string
+    owner_rating?: RatingSummary | null // what others gave the owner after public bookings
+    description?: string
+  }
 }
 
 /** A problem residents report at a facility, for the council's maintenance list. */
@@ -565,6 +605,7 @@ export type Me = {
   email_reminders: boolean
   show_recommendations: boolean // "For you" on the home page
   profile_complete: boolean // the date of birth is required before booking
+  rating?: RatingSummary | null // what others gave them after public bookings; null until someone did
   // council roles waiting for this person: granted once the email is verified
   pending_invitations?: { tenant_name: string; tenant_slug: string }[]
 }
@@ -944,6 +985,11 @@ export const api = {
   cancel: (token: string, bookingId: string) =>
     request<void>(`/me/bookings/${bookingId}`, { token, method: 'DELETE' }),
 
+  ratings: {
+    get: (token: string, bookingId: string) => request<BookingRating>(`/me/bookings/${bookingId}/rating`, { token }),
+    save: (token: string, bookingId: string, input: RatingInput) =>
+      request<BookingRating>(`/me/bookings/${bookingId}/rating`, { token, method: 'PUT', body: input }),
+  },
   invites: {
     get: (token: string, bookingId: string) => request<Invite>(`/me/bookings/${bookingId}/invite`, { token }),
     // creates the link, or replaces it so the old one stops working

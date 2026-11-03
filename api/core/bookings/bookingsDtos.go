@@ -3,6 +3,7 @@ package bookings
 import (
 	"database/sql"
 	"librequenda/checkin"
+	"librequenda/core/ratings"
 	"librequenda/model"
 	"librequenda/storage"
 	"sort"
@@ -72,6 +73,7 @@ type BookingDto struct {
 	// owner only: how close the phone must be (metres) to check in with the code or the door QR
 	CheckinRadiusM int    `json:"checkin_radius_m,omitempty"`
 	Attendance     string `json:"attendance"` // past confirmed bookings only: "attended", "no_show" or "unknown"; "" otherwise
+	CanRate        bool   `json:"can_rate"`   // ended, not a no-show, rated within 30 days (PUT /me/bookings/{id}/rating)
 	// invites: the owner shares a link and others fill the facility's capacity
 	Role             string      `json:"role"`              // "owner" or "participant" (joined through an invite)
 	OwnerName        string      `json:"owner_name"`        // participant only
@@ -236,6 +238,7 @@ func mapParticipation(row model.ListParticipationsByUserRow, now time.Time) Book
 		TenantName:       row.TenantName,
 		CheckedInAt:      checkedInAt,
 		Attendance:       attendance(row.Status, row.EndsAt, row.CheckedInAt.Valid, row.CheckinAtStart, now),
+		CanRate:          ratings.CanRate(row.Status, row.EndsAt, row.CheckedInAt.Valid, row.CheckinAtStart, now),
 		Role:             RoleParticipant,
 		OwnerName:        row.OwnerName,
 		Capacity:         invitableCapacity(row.Capacity),
@@ -272,6 +275,7 @@ func mapBooking(row model.ListBookingsByUserRow, now time.Time) BookingDto {
 		CheckinCode:       checkinCode,
 		CheckedInAt:       checkedInAt,
 		Attendance:        attendance(row.Status, row.EndsAt, row.CheckedInAt.Valid, row.CheckinAtStart, now),
+		CanRate:           ratings.CanRate(row.Status, row.EndsAt, row.CheckedInAt.Valid, row.CheckinAtStart, now),
 		Role:              RoleOwner,
 		IsPublic:          row.IsPublic,
 		PublicDescription: row.PublicDescription,

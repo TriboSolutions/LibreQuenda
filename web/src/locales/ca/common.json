@@ -116,5 +116,11 @@
     "body": "Afegeix una app d’autenticació, una clau de seguretat o una clau d’accés al teu compte i torna a iniciar la sessió amb ella.",
     "setUp": "Configura el segon factor",
     "signInAgain": "Torna a iniciar la sessió"
+  },
+  "rating": {
+    "summary_one": "Valoració de {{average}} sobre 5, d’{{count}} persona",
+    "summary_other": "Valoració de {{average}} sobre 5, de {{count}} persones",
+    "stars_one": "{{count}} estrella",
+    "stars_other": "{{count}} estrelles"
   }
 }

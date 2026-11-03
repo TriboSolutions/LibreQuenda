@@ -18,6 +18,7 @@ import (
 	"librequenda/core/media"
 	"librequenda/core/notifications"
 	"librequenda/core/platform"
+	"librequenda/core/ratings"
 	"librequenda/core/reader"
 	"librequenda/core/tenants"
 	"librequenda/cronJobs"
@@ -62,5 +63,6 @@ func main() {
 	reader.ReaderRoutes(dbConexion, router).RegisterRoutes()
 	entrance.EntranceRoutes(dbConexion, router).RegisterRoutes()
 	issues.IssuesRoutes(dbConexion, router).RegisterRoutes()
+	ratings.RatingsRoutes(dbConexion, router).RegisterRoutes()
 	router.StartServer(":8000")
 }

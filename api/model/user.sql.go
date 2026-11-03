@@ -159,11 +159,14 @@ SELECT
     preferred_language,
     email_reminders,
     email_notifications,
-    show_recommendations
+    show_recommendations,
+    -- what others gave them after public bookings: the average and how many
+    (SELECT COALESCE(AVG(r.stars), 0) FROM user_rating r WHERE r.rated_id = app_user.id)::FLOAT8 AS rating_average,
+    (SELECT COUNT(*) FROM user_rating r WHERE r.rated_id = app_user.id) AS rating_count
 FROM
     app_user
 WHERE
-    id = $1
+    app_user.id = $1
 `
 
 type GetUserProfileRow struct {
@@ -178,6 +181,8 @@ type GetUserProfileRow struct {
 	EmailReminders      bool           `json:"email_reminders"`
 	EmailNotifications  bool           `json:"email_notifications"`
 	ShowRecommendations bool           `json:"show_recommendations"`
+	RatingAverage       float64        `json:"rating_average"`
+	RatingCount         int64          `json:"rating_count"`
 }
 
 func (q *Queries) GetUserProfile(ctx context.Context, id uuid.UUID) (GetUserProfileRow, error) {
@@ -195,6 +200,8 @@ func (q *Queries) GetUserProfile(ctx context.Context, id uuid.UUID) (GetUserProf
 		&i.EmailReminders,
 		&i.EmailNotifications,
 		&i.ShowRecommendations,
+		&i.RatingAverage,
+		&i.RatingCount,
 	)
 	return i, err
 }

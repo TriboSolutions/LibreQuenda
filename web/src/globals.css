@@ -57,6 +57,9 @@
   --pill-accent-bg: #eef6fb;
   --pill-accent-ink: #0b3d61;
 
+  /* rating stars: amber, 3:1 or more against the page (WCAG 1.4.11) */
+  --star: #b45309;
+
   --hatch-line: #c3ccd5;
 
   /* indicators: bookings that happened, and cancelled ones beside them */
@@ -108,6 +111,7 @@
   --pill-neutral-bg: #25272b;
   --pill-neutral-ink: #d1d5db;
   --pill-accent-bg: #10283a;
+  --star: #fbbf24;
   --pill-accent-ink: #b5daf3;
 
   --hatch-line: #4a5058;
@@ -158,6 +162,7 @@
   --color-pill-neutral-ink: var(--pill-neutral-ink);
   --color-pill-accent-bg: var(--pill-accent-bg);
   --color-pill-accent-ink: var(--pill-accent-ink);
+  --color-star: var(--star);
 
   --color-chart-confirmed: var(--chart-confirmed);
   --color-chart-cancelled: var(--chart-cancelled);
