@@ -74,7 +74,8 @@ playwright-report/
 .agents/skills/
 
 # Demo data stays local: LibreQuenda starts empty and the superadmin creates everything.
-# Generate it with db/init/generate_data/main.py (images go in db/init/seed_media/).
+# Generate it with db/init/generate_data/main.py: small by default, --profile prod for a
+# production-sized one (images go in db/init/seed_media/).
 db/init/csv_data/
 db/init/09_initial_data.sql
 db/init/seed_media/

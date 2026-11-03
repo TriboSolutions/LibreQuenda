@@ -151,17 +151,18 @@ COUNCILS = [
     },
 ]
 
-# Sample residents. Never shown: the public day view only exposes busy intervals.
+# Named residents, used by key in issues.sql; more made-up ones are added per
+# profile (people.py). "home": the council they book in (else round robin).
+# Never shown: the public day view only exposes busy intervals.
 RESIDENTS = [
-    {"key": "uxia", "full_name": "Uxía Pereira", "email": "uxia.pereira@example.com"},
-    {"key": "brais", "full_name": "Brais Otero", "email": "brais.otero@example.com"},
+    {"key": "uxia", "full_name": "Uxía Pereira", "email": "uxia.pereira@example.com", "home": "lalin"},
+    {"key": "brais", "full_name": "Brais Otero", "email": "brais.otero@example.com", "home": "lalin"},
     {"key": "antia", "full_name": "Antía Vázquez", "email": "antia.vazquez@example.com"},
     {"key": "xoan", "full_name": "Xoán Castro", "email": "xoan.castro@example.com"},
-    # residents who only appear in the booking history (see history.sql)
     {"key": "iago", "full_name": "Iago Fernández", "email": "iago.fernandez@example.com"},
-    {"key": "noa", "full_name": "Noa Rodríguez", "email": "noa.rodriguez@example.com"},
-    {"key": "martin", "full_name": "Martín López", "email": "martin.lopez@example.com"},
-    {"key": "lucia", "full_name": "Lucía Gómez", "email": "lucia.gomez@example.com"},
+    {"key": "noa", "full_name": "Noa Rodríguez", "email": "noa.rodriguez@example.com", "home": "lugo"},
+    {"key": "martin", "full_name": "Martín López", "email": "martin.lopez@example.com", "home": "ourense"},
+    {"key": "lucia", "full_name": "Lucía Gómez", "email": "lucia.gomez@example.com", "home": "lalin"},
     {"key": "breixo", "full_name": "Breixo Souto", "email": "breixo.souto@example.com"},
     {"key": "sabela", "full_name": "Sabela Rial", "email": "sabela.rial@example.com"},
     {"key": "roi", "full_name": "Roi Barreiro", "email": "roi.barreiro@example.com"},
@@ -198,35 +199,18 @@ READERS = [
     ("ourense/oira-pavillon", "Porta de Oira"),
 ]
 
-# Days of booking history before the day the database is created (see history.sql)
-HISTORY_DAYS = 400
-
-# Relative to the day the database is created: (facility, resident, day offset, start)
-# The length is the facility's slot; every start must be one of its turns.
-BOOKINGS = [
-    ("lalin/padel-1", "uxia", 0, "10:30"),
-    ("lalin/padel-1", "brais", 0, "18:00"),
-    ("lalin/padel-1", "antia", 0, "19:30"),
-    ("lalin/padel-2", "xoan", 0, "19:30"),
-    ("lalin/padel-2", "uxia", 0, "21:00"),
-    ("lalin/pavillon", "brais", 0, "18:00"),
-    ("lalin/pavillon", "antia", 0, "19:00"),
-    ("lalin/tenis-2", "uxia", 0, "17:00"),
-    ("lalin/piscina-3", "uxia", 0, "18:15"),
-    ("lalin/piscina-3", "brais", 0, "19:00"),
-    ("lalin/padel-1", "xoan", 1, "19:30"),
-    ("lugo/pedreiras-2", "antia", 0, "18:45"),
-    ("lugo/pedreiras-2", "xoan", 0, "19:30"),
-    ("lugo/frigsa-4", "brais", 0, "17:30"),
-    ("lugo/frigsa-pavillon", "xoan", 0, "20:00"),
-    ("lugo/palacio", "brais", 0, "21:00"),
-    ("lugo/gorgoso", "antia", 0, "20:00"),
-    ("lugo/gorgoso", "uxia", 1, "18:30"),
-    ("ourense/remedios-pavillon", "xoan", 0, "18:00"),
-    ("ourense/remedios-pavillon", "uxia", 0, "19:00"),
-    ("ourense/remedios-piscina-5", "antia", 0, "17:45"),
-    ("ourense/remedios-campo", "brais", 0, "20:30"),
-    ("ourense/oira-pavillon", "antia", 0, "19:00"),
-    ("ourense/oira-padel", "xoan", 0, "18:00"),
-    ("ourense/oira-padel", "brais", 1, "19:30"),
+# Ways to check in besides the readers, so the Entrada tab, the check-in dialog
+# and the flash booking have something to show: (facility, entry code, people
+# residents can ask on site, or None for no staff confirmation). Not accounts.
+CHECKIN = [
+    ("lalin/pavillon", True, [
+        {"name": "Marta Rey", "phone": "986 787 061", "place": "Conserxería, á entrada do pavillón"},
+        {"name": "Xosé Lois Fraga", "phone": "", "place": "Almacén de material, xunto á pista"},
+    ]),
+    ("lugo/pedreiras-2", False, [
+        {"name": "Socorrista de quenda", "phone": "982 297 200", "place": "Cadeira de socorrismo, beira da piscina"},
+    ]),
+    ("ourense/remedios-pavillon", True, [
+        {"name": "Conserxería dos Remedios", "phone": "988 388 100", "place": "Mostrador da entrada principal"},
+    ]),
 ]

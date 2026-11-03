@@ -29,3 +29,7 @@ FROM facility f
         LIMIT 1
     ) AS slot
 WHERE t.slug = 'lalin' AND f.slug = 'pavillon-municipal-de-deportes';
+
+-- they live in Lalín: the history gives them past bookings there, and others' bookings there can count them in
+INSERT INTO seed_user_home (user_id, tenant_id)
+SELECT u.id, t.id FROM app_user u, tenant t WHERE u.idp_subject = 'seed-tester' AND t.slug = 'lalin';
