@@ -66,6 +66,9 @@ export type TenantStats = {
 export type GeoPoint = { latitude: number; longitude: number }
 export type TenantCard = Tenant & { stats: TenantStats }
 
+/** Where a page sits in a list the API pages (?page=&pageSize=, 100 by default). */
+export type Pagination = { page: number; page_size: number; total: number; has_more: boolean }
+
 /** One facility on the home page's list and map, from any council. */
 export type FacilityCard = {
   id: string
@@ -79,6 +82,7 @@ export type FacilityCard = {
   longitude: number | null
   free_today: number // turns still free today
   council: Tenant
+  distance_km?: number | null // with a position: how far, by the API (which also sorts by it)
 }
 
 /** A facility tag from the platform's catalogue; facilities and addresses use its slug. */
@@ -96,6 +100,8 @@ export type Branding = {
   custom_name: string // "" = LibreQuenda
   logo_ref: string // "" = the LibreQuenda logo
   logo_url: string
+  support_email: string // the installation's support contact (SUPPORT_EMAIL, SUPPORT_PHONE); "" = not set
+  support_phone: string
 }
 export type BrandingInput = { name: string; logo_ref: string } // "" = back to LibreQuenda's
 
@@ -263,7 +269,7 @@ export type StaffBooking = {
 }
 
 /** How the person got in. */
-export type CheckinMethod = 'reader' | 'printed_qr' | 'entry_code' | 'staff'
+export type CheckinMethod = 'reader' | 'printed_qr' | 'nfc' | 'entry_code' | 'staff'
 /** Whether staff can mark the entry now: from 15 minutes before the start until the turn ends. */
 export type StaffCheckinState = 'open' | 'too_early' | 'ended' | ''
 
@@ -353,6 +359,8 @@ export type CheckinResult = {
 export type CheckinSettings = {
   printed_qr: boolean
   qr_token: string // in the printed QR's address; a new one voids the prints
+  nfc: boolean // an NFC tag on the door, holding the entrance address with nfc_token
+  nfc_token: string // a new one voids the tags written
   entry_code: boolean
   code: string // the entry code to print; a new one voids the prints
   radius_m: number // how far from the pin the phone may be
@@ -364,7 +372,7 @@ export type CheckinSettings = {
 }
 export type CheckinSettingsInput = Pick<
   CheckinSettings,
-  'printed_qr' | 'entry_code' | 'radius_m' | 'flash_booking' | 'staff_confirm' | 'qr_reader' | 'staff_contacts'
+  'printed_qr' | 'nfc' | 'entry_code' | 'radius_m' | 'flash_booking' | 'staff_confirm' | 'qr_reader' | 'staff_contacts'
 >
 /** Someone residents can ask on site to check in or book a free turn: only what the council shows. */
 /** Without any, the facility's own contact (else the council's) stands in, with an email. */
@@ -378,6 +386,7 @@ export type Entrance = {
   tenant_slug: string
   timezone: string
   printed_qr: boolean
+  nfc: boolean
   entry_code: boolean
   radius_m: number
   flash_booking: boolean
@@ -386,6 +395,7 @@ export type Entrance = {
 /** The proof of being at the door, and where the phone is (checked, never stored). */
 export type EntranceInput = {
   qr_token?: string
+  nfc_token?: string // read from the NFC tag on the door (the tag opens /entrada?n=)
   code?: string
   latitude: number
   longitude: number
@@ -929,7 +939,17 @@ export const api = {
   tenants: () => request<{ tenants: TenantCard[] }>('/tenants'),
   tags: () => request<TagCatalogue>('/tags'),
   branding: () => request<Branding>('/branding'),
-  facilities: () => request<{ facilities: FacilityCard[] }>('/facilities'),
+  // near: nearest first and each one's distance_km (the API sorts); radiusKm keeps those within it.
+  // The map shows them all, so every page is fetched, in the API's order.
+  facilities: async (near?: { latitude: number; longitude: number } | null, radiusKm = 0) => {
+    const query = near ? `&lat=${near.latitude}&lon=${near.longitude}${radiusKm > 0 ? `&radius_km=${radiusKm}` : ''}` : ''
+    const facilities: FacilityCard[] = []
+    for (let page = 1; ; page++) {
+      const answer = await request<{ facilities: FacilityCard[]; pagination: Pagination }>(`/facilities?page=${page}${query}`)
+      facilities.push(...answer.facilities)
+      if (!answer.pagination?.has_more) return { facilities }
+    }
+  },
   day: (slug: string, date?: string) =>
     request<Day>(`/tenants/${encodeURIComponent(slug)}/day${date ? `?date=${date}` : ''}`),
   me: (token: string) => request<Me>('/me', { token }),
@@ -1039,7 +1059,7 @@ export const api = {
         body: input,
       }),
     createClosure: (token: string, slug: string, id: string, input: ClosureInput) =>
-      request<{ closure: Closure; cancelled: number }>(`/tenants/${encodeURIComponent(slug)}/admin/facilities/${id}/closures`, {
+      request<{ closure: Closure; cancelled: number; closures: Closure[] }>(`/tenants/${encodeURIComponent(slug)}/admin/facilities/${id}/closures`, {
         token,
         method: 'POST',
         body: input,
@@ -1068,6 +1088,8 @@ export const api = {
       request<CheckinSettings>(`/tenants/${encodeURIComponent(slug)}/admin/facilities/${facilityId}/checkin`, { token, method: 'PUT', body: input }),
     rotateCheckinQr: (token: string, slug: string, facilityId: string) =>
       request<CheckinSettings>(`/tenants/${encodeURIComponent(slug)}/admin/facilities/${facilityId}/checkin/qr`, { token, method: 'POST' }),
+    rotateCheckinNfc: (token: string, slug: string, facilityId: string) =>
+      request<CheckinSettings>(`/tenants/${encodeURIComponent(slug)}/admin/facilities/${facilityId}/checkin/nfc`, { token, method: 'POST' }),
     rotateCheckinCode: (token: string, slug: string, facilityId: string) =>
       request<CheckinSettings>(`/tenants/${encodeURIComponent(slug)}/admin/facilities/${facilityId}/checkin/code`, { token, method: 'POST' }),
     staffDay: (token: string, slug: string, facilityId: string, date: string) =>

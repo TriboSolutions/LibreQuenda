@@ -55,6 +55,19 @@ func (h *counciladminHandler) RotateCheckinQr(w http.ResponseWriter, r *http.Req
 	send(w, r, response, err)
 }
 
+func (h *counciladminHandler) RotateCheckinNfc(w http.ResponseWriter, r *http.Request) {
+	var tenantId, ok = h.councilAdmin(w, r)
+	if !ok {
+		return
+	}
+	var id uuid.UUID
+	if id, ok = facilityId(w, r); !ok {
+		return
+	}
+	var response, err = GetCounciladminService(h.db).RotateCheckinNfc(r.Context(), tenantId, id)
+	send(w, r, response, err)
+}
+
 func (h *counciladminHandler) RotateCheckinCode(w http.ResponseWriter, r *http.Request) {
 	var tenantId, ok = h.councilAdmin(w, r)
 	if !ok {

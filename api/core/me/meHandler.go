@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"librequenda/auth"
+	"librequenda/checkin"
 	"net/http"
 	"sync"
 
@@ -36,7 +37,7 @@ func (h *meHandler) GetMe(w http.ResponseWriter, r *http.Request) {
 
 	var response, err = GetMeService(h.db).SyncCurrentUser(r.Context(), session)
 	if err != nil {
-		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
 		return
 	}
 
@@ -57,7 +58,7 @@ func (h *meHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	}
 	var response, err = GetMeService(h.db).UpdateProfile(r.Context(), session, input)
 	if err != nil {
-		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
 		return
 	}
 	helpers.SendSuccessResponse(w, response)
@@ -76,7 +77,7 @@ func (h *meHandler) UpdatePreferences(w http.ResponseWriter, r *http.Request) {
 	}
 	var response, err = GetMeService(h.db).UpdatePreferences(r.Context(), session, input)
 	if err != nil {
-		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
 		return
 	}
 	helpers.SendSuccessResponse(w, response)
@@ -98,7 +99,7 @@ func (h *meHandler) SetShowRecommendations(w http.ResponseWriter, r *http.Reques
 	}
 	var response, err = GetMeService(h.db).SetShowRecommendations(r.Context(), session, input.Show)
 	if err != nil {
-		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
 		return
 	}
 	helpers.SendSuccessResponse(w, response)
@@ -113,7 +114,28 @@ func (h *meHandler) GetPersonalQr(w http.ResponseWriter, r *http.Request) {
 	}
 	var response, err = GetMeService(h.db).PersonalQr(r.Context(), session)
 	if err != nil {
-		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
+		return
+	}
+	w.Header().Set("Cache-Control", "no-store")
+	helpers.SendSuccessResponse(w, response)
+}
+
+// GetPersonalQrStatus: ?code= is the QR's content, as GET /me/qr gave it; anything else is a 400.
+func (h *meHandler) GetPersonalQrStatus(w http.ResponseWriter, r *http.Request) {
+	var session, ok = auth.SessionFromContext(r.Context())
+	if !ok {
+		helpers.SendI18NErrorResponse(w, r, http.StatusUnauthorized, "errors.unauthorized")
+		return
+	}
+	var token, valid = checkin.ParsePersonalPayload(r.URL.Query().Get("code"))
+	if !valid {
+		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_query_params")
+		return
+	}
+	var response, err = GetMeService(h.db).PersonalQrStatus(r.Context(), session, token)
+	if err != nil {
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
 		return
 	}
 	w.Header().Set("Cache-Control", "no-store")
@@ -129,7 +151,7 @@ func (h *meHandler) Export(w http.ResponseWriter, r *http.Request) {
 	}
 	var response, err = GetMeService(h.db).Export(r.Context(), session)
 	if err != nil {
-		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message)
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
 		return
 	}
 	var name = "librequenda-" + response.GeneratedAt.Format("2006-01-02")

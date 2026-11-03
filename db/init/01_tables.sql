@@ -25,6 +25,7 @@ CREATE TYPE checkin_method AS ENUM (
     'reader',       -- a QR reader at the door read the booking or the personal QR
     'printed_qr',   -- the resident's phone read the QR printed on the door
     'entry_code',   -- the resident typed the facility's entry code
+    'nfc',          -- the resident's phone read the NFC tag on the door
     'staff'         -- council staff confirmed it from the calendar
 );
 
@@ -324,6 +325,8 @@ CREATE TABLE facility_checkin (
     flash_booking BOOLEAN      NOT NULL DEFAULT TRUE,
     staff_confirm BOOLEAN      NOT NULL DEFAULT FALSE,              -- staff mark the entry from the calendar
     qr_reader     BOOLEAN      NOT NULL DEFAULT TRUE,               -- off: the readers refuse every QR, but stay set up (broken, switched off)
+    nfc           BOOLEAN      NOT NULL DEFAULT FALSE,              -- an NFC tag on the door, holding the entrance address with nfc_token
+    nfc_token     UUID         NOT NULL DEFAULT gen_random_uuid(),  -- a new one voids the tags written
     staff_contacts JSONB       NOT NULL DEFAULT '[]'::JSONB,        -- who residents ask on site: [{name, phone, place}], not accounts
     updated_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW()
 );
@@ -346,7 +349,7 @@ CREATE FUNCTION facility_can_check_in(target UUID) RETURNS BOOLEAN
 LANGUAGE sql STABLE AS $$
     SELECT (EXISTS (SELECT 1 FROM checkin_device d WHERE d.facility_id = target)
             AND COALESCE((SELECT c.qr_reader FROM facility_checkin c WHERE c.facility_id = target), TRUE))
-        OR COALESCE((SELECT c.printed_qr OR c.entry_code OR c.staff_confirm FROM facility_checkin c WHERE c.facility_id = target), FALSE)
+        OR COALESCE((SELECT c.printed_qr OR c.entry_code OR c.staff_confirm OR c.nfc FROM facility_checkin c WHERE c.facility_id = target), FALSE)
 $$;
 
 -- Whether the facility could take check-ins at `at` (a booking's start).
@@ -366,7 +369,9 @@ CREATE TABLE user_qr_token (
     token      UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id    UUID         NOT NULL REFERENCES app_user(id) ON DELETE CASCADE,
     expires_at TIMESTAMPTZ  NOT NULL,
-    used_at    TIMESTAMPTZ  NULL
+    used_at    TIMESTAMPTZ  NULL,
+    -- the flash booking a reader made with it, so the phone showing it can open it
+    booking_id UUID         NULL
 );
 
 
@@ -416,6 +421,9 @@ CREATE TABLE booking (
         tstzrange(starts_at, ends_at) WITH &&
     ) WHERE (status = 'confirmed')
 );
+
+-- declared after booking exists: a personal QR keeps the flash booking it made
+ALTER TABLE user_qr_token ADD CONSTRAINT fk_user_qr_token_booking FOREIGN KEY (booking_id) REFERENCES booking(id) ON DELETE SET NULL;
 
 
 -- Who joins a booking through its invite link: a user with an account, or a

@@ -32,7 +32,7 @@ const RETRY_MS = 10_000
   - QR at the door and staff: how to go about it there.
   A booking already made goes in from My bookings instead.
 */
-type Way = 'reader' | 'code' | 'door' | 'staff'
+type Way = 'reader' | 'code' | 'door' | 'nfc' | 'staff'
 
 export function FlashBookingDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const { t } = useTranslation('profile')
@@ -64,8 +64,8 @@ export function FlashBookingDialog({ open, onOpenChange }: { open: boolean; onOp
         )}
 
         <Tabs value={way} onValueChange={(value) => setWay(value as Way)} className="gap-4">
-          <TabsList aria-label={t('flash.ways')} className="grid h-auto w-full grid-cols-2 sm:grid-cols-4">
-            {(['reader', 'code', 'door', 'staff'] as const).map((key) => (
+          <TabsList aria-label={t('flash.ways')} className="grid h-auto w-full grid-cols-2 sm:grid-cols-5">
+            {(['reader', 'code', 'door', 'nfc', 'staff'] as const).map((key) => (
               <TabsTrigger key={key} value={key}>
                 {t(`flash.${key}.tab`)}
               </TabsTrigger>
@@ -87,6 +87,10 @@ export function FlashBookingDialog({ open, onOpenChange }: { open: boolean; onOp
             <p className="text-muted-foreground">{t('flash.door.help')}</p>
             <DistanceNotice />
             <DoorQrScanner book />
+          </TabsContent>
+          {/* the tag opens the facility's entrance page, which books the free turn and lets them in */}
+          <TabsContent value="nfc" className="grid gap-4">
+            <p className="text-muted-foreground">{t('flash.nfc.help')}</p>
           </TabsContent>
           <TabsContent value="staff">
             <StaffFlash />

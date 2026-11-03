@@ -115,7 +115,14 @@ func (s *counciladminService) CreateClosure(ctx context.Context, tenantId uuid.U
 	if err != nil {
 		return nil, failed("errors.closure_save_failed")
 	}
-	return &ClosureResultDto{Closure: mapClosure(row.ID, row.StartsAt, row.EndsAt, row.Reason), Cancelled: cancelled}, nil
+	var result = &ClosureResultDto{Closure: mapClosure(row.ID, row.StartsAt, row.EndsAt, row.Reason), Cancelled: cancelled, Closures: []ClosureDto{}}
+	// the whole list, in the database's order, so the page does not sort it
+	if upcoming, listErr := model.New(s.db).ListUpcomingClosures(ctx, id); listErr == nil {
+		for _, c := range upcoming {
+			result.Closures = append(result.Closures, mapClosure(c.ID, c.StartsAt, c.EndsAt, c.Reason))
+		}
+	}
+	return result, nil
 }
 
 // DeleteClosure reopens the slots. Bookings it cancelled stay cancelled.

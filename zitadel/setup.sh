@@ -114,6 +114,41 @@ else
 	log "OIDC app $APP_NAME exists ($CLIENT_ID), config synced"
 fi
 
+# --- OIDC app for the Android app (app/) ---
+# A native app: PKCE, no secret, back to the app through its own URI scheme
+# (the applicationId). Same project, so its tokens carry the audience the API checks.
+ANDROID_APP_NAME=android
+ANDROID_REDIRECT="gal.tribo.librequenda:/oauth2redirect"
+ANDROID_OIDC_CONFIG=$(jq -n \
+	--arg redirect "$ANDROID_REDIRECT" \
+	--argjson dev "$([ "$PUBLIC_SCHEME" = http ] && echo true || echo false)" \
+	'{
+		redirectUris: [$redirect],
+		postLogoutRedirectUris: [$redirect],
+		responseTypes: ["OIDC_RESPONSE_TYPE_CODE"],
+		grantTypes: ["OIDC_GRANT_TYPE_AUTHORIZATION_CODE", "OIDC_GRANT_TYPE_REFRESH_TOKEN"],
+		appType: "OIDC_APP_TYPE_NATIVE",
+		authMethodType: "OIDC_AUTH_METHOD_TYPE_NONE",
+		accessTokenType: "OIDC_TOKEN_TYPE_JWT",
+		idTokenUserinfoAssertion: true,
+		devMode: $dev
+	}')
+
+ANDROID_APP=$(call POST "/management/v1/projects/$PROJECT_ID/apps/_search" \
+	"{\"queries\":[{\"nameQuery\":{\"name\":\"$ANDROID_APP_NAME\",\"method\":\"TEXT_QUERY_METHOD_EQUALS\"}}]}" \
+	| jq -c '.result[0] // empty')
+
+if [ -z "$ANDROID_APP" ]; then
+	ANDROID_CLIENT_ID=$(call POST "/management/v1/projects/$PROJECT_ID/apps/oidc" \
+		"$(echo "$ANDROID_OIDC_CONFIG" | jq --arg name "$ANDROID_APP_NAME" '. + {name: $name}')" | jq -r '.clientId')
+	log "created OIDC app $ANDROID_APP_NAME ($ANDROID_CLIENT_ID)"
+else
+	ANDROID_CLIENT_ID=$(echo "$ANDROID_APP" | jq -r '.oidcConfig.clientId')
+	call PUT "/management/v1/projects/$PROJECT_ID/apps/$(echo "$ANDROID_APP" | jq -r '.id')/oidc_config" "$ANDROID_OIDC_CONFIG" >/dev/null 2>&1 \
+		|| true # "no changes" is reported as an error
+	log "OIDC app $ANDROID_APP_NAME exists ($ANDROID_CLIENT_ID), config synced"
+fi
+
 # --- Google login (optional) ---
 # Enabled when GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are set, removed from the login otherwise.
 GOOGLE_IDP_NAME=Google
@@ -249,9 +284,11 @@ jq -n \
 	--arg authority "$ZITADEL_URL" \
 	--arg clientId "$CLIENT_ID" \
 	--arg projectId "$PROJECT_ID" \
+	--arg androidClientId "$ANDROID_CLIENT_ID" \
 	'{
 		authority: $authority,
 		clientId: $clientId,
+		androidClientId: $androidClientId,
 		projectId: $projectId,
 		scope: ("openid profile email offline_access urn:zitadel:iam:org:project:id:" + $projectId + ":aud urn:zitadel:iam:org:project:id:zitadel:aud")
 	}' > /runtime/config.json.tmp

@@ -3,6 +3,7 @@ package tenants
 import (
 	"librequenda/rating"
 	"librequenda/schedule"
+	"librequenda/shared"
 	"time"
 )
 
@@ -34,10 +35,30 @@ type FacilityCardDto struct {
 	Longitude *float64  `json:"longitude"`
 	FreeToday int       `json:"free_today"` // turns still free today
 	Council   TenantDto `json:"council"`
+	// with ?lat=&lon=: from there, in km (0.1); null without a pin or a position
+	DistanceKm *float64 `json:"distance_km"`
 }
 
 type FacilitiesResponse struct {
-	Facilities []FacilityCardDto `json:"facilities"` // by council, then name
+	// by council, then name; with ?lat=&lon=, nearest first and the ones without a pin last
+	Facilities []FacilityCardDto `json:"facilities"`
+	Pagination shared.PageDto    `json:"pagination"`
+}
+
+// FacilityAnyDayDto: a facility's day as /tenants/{slug}/day has it, with its
+// council and how far it is, for the search across every council.
+type FacilityAnyDayDto struct {
+	FacilityDayDto
+	Council    TenantDto `json:"council"`
+	DistanceKm *float64  `json:"distance_km"`
+}
+
+// FacilitiesDayResponse: GET /facilities/day, every council's facilities for one day.
+type FacilitiesDayResponse struct {
+	Date string `json:"date"` // YYYY-MM-DD
+	// by council, then name; with ?lat=&lon=, nearest first and the ones without a pin last
+	Facilities []FacilityAnyDayDto `json:"facilities"`
+	Pagination shared.PageDto      `json:"pagination"`
 }
 
 type TenantStatsDto struct {

@@ -4,6 +4,8 @@
 #  On main and on version tags (v1.2.3) the images are published to the
 #  GitHub Container Registry (ghcr.io/<owner>/librequenda-<image>).
 #  No deployment: the server pulls or builds them with docker-compose.prod.yaml.
+#  The Android app is linted and built on every run (the debug APK is kept as an
+#  artifact); on version tags a signed release APK goes to the GitHub release.
 # ============================================================
 name: CI
 
@@ -110,6 +112,88 @@ jobs:
 
       - name: Accessibility (WCAG 2.1)
         run: pnpm test:a11y
+
+  android:
+    name: Android app
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # the release APK on version tags
+    defaults:
+      run:
+        working-directory: app
+    env:
+      # the API the app talks to: each installation builds its own app for its domain
+      # (Settings -> Secrets and variables -> Actions -> Variables: ANDROID_API_BASE_URL)
+      ANDROID_API_BASE_URL: ${{ vars.ANDROID_API_BASE_URL || 'https://reservas.example.gal/api' }}
+      RELEASE: ${{ startsWith(github.ref, 'refs/tags/v') }}
+      SIGNING: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+    steps:
+      - uses: actions/checkout@v5
+
+      # the build runs on JDK 17 (kotlin.jvmToolchain(17)); the runner already has the Android SDK
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+
+      # caches Gradle and checks the wrapper jar is a genuine one
+      - uses: gradle/actions/setup-gradle@v5
+
+      # the app's texts and legal pages are generated from the web's locales: they must match them
+      - name: Texts match the web (app/tools/web_strings.py)
+        run: |
+          python3 tools/web_strings.py ../web/src app/src/main/res
+          if [ -n "$(git status --porcelain -- app/src/main/res app/src/main/assets)" ]; then
+            git status --porcelain -- app/src/main/res app/src/main/assets
+            echo "::error::Run python3 app/tools/web_strings.py web/src app/app/src/main/res and commit the result"; exit 1
+          fi
+
+      - name: Lint
+        run: ./gradlew lintDebug
+
+      - name: Unit tests
+        run: ./gradlew testDebugUnitTest
+
+      - name: Build (debug)
+        run: ./gradlew assembleDebug
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: librequenda-debug-apk
+          path: app/app/build/outputs/apk/debug/*.apk
+          retention-days: 14
+
+      - name: Lint report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-lint-report
+          path: app/app/build/reports/lint-results-debug.html
+
+      # CD: v1.2.3 -> a signed release APK, versionName 1.2.3, on the GitHub release. Needs the
+      # secrets ANDROID_KEYSTORE_BASE64 (base64 of the .jks), ANDROID_KEYSTORE_PASSWORD,
+      # ANDROID_KEY_ALIAS and ANDROID_KEY_PASSWORD; without them the step is skipped.
+      - name: Build (release, signed)
+        if: env.RELEASE == 'true' && env.SIGNING == 'true'
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          export ANDROID_KEYSTORE_FILE="$RUNNER_TEMP/release.jks"
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$ANDROID_KEYSTORE_FILE"
+          ./gradlew assembleRelease -PversionName="${GITHUB_REF_NAME#v}" -PversionCode="${GITHUB_RUN_NUMBER}"
+          mv app/build/outputs/apk/release/app-release.apk "$RUNNER_TEMP/librequenda-${GITHUB_REF_NAME}.apk"
+          rm -f "$ANDROID_KEYSTORE_FILE"
+
+      - name: Publish the APK on the release
+        if: env.RELEASE == 'true' && env.SIGNING == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 || gh release create "$GITHUB_REF_NAME" --verify-tag --generate-notes
+          gh release upload "$GITHUB_REF_NAME" "$RUNNER_TEMP/librequenda-${GITHUB_REF_NAME}.apk" --clobber
 
   images:
     name: Image ${{ matrix.image }}

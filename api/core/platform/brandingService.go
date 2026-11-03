@@ -10,7 +10,7 @@ import (
 )
 
 func brandingDto(b branding.Branding) *BrandingDto {
-	return &BrandingDto{Name: b.Name(), CustomName: b.CustomName, LogoRef: b.LogoRef, LogoUrl: storage.URL(b.LogoRef)}
+	return &BrandingDto{Name: b.Name(), CustomName: b.CustomName, LogoRef: b.LogoRef, LogoUrl: storage.URL(b.LogoRef), SupportEmail: shared.SUPPORT_EMAIL, SupportPhone: shared.SUPPORT_PHONE}
 }
 
 // Branding is the installation's name and logo: public, the web app shows them on every page.

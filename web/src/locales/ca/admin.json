@@ -582,15 +582,22 @@
     },
     "nfc": {
       "name": "Etiqueta NFC",
-      "how": "El veí acosta el mòbil a un adhesiu a la porta, que obre la pàgina d’entrada.",
+      "how": "El veí apropa el mòbil a un adhesiu a la porta, que obre la pàgina d’entrada.",
       "door": "un adhesiu NFC",
       "cost": "uns euros per porta",
-      "cheat": "baix amb una etiqueta simple, alt amb una signada",
-      "tag": "Tipus d’etiqueta",
-      "signed": "Signa cada lectura (NTAG 424 DNA)",
-      "plain": "Etiqueta simple",
-      "signedHelp": "Cada lectura porta una signatura i un comptador que comprova el servidor, així que una lectura copiada o enregistrada no serveix.",
-      "plainHelp": "Una etiqueta simple només guarda l’adreça i es pot copiar: afegeix la comprovació d’ubicació."
+      "cheat": "baix: una etiqueta copiada només serveix a la porta, perquè sempre es comprova la ubicació",
+      "write": "Grava aquesta adreça en una etiqueta NFC (NTAG213 o similar) com a enllaç, amb una app per gravar etiquetes, i enganxa-la a la porta.",
+      "addressLabel": "Adreça de l’etiqueta NFC",
+      "copy": "Copia",
+      "copied": "Copiat",
+      "newTag": "Adreça nova",
+      "saveToWrite": "Desa els canvis per veure l’adreça que cal gravar.",
+      "plainHelp": "Una etiqueta simple només desa l’adreça i es pot copiar: per això sempre es comprova la ubicació del mòbil.",
+      "newTitle": "Crear una adreça nova?",
+      "newBody": "Les etiquetes ja gravades deixen de funcionar a l’instant. Grava l’adreça nova a les etiquetes de les portes.",
+      "newConfirm": "Crea una adreça nova",
+      "keep": "Mantén aquesta adreça",
+      "rotated": "Adreça nova a punt. Grava-la a les etiquetes de les portes."
     },
     "entryCode": {
       "name": "Codi d’entrada",
@@ -885,7 +892,7 @@
   "bookingPolicy": {
     "title": "Normes de reserva de la plataforma",
     "oneCouncil": "Un ajuntament cada vegada per compte",
-    "oneCouncilHelp": "Amb reserves properes en un ajuntament (pròpies o a les quals s’ha unit), una persona no pot reservar ni unir-se en un altre fins que acabin. Cap ajuntament no veu les reserves d’un altre.",
+    "oneCouncilHelp": "Amb reserves pròpies properes en un concello, una persona no pot reservar en un altre fins que acabin. Unir-se a la partida d'una altra persona no compta: només es comprova que no coincideixi amb les seves hores. Cap concello no veu les reserves d'un altre.",
     "saved": "Desat."
   }
 }

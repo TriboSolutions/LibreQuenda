@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"github.com/angelbarreiros/Penguin/router/helpers"
 	"librequenda/checkin"
 	"librequenda/model"
 	"librequenda/schedule"
@@ -31,7 +32,7 @@ func GetBookingsService(db *sql.DB) *bookingsService {
 	return sBookingsInstance
 }
 
-func (s *bookingsService) GetMyBookings(ctx context.Context, userId uuid.UUID) (*MyBookingsResponse, *shared.ErrorResponse) {
+func (s *bookingsService) GetMyBookings(ctx context.Context, userId uuid.UUID, page helpers.PaginationParams) (*MyBookingsResponse, *shared.ErrorResponse) {
 	var loadFailed = &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.bookings_load_failed"}
 	var queries = model.New(s.db)
 	var user = uuid.NullUUID{UUID: userId, Valid: true}
@@ -72,7 +73,10 @@ func (s *bookingsService) GetMyBookings(ctx context.Context, userId uuid.UUID) (
 	for _, row := range joinedRows {
 		joinedBy[row.BookingID] = append(joinedBy[row.BookingID], row)
 	}
-	return MapMyBookings(rows, joined, spots, joinedBy, userId, time.Now()), nil
+	var response = MapMyBookings(rows, joined, spots, joinedBy, userId, time.Now())
+	response.HistoryPagination = shared.NewPageDto(page, int64(len(response.History)))
+	response.History = shared.Slice(response.History, page)
+	return response, nil
 }
 
 // CreateBooking accepts only a slot that the schedule reports as free right now,

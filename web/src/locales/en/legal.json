@@ -1,0 +1,42 @@
+{
+  "group": "Legal information",
+  "updated": "Last updated: 3 November 2026",
+  "terms": {
+    "title": "Terms of use",
+    "sub": "The rules for using the service and booking",
+    "intro": "These terms explain how to use {{app}} to book sports facilities. By creating an account or booking, you accept them.",
+    "sections": [
+      { "title": "What {{app}} is", "body": ["{{app}} is a service to look up and book the public sports facilities of the councils that use it. Each council runs its own facilities, opening hours and rules.", "It is built with LibreQuenda, free software: anyone can read its code."] },
+      { "title": "Your account", "body": ["To book you need a personal account with your name, your date of birth and a confirmed email. The details must be true and the account is yours alone: do not share it.", "You can delete your account whenever you like from your profile."] },
+      { "title": "Bookings", "body": ["Each facility has its own rules of use, which you must read and accept before booking, and it may limit how many bookings you hold at once, how far ahead you can book and until when you can cancel.", "If you book in public, other people can join your game. You can leave a game you joined until 15 minutes before it starts."] },
+      { "title": "Checking in", "body": ["When you arrive, check in the way the facility takes: the QR reader, the door's code or QR, the NFC tag, or the staff. If you do not, the booking counts as a no-show, and several no-shows can block new bookings for a while."] },
+      { "title": "Fair use", "body": ["Do not book to resell or on someone else's behalf without their permission, do not share your personal QR or the entry codes, look after the facilities and report any problems you see.", "The council may cancel bookings because of closures, works or misuse; if so, we will let you know."] },
+      { "title": "The service", "body": ["We do our best to keep the service running, but there may be interruptions for maintenance or faults. Whether a facility is available depends on each council."] },
+      { "title": "Changes", "body": ["These terms may change. If they change in an important way, we will tell you in the app before it applies."] },
+      { "title": "Questions", "body": ["If you have questions, contact support (in the menu) or the facility's council."] }
+    ]
+  },
+  "privacy": {
+    "title": "Privacy policy",
+    "sub": "What data we keep, why, and your rights",
+    "intro": "This policy explains what personal data {{app}} processes, why, and what rights you have, under the General Data Protection Regulation (GDPR) and Spain's Organic Law 3/2018.",
+    "sections": [
+      { "title": "Who is responsible", "body": ["The organisation that runs this installation of {{app}} is responsible for your account. Each council is responsible for the bookings at its facilities."] },
+      { "title": "What data we process", "body": ["Account: your name and email, held by the sign-in service.", "Profile: date of birth, phone, photo (optional) and language.", "Use: your bookings, the games you join, check-ins, no-shows, the problems you report, notices and your preferences.", "Location: only when you ask, to show distances or to check you are at the facility when checking in. It is checked on the spot and never stored."] },
+      { "title": "What for", "body": ["To manage your bookings and check each facility's requirements (such as a minimum age), check you in, send you notices and reminders, and show «For you» based on your bookings.", "Councils see aggregated usage statistics, with no data about specific people."] },
+      { "title": "Legal basis", "body": ["Providing the service you ask for (art. 6.1.b GDPR) and the public management of municipal facilities (art. 6.1.e GDPR). Optional things, such as the photo, emails or «For you», are up to you and can be changed in the preferences."] },
+      { "title": "Who sees it", "body": ["The staff of the council where you book see your name and your bookings at its facilities. In public games, the other players see your name. No council sees another's bookings.", "We do not sell or pass on your data, we do not use it for advertising, and there are no trackers."] },
+      { "title": "How long", "body": ["For as long as you have an account. If you delete it, your personal data is erased, upcoming bookings are cancelled and past ones remain with nobody attached, only for statistics.", "The log of what administrators do is kept for up to two years."] },
+      { "title": "Your rights", "body": ["You can access your data, correct it, delete it, download it (in your profile, «Your data»), object to its processing or restrict it. Write to support for any of these.", "If you think we are not handling it properly, you can complain to the Spanish Data Protection Agency (www.aepd.es)."] },
+      { "title": "Security", "body": ["Connections are encrypted, each person only reaches what is theirs, and administrators sign in with two-step verification."] }
+    ]
+  },
+  "support": {
+    "group": "Support",
+    "title": "Help and support",
+    "sub": "If something in the app is unclear",
+    "help": "Questions about the app, or something not working? Write to us or call us.",
+    "email": "Send an email",
+    "phone": "Call"
+  }
+}

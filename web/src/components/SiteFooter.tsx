@@ -2,6 +2,8 @@ import { ExternalLink } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { Mark, Wordmark } from '@/components/Mark'
+import { useBranding } from '@/hooks/useBranding'
+import { SupportContact } from '@/pages/LegalPage'
 
 const REPO_URL = 'https://github.com/TriboSolutions/LibreQuenda'
 const LICENSE_URL = `${REPO_URL}/blob/main/LICENSE`
@@ -12,13 +14,16 @@ const linkClass = 'inline-flex min-h-11 items-center gap-1.5 underline-offset-4 
 
 /**
  * The foot of every page: LibreQuenda as free software (source and licence) and the
- * accessibility statement, reachable from anywhere (RD 1112/2018, art. 10).
+ * accessibility statement, terms and privacy policy, reachable from anywhere (RD 1112/2018, art. 10),
+ * and the installation's support contact when it has one.
  */
 export function SiteFooter() {
-  const { t } = useTranslation(['common', 'accessibility'])
+  const { t } = useTranslation(['common', 'accessibility', 'legal'])
+  const { branding } = useBranding()
+  const support = !!(branding.support_email || branding.support_phone)
   return (
     <footer className="border-t bg-card">
-      <div className="mx-auto grid max-w-[1152px] gap-8 px-4 py-10 text-sm text-muted-foreground sm:px-6 md:grid-cols-[1.5fr_1fr_1fr]">
+      <div className="mx-auto grid max-w-[1152px] gap-8 px-4 py-10 text-sm text-muted-foreground sm:px-6 md:grid-cols-[1.5fr_1fr_1fr_1fr]">
         <div>
           <p className="flex items-center gap-2">
             <Mark className="size-7" />
@@ -62,8 +67,31 @@ export function SiteFooter() {
                 {t('accessibility:footerLink')}
               </Link>
             </li>
+            <li>
+              <Link to="/condicions" className={linkClass}>
+                {t('legal:terms.title')}
+              </Link>
+            </li>
+            <li>
+              <Link to="/privacidade" className={linkClass}>
+                {t('legal:privacy.title')}
+              </Link>
+            </li>
           </ul>
         </nav>
+
+        {/* the installation's own contact (SUPPORT_EMAIL, SUPPORT_PHONE): each one is self-hosted */}
+        {support && (
+          <section aria-labelledby="footer-support">
+            <h2 id="footer-support" className="font-semibold text-foreground">
+              {t('legal:support.group')}
+            </h2>
+            <p className="mt-1">{t('legal:support.sub')}</p>
+            <div className="mt-1 grid">
+              <SupportContact compact />
+            </div>
+          </section>
+        )}
       </div>
       <div className="border-t">
         <p className="mx-auto max-w-[1152px] px-4 py-4 text-xs text-muted-foreground sm:px-6">{t('common:footer.copyright', { year: YEAR })}</p>

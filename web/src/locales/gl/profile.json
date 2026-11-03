@@ -131,6 +131,10 @@
       "tab": "QR da porta",
       "help": "Abre a cámara e apunta ao QR impreso na porta: se a quenda está libre, resérvase e entras. Antes pedirémosche a localización, que se comproba e nunca se garda."
     },
+    "nfc": {
+      "tab": "Etiqueta NFC",
+      "help": "Achega o móbil á etiqueta NFC da porta: ábrese a páxina de entrada e, se a quenda está libre, resérvase e entras. Pedirémosche a localización, que se comproba e nunca se garda."
+    },
     "staff": {
       "tab": "Persoal",
       "help": "Pide no mostrador ou ao persoal que che reserven a quenda libre: poden facelo coa túa conta ou só co teu nome. Buscamos coa localización a instalación onde estás para amosarche a quen preguntar.",

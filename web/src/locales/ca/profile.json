@@ -131,6 +131,10 @@
       "tab": "QR de la porta",
       "help": "Obre la càmera i apunta al QR imprès a la porta: si el torn és lliure, es reserva i entres. Abans et demanarem la ubicació, que es comprova i mai no es desa."
     },
+    "nfc": {
+      "tab": "Etiqueta NFC",
+      "help": "Apropa el mòbil a l’etiqueta NFC de la porta: s’obre la pàgina d’entrada i, si el torn és lliure, es reserva i entres. Et demanarem la ubicació, que es comprova i mai no es desa."
+    },
     "staff": {
       "tab": "Personal",
       "help": "Demana al taulell o al personal que et reservin el torn lliure: ho poden fer amb el teu compte o només amb el teu nom. Busquem amb la ubicació la instal·lació on ets per mostrar-te a qui preguntar.",
