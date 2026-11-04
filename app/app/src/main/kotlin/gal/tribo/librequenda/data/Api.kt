@@ -126,6 +126,7 @@ data class Me(
     val emailNotifications: Boolean,
     val emailReminders: Boolean,
     val showRecommendations: Boolean,
+    val rating: RatingSummary? = null, // what others gave them after public bookings; null until someone did
 ) {
     val initials: String
         get() = (fullName.ifBlank { email }).split(Regex("\\s+")).filter { it.isNotBlank() }
@@ -149,6 +150,7 @@ internal fun JSONObject.toMe() = Me(
     emailNotifications = optBoolean("email_notifications"),
     emailReminders = optBoolean("email_reminders"),
     showRecommendations = optBoolean("show_recommendations"),
+    rating = ratingSummary("rating"),
 )
 
 /** The installation's own name and logo (GET /api/branding), set by a superadministrator; empty = LibreQuenda's. */
@@ -185,6 +187,8 @@ data class AppNotification(
     val closedUntil: java.time.Instant? = null,
     val byStaff: Boolean = false, // a council cancellation of one booking by staff
     val createdAt: java.time.Instant? = null, // when the notice came
+    val bookingId: String = "", // "" for notices about no booking
+    val isPublic: Boolean = false, // rating_requested: the others can be rated too
 )
 
 private fun JSONObject.instant(key: String): java.time.Instant? =
@@ -210,6 +214,8 @@ suspend fun fetchNotifications(accessToken: String): Notifications {
                 closedUntil = n.instant("closed_until"),
                 byStaff = n.optBoolean("by_staff"),
                 createdAt = n.instant("created_at"),
+                bookingId = n.optString("booking_id"),
+                isPublic = n.optBoolean("is_public"),
             )
         },
     )

@@ -7,6 +7,8 @@ import androidx.core.content.edit
 import gal.tribo.librequenda.BuildConfig
 import gal.tribo.librequenda.data.RuntimeConfig
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import net.openid.appauth.AppAuthConfiguration
 import net.openid.appauth.AuthState
 import net.openid.appauth.AuthorizationException
@@ -33,8 +35,10 @@ class AuthManager(context: Context) {
     private val appContext = context.applicationContext
     private val prefs = context.getSharedPreferences("auth", Context.MODE_PRIVATE)
     private val service = AuthorizationService(context, appAuthConfiguration())
-    private var state: AuthState = prefs.getString(KEY_STATE, null)
-        ?.let { runCatching { AuthState.jsonDeserialize(it) }.getOrNull() } ?: AuthState()
+    private var state: AuthState = load() ?: AuthState()
+
+    private fun load(): AuthState? =
+        prefs.getString(KEY_STATE, null)?.let { runCatching { AuthState.jsonDeserialize(it) }.getOrNull() }
 
     val isSignedIn: Boolean get() = state.isAuthorized
 
@@ -66,10 +70,16 @@ class AuthManager(context: Context) {
         }
     }
 
-    /** A valid access token, renewed first when it is about to expire; null when signed out. */
-    suspend fun accessToken(): String? {
-        if (!state.isAuthorized) return null
-        return suspendCancellableCoroutine { cont ->
+    /**
+     * A valid access token, renewed first when it is about to expire; null when signed out.
+     * The app and the background check each have an AuthManager, and Zitadel replaces the
+     * refresh token on every renewal: one at a time, each from the tokens saved last, or the
+     * other's old refresh token is refused and the person is signed out for nothing.
+     */
+    suspend fun accessToken(): String? = renewing.withLock {
+        state = load() ?: AuthState()
+        if (!state.isAuthorized) return@withLock null
+        suspendCancellableCoroutine { cont ->
             state.performActionWithFreshTokens(service) { token, _, ex ->
                 save()
                 when {
@@ -118,6 +128,7 @@ class AuthManager(context: Context) {
 
     companion object {
         private const val KEY_STATE = "state"
+        private val renewing = Mutex() // one renewal at a time in the process (app and background check)
         val REDIRECT_URI: Uri = Uri.parse("gal.tribo.librequenda:/oauth2redirect")
 
         // The development stack serves Zitadel over plain HTTP (http://auth.localhost);

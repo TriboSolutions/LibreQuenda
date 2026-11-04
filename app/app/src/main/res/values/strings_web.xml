@@ -293,6 +293,8 @@
     <string name="notif_issue_rejected">O concello revisou o problema que avisaches en %1$s e non o vai tramitar.</string>
     <string name="notif_booking_joined">%5$s uniuse á túa reserva en %1$s, %2$s ás %3$s.</string>
     <string name="notif_issue_reported">Nova incidencia en %1$s.</string>
+    <string name="notif_rating_requested">Que tal %1$s? Valóraa de 1 a 5 estrelas.</string>
+    <string name="notif_rating_requested_public">Que tal %1$s? Valóraa, e tamén a quen xogou contigo.</string>
     <string name="council">Concello</string>
     <string name="slots_full">Completo</string>
     <string name="status_cancelled">Cancelada</string>
@@ -300,6 +302,25 @@
     <string name="status_no_show">Non presentada</string>
     <string name="status_ended">Rematada</string>
     <string name="status_checked_in">Dentro</string>
+    <string name="rating_button">Valorar</string>
+    <string name="rating_title">Valora a túa reserva</string>
+    <string name="rating_when">%1$s, %2$s ás %3$s</string>
+    <string name="rating_load_error">Non se puido cargar a valoración.</string>
+    <string name="rating_facility">Que tal %1$s?</string>
+    <string name="rating_people_title">Quen xogou contigo</string>
+    <string name="rating_people_help">Era unha reserva pública: valora aos demais de 1 a 5 estrelas. Deixa sen valorar a quen prefiras.</string>
+    <string name="rating_private">Ninguén ve quen deu cada estrela, só a media. Unha vez gardada, a valoración non se pode cambiar. Podes valorar ata o %1$s.</string>
+    <string name="rating_closed">Esta reserva xa non se pode valorar.</string>
+    <string name="rating_done">Xa valoraches esta reserva. Estas son as túas estrelas; non se poden cambiar.</string>
+    <string name="rating_save">Gardar a valoración</string>
+    <string name="rating_saving">Gardando…</string>
+    <string name="rating_save_error">Non se puido gardar a túa valoración.</string>
+    <string name="rating_later">Máis tarde</string>
+    <string name="rating_close">Pechar</string>
+    <string name="rating_thanks_title">Grazas</string>
+    <string name="rating_thanks">A túa valoración está gardada. Axuda ao concello e a quen xoga.</string>
+    <string name="people_unnamed">Sen nome</string>
+    <string name="people_organiser">fixo a reserva</string>
     <plurals name="rule_length">
         <item quantity="one">Polo menos %1$d carácter</item>
         <item quantity="other">Polo menos %1$d caracteres</item>
@@ -319,5 +340,13 @@
     <plurals name="rule_cancel">
         <item quantity="one">Cancelación gratuíta ata %1$d hora antes do turno.</item>
         <item quantity="other">Cancelación gratuíta ata %1$d horas antes do turno.</item>
+    </plurals>
+    <plurals name="rating_summary">
+        <item quantity="one">Valoración de %1$s sobre 5, de %2$d persoa</item>
+        <item quantity="other">Valoración de %1$s sobre 5, de %2$d persoas</item>
+    </plurals>
+    <plurals name="rating_stars">
+        <item quantity="one">%1$d estrela</item>
+        <item quantity="other">%1$d estrelas</item>
     </plurals>
 </resources>

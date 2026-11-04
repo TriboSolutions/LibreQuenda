@@ -385,6 +385,9 @@ SELECT
     (b.kind = 'public')::BOOLEAN AS is_public,
     b.public_description,
     facility_took_checkin(f.id, b.starts_at)::BOOLEAN AS checkin_at_start,
+    -- rated: this user saved their stars for it already, which are final
+    (EXISTS (SELECT 1 FROM facility_rating fr WHERE fr.booking_id = b.id AND fr.user_id = $1)
+     OR EXISTS (SELECT 1 FROM user_rating ur WHERE ur.booking_id = b.id AND ur.rater_id = $1))::BOOLEAN AS rated,
     -- the ways in the facility offers now, for the check-in button
     (EXISTS (SELECT 1 FROM checkin_device d WHERE d.facility_id = f.id) AND COALESCE(c.qr_reader, TRUE))::BOOLEAN AS has_reader,
     (COALESCE(c.printed_qr, FALSE) AND f.latitude IS NOT NULL)::BOOLEAN AS printed_qr,
@@ -424,6 +427,7 @@ type ListBookingsByUserRow struct {
 	IsPublic          bool            `json:"is_public"`
 	PublicDescription string          `json:"public_description"`
 	CheckinAtStart    bool            `json:"checkin_at_start"`
+	Rated             bool            `json:"rated"`
 	HasReader         bool            `json:"has_reader"`
 	PrintedQr         bool            `json:"printed_qr"`
 	EntryCode         bool            `json:"entry_code"`
@@ -464,6 +468,7 @@ func (q *Queries) ListBookingsByUser(ctx context.Context, userID uuid.NullUUID) 
 			&i.IsPublic,
 			&i.PublicDescription,
 			&i.CheckinAtStart,
+			&i.Rated,
 			&i.HasReader,
 			&i.PrintedQr,
 			&i.EntryCode,

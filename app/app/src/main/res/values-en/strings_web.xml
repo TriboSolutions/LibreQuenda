@@ -293,6 +293,8 @@
     <string name="notif_issue_rejected">The council looked at the problem you reported at %1$s and will not take it further.</string>
     <string name="notif_booking_joined">%5$s joined your booking at %1$s, %2$s at %3$s.</string>
     <string name="notif_issue_reported">New issue at %1$s.</string>
+    <string name="notif_rating_requested">How was %1$s? Rate it with 1 to 5 stars.</string>
+    <string name="notif_rating_requested_public">How was %1$s? Rate it, and the people who played with you.</string>
     <string name="council">Council</string>
     <string name="slots_full">Fully booked</string>
     <string name="status_cancelled">Cancelled</string>
@@ -300,6 +302,25 @@
     <string name="status_no_show">No-show</string>
     <string name="status_ended">Ended</string>
     <string name="status_checked_in">Checked in</string>
+    <string name="rating_button">Rate</string>
+    <string name="rating_title">Rate your booking</string>
+    <string name="rating_when">%1$s, %2$s at %3$s</string>
+    <string name="rating_load_error">Could not load the rating.</string>
+    <string name="rating_facility">How was %1$s?</string>
+    <string name="rating_people_title">The people who played with you</string>
+    <string name="rating_people_help">It was a public booking: rate the others, 1 to 5 stars. Skip anyone you prefer not to rate.</string>
+    <string name="rating_private">Nobody sees who gave which stars, only the average. Once saved, a rating cannot be changed. You can rate until %1$s.</string>
+    <string name="rating_closed">This booking can no longer be rated.</string>
+    <string name="rating_done">You already rated this booking. These are your stars; they cannot be changed.</string>
+    <string name="rating_save">Save rating</string>
+    <string name="rating_saving">Saving…</string>
+    <string name="rating_save_error">Could not save your rating.</string>
+    <string name="rating_later">Later</string>
+    <string name="rating_close">Close</string>
+    <string name="rating_thanks_title">Thank you</string>
+    <string name="rating_thanks">Your rating is saved. It helps the council and the people who play.</string>
+    <string name="people_unnamed">No name</string>
+    <string name="people_organiser">booked it</string>
     <plurals name="rule_length">
         <item quantity="one">At least %1$d character</item>
         <item quantity="other">At least %1$d characters</item>
@@ -319,5 +340,13 @@
     <plurals name="rule_cancel">
         <item quantity="one">Free cancellation up to %1$d hour before the slot.</item>
         <item quantity="other">Free cancellation up to %1$d hours before the slot.</item>
+    </plurals>
+    <plurals name="rating_summary">
+        <item quantity="one">Rated %1$s out of 5 by %2$d person</item>
+        <item quantity="other">Rated %1$s out of 5 by %2$d people</item>
+    </plurals>
+    <plurals name="rating_stars">
+        <item quantity="one">%1$d star</item>
+        <item quantity="other">%1$d stars</item>
     </plurals>
 </resources>

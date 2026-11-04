@@ -6,11 +6,14 @@ The residents' app, native Kotlin / Jetpack Compose, on the same API as the web:
 - **Facilities**: search by text, date, time, sport, tags and council, sorted by distance
   in the API; a facility's page, turns and public games to join; checkout with its rules.
 - **Bookings**: upcoming and history, each booking's page (invite, public, cancel, calendar).
+- **Ratings**: once a booking ends, the facility's stars and, after a public one, the others'
+  with an account; given once, for good. The averages show on facilities and the profile.
 - **Checking in** with every way the facility takes: the booking's QR at the reader, the
   entry code, the door's printed QR, the NFC tag on the door, or the staff.
 - **Flash booking**: book a free turn on the spot and go in, the same ways, with the
   personal QR for the readers.
-- **Notices** without push: reminders as local alarms, the rest checked in the background.
+- **Notices** without push: reminders as local alarms, the rest checked in the background,
+  and right after each booking ends, so the request to rate it comes on time.
 - Profile, preferences, the app's language (gl, es, ca, en), support and legal texts.
 
 Texts shared with the web are generated from its locales: after changing

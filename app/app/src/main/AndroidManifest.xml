@@ -35,6 +35,8 @@
         </activity>
         <!-- a booking's reminder, 15 minutes before -->
         <receiver android:name=".notify.ReminderReceiver" android:exported="false" />
+        <!-- just after a booking ends: check for the request to rate it -->
+        <receiver android:name=".notify.BookingEndedReceiver" android:exported="false" />
         <!-- «mark as read» on a notice's notification -->
         <receiver android:name=".notify.MarkReadReceiver" android:exported="false" />
         <!-- after a restart, the reminders are scheduled again -->

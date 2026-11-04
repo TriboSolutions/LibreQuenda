@@ -25,6 +25,7 @@ data class FacilityDay(
     val details: FacilityDetails,
     val slots: List<Slot>,
     val publicTurns: List<PublicTurn> = emptyList(),
+    val rating: RatingSummary? = null, // residents' stars after their bookings; null until someone rated
 )
 
 /**
@@ -83,6 +84,7 @@ suspend fun fetchFacilityDay(councilSlug: String, facilitySlug: String, date: Lo
                 title = p.optString("title"),
             )
         },
+        rating = json.ratingSummary("rating"),
     )
 }
 

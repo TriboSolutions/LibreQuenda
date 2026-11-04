@@ -155,7 +155,6 @@
   "emailsHelp": "Booking and reported issue notifications, including reminders. When disabled, notices remain in the app. Account security emails are unaffected.",
   "rating": {
     "title": "Your rating",
-    "none": "Nobody has rated you yet.",
     "help": "What the people you played public bookings with gave you, 1 to 5 stars. Nobody sees who gave which."
   }
 }
