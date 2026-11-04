@@ -131,6 +131,15 @@ fun ProfileScreen(
                 }
                 Box(pad) { DetailsSection(me, actions) }
                 SectionDivider()
+                // the average others gave them after public bookings, and how many did; nothing until someone rated them
+                me.rating?.let { rating ->
+                    Box(pad) {
+                        SettingsSection(stringResource(R.string.profile_rating_title), stringResource(R.string.profile_rating_help)) {
+                            gal.tribo.librequenda.ui.components.RatingBadge(rating)
+                        }
+                    }
+                    SectionDivider()
+                }
                 Box(pad) { AccountSection(actions) }
                 SectionDivider()
                 Box(pad) { CalendarSection(actions) }

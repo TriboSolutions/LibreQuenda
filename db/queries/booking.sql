@@ -73,6 +73,9 @@ SELECT
     (b.kind = 'public')::BOOLEAN AS is_public,
     b.public_description,
     facility_took_checkin(f.id, b.starts_at)::BOOLEAN AS checkin_at_start,
+    -- rated: this user saved their stars for it already, which are final
+    (EXISTS (SELECT 1 FROM facility_rating fr WHERE fr.booking_id = b.id AND fr.user_id = sqlc.arg('user_id'))
+     OR EXISTS (SELECT 1 FROM user_rating ur WHERE ur.booking_id = b.id AND ur.rater_id = sqlc.arg('user_id')))::BOOLEAN AS rated,
     -- the ways in the facility offers now, for the check-in button
     (EXISTS (SELECT 1 FROM checkin_device d WHERE d.facility_id = f.id) AND COALESCE(c.qr_reader, TRUE))::BOOLEAN AS has_reader,
     (COALESCE(c.printed_qr, FALSE) AND f.latitude IS NOT NULL)::BOOLEAN AS printed_qr,

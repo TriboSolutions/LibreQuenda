@@ -36,6 +36,10 @@ object Notifier {
     /** One booking's page: «booking:<id>». */
     fun openBooking(id: String) = "booking:$id"
 
+    /** A booking that ended: its stars, in the rating sheet. */
+    const val OPEN_RATE = "rate:"
+    fun openRating(id: String) = OPEN_RATE + id
+
     // The councils are all in Galicia today, as on the web
     private val ZONE = ZoneId.of("Europe/Madrid")
 
@@ -118,6 +122,7 @@ object Notifier {
         val type = when {
             n.type == "booking_cancelled_by_council" && n.closedFrom != null -> "booking_cancelled_by_closure"
             n.type == "booking_cancelled_by_council" && n.byStaff -> "booking_cancelled_by_staff"
+            n.type == "rating_requested" && n.isPublic -> "rating_requested_public" // the others can be rated too
             else -> n.type
         }
         val text = textRes(type)?.let {
@@ -131,6 +136,7 @@ object Notifier {
             "booking_cancelled_by_council", "booking_cancelled_by_closure", "booking_cancelled_by_staff" -> R.string.notification_booking_cancelled_by_council
             "issue_solved" -> R.string.notification_issue_solved
             "issue_rejected" -> R.string.notification_issue_rejected
+            "rating_requested", "rating_requested_public" -> R.string.rating_title
             else -> null
         }?.let(context::getString)
             ?: if (type == "council_admin_granted") context.getString(R.string.notification_council_admin_granted, n.tenantName)
@@ -159,6 +165,8 @@ object Notifier {
         "issue_rejected" -> R.string.notif_issue_rejected
         "booking_joined" -> R.string.notif_booking_joined
         "issue_reported" -> R.string.notif_issue_reported
+        "rating_requested" -> R.string.notif_rating_requested
+        "rating_requested_public" -> R.string.notif_rating_requested_public
         else -> null
     }
 

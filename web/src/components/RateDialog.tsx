@@ -78,7 +78,10 @@ function RateForm({ rating, token, timeZone, today, onClose }: FormProps) {
     day: formatBookingDay(rating.starts_at, timeZone, today),
     time: formatTime(rating.starts_at, timeZone),
   })
-  const anything = facilityStars > 0 || Object.values(people).some((stars) => stars > 0)
+  // saved once, for good: the facility's stars are required (the others' can be left out)
+  const ready = facilityStars > 0
+  // rated already: the stars given, to look at only
+  const readOnly = rating.rated
 
   const save = async () => {
     if (!token) return
@@ -118,18 +121,19 @@ function RateForm({ rating, token, timeZone, today, onClose }: FormProps) {
         <DialogTitle>{t('rating.title')}</DialogTitle>
         <DialogDescription className="num">{when}</DialogDescription>
       </DialogHeader>
-      {!rating.can_rate ? (
+      {!rating.can_rate && !readOnly ? (
         <p className="text-sm text-muted-foreground">{t('rating.closed')}</p>
       ) : (
         <div className="grid gap-5">
-          <StarInput label={t('rating.facility', { facility: rating.facility_name })} value={facilityStars} onChange={setFacilityStars} disabled={busy} />
+          {readOnly && <p className="text-sm text-muted-foreground">{t('rating.done')}</p>}
+          <StarInput label={t('rating.facility', { facility: rating.facility_name })} value={facilityStars} onChange={setFacilityStars} disabled={busy || readOnly} />
           {rating.people.length > 0 && (
             <section aria-labelledby="rate-people" className="grid gap-4 border-t pt-4">
               <div>
                 <h3 id="rate-people" className="font-medium">
                   {t('rating.peopleTitle')}
                 </h3>
-                <p className="text-sm text-muted-foreground">{t('rating.peopleHelp')}</p>
+                {!readOnly && <p className="text-sm text-muted-foreground">{t('rating.peopleHelp')}</p>}
               </div>
               {rating.people.map((person) => (
                 <StarInput
@@ -137,12 +141,12 @@ function RateForm({ rating, token, timeZone, today, onClose }: FormProps) {
                   label={`${person.name || t('invites:people.unnamed')}${person.is_owner ? ` · ${t('invites:people.organiser')}` : ''}`}
                   value={people[person.user_id] ?? 0}
                   onChange={(stars) => setPeople((current) => ({ ...current, [person.user_id]: stars }))}
-                  disabled={busy}
+                  disabled={busy || readOnly}
                 />
               ))}
             </section>
           )}
-          <p className="num text-xs text-muted-foreground">{t('rating.private', { date: formatDateTime(rating.rate_until, timeZone) })}</p>
+          {!readOnly && <p className="num text-xs text-muted-foreground">{t('rating.private', { date: formatDateTime(rating.rate_until, timeZone) })}</p>}
         </div>
       )}
       {error && (
@@ -155,7 +159,7 @@ function RateForm({ rating, token, timeZone, today, onClose }: FormProps) {
           {t(rating.can_rate ? 'rating.later' : 'rating.close')}
         </Button>
         {rating.can_rate && (
-          <Button onClick={() => void save()} disabled={busy || !anything}>
+          <Button onClick={() => void save()} disabled={busy || !ready}>
             {t(busy ? 'rating.saving' : 'rating.save')}
           </Button>
         )}

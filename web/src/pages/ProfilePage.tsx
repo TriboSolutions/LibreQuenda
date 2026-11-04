@@ -128,11 +128,14 @@ function ProfileForm({ me }: { me: Me }) {
     <SettingsRow id="sec-details" title={t('profile:details')} description={t('profile:subtitle')}>
       <form onSubmit={(e) => void save(e)} className="grid gap-5 rounded-lg border bg-card p-5">
         <ImagePicker label={t('profile:photo')} folder="users" shape="avatar" value={avatar} onChange={setAvatar} />
-        <div className="grid gap-1">
-          <p className="text-sm font-medium">{t('profile:rating.title')}</p>
-          {me.rating ? <RatingBadge rating={me.rating} /> : <p className="text-sm text-muted-foreground">{t('profile:rating.none')}</p>}
-          <p className="text-sm text-muted-foreground">{t('profile:rating.help')}</p>
-        </div>
+        {/* the average others gave them, and how many did; nothing until someone rated them */}
+        {me.rating && me.rating.count > 0 && (
+          <div className="grid gap-1">
+            <p className="text-sm font-medium">{t('profile:rating.title')}</p>
+            <RatingBadge rating={me.rating} />
+            <p className="text-sm text-muted-foreground">{t('profile:rating.help')}</p>
+          </div>
+        )}
         <div className="grid gap-5 border-t pt-5 sm:grid-cols-2">
           <div className="grid content-start gap-2">
             <Label htmlFor="p-birth">{t('profile:birthDate')}</Label>

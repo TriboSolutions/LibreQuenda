@@ -109,6 +109,8 @@ import gal.tribo.librequenda.ui.search.SearchFilters
 import gal.tribo.librequenda.ui.search.SearchPage
 import gal.tribo.librequenda.ui.bookings.BookingHistory
 import gal.tribo.librequenda.ui.bookings.BookingPage
+import gal.tribo.librequenda.ui.bookings.RateSheet
+import gal.tribo.librequenda.ui.components.SuccessOverlay
 import gal.tribo.librequenda.ui.facility.Checkout
 import gal.tribo.librequenda.ui.facility.ConfirmBookingPage
 import gal.tribo.librequenda.ui.facility.FacilityPage
@@ -149,6 +151,8 @@ fun MainScreen(
     var legalOpen by rememberSaveable { mutableStateOf<String?>(null) } // "terms", "privacy" or "support", over the menu
     var profileOpen by rememberSaveable { mutableStateOf(false) } // survives the language change (the activity is recreated)
     var bookingOpen by rememberSaveable { mutableStateOf<String?>(null) } // a booking's page
+    var ratingOpen by rememberSaveable { mutableStateOf<String?>(null) } // a booking that ended, to rate in a sheet
+    var rated by remember { mutableStateOf(false) } // just rated: the celebration, as after checking in
     var facilityOpen by remember { mutableStateOf<FacilityTarget?>(null) } // a facility, maybe with a turn chosen
     var confirming by remember { mutableStateOf<Checkout?>(null) } // the booking (or joining) to confirm
     var historyOpen by rememberSaveable { mutableStateOf(false) } // survives the language change (the activity is recreated)
@@ -164,6 +168,8 @@ fun MainScreen(
             opening == null -> return@LaunchedEffect
             // one booking: its page, over the bookings
             opening.startsWith("booking:") -> { tab = Tab.Bookings; menuOpen = false; bookings.reload(); bookingOpen = opening.removePrefix("booking:") }
+            // a booking that ended: the stars, in a sheet over the bookings
+            opening.startsWith(Notifier.OPEN_RATE) -> { tab = Tab.Bookings; menuOpen = false; notificationsOpen = false; ratingOpen = opening.removePrefix(Notifier.OPEN_RATE) }
             opening == Notifier.OPEN_BOOKINGS -> { tab = Tab.Bookings; menuOpen = false }
             opening == Notifier.OPEN_NOTICES -> { notificationsOpen = true; onOpenNotifications() }
             else -> return@LaunchedEffect
@@ -218,7 +224,10 @@ fun MainScreen(
         }
 
         // pages over everything, the bars included
-        NotificationsPage(notificationsOpen, session, onSignIn = { notificationsOpen = false; onSignIn() }, onMarkRead = onMarkRead) { notificationsOpen = false }
+        NotificationsPage(
+            notificationsOpen, session, onSignIn = { notificationsOpen = false; onSignIn() }, onMarkRead = onMarkRead,
+            onRate = { ratingOpen = it },
+        ) { notificationsOpen = false }
         MenuPage(
             open = menuOpen,
             session = session,
@@ -252,7 +261,7 @@ fun MainScreen(
         })
         BookingPage(bookingOpen, bookings, actions, onBack = { bookingOpen = null })
         SettingsPage(historyOpen, stringResource(R.string.bookings_history), onBack = { historyOpen = false }) {
-            BookingHistory(bookings, actions)
+            BookingHistory(bookings, actions, onRate = { ratingOpen = it.id })
         }
         // over the menu, as its next pages
         SettingsPage(profileOpen, stringResource(R.string.profile_title), onBack = { profileOpen = false }) {
@@ -270,6 +279,11 @@ fun MainScreen(
         SettingsPage(legalOpen == "support", stringResource(R.string.support_title), onBack = { legalOpen = null }) {
             SupportContent(branding)
         }
+        // from a notification the app may be starting: the sheet waits for the session to be back
+        ratingOpen?.takeIf { session.signedIn && session.me != null }?.let { id ->
+            RateSheet(id, actions, onDismiss = { ratingOpen = null }, onSaved = { ratingOpen = null; rated = true; bookings.reload() })
+        }
+        if (rated) SuccessOverlay(stringResource(R.string.rating_thanks_title), stringResource(R.string.rating_thanks)) { rated = false }
         flashDone?.let { (message, id) ->
             // on to the booking just made, over the bookings (the way back); the bookings alone when it is not known
             FlashSuccessOverlay(message) { flashDone = null; tab = Tab.Bookings; bookings.reload(); bookingOpen = id }
@@ -638,7 +652,7 @@ private fun RowScope.FlashTab(selected: Boolean, onClick: () -> Unit) {
 
 /** Notifications: a page of its own, pushed in from the right like a new screen. */
 @Composable
-private fun NotificationsPage(open: Boolean, session: SessionState, onSignIn: () -> Unit, onMarkRead: () -> Unit, onBack: () -> Unit) {
+private fun NotificationsPage(open: Boolean, session: SessionState, onSignIn: () -> Unit, onMarkRead: () -> Unit, onRate: (String) -> Unit, onBack: () -> Unit) {
     BackHandler(enabled = open, onBack = onBack)
     AnimatedVisibility(
         visible = open,
@@ -683,7 +697,11 @@ private fun NotificationsPage(open: Boolean, session: SessionState, onSignIn: ()
                 }
                 items.isEmpty() -> Text(stringResource(R.string.notifications_empty), color = Lq.colors.mutedForeground, modifier = Modifier.padding(20.dp))
                 else -> LazyColumn(Modifier.fillMaxSize().navigationBarsPadding().padding(horizontal = 16.dp)) {
-                    items(items, key = { it.id }) { NotificationRow(it, new = it.id in fresh.value || !it.read) }
+                    items(items, key = { it.id }) { n ->
+                        // the request to rate opens the stars, as the web's bell does
+                        val rate = n.type == "rating_requested" && n.bookingId.isNotBlank()
+                        NotificationRow(n, new = n.id in fresh.value || !n.read, onClick = if (rate) ({ onRate(n.bookingId) }) else null)
+                    }
                 }
             }
         }
@@ -703,12 +721,15 @@ private fun received(context: android.content.Context, at: java.time.Instant): S
 }
 
 @Composable
-private fun NotificationRow(n: AppNotification, new: Boolean) {
+private fun NotificationRow(n: AppNotification, new: Boolean, onClick: (() -> Unit)? = null) {
     // the same words as the Android notification and the web: what, where, and the day and time
     val context = androidx.compose.ui.platform.LocalContext.current
     androidx.compose.ui.platform.LocalConfiguration.current // read again when the language changes
     val (title, text) = Notifier.describe(context, n)
-    Row(Modifier.fillMaxWidth().padding(vertical = 12.dp), verticalAlignment = Alignment.Top) {
+    Row(
+        Modifier.fillMaxWidth().then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier).padding(vertical = 12.dp),
+        verticalAlignment = Alignment.Top,
+    ) {
         Box(
             Modifier.padding(top = 7.dp).size(8.dp).clip(CircleShape)
                 .background(if (new) Lq.colors.brandBlue else Color.Transparent)

@@ -191,6 +191,8 @@
     "rating_load_failed": "Non se puido cargar a valoración.",
     "rating_save_failed": "Non se puido gardar a túa valoración. Téntao de novo.",
     "rating_closed": "Esta reserva xa non se pode valorar.",
+    "rating_already_given": "Xa valoraches esta reserva. A valoración non se pode cambiar.",
+    "rating_facility_required": "Dálle de 1 a 5 estrelas á instalación.",
     "rating_not_in_booking": "Só podes valorar a quen xogou contigo nunha reserva pública.",
     "event_title": "Ponlle ao evento un nome de ata 120 caracteres.",
     "event_description_too_long": "A descrición pode ter ata 1000 caracteres.",

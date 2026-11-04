@@ -153,6 +153,8 @@ fun FacilityPage(
                         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Text(d.name, style = MaterialTheme.typography.headlineMedium, color = Lq.colors.foreground, modifier = Modifier.semantics { heading() })
                             Text(listOf(d.councilName, d.sport).filter { it.isNotBlank() }.joinToString(" · "), style = MaterialTheme.typography.bodyMedium, color = Lq.colors.mutedForeground)
+                            // the residents' stars after their bookings; nothing until someone rated
+                            gal.tribo.librequenda.ui.components.RatingBadge(d.rating, Modifier.padding(top = 2.dp))
                             if (d.description.isNotBlank()) {
                                 Spacer(Modifier.height(6.dp))
                                 Text(d.description, style = MaterialTheme.typography.bodyMedium, color = Lq.colors.foreground)

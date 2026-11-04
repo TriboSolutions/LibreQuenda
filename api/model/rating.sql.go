@@ -176,6 +176,9 @@ SELECT
     (b.kind = 'public')::BOOLEAN AS is_public,
     b.checked_in_at,
     (b.kind <> 'event' AND facility_took_checkin(f.id, b.starts_at))::BOOLEAN AS checkin_at_start,
+    -- rated: this user saved their stars for it already, which are final
+    (EXISTS (SELECT 1 FROM facility_rating fr WHERE fr.booking_id = b.id AND fr.user_id = $1)
+     OR EXISTS (SELECT 1 FROM user_rating ur WHERE ur.booking_id = b.id AND ur.rater_id = $1))::BOOLEAN AS rated,
     f.id   AS facility_id,
     f.name AS facility_name,
     f.slug AS facility_slug,
@@ -186,19 +189,19 @@ FROM
     JOIN facility f ON f.id = b.facility_id
     JOIN tenant   t ON t.id = f.tenant_id
 WHERE
-    b.id = $1
+    b.id = $2
     AND (
-        b.user_id = $2
+        b.user_id = $1
         OR EXISTS (
             SELECT 1 FROM booking_participant p
-            WHERE p.booking_id = b.id AND p.user_id = $2
+            WHERE p.booking_id = b.id AND p.user_id = $1
         )
     )
 `
 
 type GetBookingToRateParams struct {
-	BookingID uuid.UUID     `json:"booking_id"`
 	UserID    uuid.NullUUID `json:"user_id"`
+	BookingID uuid.UUID     `json:"booking_id"`
 }
 
 type GetBookingToRateRow struct {
@@ -209,6 +212,7 @@ type GetBookingToRateRow struct {
 	IsPublic       bool          `json:"is_public"`
 	CheckedInAt    sql.NullTime  `json:"checked_in_at"`
 	CheckinAtStart bool          `json:"checkin_at_start"`
+	Rated          bool          `json:"rated"`
 	FacilityID     uuid.UUID     `json:"facility_id"`
 	FacilityName   string        `json:"facility_name"`
 	FacilitySlug   string        `json:"facility_slug"`
@@ -218,7 +222,7 @@ type GetBookingToRateRow struct {
 
 // A booking the user was in (made or joined), with what rating it needs.
 func (q *Queries) GetBookingToRate(ctx context.Context, arg GetBookingToRateParams) (GetBookingToRateRow, error) {
-	row := q.db.QueryRowContext(ctx, getBookingToRate, arg.BookingID, arg.UserID)
+	row := q.db.QueryRowContext(ctx, getBookingToRate, arg.UserID, arg.BookingID)
 	var i GetBookingToRateRow
 	err := row.Scan(
 		&i.ID,
@@ -228,6 +232,7 @@ func (q *Queries) GetBookingToRate(ctx context.Context, arg GetBookingToRatePara
 		&i.IsPublic,
 		&i.CheckedInAt,
 		&i.CheckinAtStart,
+		&i.Rated,
 		&i.FacilityID,
 		&i.FacilityName,
 		&i.FacilitySlug,
@@ -305,6 +310,70 @@ func (q *Queries) GetUserRatingSummary(ctx context.Context, userID uuid.UUID) (G
 	return i, err
 }
 
+const insertFacilityRating = `-- name: InsertFacilityRating :exec
+INSERT INTO facility_rating (
+    facility_id,
+    booking_id,
+    user_id,
+    stars
+) VALUES (
+    $1,
+    $2,
+    $3,
+    $4
+)
+`
+
+type InsertFacilityRatingParams struct {
+	FacilityID uuid.UUID     `json:"facility_id"`
+	BookingID  uuid.UUID     `json:"booking_id"`
+	UserID     uuid.NullUUID `json:"user_id"`
+	Stars      int16         `json:"stars"`
+}
+
+// Once given, the stars are final: a second one hits the unique key.
+func (q *Queries) InsertFacilityRating(ctx context.Context, arg InsertFacilityRatingParams) error {
+	_, err := q.db.ExecContext(ctx, insertFacilityRating,
+		arg.FacilityID,
+		arg.BookingID,
+		arg.UserID,
+		arg.Stars,
+	)
+	return err
+}
+
+const insertUserRating = `-- name: InsertUserRating :exec
+INSERT INTO user_rating (
+    booking_id,
+    rater_id,
+    rated_id,
+    stars
+) VALUES (
+    $1,
+    $2,
+    $3,
+    $4
+)
+`
+
+type InsertUserRatingParams struct {
+	BookingID uuid.UUID `json:"booking_id"`
+	RaterID   uuid.UUID `json:"rater_id"`
+	RatedID   uuid.UUID `json:"rated_id"`
+	Stars     int16     `json:"stars"`
+}
+
+// Final too, as the facility's.
+func (q *Queries) InsertUserRating(ctx context.Context, arg InsertUserRatingParams) error {
+	_, err := q.db.ExecContext(ctx, insertUserRating,
+		arg.BookingID,
+		arg.RaterID,
+		arg.RatedID,
+		arg.Stars,
+	)
+	return err
+}
+
 const listPeopleToRate = `-- name: ListPeopleToRate :many
 SELECT
     x.user_id,
@@ -373,74 +442,4 @@ func (q *Queries) ListPeopleToRate(ctx context.Context, arg ListPeopleToRatePara
 		return nil, err
 	}
 	return items, nil
-}
-
-const upsertFacilityRating = `-- name: UpsertFacilityRating :exec
-INSERT INTO facility_rating (
-    facility_id,
-    booking_id,
-    user_id,
-    stars
-) VALUES (
-    $1,
-    $2,
-    $3,
-    $4
-)
-ON CONFLICT (booking_id, user_id) DO UPDATE
-SET
-    stars      = EXCLUDED.stars,
-    updated_at = NOW()
-`
-
-type UpsertFacilityRatingParams struct {
-	FacilityID uuid.UUID     `json:"facility_id"`
-	BookingID  uuid.UUID     `json:"booking_id"`
-	UserID     uuid.NullUUID `json:"user_id"`
-	Stars      int16         `json:"stars"`
-}
-
-func (q *Queries) UpsertFacilityRating(ctx context.Context, arg UpsertFacilityRatingParams) error {
-	_, err := q.db.ExecContext(ctx, upsertFacilityRating,
-		arg.FacilityID,
-		arg.BookingID,
-		arg.UserID,
-		arg.Stars,
-	)
-	return err
-}
-
-const upsertUserRating = `-- name: UpsertUserRating :exec
-INSERT INTO user_rating (
-    booking_id,
-    rater_id,
-    rated_id,
-    stars
-) VALUES (
-    $1,
-    $2,
-    $3,
-    $4
-)
-ON CONFLICT (booking_id, rater_id, rated_id) DO UPDATE
-SET
-    stars      = EXCLUDED.stars,
-    updated_at = NOW()
-`
-
-type UpsertUserRatingParams struct {
-	BookingID uuid.UUID `json:"booking_id"`
-	RaterID   uuid.UUID `json:"rater_id"`
-	RatedID   uuid.UUID `json:"rated_id"`
-	Stars     int16     `json:"stars"`
-}
-
-func (q *Queries) UpsertUserRating(ctx context.Context, arg UpsertUserRatingParams) error {
-	_, err := q.db.ExecContext(ctx, upsertUserRating,
-		arg.BookingID,
-		arg.RaterID,
-		arg.RatedID,
-		arg.Stars,
-	)
-	return err
 }

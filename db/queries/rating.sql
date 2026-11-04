@@ -58,6 +58,9 @@ SELECT
     (b.kind = 'public')::BOOLEAN AS is_public,
     b.checked_in_at,
     (b.kind <> 'event' AND facility_took_checkin(f.id, b.starts_at))::BOOLEAN AS checkin_at_start,
+    -- rated: this user saved their stars for it already, which are final
+    (EXISTS (SELECT 1 FROM facility_rating fr WHERE fr.booking_id = b.id AND fr.user_id = sqlc.arg('user_id'))
+     OR EXISTS (SELECT 1 FROM user_rating ur WHERE ur.booking_id = b.id AND ur.rater_id = sqlc.arg('user_id')))::BOOLEAN AS rated,
     f.id   AS facility_id,
     f.name AS facility_name,
     f.slug AS facility_slug,
@@ -115,7 +118,8 @@ WHERE
     booking_id = sqlc.arg('booking_id')
     AND user_id = sqlc.arg('user_id');
 
--- name: UpsertFacilityRating :exec
+-- name: InsertFacilityRating :exec
+-- Once given, the stars are final: a second one hits the unique key.
 INSERT INTO facility_rating (
     facility_id,
     booking_id,
@@ -126,13 +130,10 @@ INSERT INTO facility_rating (
     sqlc.arg('booking_id'),
     sqlc.arg('user_id'),
     sqlc.arg('stars')
-)
-ON CONFLICT (booking_id, user_id) DO UPDATE
-SET
-    stars      = EXCLUDED.stars,
-    updated_at = NOW();
+);
 
--- name: UpsertUserRating :exec
+-- name: InsertUserRating :exec
+-- Final too, as the facility's.
 INSERT INTO user_rating (
     booking_id,
     rater_id,
@@ -143,11 +144,7 @@ INSERT INTO user_rating (
     sqlc.arg('rater_id'),
     sqlc.arg('rated_id'),
     sqlc.arg('stars')
-)
-ON CONFLICT (booking_id, rater_id, rated_id) DO UPDATE
-SET
-    stars      = EXCLUDED.stars,
-    updated_at = NOW();
+);
 
 -- name: GetFacilityRatingSummary :one
 -- The facility page: the average and how many, never who.

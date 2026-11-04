@@ -167,6 +167,9 @@ SELECT
     b.public_description,
     b.checked_in_at,
     (b.kind <> 'event' AND facility_took_checkin(f.id, b.starts_at))::BOOLEAN AS checkin_at_start, -- nobody checks in to an event
+    -- rated: this user saved their stars for it already, which are final
+    (EXISTS (SELECT 1 FROM facility_rating fr WHERE fr.booking_id = b.id AND fr.user_id = sqlc.arg('user_id'))
+     OR EXISTS (SELECT 1 FROM user_rating ur WHERE ur.booking_id = b.id AND ur.rater_id = sqlc.arg('user_id')))::BOOLEAN AS rated,
     f.id   AS facility_id,
     f.name AS facility_name,
     f.slug AS facility_slug,

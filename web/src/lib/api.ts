@@ -175,13 +175,14 @@ export type BookingRating = {
   starts_at: string
   ends_at: string
   is_public: boolean
-  can_rate: boolean // ended, not a no-show, within 30 days
+  can_rate: boolean // ended, not a no-show, within 30 days, not rated yet
+  rated: boolean // rated already: the stars are final
   rate_until: string
   facility_stars: number // 0 = not yet
   people: PersonToRate[] // public bookings only
 }
 
-/** 0 leaves that rating as it is. */
+/** Saved once, for good: the facility's stars (required) and the others' (0: left unrated). */
 export type RatingInput = { facility_stars: number; people: { user_id: string; stars: number }[] }
 
 // --- council administration -----------------------------------------------
@@ -497,7 +498,7 @@ export type Booking = {
   checkin_radius_m?: number // owner only: how close the phone must be for the code or the door QR
   // past confirmed bookings only, from the QR readers: unknown = no reader when it began, so nobody could check in
   attendance: '' | 'attended' | 'no_show' | 'unknown'
-  can_rate: boolean // ended, not a no-show, within 30 days: the rating dialog
+  can_rate: boolean // ended, not a no-show, within 30 days, not rated yet: the rating dialog
   // invites: the owner shares a link and others fill the facility's capacity
   role: 'owner' | 'participant' // participant: joined someone else's booking through an invite
   owner_name: string // participant only

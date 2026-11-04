@@ -121,11 +121,19 @@ KEYS = {
  # the notices as Android notifications: same words as the web's list
  **{f'notif_{t}': (N, f'type.{t}') for t in ['booking_confirmed', 'booking_reminder', 'booking_changed', 'booking_cancelled',
     'booking_cancelled_by_council', 'booking_cancelled_by_closure', 'booking_cancelled_by_staff', 'council_admin_granted',
-    'issue_solved', 'issue_rejected', 'booking_joined', 'issue_reported']}, 'council': (K,'council'), 'slots_full': (H,'availability.full'),
+    'issue_solved', 'issue_rejected', 'booking_joined', 'issue_reported', 'rating_requested', 'rating_requested_public']}, 'council': (K,'council'), 'slots_full': (H,'availability.full'),
  'status_cancelled': (B,'status.cancelled'), 'status_attended': (B,'status.attended'), 'status_no_show': (B,'status.noShow'),
  'status_ended': (B,'status.ended'), 'status_checked_in': (B,'status.checkedIn'),
+ # rating a booking that ended: the facility and, after a public one, the others (the web's RateDialog)
+ **{f'rating_{k}': (B, f'rating.{v}') for k, v in [('button', 'button'), ('title', 'title'), ('when', 'when'), ('load_error', 'loadError'),
+    ('facility', 'facility'), ('people_title', 'peopleTitle'), ('people_help', 'peopleHelp'), ('private', 'private'), ('closed', 'closed'), ('done', 'done'),
+    ('save', 'save'), ('saving', 'saving'), ('save_error', 'saveError'), ('later', 'later'), ('close', 'close'),
+    ('thanks_title', 'thanksTitle'), ('thanks', 'thanks')]},
+ 'people_unnamed': (I,'people.unnamed'), 'people_organiser': (I,'people.organiser'),
+ 'profile_rating_title': (P,'rating.title'), 'profile_rating_help': (P,'rating.help'),
 }
-PLURALS = {'rule_length': (P,'accountSettings.rule.length'), 'results_count': (K,'showing'), 'public_spots': (H,'forYou.spots'), 'rule_slot': (F,'ruleSlot'), 'rule_cancel': (F,'ruleCancel')}
+PLURALS = {'rule_length': (P,'accountSettings.rule.length'), 'results_count': (K,'showing'), 'public_spots': (H,'forYou.spots'), 'rule_slot': (F,'ruleSlot'), 'rule_cancel': (F,'ruleCancel'),
+           'rating_summary': (C,'rating.summary'), 'rating_stars': (C,'rating.stars')}
 def get(d, path):
     for part in path.split('.'): d = d[part]
     return d

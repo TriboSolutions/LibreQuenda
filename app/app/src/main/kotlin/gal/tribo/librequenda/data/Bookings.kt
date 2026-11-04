@@ -34,6 +34,7 @@ data class Booking(
     val checkedInAt: Instant? = null,
     val checkinRadiusM: Int = 0,
     val staffContacts: List<StaffContact> = emptyList(),
+    val canRate: Boolean = false, // ended, not a no-show, within 30 days, not rated yet: the rating sheet
 ) {
     /** People coming, the owner included. */
     val people: Int get() = participantCount + 1
@@ -77,6 +78,7 @@ private fun JSONObject.toBooking() = Booking(
         List(a.length()) { a.getJSONObject(it) }.map { StaffContact(it.optString("name"), it.optString("phone"), it.optString("place")) }
     }.orEmpty(),
     attendance = optString("attendance"),
+    canRate = optBoolean("can_rate"),
     owner = optString("role", "owner") == "owner",
     ownerName = optString("owner_name"),
     capacity = optInt("capacity"),

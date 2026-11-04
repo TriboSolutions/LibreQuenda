@@ -191,6 +191,8 @@
     "rating_load_failed": "Could not load the rating.",
     "rating_save_failed": "Could not save your rating. Try again.",
     "rating_closed": "This booking can no longer be rated.",
+    "rating_already_given": "You already rated this booking. A rating cannot be changed.",
+    "rating_facility_required": "Give the facility 1 to 5 stars.",
     "rating_not_in_booking": "You can only rate the people who played with you in a public booking.",
     "event_title": "Give the event a name of up to 120 characters.",
     "event_description_too_long": "The description can be up to 1000 characters.",
