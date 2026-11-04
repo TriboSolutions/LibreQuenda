@@ -57,7 +57,7 @@ INSERT INTO booking (
     $7
 )
 RETURNING
-    id, facility_id, user_id, starts_at, ends_at, status, rules_accepted_at, channel, booked_by, holder_name, holder_phone, cancelled_at, cancelled_by, created_at, updated_at, checkin_token, checked_in_at, checked_in_device_id, checked_in_method, checked_in_by, invite_token, is_public, public_description
+    id, facility_id, user_id, starts_at, ends_at, status, rules_accepted_at, channel, booked_by, holder_name, holder_phone, cancelled_at, cancelled_by, created_at, updated_at, checkin_token, checked_in_at, checked_in_device_id, checked_in_method, checked_in_by, invite_token, kind, public_description, title, event_capacity
 `
 
 type CreateStaffBookingParams struct {
@@ -105,8 +105,10 @@ func (q *Queries) CreateStaffBooking(ctx context.Context, arg CreateStaffBooking
 		&i.CheckedInMethod,
 		&i.CheckedInBy,
 		&i.InviteToken,
-		&i.IsPublic,
+		&i.Kind,
 		&i.PublicDescription,
+		&i.Title,
+		&i.EventCapacity,
 	)
 	return i, err
 }
@@ -138,6 +140,8 @@ SELECT
     b.starts_at,
     b.ends_at,
     b.user_id,
+    b.kind,
+    COALESCE(b.title, '')::TEXT AS title,
     b.checkin_token,
     f.id   AS facility_id,
     f.name AS facility_name,
@@ -163,6 +167,8 @@ type GetBookingForCouncilRow struct {
 	StartsAt     time.Time     `json:"starts_at"`
 	EndsAt       time.Time     `json:"ends_at"`
 	UserID       uuid.NullUUID `json:"user_id"`
+	Kind         BookingKind   `json:"kind"`
+	Title        string        `json:"title"`
 	CheckinToken uuid.UUID     `json:"checkin_token"`
 	FacilityID   uuid.UUID     `json:"facility_id"`
 	FacilityName string        `json:"facility_name"`
@@ -179,6 +185,8 @@ func (q *Queries) GetBookingForCouncil(ctx context.Context, arg GetBookingForCou
 		&i.StartsAt,
 		&i.EndsAt,
 		&i.UserID,
+		&i.Kind,
+		&i.Title,
 		&i.CheckinToken,
 		&i.FacilityID,
 		&i.FacilityName,
@@ -226,6 +234,8 @@ SELECT
     b.starts_at,
     b.ends_at,
     b.channel,
+    b.kind,
+    COALESCE(b.title, '')::TEXT AS title, -- an event: what staff see instead of a holder
     b.checked_in_at,
     b.checked_in_method,
     COALESCE(NULLIF(marker.full_name, ''), marker.email, '')::TEXT AS checked_in_by_name, -- staff entry: who marked it
@@ -264,6 +274,8 @@ type ListFacilityBookingsForStaffRow struct {
 	StartsAt         time.Time         `json:"starts_at"`
 	EndsAt           time.Time         `json:"ends_at"`
 	Channel          BookingChannel    `json:"channel"`
+	Kind             BookingKind       `json:"kind"`
+	Title            string            `json:"title"`
 	CheckedInAt      sql.NullTime      `json:"checked_in_at"`
 	CheckedInMethod  NullCheckinMethod `json:"checked_in_method"`
 	CheckedInByName  string            `json:"checked_in_by_name"`
@@ -298,6 +310,8 @@ func (q *Queries) ListFacilityBookingsForStaff(ctx context.Context, arg ListFaci
 			&i.StartsAt,
 			&i.EndsAt,
 			&i.Channel,
+			&i.Kind,
+			&i.Title,
 			&i.CheckedInAt,
 			&i.CheckedInMethod,
 			&i.CheckedInByName,

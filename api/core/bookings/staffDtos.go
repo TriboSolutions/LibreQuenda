@@ -76,6 +76,7 @@ type StaffBookingDto struct {
 	StartsAt         time.Time  `json:"starts_at"`
 	EndsAt           time.Time  `json:"ends_at"`
 	BookedByStaff    bool       `json:"booked_by_staff"`
+	IsEvent          bool       `json:"is_event"` // the council's event: Name is its title, nobody checks in
 	HasAccount       bool       `json:"has_account"`
 	Name             string     `json:"name"` // "" once a deleted account or a forgotten name
 	Email            string     `json:"email"`
@@ -121,6 +122,11 @@ func mapStaffBooking(row model.ListFacilityBookingsForStaffRow, now time.Time, s
 		Phone:            row.Phone.String,
 		ParticipantCount: row.ParticipantCount,
 		CanCancel:        row.StartsAt.After(now),
+	}
+	if row.Kind == model.BookingKindEvent {
+		dto.IsEvent = true
+		dto.Name = row.Title
+		return dto
 	}
 	if !row.UserID.Valid {
 		dto.Name = row.HolderName.String

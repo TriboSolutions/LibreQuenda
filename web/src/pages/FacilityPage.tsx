@@ -1,4 +1,4 @@
-import { ArrowLeft, ExternalLink, MapPin } from 'lucide-react'
+import { ArrowLeft, ExternalLink, MapPin, PartyPopper } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
@@ -122,6 +122,7 @@ export function FacilityPage() {
 
   const f = data.facility
   const free = f.slots.filter((s) => s.status === 'free')
+  const events = (f.public_bookings ?? []).filter((b) => b.kind === 'event' && Date.parse(b.ends_at) > currentTime)
   const hasPin = f.latitude !== null && f.longitude !== null
 
   return shell(
@@ -169,6 +170,35 @@ export function FacilityPage() {
                 </Alert>
               )}
             </div>
+            {/* the council's events this day, also those outside the opening hours */}
+            {!!events.length && (
+              <section aria-labelledby="events-title" className="grid gap-2">
+                <h3 id="events-title" className="font-medium">{t('facility:events.title')}</h3>
+                <ul className="grid gap-2">
+                  {events.map((event) => {
+                    const left = Math.max(event.capacity - event.people.length, 0)
+                    return (
+                      <li key={event.id}>
+                        <button
+                          type="button"
+                          onClick={() => setPublicPick(event)}
+                          className="flex w-full min-w-0 items-start gap-3 rounded-md border border-pill-accent-ink bg-pill-accent-bg px-3 py-2 text-left text-pill-accent-ink hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                        >
+                          <PartyPopper className="mt-0.5 size-4 shrink-0" aria-hidden />
+                          <span className="grid min-w-0 gap-0.5">
+                            <span className="font-semibold break-words">{event.title}</span>
+                            <span className="num text-sm">
+                              {formatTime(event.starts_at, timeZone)}–{formatTime(event.ends_at, timeZone)} ·{' '}
+                              {Date.parse(event.starts_at) <= currentTime ? t('facility:publicSlot.ongoing') : left > 0 ? t('facility:events.spots', { count: left }) : t('facility:publicSlot.full')}
+                            </span>
+                          </span>
+                        </button>
+                      </li>
+                    )
+                  })}
+                </ul>
+              </section>
+            )}
             {f.windows.length === 0 ? (
               <p className="rounded-md border border-dashed px-4 py-3 text-muted-foreground">{t('facility:closedDay')}</p>
             ) : (
@@ -179,6 +209,7 @@ export function FacilityPage() {
                     const publicState = publicBooking
                       ? Date.parse(publicBooking.starts_at) <= currentTime ? 'ongoing' : publicBooking.people.length >= publicBooking.capacity ? 'full' : 'joinable'
                       : undefined
+                    const publicLabel = publicBooking?.kind === 'event' ? t('facility:events.label') : t('bookings:public.label')
                     return (
                     <li key={slot.starts_at}>
                       <Button
@@ -189,9 +220,13 @@ export function FacilityPage() {
                         data-free={slot.status === 'free'}
                         disabled={!publicBooking && slot.status !== 'free'}
                         onClick={() => publicBooking ? setPublicPick(publicBooking) : setPick({ facility: f, slot })}
-                        aria-label={`${formatTime(slot.starts_at, timeZone)}–${formatTime(slot.ends_at, timeZone)}${publicBooking ? ` · ${t('bookings:public.label') + ' · ' + t(`facility:publicSlot.${publicState}`)}` : ''}`}
+                        // with a public booking or an event, the name is the visible text plus what it is (WCAG 2.5.3)
+                        aria-label={publicBooking ? undefined : `${formatTime(slot.starts_at, timeZone)}–${formatTime(slot.ends_at, timeZone)}`}
                       >
-                        <span>{formatTime(slot.starts_at, timeZone)}</span>
+                        <span>
+                          {formatTime(slot.starts_at, timeZone)}
+                          {publicBooking && <span className="sr-only">–{formatTime(slot.ends_at, timeZone)} · {publicLabel}{publicBooking.kind === 'event' ? ` «${publicBooking.title}»` : ''} ·</span>}
+                        </span>
                         {publicState && <span className="text-[11px] leading-tight">{t(`facility:publicSlot.${publicState}`)}</span>}
                       </Button>
                     </li>

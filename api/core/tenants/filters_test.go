@@ -23,6 +23,10 @@ func TestFiltersFromQuery(t *testing.T) {
 		{"from=25:00", true, false},
 		{"from=20:00&until=16:00", true, false},
 		{"public=yes", true, false},
+		{"booking=public,event", false, true},
+		{"booking=event", false, true},
+		{"booking=private", false, false}, // nobody joins those from the list
+		{"booking=event", true, false},    // /facilities only
 	}
 	for _, c := range cases {
 		if _, ok := filtersFromQuery(httptest.NewRequest("GET", "/f?"+c.query, nil), c.withDay); ok != c.ok {
@@ -80,5 +84,20 @@ func TestMatchesEverywhere(t *testing.T) {
 	var f, _ = filtersFromQuery(httptest.NewRequest("GET", "/f?q=piscina", nil), false)
 	if f.matches("Pavillón municipal", "lalin", "Concello de Lalín", "Baloncesto", tags, names) {
 		t.Error("«piscina» is nowhere")
+	}
+}
+
+func TestJoinable(t *testing.T) {
+	var events, _ = filtersFromQuery(httptest.NewRequest("GET", "/f?booking=event", nil), false)
+	var any, _ = filtersFromQuery(httptest.NewRequest("GET", "/f?booking=public,event", nil), false)
+	var none Filters
+	if !none.joinable([]string{}) {
+		t.Error("without ?booking= every facility stays")
+	}
+	if events.joinable([]string{"public"}) || !events.joinable([]string{"event", "public"}) {
+		t.Error("?booking=event keeps only the facilities with an event to join")
+	}
+	if !any.joinable([]string{"public"}) || any.joinable([]string{}) {
+		t.Error("?booking=public,event keeps either")
 	}
 }

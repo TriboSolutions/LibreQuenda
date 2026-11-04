@@ -70,8 +70,8 @@ const tagCatalogue: TagCatalogue = {
 }
 
 const facilityCards: FacilityCard[] = [
-  { id: 'f1', slug: 'padel-1', name: 'Pista de pádel 1', sport: 'Pádel', tags: ['padel', 'pista', 'cuberta'], image_url: '', address: 'Rúa da Raíña 1, Lugo', latitude: 43.0097, longitude: -7.5568, free_today: 4, council: tenant },
-  { id: 'f3', slug: 'piscina', name: 'Piscina municipal', sport: 'Natación', tags: ['natacion', 'piscina'], image_url: '', address: '', latitude: null, longitude: null, free_today: 0, council: tenant },
+  { id: 'f1', slug: 'padel-1', name: 'Pista de pádel 1', sport: 'Pádel', tags: ['padel', 'pista', 'cuberta'], image_url: '', address: 'Rúa da Raíña 1, Lugo', latitude: 43.0097, longitude: -7.5568, free_today: 4, council: tenant, joinable: ['event', 'public'] },
+  { id: 'f3', slug: 'piscina', name: 'Piscina municipal', sport: 'Natación', tags: ['natacion', 'piscina'], image_url: '', address: '', latitude: null, longitude: null, free_today: 0, council: tenant, joinable: [] },
 ]
 
 const tenants: TenantCard[] = [
@@ -134,7 +134,13 @@ const facilityPage: FacilityPage = {
   timezone: TZ,
   date: today,
   now: iso(now),
-  facility: facilities[0],
+  // the council's event over a booked turn: listed above the turns and marked on them
+  facility: {
+    ...facilities[0],
+    public_bookings: [
+      { id: 'ev1', kind: 'event', title: 'Torneo de pádel de outono', starts_at: at(4), ends_at: at(5), description: 'Por parellas, calquera nivel.', capacity: 16, people: ['Uxía', 'Brais'] },
+    ],
+  },
   schedule,
   rating: { average: 4.3, count: 12 },
 }
@@ -168,6 +174,8 @@ function booking(id: string, hoursFromNow: number, extra: Partial<Booking> = {})
     cancel_until: at(hoursFromNow - 2),
     checkin_code: 'LQ-123456',
     checked_in_at: null,
+    kind: 'private',
+    title: '',
     attendance: '',
     can_rate: false,
     role: 'owner',
@@ -198,6 +206,15 @@ const myBookings: MyBookings = {
     }),
     booking('b1', 3),
     booking('b2', 26, { role: 'participant', owner_name: 'Uxía', can_cancel: false, can_change: false, can_leave: true }),
+    // the council's event the person joined: no owner, the whole capacity for who joins
+    booking('ev1', 50, {
+      role: 'participant', kind: 'event', title: 'Torneo de pádel de outono', public_description: 'Por parellas, calquera nivel.',
+      checkin_code: '', can_cancel: false, can_change: false, can_leave: true, capacity: 16, participant_count: 2,
+      people: [
+        { name: 'Ana Pérez', is_owner: false, is_guest: false, is_me: true },
+        { name: 'Brais', is_owner: false, is_guest: false, is_me: false },
+      ],
+    }),
   ],
   history: [
     booking('b3', -30, { checkin_code: '', checked_in_at: at(-30), attendance: 'attended', can_rate: true, can_cancel: false, can_change: false }),
@@ -447,6 +464,7 @@ const staffBooking: StaffBooking = {
   starts_at: '',
   ends_at: '',
   booked_by_staff: false,
+  is_event: false,
   has_account: false,
   name: '',
   email: '',
@@ -539,7 +557,14 @@ const recommendations = {
       kind: 'public_booking',
       facility: facilityCards[0],
       starts_at: at(5),
-      booking: { id: 'pb1', starts_at: at(5), ends_at: at(6), spots_left: 2, owner_first_name: 'Uxía', owner_rating: { average: 4.5, count: 8 } },
+      booking: { id: 'pb1', kind: 'public', starts_at: at(5), ends_at: at(6), spots_left: 2, owner_first_name: 'Uxía', owner_rating: { average: 4.5, count: 8 } },
+    },
+    // the council's event, joined the same way
+    {
+      kind: 'public_booking',
+      facility: facilityCards[0],
+      starts_at: at(50),
+      booking: { id: 'ev1', kind: 'event', title: 'Torneo de pádel de outono', starts_at: at(50), ends_at: at(54), spots_left: 14, owner_first_name: '', owner_rating: null, description: 'Por parellas, calquera nivel.' },
     },
   ],
 }
@@ -611,6 +636,21 @@ const weather = {
   },
 }
 
+// the Eventos tab: one with people in it, one with the facility's capacity
+const councilEvents = {
+  timezone: TZ,
+  events: [
+    { id: 'ev1', facility_id: 'f1', facility_name: 'Pista de pádel 1', starts_at: at(50), ends_at: at(54), title: 'Torneo de pádel de outono', description: 'Por parellas, calquera nivel.', own_capacity: 16, capacity: 16, participant_count: 2, can_change: true, timezone: TZ },
+    { id: 'ev2', facility_id: 'f1', facility_name: 'Pista de pádel 1', starts_at: at(100), ends_at: at(124), title: 'Xornada de portas abertas', description: '', own_capacity: null, capacity: 4, participant_count: 0, can_change: true, timezone: TZ },
+  ],
+}
+
+// what is in the way of a new event: one resident's booking and a closure
+export const eventInTheWay = {
+  bookings: [{ id: 'b9', starts_at: at(26), ends_at: at(27), holder: 'Lucía Varela', is_event: false }],
+  closures: [{ starts_at: at(28), ends_at: at(30), reason: 'Mantemento' }],
+}
+
 /** GET handlers by path (without /api), first match wins. */
 const routes: [RegExp, () => unknown][] = [
   [/^\/tenants$/, () => ({ tenants })],
@@ -625,6 +665,7 @@ const routes: [RegExp, () => unknown][] = [
   [/^\/tenants\/[^/]+\/admin\/facilities\/[^/]+\/devices$/, () => ({ devices: [{ id: 'd1', name: 'Entrada principal', key_hint: 'ab12', last_seen_at: at(-1), created_at: at(-100) }] })],
   [/^\/tenants\/[^/]+\/admin\/facilities\/[^/]+\/checkin$/, () => checkinSettings],
   [/^\/tenants\/[^/]+\/admin\/booking-rules$/, () => councilRules],
+  [/^\/tenants\/[^/]+\/admin\/events$/, () => councilEvents],
   [/^\/tenants\/[^/]+\/admin\/issues\/count$/, () => ({ new: 1 })],
   [/^\/tenants\/[^/]+\/admin\/issues/, () => councilIssues],
   [/^\/admin\/booking-policy$/, () => ({ one_council_per_account: true })],
@@ -706,6 +747,10 @@ export async function mockApp(page: Page, { signedIn = true, theme = 'light', la
     // the phone at the door without a booking: it is offered to book the free turn
     if (route.request().method() === 'POST' && /\/entrance$/.test(path)) {
       return fulfil(route, { granted: false, result: 'no_booking', can_book: true, booking: null })
+    }
+    // a new event: something in the way, so the form says what
+    if (route.request().method() === 'POST' && /^\/tenants\/[^/]+\/admin\/events\/preview$/.test(path)) {
+      return fulfil(route, eventInTheWay)
     }
     // staff mark the entry of a booking from the calendar, or take it back
     if (/^\/tenants\/[^/]+\/admin\/bookings\/[^/]+\/checkin$/.test(path)) {

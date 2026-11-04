@@ -21,6 +21,13 @@ CREATE TYPE booking_channel AS ENUM (
     'staff'     -- council staff, for someone who phoned or came to the desk
 );
 
+-- who can find and join a booking
+CREATE TYPE booking_kind AS ENUM (
+    'private',  -- only by the owner's invite link (the default)
+    'public',   -- a resident's booking anyone signed in finds in «For you» and joins while spots are left
+    'event'     -- the council's own activity, with a title: created by its administrators, joined like a public one
+);
+
 CREATE TYPE checkin_method AS ENUM (
     'reader',       -- a QR reader at the door read the booking or the personal QR
     'printed_qr',   -- the resident's phone read the QR printed on the door
@@ -405,15 +412,22 @@ CREATE TABLE booking (
     checked_in_by        UUID        NULL REFERENCES app_user(id) ON DELETE SET NULL, -- the staff member who confirmed it
     -- invite link: others fill the facility's capacity; a new token revokes the old link
     invite_token         UUID        NULL,
-    -- public: anyone signed in can find it in «For you» and join it while spots are left; private (the default) only by the invite link
-    is_public            BOOLEAN     NOT NULL DEFAULT FALSE,
+    -- public and event: anyone signed in can find it in «For you» and join it while spots are left; private only by the invite link
+    kind                 booking_kind NOT NULL DEFAULT 'private',
     public_description   TEXT        NOT NULL DEFAULT '' CHECK (char_length(public_description) <= 1000),
+    -- event only: its name («Torneo de fútbol 5v5») and, if set, how many can join instead of the facility's capacity.
+    -- An event belongs to the council: no owner, booked by staff, any start and end (not the turns).
+    title                VARCHAR(120) NULL CHECK (char_length(btrim(title)) > 0),
+    event_capacity       INT         NULL CHECK (event_capacity > 0),
     CHECK (ends_at > starts_at),
     CHECK ((status = 'cancelled') = (cancelled_by IS NOT NULL)),
     CHECK (holder_name IS NULL OR (user_id IS NULL AND channel = 'staff')),
     CHECK (holder_phone IS NULL OR holder_name IS NOT NULL),
     CHECK ((checked_in_at IS NULL) = (checked_in_method IS NULL)),
     CHECK (checked_in_by IS NULL OR checked_in_method = 'staff'),
+    CHECK ((kind = 'event') = (title IS NOT NULL)),
+    CHECK (event_capacity IS NULL OR kind = 'event'),
+    CHECK (kind <> 'event' OR (user_id IS NULL AND holder_name IS NULL AND channel = 'staff')),
 
     -- no two confirmed bookings may overlap on the same facility
     EXCLUDE USING gist (

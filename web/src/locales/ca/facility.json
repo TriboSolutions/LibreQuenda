@@ -1,5 +1,11 @@
 {
-  "publicSlot": {"joinable": "Amb places", "ongoing": "En curs", "full": "Completa", "joinableLegend": "Pública: pots unir-te", "ongoingLegend": "Pública: en curs"},
+  "publicSlot": {
+    "joinable": "Amb places",
+    "ongoing": "En curs",
+    "full": "Completa",
+    "joinableLegend": "Pública: pots unir-te",
+    "ongoingLegend": "Pública: en curs"
+  },
   "chooseDate": "Triar data",
   "back": "Totes les instal·lacions",
   "bookTitle": "Reserva un torn",
@@ -129,5 +135,11 @@
     }
   },
   "ruleCouncilActive_one": "Com a màxim {{count}} reserva activa per persona a tot l’ajuntament.",
-  "ruleCouncilActive_other": "Com a màxim {{count}} reserves actives per persona a tot l’ajuntament."
+  "ruleCouncilActive_other": "Com a màxim {{count}} reserves actives per persona a tot l’ajuntament.",
+  "events": {
+    "title": "Esdeveniments d’aquest dia",
+    "label": "Esdeveniment",
+    "spots_one": "queda {{count}} plaça",
+    "spots_other": "queden {{count}} places"
+  }
 }

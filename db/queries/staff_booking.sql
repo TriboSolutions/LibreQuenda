@@ -51,6 +51,8 @@ SELECT
     b.starts_at,
     b.ends_at,
     b.channel,
+    b.kind,
+    COALESCE(b.title, '')::TEXT AS title, -- an event: what staff see instead of a holder
     b.checked_in_at,
     b.checked_in_method,
     COALESCE(NULLIF(marker.full_name, ''), marker.email, '')::TEXT AS checked_in_by_name, -- staff entry: who marked it
@@ -83,6 +85,8 @@ SELECT
     b.starts_at,
     b.ends_at,
     b.user_id,
+    b.kind,
+    COALESCE(b.title, '')::TEXT AS title,
     b.checkin_token,
     f.id   AS facility_id,
     f.name AS facility_name,

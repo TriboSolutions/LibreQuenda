@@ -74,6 +74,12 @@
     "joined": "Ya estás dentro.",
     "seeBookings": "Ver mis reservas",
     "spots_one": "Queda {{count}} plaza",
-    "spots_other": "Quedan {{count}} plazas"
+    "spots_other": "Quedan {{count}} plazas",
+    "eventBy": "Evento · {{council}}"
+  },
+  "bookingKind": {
+    "title": "Tipo de reserva",
+    "public": "Reservas públicas",
+    "event": "Eventos"
   }
 }

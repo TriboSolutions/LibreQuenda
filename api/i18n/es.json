@@ -191,7 +191,20 @@
     "rating_load_failed": "No se pudo cargar la valoración.",
     "rating_save_failed": "No se pudo guardar tu valoración. Inténtalo de nuevo.",
     "rating_closed": "Esta reserva ya no se puede valorar.",
-    "rating_not_in_booking": "Solo puedes valorar a quien jugó contigo en una reserva pública."
+    "rating_not_in_booking": "Solo puedes valorar a quien jugó contigo en una reserva pública.",
+    "event_title": "Ponle al evento un nombre de hasta 120 caracteres.",
+    "event_description_too_long": "La descripción puede tener hasta 1000 caracteres.",
+    "event_ends_before_start": "El evento tiene que acabar después de empezar.",
+    "event_too_long": "Un evento puede durar como mucho una semana.",
+    "event_in_past": "El evento tiene que empezar en el futuro.",
+    "event_capacity": "El número de personas tiene que estar entre 1 y 10000.",
+    "event_needs_capacity": "Esta instalación no tiene aforo: indica cuántas personas pueden apuntarse al evento.",
+    "event_closed": "La instalación está cerrada durante parte de ese tiempo.",
+    "event_bookings_in_the_way": "Hay {{0}} reserva(s) a esa hora. Cancélalas antes desde Reserva manual.",
+    "event_capacity_below_joined": "Ya se han apuntado {{0}} personas: el aforo no puede ser menor.",
+    "event_facility_fixed": "Un evento no puede cambiar de instalación. Cancélalo y crea otro.",
+    "event_failed": "No fue posible guardar el evento. Inténtalo de nuevo.",
+    "events_load_failed": "No fue posible cargar los eventos."
   },
   "email": {
     "greeting": "Hola {{0}}:",

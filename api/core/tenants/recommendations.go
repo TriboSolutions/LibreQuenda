@@ -4,6 +4,7 @@ import (
 	"context"
 	"librequenda/auth"
 	"librequenda/checkin"
+	"librequenda/core/bookings"
 	"librequenda/core/me"
 	"librequenda/model"
 	"librequenda/rating"
@@ -56,6 +57,8 @@ type RecommendationDto struct {
 // PublicBookingDto: what «For you» shows of someone's public booking: never who
 // they are beyond a first name.
 type PublicBookingDto struct {
+	Kind           string    `json:"kind"`  // "public", or "event": the council's, with a title and no owner
+	Title          string    `json:"title"` // events only
 	Description    string    `json:"description"`
 	Id             string    `json:"id"`
 	StartsAt       time.Time `json:"starts_at"`
@@ -156,7 +159,7 @@ func publicBookings(rows []model.ListJoinablePublicBookingsRow, patterns []model
 	var out = []RecommendationDto{}
 	for _, row := range rows { // soonest first
 		var f, ok = byId[row.FacilityID.String()]
-		var spots = int(row.Capacity.Int32) - 1 - int(row.ParticipantCount)
+		var spots = bookings.Places(row.Capacity, row.Kind) - int(row.ParticipantCount)
 		if !ok || spots <= 0 || !relevant(f) {
 			continue
 		}
@@ -164,7 +167,7 @@ func publicBookings(rows []model.ListJoinablePublicBookingsRow, patterns []model
 			Kind:     RecommendPublic,
 			Facility: f.card,
 			StartsAt: row.StartsAt,
-			Booking:  &PublicBookingDto{Id: row.ID.String(), StartsAt: row.StartsAt, EndsAt: row.EndsAt, SpotsLeft: spots, OwnerFirstName: row.OwnerFirstName, OwnerRating: rating.Of(row.OwnerRatingAverage, row.OwnerRatingCount), Description: row.PublicDescription},
+			Booking:  &PublicBookingDto{Kind: string(row.Kind), Title: row.Title, Id: row.ID.String(), StartsAt: row.StartsAt, EndsAt: row.EndsAt, SpotsLeft: spots, OwnerFirstName: row.OwnerFirstName, OwnerRating: rating.Of(row.OwnerRatingAverage, row.OwnerRatingCount), Description: row.PublicDescription},
 		})
 		if len(out) == maxPublic {
 			break
@@ -190,7 +193,7 @@ func (s *tenantsService) today(ctx context.Context) []todayFacility {
 			facilities = append(facilities, todayFacility{
 				card: FacilityCardDto{
 					Id: f.Id, Slug: f.Slug, Name: f.Name, Sport: f.Sport, Tags: f.Tags, ImageUrl: f.ImageUrl,
-					Address: f.Address, Latitude: f.Latitude, Longitude: f.Longitude, FreeToday: countFree(f.Slots), Council: day.Tenant,
+					Address: f.Address, Latitude: f.Latitude, Longitude: f.Longitude, FreeToday: countFree(f.Slots), Council: day.Tenant, Joinable: []string{},
 				},
 				slots: f.Slots,
 				loc:   loc,
