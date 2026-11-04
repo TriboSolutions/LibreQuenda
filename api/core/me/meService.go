@@ -13,6 +13,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type meService struct {
@@ -136,7 +138,7 @@ func validateProfile(in *ProfileInput, today time.Time) (time.Time, string) {
 		return birth, "errors.invalid_birth_date"
 	case in.Phone != "" && !phonePattern.MatchString(in.Phone):
 		return birth, "errors.invalid_phone_format"
-	case in.AvatarRef != "" && (!storage.ValidRef(in.AvatarRef) || !strings.HasPrefix(in.AvatarRef, "users/")):
+	case in.AvatarRef != "" && !storage.Owned(in.AvatarRef, uuid.Nil, "users"):
 		return birth, "errors.invalid_image"
 	}
 	return birth, ""

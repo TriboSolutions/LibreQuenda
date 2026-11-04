@@ -94,6 +94,8 @@ export type TagCatalogue = { categories: TagCategory[] }
 /** An uploaded image: forms save the ref (storage reference); screens only show the url. */
 export type StoredImage = { ref: string; url: string }
 export type MediaFolder = 'branding' | 'councils' | 'facilities' | 'issues' | 'users'
+/** Whose file an upload is: a council's logo or facility image (its slug), a problem's photo (the facility). */
+export type MediaOwner = { council: string } | { facility: string }
 
 /** How this installation presents itself, set by a superadministrator: name and logo. */
 export type Branding = {
@@ -963,10 +965,12 @@ async function exportMyData(token: string, format: 'json' | 'csv') {
   URL.revokeObjectURL(url)
 }
 
-/** POST /media: multipart upload, answered with { ref, url }. */
-async function uploadImage(token: string, folder: MediaFolder, file: File): Promise<StoredImage> {
+/** POST /media: multipart upload into the owner's private storage, answered with { ref, url } (a presigned link). */
+async function uploadImage(token: string, folder: MediaFolder, file: File, owner?: MediaOwner): Promise<StoredImage> {
   const body = new FormData()
   body.append('folder', folder)
+  if (owner && 'council' in owner) body.append('council', owner.council)
+  if (owner && 'facility' in owner) body.append('facility', owner.facility)
   body.append('file', file)
   const res = await fetch('/api/media', {
     method: 'POST',

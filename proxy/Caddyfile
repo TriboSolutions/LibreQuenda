@@ -23,6 +23,22 @@
 		reverse_proxy api:8000
 	}
 
+	# Uploaded images: private buckets in Garage (one per council). Only the
+	# links the API presigns get through (they expire); nothing can be listed or
+	# written from here. Garage checks the signature against this same Host.
+	@storage_read {
+		path /storage/*
+		method GET HEAD
+		query X-Amz-Signature=*
+	}
+	handle @storage_read {
+		uri strip_prefix /storage
+		reverse_proxy storage:3900
+	}
+	handle /storage/* {
+		respond 403
+	}
+
 	# Runtime config written by zitadel-setup (OIDC client id, authority)
 	handle /config.json {
 		root * /srv/runtime

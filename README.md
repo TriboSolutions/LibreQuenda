@@ -70,7 +70,7 @@ The first Zitadel admin (`ZITADEL_ADMIN_*`), Zitadel's email settings and the `Z
 
 **Email:** LibreQuenda sends booking confirmations, a reminder 15 minutes before with the entry QR, cancellations (with the reason when the council closes a facility) and administrator invitations. Zitadel sends verification codes and password resets through the same relay.
 
-**Images** are stored in **Garage** (self-hosted, S3-compatible; service `storage`). The database only keeps references such as `facilities/<id>.webp`; the API turns them into `/api/media/…` URLs when it answers. **Maps** use OpenStreetMap (Leaflet); "Como chegar" is a plain link to Google Maps directions. Address search goes through the API to OpenStreetMap Nominatim (or `GEOCODER_URL`).
+**Images** are stored in **Garage** (self-hosted, S3-compatible; service `storage`). Buckets are private, one per council; the database only keeps references such as `<council id>/facilities/<id>.webp`, and the API turns them into presigned `/storage/…` links (valid a week) when it answers. **Maps** use OpenStreetMap (Leaflet); "Como chegar" is a plain link to Google Maps directions. Address search goes through the API to OpenStreetMap Nominatim (or `GEOCODER_URL`).
 
 **Sign in with Google (optional):** create an OAuth client ID (type *Web application*) in Google Cloud with the authorized redirect URI `https://<ZITADEL_DOMAIN>/idps/callback`, then set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in `.env` and run `docker compose up -d`. Leave them empty to remove the Google button again.
 

@@ -203,6 +203,10 @@ func (s *counciladminService) CreateFacility(ctx context.Context, tenantId uuid.
 	if key := input.validate(); key != "" {
 		return nil, &shared.ErrorResponse{Code: http.StatusUnprocessableEntity, Message: key}
 	}
+	// only an image uploaded for this council
+	if input.ImageRef != "" && !storage.Owned(input.ImageRef, tenantId, "facilities") {
+		return nil, &shared.ErrorResponse{Code: http.StatusUnprocessableEntity, Message: "errors.invalid_image"}
+	}
 	// a new facility starts with the council's booking window (its Reserva tab changes it)
 	var rules, rulesErr = s.councilRules(ctx, tenantId)
 	if rulesErr != nil {
@@ -276,6 +280,10 @@ func (s *counciladminService) UpdateFacility(ctx context.Context, tenantId uuid.
 	input.normalise()
 	if key := input.validate(); key != "" {
 		return nil, &shared.ErrorResponse{Code: http.StatusUnprocessableEntity, Message: key}
+	}
+	// only an image uploaded for this council
+	if input.ImageRef != "" && !storage.Owned(input.ImageRef, tenantId, "facilities") {
+		return nil, &shared.ErrorResponse{Code: http.StatusUnprocessableEntity, Message: "errors.invalid_image"}
 	}
 	var err = db.WithTenant(ctx, s.db, tenantId, func(queries *model.Queries) error {
 		var _, updateErr = queries.UpdateFacility(ctx, model.UpdateFacilityParams{

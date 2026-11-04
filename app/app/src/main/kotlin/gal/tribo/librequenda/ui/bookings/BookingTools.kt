@@ -143,7 +143,7 @@ fun ReportIssuePage(booking: Booking?, actions: ProfileActions, onBack: () -> Un
                 try {
                     val bytes = context.contentResolver.openInputStream(uri)!!.use { it.readBytes() }
                     if (bytes.size > MAX_IMAGE) error = texts.tooLarge
-                    else photo = actions.authed { uploadImage(it, "issues", bytes, type!!) }
+                    else photo = actions.authed { uploadImage(it, "issues", bytes, type!!, mapOf("facility" to b.facilityId)) }
                 } catch (c: CancellationException) { throw c } catch (e: Exception) { error = e.userMessage(texts) }
                 uploading = false
             }

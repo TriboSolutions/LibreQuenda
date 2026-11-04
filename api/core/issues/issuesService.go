@@ -10,6 +10,7 @@ import (
 	"librequenda/issue"
 	"librequenda/model"
 	"librequenda/shared"
+	"librequenda/storage"
 	"net/http"
 	"sync"
 	"time"
@@ -57,6 +58,10 @@ func (s *issuesService) Report(ctx context.Context, session auth.Session, input 
 	var facility, err = queries.GetFacilityForIssue(ctx, facilityId)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, &shared.ErrorResponse{Code: http.StatusNotFound, Message: "errors.facility_not_found"}
+	}
+	// only a photo uploaded for this facility's council
+	if err == nil && input.PhotoRef != "" && !storage.Owned(input.PhotoRef, facility.TenantID, "issues") {
+		return nil, &shared.ErrorResponse{Code: http.StatusUnprocessableEntity, Message: "errors.invalid_image"}
 	}
 	if err != nil {
 		return nil, failed

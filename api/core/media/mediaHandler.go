@@ -10,7 +10,6 @@ import (
 	"librequenda/model"
 	"librequenda/storage"
 	"net/http"
-	"strconv"
 	"sync"
 
 	"github.com/angelbarreiros/Penguin/router/helpers"
@@ -45,27 +44,62 @@ type UploadResponse struct {
 	Url string `json:"url"` // what screens show
 }
 
-// canUpload: anyone signed in may upload their own photo (users/) or a photo of a
-// problem they report (issues/); council and facility
-// images (councils/, facilities/) need a superadministrator or a council administrator,
-// and the installation's logo (branding/) a superadministrator.
-func (h *mediaHandler) canUpload(r *http.Request, folder string) (bool, error) {
-	if folder == "users" || folder == "issues" {
-		return true, nil
+// owner says whose file an upload is: the council (uuid.Nil: the installation)
+// and whether this person may store it there.
+//   - users/ (their own photo): anyone signed in, the installation's
+//   - issues/ (a photo of a problem): anyone signed in, the council of the
+//     active facility in "facility" (the report itself checks the booking)
+//   - councils/, facilities/: a superadministrator or an administrator of the
+//     council in "council" (its slug)
+//   - branding/ (the installation's logo): a superadministrator
+func (h *mediaHandler) owner(r *http.Request, folder string) (council uuid.UUID, allowed bool, err error) {
+	var queries = model.New(h.db)
+	switch folder {
+	case "users":
+		return uuid.Nil, true, nil
+	case "issues":
+		var facilityId, parseErr = uuid.Parse(r.FormValue("facility"))
+		if parseErr != nil {
+			return uuid.Nil, false, nil
+		}
+		var facility, getErr = queries.GetFacilityForIssue(r.Context(), facilityId)
+		if errors.Is(getErr, sql.ErrNoRows) {
+			return uuid.Nil, false, nil
+		}
+		return facility.TenantID, getErr == nil, getErr
 	}
 	var session, _ = auth.SessionFromContext(r.Context())
 	var userId, userErr = me.CurrentUserId(r.Context(), h.db, session)
 	if userErr != nil {
-		return false, errors.New(userErr.Message)
+		return uuid.Nil, false, errors.New(userErr.Message)
 	}
-	var queries = model.New(h.db)
-	var isSuperadmin, err = queries.IsPlatformAdmin(r.Context(), userId)
-	if err != nil || isSuperadmin || folder == "branding" {
-		return isSuperadmin, err
+	var isSuperadmin bool
+	if isSuperadmin, err = queries.IsPlatformAdmin(r.Context(), userId); err != nil {
+		return uuid.Nil, false, err
+	}
+	if folder == "branding" {
+		return uuid.Nil, isSuperadmin, nil
+	}
+	var tenant, getErr = queries.GetTenantIdBySlug(r.Context(), r.FormValue("council"))
+	if errors.Is(getErr, sql.ErrNoRows) {
+		return uuid.Nil, false, nil
+	}
+	if getErr != nil {
+		return uuid.Nil, false, getErr
+	}
+	if isSuperadmin {
+		return tenant.ID, true, nil
 	}
 	var roles []model.GetUserTenantRolesRow
-	roles, err = queries.GetUserTenantRoles(r.Context(), userId)
-	return len(roles) > 0, err
+	if roles, err = queries.GetUserTenantRoles(r.Context(), userId); err != nil {
+		return uuid.Nil, false, err
+	}
+	for _, role := range roles {
+		if role.TenantID == tenant.ID && role.Role == model.TenantRoleAdmin {
+			return tenant.ID, true, nil
+		}
+	}
+	return uuid.Nil, false, nil
 }
 
 func (h *mediaHandler) Upload(w http.ResponseWriter, r *http.Request) {
@@ -83,12 +117,12 @@ func (h *mediaHandler) Upload(w http.ResponseWriter, r *http.Request) {
 	defer r.MultipartForm.RemoveAll()
 
 	var folder = r.FormValue("folder")
-	if !storage.Folders[folder] {
+	if !storage.CouncilFolders[folder] && !storage.PlatformFolders[folder] {
 		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.upload_invalid")
 		return
 	}
-	var allowed bool
-	allowed, err = h.canUpload(r, folder)
+	var council, allowed, ownerErr = h.owner(r, folder)
+	err = ownerErr
 	if err != nil {
 		helpers.SendI18NErrorResponse(w, r, http.StatusInternalServerError, "errors.upload_failed")
 		return
@@ -98,7 +132,7 @@ func (h *mediaHandler) Upload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// images for facilities, councils or the installation are admin work
-	if session, _ := auth.SessionFromContext(r.Context()); folder != "users" && !me.AdminSecondFactor(w, r, session) {
+	if session, _ := auth.SessionFromContext(r.Context()); folder != "users" && folder != "issues" && !me.AdminSecondFactor(w, r, session) {
 		return
 	}
 	var file, header, fileErr = r.FormFile("file")
@@ -121,44 +155,15 @@ func (h *mediaHandler) Upload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var ref = folder + "/" + uuid.Must(uuid.NewV7()).String() + ext
+	var name = uuid.Must(uuid.NewV7()).String() + ext
+	var ref = folder + "/" + name
+	if council != uuid.Nil {
+		ref = storage.CouncilRef(council, folder, name)
+	}
 	var body = io.MultiReader(bytes.NewReader(head[:n]), file)
 	if err = storage.Put(r.Context(), ref, body, header.Size, contentType); err != nil {
 		helpers.SendI18NErrorResponse(w, r, http.StatusBadGateway, "errors.upload_failed")
 		return
 	}
 	helpers.SendSuccessResponse(w, UploadResponse{Ref: ref, Url: storage.URL(ref)})
-}
-
-func (h *mediaHandler) Serve(w http.ResponseWriter, r *http.Request) {
-	var ref = r.PathValue("ref")
-	if !storage.ValidRef(ref) {
-		http.NotFound(w, r)
-		return
-	}
-	var object, err = storage.Get(r.Context(), ref)
-	if errors.Is(err, storage.ErrNotFound) {
-		http.NotFound(w, r)
-		return
-	}
-	if err != nil {
-		http.Error(w, http.StatusText(http.StatusBadGateway), http.StatusBadGateway)
-		return
-	}
-	defer object.Reader.Close()
-
-	var etag = `"` + object.ETag + `"`
-	w.Header().Set("ETag", etag)
-	w.Header().Set("Cache-Control", "public, max-age=31536000, immutable") // a reference never changes content
-	w.Header().Set("X-Content-Type-Options", "nosniff")
-	if r.Header.Get("If-None-Match") == etag {
-		w.WriteHeader(http.StatusNotModified)
-		return
-	}
-	w.Header().Set("Content-Type", object.ContentType)
-	w.Header().Set("Content-Length", strconv.FormatInt(object.Size, 10))
-	if r.Method == http.MethodHead {
-		return
-	}
-	io.Copy(w, object.Reader)
 }

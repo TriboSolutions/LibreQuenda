@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import { AvatarCropDialog } from '@/components/AvatarCropDialog'
 import { Button } from '@/components/ui/button'
-import { api, type MediaFolder, type StoredImage } from '@/lib/api'
+import { api, type MediaFolder, type MediaOwner, type StoredImage } from '@/lib/api'
 import { cn } from '@/lib/utils'
 
 const MAX_SIZE = 5 * 1024 * 1024
@@ -13,6 +13,7 @@ const TYPES = ['image/jpeg', 'image/png', 'image/webp']
 type Props = {
   label: string
   folder: MediaFolder
+  owner?: MediaOwner // whose file it is: required for councils, facilities and issues
   value: StoredImage | null // the form keeps the ref; the url is only for the preview
   onChange: (value: StoredImage | null) => void
   shape?: 'square' | 'wide' | 'large' | 'avatar' // large: full width, as tall as a map; avatar: a 96px circle
@@ -25,7 +26,7 @@ type Props = {
  * An avatar is framed in a circle first (AvatarCropDialog), and can be
  * reframed later, so what is stored is what the circle shows.
  */
-export function ImagePicker({ label, folder, value, onChange, shape = 'square', hideLabel = false }: Props) {
+export function ImagePicker({ label, folder, owner, value, onChange, shape = 'square', hideLabel = false }: Props) {
   const { t } = useTranslation()
   const auth = useAuth()
   const id = useId()
@@ -57,7 +58,7 @@ export function ImagePicker({ label, folder, value, onChange, shape = 'square', 
     if (!token) return
     setUploading(true)
     try {
-      onChange(await api.uploadImage(token, folder, file))
+      onChange(await api.uploadImage(token, folder, file, owner))
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
     } finally {
