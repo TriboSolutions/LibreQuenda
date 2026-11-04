@@ -491,6 +491,9 @@ SELECT
     b.public_description,
     b.checked_in_at,
     (b.kind <> 'event' AND facility_took_checkin(f.id, b.starts_at))::BOOLEAN AS checkin_at_start, -- nobody checks in to an event
+    -- rated: this user saved their stars for it already, which are final
+    (EXISTS (SELECT 1 FROM facility_rating fr WHERE fr.booking_id = b.id AND fr.user_id = $1)
+     OR EXISTS (SELECT 1 FROM user_rating ur WHERE ur.booking_id = b.id AND ur.rater_id = $1))::BOOLEAN AS rated,
     f.id   AS facility_id,
     f.name AS facility_name,
     f.slug AS facility_slug,
@@ -523,6 +526,7 @@ type ListParticipationsByUserRow struct {
 	PublicDescription string        `json:"public_description"`
 	CheckedInAt       sql.NullTime  `json:"checked_in_at"`
 	CheckinAtStart    bool          `json:"checkin_at_start"`
+	Rated             bool          `json:"rated"`
 	FacilityID        uuid.UUID     `json:"facility_id"`
 	FacilityName      string        `json:"facility_name"`
 	FacilitySlug      string        `json:"facility_slug"`
@@ -555,6 +559,7 @@ func (q *Queries) ListParticipationsByUser(ctx context.Context, userID uuid.Null
 			&i.PublicDescription,
 			&i.CheckedInAt,
 			&i.CheckinAtStart,
+			&i.Rated,
 			&i.FacilityID,
 			&i.FacilityName,
 			&i.FacilitySlug,

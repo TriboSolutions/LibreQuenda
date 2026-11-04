@@ -155,7 +155,6 @@
   "emailsHelp": "Avisos de reservas e incidencias, incluídos os recordatorios. Ao desactivalo, os avisos seguen na aplicación. Os correos de seguridade da conta non cambian.",
   "rating": {
     "title": "A túa valoración",
-    "none": "Aínda ninguén te valorou.",
     "help": "O que che deron, de 1 a 5 estrelas, as persoas coas que xogaches reservas públicas. Ninguén ve quen deu cada unha."
   }
 }

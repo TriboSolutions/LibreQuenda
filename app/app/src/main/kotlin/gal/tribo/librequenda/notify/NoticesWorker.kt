@@ -45,7 +45,9 @@ class NoticesWorker(context: Context, params: WorkerParameters) : CoroutineWorke
                 .filter { it.type != "booking_confirmed" } // the app said it when it booked
                 .forEach { n ->
                     val (title, text) = Notifier.describe(applicationContext, n)
-                    Notifier.show(applicationContext, n.id.hashCode(), Notifier.CHANNEL_NOTICES, title, text, Notifier.OPEN_NOTICES, markRead = true)
+                    // the request to rate opens the stars straight away; the rest, the notices
+                    val open = if (n.type == "rating_requested" && n.bookingId.isNotBlank()) Notifier.openRating(n.bookingId) else Notifier.OPEN_NOTICES
+                    Notifier.show(applicationContext, n.id.hashCode(), Notifier.CHANNEL_NOTICES, title, text, open, markRead = true)
                 }
             // what the API lists now has been handled; older ones it no longer lists cannot come back
             prefs.edit { putStringSet(KEY_SEEN, notices.map { it.id }.toSet()) }

@@ -155,7 +155,6 @@
   "emailsHelp": "Avisos de reserves i incidències, inclosos els recordatoris. En desactivar-ho, els avisos continuen a l’aplicació. Els correus de seguretat del compte no canvien.",
   "rating": {
     "title": "La teva valoració",
-    "none": "Encara no t’ha valorat ningú.",
     "help": "El que t’han donat, d’1 a 5 estrelles, les persones amb qui has jugat reserves públiques. Ningú no veu qui ha donat cada una."
   }
 }

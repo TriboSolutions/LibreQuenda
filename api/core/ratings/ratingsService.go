@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
 
 type ratingsService struct {
@@ -32,6 +33,7 @@ var (
 	errLoadFailed = &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.rating_load_failed"}
 	errSaveFailed = &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.rating_save_failed"}
 	errClosed     = &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.rating_closed"}
+	errRated      = &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.rating_already_given"}
 	errNotPlayer  = &shared.ErrorResponse{Code: http.StatusUnprocessableEntity, Message: "errors.rating_not_in_booking"}
 )
 
@@ -59,7 +61,8 @@ func (s *ratingsService) GetRating(ctx context.Context, userId, bookingId uuid.U
 		StartsAt:      booking.StartsAt,
 		EndsAt:        booking.EndsAt,
 		IsPublic:      booking.IsPublic,
-		CanRate:       CanRate(booking.Status, booking.EndsAt, booking.CheckedInAt.Valid, booking.CheckinAtStart, time.Now()),
+		CanRate:       CanRate(booking.Status, booking.EndsAt, booking.CheckedInAt.Valid, booking.CheckinAtStart, booking.Rated, time.Now()),
+		Rated:         booking.Rated,
 		RateUntil:     booking.EndsAt.Add(Window),
 		FacilityStars: stars,
 		People:        []PersonDto{},
@@ -94,7 +97,10 @@ func (s *ratingsService) Rate(ctx context.Context, userId, bookingId uuid.UUID, 
 	if err != nil {
 		return nil, errSaveFailed
 	}
-	if !CanRate(booking.Status, booking.EndsAt, booking.CheckedInAt.Valid, booking.CheckinAtStart, time.Now()) {
+	if booking.Rated {
+		return nil, errRated
+	}
+	if !CanRate(booking.Status, booking.EndsAt, booking.CheckedInAt.Valid, booking.CheckinAtStart, false, time.Now()) {
 		return nil, errClosed
 	}
 	if len(input.People) > 0 {
@@ -117,22 +123,27 @@ func (s *ratingsService) Rate(ctx context.Context, userId, bookingId uuid.UUID, 
 		}
 	}
 
-	if input.FacilityStars > 0 {
-		err = queries.UpsertFacilityRating(ctx, model.UpsertFacilityRatingParams{
-			FacilityID: booking.FacilityID,
-			BookingID:  bookingId,
-			UserID:     uuid.NullUUID{UUID: userId, Valid: true},
-			Stars:      input.FacilityStars,
-		})
-		if err != nil {
-			return nil, errSaveFailed
-		}
+	// plain inserts: the unique keys refuse a second rating, even one sent at the same time
+	err = queries.InsertFacilityRating(ctx, model.InsertFacilityRatingParams{
+		FacilityID: booking.FacilityID,
+		BookingID:  bookingId,
+		UserID:     uuid.NullUUID{UUID: userId, Valid: true},
+		Stars:      input.FacilityStars,
+	})
+	if isUniqueViolation(err) {
+		return nil, errRated
+	}
+	if err != nil {
+		return nil, errSaveFailed
 	}
 	for _, p := range input.People {
 		if p.Stars == 0 {
 			continue
 		}
-		err = queries.UpsertUserRating(ctx, model.UpsertUserRatingParams{BookingID: bookingId, RaterID: userId, RatedID: p.UserId, Stars: p.Stars})
+		err = queries.InsertUserRating(ctx, model.InsertUserRatingParams{BookingID: bookingId, RaterID: userId, RatedID: p.UserId, Stars: p.Stars})
+		if isUniqueViolation(err) {
+			return nil, errRated
+		}
 		if err != nil {
 			return nil, errSaveFailed
 		}
@@ -141,4 +152,9 @@ func (s *ratingsService) Rate(ctx context.Context, userId, bookingId uuid.UUID, 
 		return nil, errSaveFailed
 	}
 	return s.GetRating(ctx, userId, bookingId)
+}
+
+func isUniqueViolation(err error) bool {
+	var pqErr *pq.Error
+	return errors.As(err, &pqErr) && pqErr.Code == "23505"
 }

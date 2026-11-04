@@ -43,6 +43,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -363,7 +364,7 @@ fun BookingPage(bookingId: String?, state: BookingsState, actions: ProfileAction
 
 /** The history page's content: every past booking with how it went. */
 @Composable
-fun BookingHistory(state: BookingsState, actions: ProfileActions, modifier: Modifier = Modifier) {
+fun BookingHistory(state: BookingsState, actions: ProfileActions, onRate: (Booking) -> Unit, modifier: Modifier = Modifier) {
     val d = state.data
     LazyColumn(modifier.fillMaxSize(), contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 40.dp)) {
         when {
@@ -375,7 +376,7 @@ fun BookingHistory(state: BookingsState, actions: ProfileActions, modifier: Modi
                     // near the end of what came, the next page
                     if (i >= d.history.size - 5) LaunchedEffect(d.history.size) { state.loadMoreHistory(actions) }
                     if (i > 0) HorizontalDivider(color = Lq.colors.border)
-                    HistoryRow(b)
+                    HistoryRow(b) { onRate(b) }
                 }
                 if (d.historyHasMore) item { LinearProgressIndicator(Modifier.fillMaxWidth().padding(vertical = 16.dp)) }
             }
@@ -685,11 +686,21 @@ private fun DangerOutline(text: String, onClick: () -> Unit) {
 
 
 @Composable
-private fun HistoryRow(b: Booking) {
+private fun HistoryRow(b: Booking, onRate: () -> Unit) {
     Row(Modifier.fillMaxWidth().padding(vertical = 14.dp), verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f)) {
             Text(if (b.isEvent) "${b.title} · ${b.facilityName}" else b.facilityName, style = MaterialTheme.typography.bodyLarge, color = Lq.colors.foreground, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Text("${bookingDay(b.startsAt)} · ${time(b.startsAt)}", style = MaterialTheme.typography.bodySmall, color = Lq.colors.mutedForeground)
+            // ended, not a no-show, within 30 days: the stars, in a sheet (as the web's «Valorar»)
+            if (b.canRate) Row(
+                Modifier.padding(top = 4.dp).clip(RoundedCornerShape(8.dp)).clickable(onClick = onRate)
+                    .heightIn(min = 40.dp).padding(end = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                Icon(painterResource(R.drawable.ic_star), contentDescription = null, tint = Lq.colors.primary, modifier = Modifier.size(18.dp))
+                Text(stringResource(R.string.rating_button), style = MaterialTheme.typography.labelLarge, color = Lq.colors.primary)
+            }
         }
         val (label, positive) = when {
             b.cancelled -> R.string.status_cancelled to false

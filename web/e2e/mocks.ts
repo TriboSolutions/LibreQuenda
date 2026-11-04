@@ -227,11 +227,12 @@ const bookingRating: BookingRating = {
   ends_at: at(-29),
   is_public: true,
   can_rate: true,
+  rated: false,
   rate_until: at(30 * 24 - 29),
-  facility_stars: 4,
+  facility_stars: 0,
   people: [
     { user_id: 'u2', name: 'Uxía Lago', is_owner: true, stars: 0 },
-    { user_id: 'u3', name: 'Brais Vidal', is_owner: false, stars: 5 },
+    { user_id: 'u3', name: 'Brais Vidal', is_owner: false, stars: 0 },
   ],
 }
 

@@ -293,6 +293,8 @@
     <string name="notif_issue_rejected">L’ajuntament ha revisat el problema que vas avisar a %1$s i no el tramitarà.</string>
     <string name="notif_booking_joined">%5$s s’ha unit a la teva reserva a %1$s, %2$s a les %3$s.</string>
     <string name="notif_issue_reported">Nova incidència a %1$s.</string>
+    <string name="notif_rating_requested">Què tal %1$s? Valora-la d’1 a 5 estrelles.</string>
+    <string name="notif_rating_requested_public">Què tal %1$s? Valora-la, i també qui ha jugat amb tu.</string>
     <string name="council">Ajuntament</string>
     <string name="slots_full">Complet</string>
     <string name="status_cancelled">Cancel·lada</string>
@@ -300,6 +302,25 @@
     <string name="status_no_show">No presentada</string>
     <string name="status_ended">Finalitzada</string>
     <string name="status_checked_in">Entrada registrada</string>
+    <string name="rating_button">Valorar</string>
+    <string name="rating_title">Valora la teva reserva</string>
+    <string name="rating_when">%1$s, %2$s a les %3$s</string>
+    <string name="rating_load_error">No s’ha pogut carregar la valoració.</string>
+    <string name="rating_facility">Què tal %1$s?</string>
+    <string name="rating_people_title">Qui ha jugat amb tu</string>
+    <string name="rating_people_help">Era una reserva pública: valora els altres d’1 a 5 estrelles. Deixa sense valorar qui prefereixis.</string>
+    <string name="rating_private">Ningú no veu qui ha donat cada estrella, només la mitjana. Un cop desada, la valoració no es pot canviar. Pots valorar fins al %1$s.</string>
+    <string name="rating_closed">Aquesta reserva ja no es pot valorar.</string>
+    <string name="rating_done">Ja has valorat aquesta reserva. Aquestes són les teves estrelles; no es poden canviar.</string>
+    <string name="rating_save">Desa la valoració</string>
+    <string name="rating_saving">Desant…</string>
+    <string name="rating_save_error">No s’ha pogut desar la teva valoració.</string>
+    <string name="rating_later">Més tard</string>
+    <string name="rating_close">Tanca</string>
+    <string name="rating_thanks_title">Gràcies</string>
+    <string name="rating_thanks">La teva valoració s’ha desat. Ajuda l’ajuntament i qui hi juga.</string>
+    <string name="people_unnamed">Sense nom</string>
+    <string name="people_organiser">ha fet la reserva</string>
     <plurals name="rule_length">
         <item quantity="one">Com a mínim %1$d caràcter</item>
         <item quantity="many">Com a mínim %1$d caràcters</item>
@@ -324,5 +345,15 @@
         <item quantity="one">Cancel·lació gratuïta fins a %1$d hora abans del torn.</item>
         <item quantity="many">Cancel·lació gratuïta fins a %1$d hores abans del torn.</item>
         <item quantity="other">Cancel·lació gratuïta fins a %1$d hores abans del torn.</item>
+    </plurals>
+    <plurals name="rating_summary">
+        <item quantity="one">Valoració de %1$s sobre 5, d’%2$d persona</item>
+        <item quantity="many">Valoració de %1$s sobre 5, de %2$d persones</item>
+        <item quantity="other">Valoració de %1$s sobre 5, de %2$d persones</item>
+    </plurals>
+    <plurals name="rating_stars">
+        <item quantity="one">%1$d estrella</item>
+        <item quantity="many">%1$d estrelles</item>
+        <item quantity="other">%1$d estrelles</item>
     </plurals>
 </resources>

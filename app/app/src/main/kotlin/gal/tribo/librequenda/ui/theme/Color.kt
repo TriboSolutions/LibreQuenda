@@ -33,6 +33,7 @@ data class LqColors(
     val pillAccentBg: Color,
     val pillAccentInk: Color,
     val pillNeutralInk: Color,
+    val star: Color, // rating stars: amber, 3:1 or more against the page (as the web's --star)
     val isDark: Boolean,
 )
 
@@ -61,6 +62,7 @@ val LightLqColors = LqColors(
     pillNeutralInk = Color(0xFF374151),
     pillAccentBg = Color(0xFFEEF6FB),
     pillAccentInk = Color(0xFF0B3D61),
+    star = Color(0xFFB45309),
     isDark = false,
 )
 
@@ -89,6 +91,7 @@ val DarkLqColors = LqColors(
     pillNeutralInk = Color(0xFFD1D5DB),
     pillAccentBg = Color(0xFF10283A),
     pillAccentInk = Color(0xFFB5DAF3),
+    star = Color(0xFFFBBF24),
     isDark = true,
 )
 
