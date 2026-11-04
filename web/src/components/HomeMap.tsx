@@ -34,10 +34,12 @@ const pinned = (f: FacilityCard): f is Pinned => f.latitude !== null && f.longit
  * Pins close together would stack their names into an unreadable pile: a name that
  * would cover one already shown is hidden (its pin still names itself on hover and
  * to screen readers). Zooming in spreads the pins out and brings the names back.
+ * Only the names of the pins just drawn: the ones they replace linger while Leaflet
+ * fades them out, and would otherwise hide every new name on top of them.
  */
-function declutter() {
+function declutter(labels: HTMLElement[]) {
   const shown: DOMRect[] = []
-  for (const label of document.querySelectorAll<HTMLElement>('.leaflet-tooltip.lq-label')) {
+  for (const label of labels) {
     label.style.visibility = ''
     const box = label.getBoundingClientRect()
     const covers = shown.some((s) => box.left < s.right && box.right > s.left && box.top < s.bottom && box.bottom > s.top)
@@ -130,12 +132,16 @@ export function HomeMap({ facilities, highlighted, me, label, fitKey, onViewChan
             // close enough to tell the pins apart: their names, always on; the pin already carries the name for screen readers
             const name = document.createElement('span')
             name.textContent = f.name // text, not HTML: a facility name is data
-            name.setAttribute('aria-hidden', 'true')
             marker.bindTooltip(name, { permanent: true, direction: 'top', offset: [0, -26], className: 'lq-label' })
+            // the whole tooltip, not just its text: a role="tooltip" with nothing to read fails WCAG 4.1.2
+            marker.getTooltip()?.getElement()?.setAttribute('aria-hidden', 'true')
           }
           pins.current.set(f.id, marker)
         }
-        if (instance.getZoom() >= LABEL_ZOOM) requestAnimationFrame(declutter)
+        if (instance.getZoom() >= LABEL_ZOOM) {
+          const labels = [...pins.current.values()].flatMap((m) => m.getTooltip()?.getElement() ?? [])
+          requestAnimationFrame(() => declutter(labels))
+        }
         return
       }
 
