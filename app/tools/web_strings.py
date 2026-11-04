@@ -130,7 +130,6 @@ KEYS = {
     ('save', 'save'), ('saving', 'saving'), ('save_error', 'saveError'), ('later', 'later'), ('close', 'close'),
     ('thanks_title', 'thanksTitle'), ('thanks', 'thanks')]},
  'people_unnamed': (I,'people.unnamed'), 'people_organiser': (I,'people.organiser'),
- 'profile_rating_title': (P,'rating.title'), 'profile_rating_help': (P,'rating.help'),
 }
 PLURALS = {'rule_length': (P,'accountSettings.rule.length'), 'results_count': (K,'showing'), 'public_spots': (H,'forYou.spots'), 'rule_slot': (F,'ruleSlot'), 'rule_cancel': (F,'ruleCancel'),
            'rating_summary': (C,'rating.summary'), 'rating_stars': (C,'rating.stars')}

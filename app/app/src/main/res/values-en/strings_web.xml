@@ -318,8 +318,6 @@
     <string name="rating_thanks">Your rating is saved. It helps the council and the people who play.</string>
     <string name="people_unnamed">No name</string>
     <string name="people_organiser">booked it</string>
-    <string name="profile_rating_title">Your rating</string>
-    <string name="profile_rating_help">What the people you played public bookings with gave you, 1 to 5 stars. Nobody sees who gave which.</string>
     <plurals name="rule_length">
         <item quantity="one">At least %1$d character</item>
         <item quantity="other">At least %1$d characters</item>

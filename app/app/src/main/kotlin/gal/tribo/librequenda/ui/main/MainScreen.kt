@@ -428,6 +428,8 @@ private fun MenuPage(
                         Column(Modifier.weight(1f)) {
                             Text(me?.fullName.orEmpty(), style = MaterialTheme.typography.headlineSmall, color = Lq.colors.foreground, maxLines = 2, overflow = TextOverflow.Ellipsis)
                             Text(me?.email.orEmpty(), style = MaterialTheme.typography.bodyMedium, color = Lq.colors.mutedForeground, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            // their rating, under who they are; nothing until someone rated them
+                            me?.rating?.let { gal.tribo.librequenda.ui.components.RatingBadge(it, Modifier.padding(top = 4.dp)) }
                             if (me != null && !me.emailVerified) {
                                 Spacer(Modifier.height(8.dp))
                                 Pill(stringResource(R.string.email_not_verified), Lq.colors.pillNegativeBg, Lq.colors.pillNegativeInk)

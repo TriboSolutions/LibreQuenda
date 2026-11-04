@@ -318,8 +318,6 @@
     <string name="rating_thanks">La teva valoració s’ha desat. Ajuda l’ajuntament i qui hi juga.</string>
     <string name="people_unnamed">Sense nom</string>
     <string name="people_organiser">ha fet la reserva</string>
-    <string name="profile_rating_title">La teva valoració</string>
-    <string name="profile_rating_help">El que t’han donat, d’1 a 5 estrelles, les persones amb qui has jugat reserves públiques. Ningú no veu qui ha donat cada una.</string>
     <plurals name="rule_length">
         <item quantity="one">Com a mínim %1$d caràcter</item>
         <item quantity="many">Com a mínim %1$d caràcters</item>

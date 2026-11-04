@@ -131,15 +131,6 @@ fun ProfileScreen(
                 }
                 Box(pad) { DetailsSection(me, actions) }
                 SectionDivider()
-                // the average others gave them after public bookings, and how many did; nothing until someone rated them
-                me.rating?.let { rating ->
-                    Box(pad) {
-                        SettingsSection(stringResource(R.string.profile_rating_title), stringResource(R.string.profile_rating_help)) {
-                            gal.tribo.librequenda.ui.components.RatingBadge(rating)
-                        }
-                    }
-                    SectionDivider()
-                }
                 Box(pad) { AccountSection(actions) }
                 SectionDivider()
                 Box(pad) { CalendarSection(actions) }
@@ -201,6 +192,8 @@ private fun DetailsSection(me: Me, actions: ProfileActions) {
                 }
                 Spacer(Modifier.size(16.dp))
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    // beside the photo: the average others gave them after public bookings; nothing until someone did
+                    me.rating?.let { gal.tribo.librequenda.ui.components.RatingBadge(it, Modifier.padding(bottom = 4.dp)) }
                     SecondaryButton(
                         stringResource(if (uploading) R.string.image_uploading else if (avatar != null) R.string.image_change else R.string.image_upload),
                         { pickPhoto.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },

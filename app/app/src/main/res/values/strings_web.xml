@@ -318,8 +318,6 @@
     <string name="rating_thanks">A túa valoración está gardada. Axuda ao concello e a quen xoga.</string>
     <string name="people_unnamed">Sen nome</string>
     <string name="people_organiser">fixo a reserva</string>
-    <string name="profile_rating_title">A túa valoración</string>
-    <string name="profile_rating_help">O que che deron, de 1 a 5 estrelas, as persoas coas que xogaches reservas públicas. Ninguén ve quen deu cada unha.</string>
     <plurals name="rule_length">
         <item quantity="one">Polo menos %1$d carácter</item>
         <item quantity="other">Polo menos %1$d caracteres</item>
