@@ -386,7 +386,22 @@
     "facilityDetail": "Detall de la instal·lació",
     "editFacility": "Edita la instal·lació",
     "customInvalid": "Tria una data d’inici anterior a la de final, amb un any com a màxim entre elles.",
-    "noCheckin": "sense registre d’entrada"
+    "noCheckin": "sense registre d’entrada",
+    "ratingsTitle": "Valoracions",
+    "ratingsHint": "Les estrelles que els veïns han donat a les instal·lacions després de les reserves del període.",
+    "ratingsNone": "Encara ningú no ha valorat les reserves d’aquest període.",
+    "ratingsOutOf": "de 5",
+    "ratingsCount_one": "{{count}} valoració",
+    "ratingsCount_other": "{{count}} valoracions",
+    "ratingsDistribution": "Quantes de cada",
+    "ratingsOverTime": "Mitjana al llarg del temps",
+    "ratingsAverage": "Mitjana",
+    "ratingsPreviousAverage": "Mitjana, període comparat",
+    "ratingsNoneInPeriod": "sense valoracions",
+    "colRatings": "Valoracions",
+    "colAverage": "Mitjana",
+    "colRating": "Valoració",
+    "ratingsDefinition": "Cada valoració compta en el període en què va començar la seva reserva, i la mitjana de l’ajuntament les pondera totes igual."
   },
   "smtp": {
     "title": "Servidor de correu (SMTP)",

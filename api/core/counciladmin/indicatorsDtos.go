@@ -135,6 +135,10 @@ type IndicatorCountsDto struct {
 	Finished           int64    `json:"finished"`   // past confirmed bookings, at facilities with a QR reader
 	Attended           int64    `json:"attended"`   // of those, checked in at the door
 	NoShowRate         *float64 `json:"no_show_rate"`
+	// the residents' stars for the facility after the period's bookings
+	Ratings       int64    `json:"ratings"`
+	RatingAverage *float64 `json:"rating_average"` // 1-5; null without ratings
+	RatingStars   [5]int64 `json:"rating_stars"`   // how many gave 1, 2, 3, 4 and 5 stars
 }
 
 type FacilityIndicatorsDto struct {
@@ -171,9 +175,11 @@ type PeriodFiguresDto struct {
 }
 
 type PeriodBookingsDto struct {
-	Period    string `json:"period"` // first day of the day, week or month
-	Confirmed int64  `json:"confirmed"`
-	Cancelled int64  `json:"cancelled"`
+	Period        string   `json:"period"` // first day of the day, week or month
+	Confirmed     int64    `json:"confirmed"`
+	Cancelled     int64    `json:"cancelled"`
+	Ratings       int64    `json:"ratings"`        // the facilities' stars after the bookings that began in it
+	RatingAverage *float64 `json:"rating_average"` // 1-5; null without ratings
 }
 
 type BusyHourDto struct {
@@ -202,6 +208,10 @@ func (c *IndicatorCountsDto) add(o IndicatorCountsDto) {
 	c.OpenHours += o.OpenHours
 	c.Finished += o.Finished
 	c.Attended += o.Attended
+	c.Ratings += o.Ratings
+	for i := range c.RatingStars {
+		c.RatingStars[i] += o.RatingStars[i]
+	}
 }
 
 // rates fills the ratios from the counts.
@@ -209,6 +219,7 @@ func (c *IndicatorCountsDto) rates() {
 	c.CancellationRate = ratio(float64(c.CancelledByUser+c.CancelledByCouncil), float64(c.Bookings))
 	c.NoShowRate = ratio(float64(c.Finished-c.Attended), float64(c.Finished))
 	c.Occupancy = ratio(c.BookedHours, c.OpenHours)
+	c.RatingAverage = ratio(float64(starsSum(c.RatingStars)), float64(c.Ratings))
 	if c.Occupancy != nil && *c.Occupancy > 1 {
 		// bookings made before the schedule was cut down
 		var full = 1.0
@@ -222,4 +233,13 @@ func ratio(part float64, whole float64) *float64 {
 	}
 	var r = part / whole
 	return &r
+}
+
+// starsSum: the stars given altogether, from how many gave each.
+func starsSum(byStars [5]int64) int64 {
+	var sum int64
+	for i, n := range byStars {
+		sum += int64(i+1) * n
+	}
+	return sum
 }

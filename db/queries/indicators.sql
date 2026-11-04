@@ -9,6 +9,9 @@
 -- staff; see facility_checkin_period), and those checked in. Outside those
 -- stretches nobody could check in, so those bookings say nothing about no-shows.
 -- takes_checkin: it took check-ins at some point of the period.
+-- ratings: the residents' stars for the facility after the bookings of the
+-- period (a rating belongs to the period its booking began in, as the booking),
+-- how many, and how many of each from 1 to 5.
 SELECT
     f.id,
     f.name,
@@ -25,17 +28,38 @@ SELECT
     COALESCE(SUM(EXTRACT(EPOCH FROM b.ends_at - b.starts_at) / 60) FILTER (WHERE b.status = 'confirmed'), 0)::BIGINT AS booked_minutes,
     -- attendance: events are left out, nobody checks in to them
     COUNT(b.id) FILTER (WHERE b.status = 'confirmed' AND b.kind <> 'event' AND b.ends_at <= NOW() AND facility_took_checkin(f.id, b.starts_at)) AS finished,
-    COUNT(b.id) FILTER (WHERE b.status = 'confirmed' AND b.kind <> 'event' AND b.ends_at <= NOW() AND facility_took_checkin(f.id, b.starts_at) AND b.checked_in_at IS NOT NULL) AS attended
+    COUNT(b.id) FILTER (WHERE b.status = 'confirmed' AND b.kind <> 'event' AND b.ends_at <= NOW() AND facility_took_checkin(f.id, b.starts_at) AND b.checked_in_at IS NOT NULL) AS attended,
+    r.ratings::BIGINT AS ratings,
+    r.stars_1::BIGINT AS stars_1,
+    r.stars_2::BIGINT AS stars_2,
+    r.stars_3::BIGINT AS stars_3,
+    r.stars_4::BIGINT AS stars_4,
+    r.stars_5::BIGINT AS stars_5
 FROM
     facility f
     LEFT JOIN booking b ON b.facility_id = f.id
         AND b.starts_at >= sqlc.arg('range_start')
         AND b.starts_at < sqlc.arg('range_end')
+    -- aggregated apart: joined with the bookings it would count each rating once per booking
+    CROSS JOIN LATERAL (
+        SELECT
+            COUNT(*) AS ratings,
+            COUNT(*) FILTER (WHERE fr.stars = 1) AS stars_1,
+            COUNT(*) FILTER (WHERE fr.stars = 2) AS stars_2,
+            COUNT(*) FILTER (WHERE fr.stars = 3) AS stars_3,
+            COUNT(*) FILTER (WHERE fr.stars = 4) AS stars_4,
+            COUNT(*) FILTER (WHERE fr.stars = 5) AS stars_5
+        FROM facility_rating fr
+        JOIN booking rb ON rb.id = fr.booking_id
+        WHERE fr.facility_id = f.id
+          AND rb.starts_at >= sqlc.arg('range_start')
+          AND rb.starts_at < sqlc.arg('range_end')
+    ) r
 WHERE
     f.tenant_id = sqlc.arg('tenant_id')
     AND (sqlc.narg('facility_id')::UUID IS NULL OR f.id = sqlc.narg('facility_id'))
 GROUP BY
-    f.id
+    f.id, r.ratings, r.stars_1, r.stars_2, r.stars_3, r.stars_4, r.stars_5
 ORDER BY
     f.name ASC;
 
@@ -48,6 +72,26 @@ SELECT
 FROM
     booking b
     JOIN facility f ON f.id = b.facility_id
+WHERE
+    f.tenant_id = sqlc.arg('tenant_id')
+    AND (sqlc.narg('facility_id')::UUID IS NULL OR f.id = sqlc.narg('facility_id'))
+    AND b.starts_at >= sqlc.arg('range_start')
+    AND b.starts_at < sqlc.arg('range_end')
+GROUP BY
+    1
+ORDER BY
+    1;
+
+-- name: IndicatorsRatingSeries :many
+-- The facilities' stars per period, by when the rated booking began, in the council's time zone.
+SELECT
+    date_trunc(sqlc.arg('bucket')::TEXT, b.starts_at AT TIME ZONE sqlc.arg('timezone')::TEXT)::DATE AS period,
+    COUNT(*) AS ratings,
+    COALESCE(SUM(fr.stars), 0)::BIGINT AS rating_stars
+FROM
+    facility_rating fr
+    JOIN booking b ON b.id = fr.booking_id
+    JOIN facility f ON f.id = fr.facility_id
 WHERE
     f.tenant_id = sqlc.arg('tenant_id')
     AND (sqlc.narg('facility_id')::UUID IS NULL OR f.id = sqlc.narg('facility_id'))

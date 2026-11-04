@@ -386,7 +386,22 @@
     "facilityDetail": "Detalle de la instalación",
     "editFacility": "Editar instalación",
     "customInvalid": "Elige una fecha de inicio anterior a la de fin, con un año como mucho entre ellas.",
-    "noCheckin": "sin registro de entrada"
+    "noCheckin": "sin registro de entrada",
+    "ratingsTitle": "Valoraciones",
+    "ratingsHint": "Las estrellas que dieron los vecinos a las instalaciones después de las reservas del período.",
+    "ratingsNone": "Todavía nadie ha valorado las reservas de este período.",
+    "ratingsOutOf": "de 5",
+    "ratingsCount_one": "{{count}} valoración",
+    "ratingsCount_other": "{{count}} valoraciones",
+    "ratingsDistribution": "Cuántas de cada",
+    "ratingsOverTime": "Media a lo largo del tiempo",
+    "ratingsAverage": "Media",
+    "ratingsPreviousAverage": "Media, período comparado",
+    "ratingsNoneInPeriod": "sin valoraciones",
+    "colRatings": "Valoraciones",
+    "colAverage": "Media",
+    "colRating": "Valoración",
+    "ratingsDefinition": "Cada valoración cuenta en el período en el que empezó su reserva, y la media del ayuntamiento pondera todas por igual."
   },
   "smtp": {
     "title": "Servidor de correo (SMTP)",

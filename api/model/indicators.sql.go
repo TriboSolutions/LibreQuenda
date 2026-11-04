@@ -308,17 +308,38 @@ SELECT
     COALESCE(SUM(EXTRACT(EPOCH FROM b.ends_at - b.starts_at) / 60) FILTER (WHERE b.status = 'confirmed'), 0)::BIGINT AS booked_minutes,
     -- attendance: events are left out, nobody checks in to them
     COUNT(b.id) FILTER (WHERE b.status = 'confirmed' AND b.kind <> 'event' AND b.ends_at <= NOW() AND facility_took_checkin(f.id, b.starts_at)) AS finished,
-    COUNT(b.id) FILTER (WHERE b.status = 'confirmed' AND b.kind <> 'event' AND b.ends_at <= NOW() AND facility_took_checkin(f.id, b.starts_at) AND b.checked_in_at IS NOT NULL) AS attended
+    COUNT(b.id) FILTER (WHERE b.status = 'confirmed' AND b.kind <> 'event' AND b.ends_at <= NOW() AND facility_took_checkin(f.id, b.starts_at) AND b.checked_in_at IS NOT NULL) AS attended,
+    r.ratings::BIGINT AS ratings,
+    r.stars_1::BIGINT AS stars_1,
+    r.stars_2::BIGINT AS stars_2,
+    r.stars_3::BIGINT AS stars_3,
+    r.stars_4::BIGINT AS stars_4,
+    r.stars_5::BIGINT AS stars_5
 FROM
     facility f
     LEFT JOIN booking b ON b.facility_id = f.id
         AND b.starts_at >= $2
         AND b.starts_at < $1
+    -- aggregated apart: joined with the bookings it would count each rating once per booking
+    CROSS JOIN LATERAL (
+        SELECT
+            COUNT(*) AS ratings,
+            COUNT(*) FILTER (WHERE fr.stars = 1) AS stars_1,
+            COUNT(*) FILTER (WHERE fr.stars = 2) AS stars_2,
+            COUNT(*) FILTER (WHERE fr.stars = 3) AS stars_3,
+            COUNT(*) FILTER (WHERE fr.stars = 4) AS stars_4,
+            COUNT(*) FILTER (WHERE fr.stars = 5) AS stars_5
+        FROM facility_rating fr
+        JOIN booking rb ON rb.id = fr.booking_id
+        WHERE fr.facility_id = f.id
+          AND rb.starts_at >= $2
+          AND rb.starts_at < $1
+    ) r
 WHERE
     f.tenant_id = $3
     AND ($4::UUID IS NULL OR f.id = $4)
 GROUP BY
-    f.id
+    f.id, r.ratings, r.stars_1, r.stars_2, r.stars_3, r.stars_4, r.stars_5
 ORDER BY
     f.name ASC
 `
@@ -343,6 +364,12 @@ type IndicatorsByFacilityRow struct {
 	BookedMinutes      int64     `json:"booked_minutes"`
 	Finished           int64     `json:"finished"`
 	Attended           int64     `json:"attended"`
+	Ratings            int64     `json:"ratings"`
+	Stars1             int64     `json:"stars_1"`
+	Stars2             int64     `json:"stars_2"`
+	Stars3             int64     `json:"stars_3"`
+	Stars4             int64     `json:"stars_4"`
+	Stars5             int64     `json:"stars_5"`
 }
 
 // Council indicators ("indicadores básicos"): live aggregates over bookings.
@@ -354,6 +381,9 @@ type IndicatorsByFacilityRow struct {
 // staff; see facility_checkin_period), and those checked in. Outside those
 // stretches nobody could check in, so those bookings say nothing about no-shows.
 // takes_checkin: it took check-ins at some point of the period.
+// ratings: the residents' stars for the facility after the bookings of the
+// period (a rating belongs to the period its booking began in, as the booking),
+// how many, and how many of each from 1 to 5.
 func (q *Queries) IndicatorsByFacility(ctx context.Context, arg IndicatorsByFacilityParams) ([]IndicatorsByFacilityRow, error) {
 	rows, err := q.db.QueryContext(ctx, indicatorsByFacility,
 		arg.RangeEnd,
@@ -381,6 +411,12 @@ func (q *Queries) IndicatorsByFacility(ctx context.Context, arg IndicatorsByFaci
 			&i.BookedMinutes,
 			&i.Finished,
 			&i.Attended,
+			&i.Ratings,
+			&i.Stars1,
+			&i.Stars2,
+			&i.Stars3,
+			&i.Stars4,
+			&i.Stars5,
 		); err != nil {
 			return nil, err
 		}
@@ -581,6 +617,72 @@ func (q *Queries) IndicatorsHabits(ctx context.Context, arg IndicatorsHabitsPara
 	var i IndicatorsHabitsRow
 	err := row.Scan(&i.Bookings, &i.AvgPartySize, &i.MedianLeadHours)
 	return i, err
+}
+
+const indicatorsRatingSeries = `-- name: IndicatorsRatingSeries :many
+SELECT
+    date_trunc($1::TEXT, b.starts_at AT TIME ZONE $2::TEXT)::DATE AS period,
+    COUNT(*) AS ratings,
+    COALESCE(SUM(fr.stars), 0)::BIGINT AS rating_stars
+FROM
+    facility_rating fr
+    JOIN booking b ON b.id = fr.booking_id
+    JOIN facility f ON f.id = fr.facility_id
+WHERE
+    f.tenant_id = $3
+    AND ($4::UUID IS NULL OR f.id = $4)
+    AND b.starts_at >= $5
+    AND b.starts_at < $6
+GROUP BY
+    1
+ORDER BY
+    1
+`
+
+type IndicatorsRatingSeriesParams struct {
+	Bucket     string        `json:"bucket"`
+	Timezone   string        `json:"timezone"`
+	TenantID   uuid.UUID     `json:"tenant_id"`
+	FacilityID uuid.NullUUID `json:"facility_id"`
+	RangeStart time.Time     `json:"range_start"`
+	RangeEnd   time.Time     `json:"range_end"`
+}
+
+type IndicatorsRatingSeriesRow struct {
+	Period      time.Time `json:"period"`
+	Ratings     int64     `json:"ratings"`
+	RatingStars int64     `json:"rating_stars"`
+}
+
+// The facilities' stars per period, by when the rated booking began, in the council's time zone.
+func (q *Queries) IndicatorsRatingSeries(ctx context.Context, arg IndicatorsRatingSeriesParams) ([]IndicatorsRatingSeriesRow, error) {
+	rows, err := q.db.QueryContext(ctx, indicatorsRatingSeries,
+		arg.Bucket,
+		arg.Timezone,
+		arg.TenantID,
+		arg.FacilityID,
+		arg.RangeStart,
+		arg.RangeEnd,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []IndicatorsRatingSeriesRow
+	for rows.Next() {
+		var i IndicatorsRatingSeriesRow
+		if err := rows.Scan(&i.Period, &i.Ratings, &i.RatingStars); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const indicatorsSeries = `-- name: IndicatorsSeries :many

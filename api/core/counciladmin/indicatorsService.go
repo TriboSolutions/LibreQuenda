@@ -98,6 +98,10 @@ func periodFigures(ctx context.Context, q *model.Queries, tenantId uuid.UUID, lo
 	if series, err = q.IndicatorsSeries(ctx, model.IndicatorsSeriesParams{Bucket: r.bucket, Timezone: loc.String(), TenantID: tenantId, FacilityID: r.facility, RangeStart: r.start, RangeEnd: r.end}); err != nil {
 		return figures, err
 	}
+	var ratings []model.IndicatorsRatingSeriesRow
+	if ratings, err = q.IndicatorsRatingSeries(ctx, model.IndicatorsRatingSeriesParams{Bucket: r.bucket, Timezone: loc.String(), TenantID: tenantId, FacilityID: r.facility, RangeStart: r.start, RangeEnd: r.end}); err != nil {
+		return figures, err
+	}
 	var weekdays []model.IndicatorsByWeekdayRow
 	if weekdays, err = q.IndicatorsByWeekday(ctx, model.IndicatorsByWeekdayParams{Timezone: loc.String(), TenantID: tenantId, FacilityID: r.facility, RangeStart: r.start, RangeEnd: r.end}); err != nil {
 		return figures, err
@@ -130,7 +134,7 @@ func periodFigures(ctx context.Context, q *model.Queries, tenantId uuid.UUID, lo
 		figures.Totals.AvgPartySize = &habits.AvgPartySize
 		figures.Totals.MedianLeadHours = &habits.MedianLeadHours
 	}
-	figures.Series = fillSeries(r, series)
+	figures.Series = fillSeries(r, series, ratings)
 	figures.Weekdays = weekdayOccupancy(open, weekdays)
 	return figures, nil
 }
@@ -176,6 +180,8 @@ func mapFacilityIndicators(f model.IndicatorsByFacilityRow, openMinutes int) Fac
 			CancelledByCouncil: f.CancelledByCouncil,
 			BookedHours:        float64(f.BookedMinutes) / 60,
 			OpenHours:          float64(openMinutes) / 60,
+			Ratings:            f.Ratings,
+			RatingStars:        [5]int64{f.Stars1, f.Stars2, f.Stars3, f.Stars4, f.Stars5},
 		},
 	}
 	// without a way to check in, a missing check-in says nothing
@@ -215,18 +221,26 @@ func openMinutesByDay(r indicatorsRange, loc *time.Location, facilities []model.
 	return open
 }
 
-// fillSeries answers every period of the range, the empty ones too, so the chart has no gaps.
-func fillSeries(r indicatorsRange, rows []model.IndicatorsSeriesRow) []PeriodBookingsDto {
+// fillSeries answers every period of the range, the empty ones too, so the chart has no gaps
+// (a period nobody rated has no average: null, not 0).
+func fillSeries(r indicatorsRange, rows []model.IndicatorsSeriesRow, ratings []model.IndicatorsRatingSeriesRow) []PeriodBookingsDto {
 	var byPeriod = make(map[string]model.IndicatorsSeriesRow, len(rows))
 	for _, row := range rows {
 		byPeriod[row.Period.Format(localDate)] = row
+	}
+	var ratedByPeriod = make(map[string]model.IndicatorsRatingSeriesRow, len(ratings))
+	for _, row := range ratings {
+		ratedByPeriod[row.Period.Format(localDate)] = row
 	}
 	var series []PeriodBookingsDto
 	var last = periodStart(r.to, r.bucket)
 	for p := periodStart(r.from, r.bucket); !p.After(last); p = nextPeriod(p, r.bucket) {
 		var key = p.Format(localDate)
-		var row = byPeriod[key]
-		series = append(series, PeriodBookingsDto{Period: key, Confirmed: row.Confirmed, Cancelled: row.Cancelled})
+		var row, rated = byPeriod[key], ratedByPeriod[key]
+		series = append(series, PeriodBookingsDto{
+			Period: key, Confirmed: row.Confirmed, Cancelled: row.Cancelled,
+			Ratings: rated.Ratings, RatingAverage: ratio(float64(rated.RatingStars), float64(rated.Ratings)),
+		})
 	}
 	return series
 }
@@ -306,6 +320,7 @@ func writeSummaryCSV(w io.Writer, format csvFormat, data *IndicatorsDto) error {
 	out.Write([]string{
 		"facility", "from", "to", "bookings", "confirmed", "cancelled_by_user", "cancelled_by_council", "cancellation_rate",
 		"booked_hours", "open_hours", "occupancy", "finished_with_reader", "attended", "no_show_rate",
+		"ratings", "rating_average",
 	})
 	for _, f := range data.Facilities {
 		var cancelled = f.CancelledByUser + f.CancelledByCouncil
@@ -322,6 +337,8 @@ func writeSummaryCSV(w io.Writer, format csvFormat, data *IndicatorsDto) error {
 			format.count(f.Finished),
 			format.count(f.Attended),
 			unless(few(f.Finished) || few(f.Finished-f.Attended), format.rate(f.NoShowRate)),
+			format.count(f.Ratings),
+			unless(few(f.Ratings) || f.RatingAverage == nil, format.number(deref(f.RatingAverage), 2)),
 		})
 	}
 	out.Flush()
@@ -475,4 +492,11 @@ func (s *counciladminService) ExportIndicators(ctx context.Context, tenantId uui
 		return nil, &shared.ErrorResponse{Code: http.StatusNotFound, Message: "errors.facility_not_found"}
 	}
 	return write, nil
+}
+
+func deref(value *float64) float64 {
+	if value == nil {
+		return 0
+	}
+	return *value
 }
