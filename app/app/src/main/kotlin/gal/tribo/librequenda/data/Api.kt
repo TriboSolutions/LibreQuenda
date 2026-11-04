@@ -37,12 +37,16 @@ object Api {
         }
     }
 
-    /** POST /api/media: an image as multipart form data; the API answers its storage reference and URL. */
-    suspend fun upload(folder: String, bytes: ByteArray, mimeType: String, accessToken: String): JSONObject = withContext(Dispatchers.IO) {
+    /**
+     * POST /api/media: an image as multipart form data; the API answers its storage reference and a presigned URL.
+     * [fields] say whose file it is: "facility" (its id) for a problem's photo.
+     */
+    suspend fun upload(folder: String, bytes: ByteArray, mimeType: String, accessToken: String, fields: Map<String, String> = emptyMap()): JSONObject = withContext(Dispatchers.IO) {
         val boundary = "lq" + System.nanoTime()
         val body = java.io.ByteArrayOutputStream().apply {
             fun line(text: String) = write((text + "\r\n").toByteArray())
             line("--$boundary"); line("Content-Disposition: form-data; name=\"folder\""); line(""); line(folder)
+            for ((name, value) in fields) { line("--$boundary"); line("Content-Disposition: form-data; name=\"$name\""); line(""); line(value) }
             line("--$boundary"); line("Content-Disposition: form-data; name=\"file\"; filename=\"image\""); line("Content-Type: $mimeType"); line("")
             write(bytes); line(""); line("--$boundary--")
         }.toByteArray()

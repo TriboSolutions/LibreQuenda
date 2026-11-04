@@ -27,11 +27,11 @@ func TestMapIssueKeepsContactDetailsOnlyWhenShared(t *testing.T) {
 	if got := mapIssue(row); got.ReporterPhone != "" {
 		t.Error("missing phone should stay empty")
 	}
-	row.FacilityImageRef = sql.NullString{String: "facilities/court.jpg", Valid: true}
+	row.FacilityImageRef = sql.NullString{String: "0192f5a0-1c2d-7e3f-8a9b-0c1d2e3f4a5b/facilities/court.jpg", Valid: true}
 	if got := mapIssue(row); got.FacilityImageURL == "" {
 		t.Error("facility photo should be mapped")
 	}
-	row.PhotoRef = sql.NullString{String: "issues/a.png", Valid: true}
+	row.PhotoRef = sql.NullString{String: "0192f5a0-1c2d-7e3f-8a9b-0c1d2e3f4a5b/issues/a.png", Valid: true}
 	if got := mapIssue(row); got.PhotoUrl == "" {
 		t.Error("the photo's address is given")
 	}

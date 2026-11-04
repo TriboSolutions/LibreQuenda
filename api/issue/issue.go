@@ -47,7 +47,7 @@ func (r *Report) Clean() string {
 		return "errors.invalid_issue_category"
 	case r.Description == "" || utf8.RuneCountInString(r.Description) > MaxDescription:
 		return "errors.invalid_issue_description"
-	case r.PhotoRef != "" && (!storage.ValidRef(r.PhotoRef) || !strings.HasPrefix(r.PhotoRef, "issues/")):
+	case r.PhotoRef != "" && !storage.ValidRef(r.PhotoRef):
 		return "errors.invalid_image"
 	}
 	return ""

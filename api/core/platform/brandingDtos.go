@@ -4,6 +4,8 @@ import (
 	"librequenda/storage"
 	"strings"
 	"unicode"
+
+	"github.com/google/uuid"
 )
 
 // BrandingDto is how the installation presents itself: public, every page reads it.
@@ -29,7 +31,7 @@ func (in *BrandingInput) validate() string {
 	switch {
 	case len([]rune(in.Name)) > 60 || strings.IndexFunc(in.Name, unicode.IsControl) >= 0:
 		return "errors.invalid_app_name"
-	case in.LogoRef != "" && (!storage.ValidRef(in.LogoRef) || !strings.HasPrefix(in.LogoRef, "branding/")):
+	case in.LogoRef != "" && !storage.Owned(in.LogoRef, uuid.Nil, "branding"):
 		return "errors.invalid_image"
 	}
 	return ""

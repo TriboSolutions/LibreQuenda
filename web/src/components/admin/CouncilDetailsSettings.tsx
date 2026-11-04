@@ -57,7 +57,7 @@ export function CouncilDetailsSettings({ council, token, canDeactivate, onSaved 
         ) : (
           !canDeactivate && <p className="text-muted-foreground">{t('councils.inactive')}</p>
         )}
-        <CouncilFields form={form} set={set} logo={logo} setLogo={setLogo} creating={false} canDeactivate={canDeactivate} />
+        <CouncilFields form={form} set={set} logo={logo} setLogo={setLogo} creating={false} councilSlug={council.slug} canDeactivate={canDeactivate} />
         <div aria-live="polite" className="empty:hidden">
           {notice && (
             <Alert className="border-0 bg-pill-positive-bg text-pill-positive-ink">

@@ -55,7 +55,8 @@ func (in *TenantInput) validate(creating bool) string {
 		return "errors.invalid_phone"
 	case in.MunicipalityCode != "" && !validMunicipalityCode(in.MunicipalityCode):
 		return "errors.invalid_municipality_code"
-	case in.LogoRef != "" && (!storage.ValidRef(in.LogoRef) || !strings.HasPrefix(in.LogoRef, "councils/")):
+	// a logo is uploaded for an existing council: a new one gets it in its settings
+	case in.LogoRef != "" && (creating || !storage.ValidRef(in.LogoRef)):
 		return "errors.invalid_image"
 	case creating && !validEmail(in.AdminEmail):
 		return "errors.invalid_admin_email"

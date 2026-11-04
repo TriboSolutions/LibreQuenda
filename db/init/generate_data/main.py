@@ -33,6 +33,7 @@ from sql_writer import generate_sql
 BASE_DIR = Path(__file__).parent
 CSV_DIR = BASE_DIR.parent / "csv_data"
 SQL_FILE = BASE_DIR.parent / "09_initial_data.sql"
+MEDIA_REFS = BASE_DIR.parent / "seed_media" / "refs.txt"
 
 
 # Shared state passed through every generator so they can cross-reference IDs.
@@ -42,6 +43,7 @@ def _empty_context(seed: dict) -> dict:
         "tenants": {},     # key -> tenant id
         "facilities": {},  # key -> facility config + id
         "residents": {},   # key -> app_user id and home council
+        "media_refs": set(),  # demo images as each council's files, for the storage-seed
     }
 
 
@@ -78,6 +80,11 @@ def main() -> None:
     for table_name, gen_module in PIPELINE:
         rows = gen_module.generate(context)
         write_csv(rows, CSV_DIR / f"{table_name}.csv")
+
+    # which demo image each council stores (storage.SeedDirectory reads it)
+    MEDIA_REFS.parent.mkdir(exist_ok=True)
+    MEDIA_REFS.write_text("".join(f"{ref}\n" for ref in sorted(context["media_refs"])))
+    print(f"  {MEDIA_REFS.name}: {len(context['media_refs'])} council images")
 
     print("\n-- SQL -----------------------------------------")
     generate_sql(CSV_DIR, SQL_FILE, seed)

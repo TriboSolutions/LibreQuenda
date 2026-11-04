@@ -20,8 +20,8 @@ suspend fun updatePreferences(token: String, language: String, emails: Boolean, 
 /** An uploaded image: forms save the ref; screens only show the url. */
 data class StoredImage(val ref: String, val url: String)
 
-suspend fun uploadImage(token: String, folder: String, bytes: ByteArray, mimeType: String): StoredImage {
-    val json = Api.upload(folder, bytes, mimeType, token)
+suspend fun uploadImage(token: String, folder: String, bytes: ByteArray, mimeType: String, fields: Map<String, String> = emptyMap()): StoredImage {
+    val json = Api.upload(folder, bytes, mimeType, token, fields)
     return StoredImage(json.getString("ref"), Api.absolute(json.getString("url")))
 }
 
