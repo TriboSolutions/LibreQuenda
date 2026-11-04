@@ -34,10 +34,12 @@ const pinned = (f: FacilityCard): f is Pinned => f.latitude !== null && f.longit
  * Pins close together would stack their names into an unreadable pile: a name that
  * would cover one already shown is hidden (its pin still names itself on hover and
  * to screen readers). Zooming in spreads the pins out and brings the names back.
+ * Only the names of the pins just drawn: the ones they replace linger while Leaflet
+ * fades them out, and would otherwise hide every new name on top of them.
  */
-function declutter() {
+function declutter(labels: HTMLElement[]) {
   const shown: DOMRect[] = []
-  for (const label of document.querySelectorAll<HTMLElement>('.leaflet-tooltip.lq-label')) {
+  for (const label of labels) {
     label.style.visibility = ''
     const box = label.getBoundingClientRect()
     const covers = shown.some((s) => box.left < s.right && box.right > s.left && box.top < s.bottom && box.bottom > s.top)
@@ -135,7 +137,10 @@ export function HomeMap({ facilities, highlighted, me, label, fitKey, onViewChan
           }
           pins.current.set(f.id, marker)
         }
-        if (instance.getZoom() >= LABEL_ZOOM) requestAnimationFrame(declutter)
+        if (instance.getZoom() >= LABEL_ZOOM) {
+          const labels = [...pins.current.values()].flatMap((m) => m.getTooltip()?.getElement() ?? [])
+          requestAnimationFrame(() => declutter(labels))
+        }
         return
       }
 
