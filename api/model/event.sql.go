@@ -372,6 +372,98 @@ func (q *Queries) ListParticipantAccounts(ctx context.Context, bookingID uuid.UU
 	return items, nil
 }
 
+const listUpcomingEvents = `-- name: ListUpcomingEvents :many
+SELECT
+    b.id,
+    COALESCE(b.title, '')::TEXT AS title,
+    b.public_description,
+    b.starts_at,
+    b.ends_at,
+    COALESCE(b.event_capacity, f.capacity) AS capacity,
+    (SELECT COUNT(*) FROM booking_participant p WHERE p.booking_id = b.id) AS participant_count,
+    f.id AS facility_id,
+    f.slug AS facility_slug,
+    f.name AS facility_name,
+    f.image_ref,
+    f.latitude,
+    f.longitude,
+    t.slug AS tenant_slug,
+    t.name AS tenant_name
+FROM
+    booking b
+    JOIN facility f ON f.id = b.facility_id
+    JOIN tenant   t ON t.id = f.tenant_id
+WHERE
+    b.kind = 'event'
+    AND b.status = 'confirmed'
+    AND b.starts_at > NOW()
+    AND f.is_active = TRUE
+    AND t.is_active = TRUE
+ORDER BY
+    b.starts_at,
+    b.id
+LIMIT 50
+`
+
+type ListUpcomingEventsRow struct {
+	ID                uuid.UUID       `json:"id"`
+	Title             string          `json:"title"`
+	PublicDescription string          `json:"public_description"`
+	StartsAt          time.Time       `json:"starts_at"`
+	EndsAt            time.Time       `json:"ends_at"`
+	Capacity          sql.NullInt32   `json:"capacity"`
+	ParticipantCount  int64           `json:"participant_count"`
+	FacilityID        uuid.UUID       `json:"facility_id"`
+	FacilitySlug      string          `json:"facility_slug"`
+	FacilityName      string          `json:"facility_name"`
+	ImageRef          sql.NullString  `json:"image_ref"`
+	Latitude          sql.NullFloat64 `json:"latitude"`
+	Longitude         sql.NullFloat64 `json:"longitude"`
+	TenantSlug        string          `json:"tenant_slug"`
+	TenantName        string          `json:"tenant_name"`
+}
+
+// The app's home: every council's events that have not started, soonest first,
+// full ones too (they still say what is on). Public, like the facilities list.
+func (q *Queries) ListUpcomingEvents(ctx context.Context) ([]ListUpcomingEventsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listUpcomingEvents)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListUpcomingEventsRow
+	for rows.Next() {
+		var i ListUpcomingEventsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.PublicDescription,
+			&i.StartsAt,
+			&i.EndsAt,
+			&i.Capacity,
+			&i.ParticipantCount,
+			&i.FacilityID,
+			&i.FacilitySlug,
+			&i.FacilityName,
+			&i.ImageRef,
+			&i.Latitude,
+			&i.Longitude,
+			&i.TenantSlug,
+			&i.TenantName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const lockEvent = `-- name: LockEvent :one
 SELECT
     b.id,

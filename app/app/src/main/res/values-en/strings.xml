@@ -41,6 +41,9 @@
     <string name="for_you_help_signed_out">Facilities with free slots today.</string>
     <string name="public_title">Public games</string>
     <string name="public_help">Other people’s bookings with spots left: join in.</string>
+    <string name="events_title">Events</string>
+    <string name="events_help">Council activities open to everyone: join in.</string>
+    <string name="event_full">Full</string>
     <string name="free_at">Free at %1$s</string>
     <string name="distance_km">%1$s km</string>
     <plurals name="spots_left">

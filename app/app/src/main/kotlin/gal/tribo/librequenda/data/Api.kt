@@ -257,6 +257,36 @@ suspend fun fetchFacilities(near: GeoPoint? = null): List<FacilityCard> {
 
 data class GeoPoint(val latitude: Double, val longitude: Double)
 
+/** One of the councils' events (GET /api/events): what it is, when, the places left, and where. */
+data class UpcomingEvent(
+    val id: String,
+    val title: String,
+    val description: String,
+    val startsAt: java.time.Instant,
+    val endsAt: java.time.Instant,
+    val capacity: Int,
+    val spotsLeft: Int, // 0: full
+    val facility: FacilityCard,
+)
+
+/** GET /api/events: every council's events that have not started, soonest first (the API sorts). */
+suspend fun fetchUpcomingEvents(near: GeoPoint? = null): List<UpcomingEvent> {
+    val list = Api.getJson(Api.baseUrl + "/events" + near(near)).getJSONArray("events")
+    return List(list.length()) { index ->
+        val e = list.getJSONObject(index)
+        UpcomingEvent(
+            id = e.getString("id"),
+            title = e.optString("title"),
+            description = e.optString("description"),
+            startsAt = java.time.OffsetDateTime.parse(e.getString("starts_at")).toInstant(),
+            endsAt = java.time.OffsetDateTime.parse(e.getString("ends_at")).toInstant(),
+            capacity = e.optInt("capacity"),
+            spotsLeft = e.optInt("spots_left"),
+            facility = e.getJSONObject("facility").toFacilityCard(),
+        )
+    }
+}
+
 /** Someone's public booking with spots left: what «For you» shows of it. */
 data class PublicBooking(val id: String, val startsAt: java.time.Instant, val endsAt: java.time.Instant, val spotsLeft: Int, val ownerFirstName: String, val title: String = "") // title: the council's event
 

@@ -160,3 +160,37 @@ FROM
 WHERE
     p.booking_id = sqlc.arg('booking_id')
     AND p.user_id IS NOT NULL;
+
+-- name: ListUpcomingEvents :many
+-- The app's home: every council's events that have not started, soonest first,
+-- full ones too (they still say what is on). Public, like the facilities list.
+SELECT
+    b.id,
+    COALESCE(b.title, '')::TEXT AS title,
+    b.public_description,
+    b.starts_at,
+    b.ends_at,
+    COALESCE(b.event_capacity, f.capacity) AS capacity,
+    (SELECT COUNT(*) FROM booking_participant p WHERE p.booking_id = b.id) AS participant_count,
+    f.id AS facility_id,
+    f.slug AS facility_slug,
+    f.name AS facility_name,
+    f.image_ref,
+    f.latitude,
+    f.longitude,
+    t.slug AS tenant_slug,
+    t.name AS tenant_name
+FROM
+    booking b
+    JOIN facility f ON f.id = b.facility_id
+    JOIN tenant   t ON t.id = f.tenant_id
+WHERE
+    b.kind = 'event'
+    AND b.status = 'confirmed'
+    AND b.starts_at > NOW()
+    AND f.is_active = TRUE
+    AND t.is_active = TRUE
+ORDER BY
+    b.starts_at,
+    b.id
+LIMIT 50;

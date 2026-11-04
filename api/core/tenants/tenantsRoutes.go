@@ -48,6 +48,13 @@ func (r *tenantsRoutes) RegisterRoutes() {
 		AdditionalMethods: []router.HTTPMethod{router.HEAD, router.OPTIONS},
 		Handler:           middlewares.VersionMiddleware(h.GetFacilities),
 	})
+	// the app's home: every council's upcoming events, soonest first
+	r.router.NewRoute(router.Route{
+		Path:              "/events",
+		Method:            http.MethodGet,
+		AdditionalMethods: []router.HTTPMethod{router.HEAD, router.OPTIONS},
+		Handler:           middlewares.VersionMiddleware(h.GetEvents),
+	})
 	// the search: every council's facilities for a day (?date=), nearest first with ?lat=&lon=
 	r.router.NewRoute(router.Route{
 		Path:              "/facilities/day",

@@ -43,6 +43,9 @@
     <string name="for_you_help_signed_out">Instal·lacions amb torns lliures avui.</string>
     <string name="public_title">Partides públiques</string>
     <string name="public_help">Reserves d’altres persones amb places lliures: uneix-t’hi.</string>
+    <string name="events_title">Esdeveniments</string>
+    <string name="events_help">Activitats de l’ajuntament obertes a tothom: apunta-t’hi.</string>
+    <string name="event_full">Complet</string>
     <string name="free_at">Lliure a les %1$s</string>
     <string name="distance_km">%1$s km</string>
     <plurals name="spots_left">
