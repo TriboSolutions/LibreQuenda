@@ -132,8 +132,9 @@ export function HomeMap({ facilities, highlighted, me, label, fitKey, onViewChan
             // close enough to tell the pins apart: their names, always on; the pin already carries the name for screen readers
             const name = document.createElement('span')
             name.textContent = f.name // text, not HTML: a facility name is data
-            name.setAttribute('aria-hidden', 'true')
             marker.bindTooltip(name, { permanent: true, direction: 'top', offset: [0, -26], className: 'lq-label' })
+            // the whole tooltip, not just its text: a role="tooltip" with nothing to read fails WCAG 4.1.2
+            marker.getTooltip()?.getElement()?.setAttribute('aria-hidden', 'true')
           }
           pins.current.set(f.id, marker)
         }
