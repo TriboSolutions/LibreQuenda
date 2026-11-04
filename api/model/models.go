@@ -98,6 +98,49 @@ func (ns NullBookingChannel) Value() (driver.Value, error) {
 	return string(ns.BookingChannel), nil
 }
 
+type BookingKind string
+
+const (
+	BookingKindPrivate BookingKind = "private"
+	BookingKindPublic  BookingKind = "public"
+	BookingKindEvent   BookingKind = "event"
+)
+
+func (e *BookingKind) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = BookingKind(s)
+	case string:
+		*e = BookingKind(s)
+	default:
+		return fmt.Errorf("unsupported scan type for BookingKind: %T", src)
+	}
+	return nil
+}
+
+type NullBookingKind struct {
+	BookingKind BookingKind `json:"booking_kind"`
+	Valid       bool        `json:"valid"` // Valid is true if BookingKind is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullBookingKind) Scan(value interface{}) error {
+	if value == nil {
+		ns.BookingKind, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.BookingKind.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullBookingKind) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.BookingKind), nil
+}
+
 type BookingStatus string
 
 const (
@@ -431,8 +474,10 @@ type Booking struct {
 	CheckedInMethod   NullCheckinMethod    `json:"checked_in_method"`
 	CheckedInBy       uuid.NullUUID        `json:"checked_in_by"`
 	InviteToken       uuid.NullUUID        `json:"invite_token"`
-	IsPublic          bool                 `json:"is_public"`
+	Kind              BookingKind          `json:"kind"`
 	PublicDescription string               `json:"public_description"`
+	Title             sql.NullString       `json:"title"`
+	EventCapacity     sql.NullInt32        `json:"event_capacity"`
 }
 
 type BookingParticipant struct {

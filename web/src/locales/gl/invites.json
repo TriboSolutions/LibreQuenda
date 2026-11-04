@@ -14,7 +14,8 @@
   "role": {
     "owner": "Túa",
     "invitedBy": "Convidoute {{name}}",
-    "invited": "Convite"
+    "invited": "Convite",
+    "event": "Evento do concello"
   },
   "spots": "{{taken}} de {{capacity}} persoas",
   "actions": {

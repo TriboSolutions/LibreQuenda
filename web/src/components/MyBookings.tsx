@@ -96,11 +96,14 @@ export function MyBookings({ authenticated, data, loading, error, timeZone, toda
               {upcoming.map((booking) => (
                 <li key={booking.id} className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-t py-3 first:border-t-0">
                   <div className="min-w-48 flex-1">
-                    <p className="truncate font-medium">{booking.facility_name}</p>
+                    {/* an event's title can be long: it wraps, so its width never stretches the page */}
+                    <p className={booking.kind === 'event' ? 'font-medium break-words' : 'truncate font-medium'}>
+                      {booking.kind === 'event' ? `${booking.title} · ${booking.facility_name}` : booking.facility_name}
+                    </p>
                     <When booking={booking} timeZone={timeZone} today={today} />
                     {booking.role === 'participant' && (
                       <span className="mt-1 mr-1 inline-block rounded-full bg-pill-neutral-bg px-2 py-0.5 text-xs font-medium text-pill-neutral-ink">
-                        {booking.owner_name ? t('invites:role.invitedBy', { name: booking.owner_name }) : t('invites:role.invited')}
+                        {booking.kind === 'event' ? t('invites:role.event') : booking.owner_name ? t('invites:role.invitedBy', { name: booking.owner_name }) : t('invites:role.invited')}
                       </span>
                     )}
                     {booking.checked_in_at && (

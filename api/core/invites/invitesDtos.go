@@ -75,23 +75,21 @@ const (
 	StateClosed = "closed" // cancelled, started, or the facility no longer takes invites
 )
 
-// Capacity counts the owner, so a facility for one person takes no invites.
-func invitable(capacity sql.NullInt32) bool {
-	return capacity.Valid && capacity.Int32 > 1
+// A resident's booking counts its owner in the capacity, so a facility for one
+// person takes no invites; an event has no owner (bookings.Places).
+func invitable(capacity sql.NullInt32, kind model.BookingKind) bool {
+	return bookings.Places(capacity, kind) > 0
 }
 
-func spotsLeft(capacity sql.NullInt32, participants int64) int {
-	if !invitable(capacity) {
-		return 0
-	}
-	return max(int(capacity.Int32)-1-int(participants), 0)
+func spotsLeft(capacity sql.NullInt32, kind model.BookingKind, participants int64) int {
+	return max(bookings.Places(capacity, kind)-int(participants), 0)
 }
 
-func inviteState(status model.BookingStatus, startsAt time.Time, capacity sql.NullInt32, participants int64, now time.Time) string {
-	if status != model.BookingStatusConfirmed || !now.Before(startsAt) || !invitable(capacity) {
+func inviteState(status model.BookingStatus, startsAt time.Time, capacity sql.NullInt32, kind model.BookingKind, participants int64, now time.Time) string {
+	if status != model.BookingStatusConfirmed || !now.Before(startsAt) || !invitable(capacity, kind) {
 		return StateClosed
 	}
-	if spotsLeft(capacity, participants) == 0 {
+	if spotsLeft(capacity, kind, participants) == 0 {
 		return StateFull
 	}
 	return StateOpen

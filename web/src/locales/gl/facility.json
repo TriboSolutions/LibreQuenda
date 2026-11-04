@@ -1,5 +1,11 @@
 {
-  "publicSlot": {"joinable": "Con prazas", "ongoing": "En curso", "full": "Completa", "joinableLegend": "Pública: podes unirte", "ongoingLegend": "Pública: en curso"},
+  "publicSlot": {
+    "joinable": "Con prazas",
+    "ongoing": "En curso",
+    "full": "Completa",
+    "joinableLegend": "Pública: podes unirte",
+    "ongoingLegend": "Pública: en curso"
+  },
   "chooseDate": "Escoller data",
   "back": "Todas as instalacións",
   "bookTitle": "Reservar un turno",
@@ -129,5 +135,11 @@
     }
   },
   "ruleCouncilActive_one": "Como máximo {{count}} reserva activa por persoa en todo o concello.",
-  "ruleCouncilActive_other": "Como máximo {{count}} reservas activas por persoa en todo o concello."
+  "ruleCouncilActive_other": "Como máximo {{count}} reservas activas por persoa en todo o concello.",
+  "events": {
+    "title": "Eventos este día",
+    "label": "Evento",
+    "spots_one": "queda {{count}} praza",
+    "spots_other": "quedan {{count}} prazas"
+  }
 }

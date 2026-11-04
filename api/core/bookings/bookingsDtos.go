@@ -65,7 +65,9 @@ type BookingDto struct {
 	CanChange         bool       `json:"can_change"` // owner only: another time, on the same terms as cancelling
 	CancelUntil       time.Time  `json:"cancel_until"`
 	CheckinCode       string     `json:"checkin_code"` // QR content, upcoming confirmed bookings only
-	IsPublic          bool       `json:"is_public"`    // owner only: found and joined from «For you»
+	IsPublic          bool       `json:"is_public"`    // owner only: found and joined from «For you» (the Android app reads it; the web reads Kind)
+	Kind              string     `json:"kind"`         // "private", "public" or "event" (the council's, joined by the person)
+	Title             string     `json:"title"`        // events only: their name
 	CheckedInAt       *time.Time `json:"checked_in_at"`
 	// owner only: the ways in the facility offers ("reader", "printed_qr", "entry_code", "staff")
 	CheckinWays []string `json:"checkin_ways"`
@@ -130,12 +132,15 @@ type PersonDto struct {
 }
 
 // people lists the owner and who joined; a booking nobody joined lists no one.
-func people(owner PersonDto, joined []model.ListPeopleByBookingsRow, me uuid.UUID) []PersonDto {
+// An event has no owner (nil): only who joined.
+func people(owner *PersonDto, joined []model.ListPeopleByBookingsRow, me uuid.UUID) []PersonDto {
 	if len(joined) == 0 {
 		return []PersonDto{}
 	}
 	var list = make([]PersonDto, 0, len(joined)+1)
-	list = append(list, owner)
+	if owner != nil {
+		list = append(list, *owner)
+	}
 	for _, row := range joined {
 		list = append(list, PersonDto{Name: row.PublicName, IsGuest: !row.UserID.Valid, IsMe: row.UserID.Valid && row.UserID.UUID == me})
 	}
@@ -182,6 +187,14 @@ type Spots struct {
 	Participants int64
 }
 
+// participationCapacity: an event's is all for who joins; a booking's counts its owner.
+func participationCapacity(capacity sql.NullInt32, kind model.BookingKind) int {
+	if kind == model.BookingKindEvent {
+		return Places(capacity, kind)
+	}
+	return invitableCapacity(capacity)
+}
+
 func invitableCapacity(capacity sql.NullInt32) int {
 	if !capacity.Valid || capacity.Int32 <= 1 {
 		return 0
@@ -197,12 +210,16 @@ func MapMyBookings(rows []model.ListBookingsByUserRow, joined []model.ListPartic
 		var booking = mapBooking(row, now)
 		booking.Capacity = invitableCapacity(spots[row.ID].Capacity)
 		booking.ParticipantCount = int(spots[row.ID].Participants)
-		booking.People = people(PersonDto{IsOwner: true, IsMe: true}, joinedBy[row.ID], me)
+		booking.People = people(&PersonDto{IsOwner: true, IsMe: true}, joinedBy[row.ID], me)
 		all = append(all, booking)
 	}
 	for _, row := range joined {
 		var booking = mapParticipation(row, now)
-		booking.People = people(PersonDto{Name: row.OwnerName, IsOwner: true}, joinedBy[row.ID], me)
+		var owner = &PersonDto{Name: row.OwnerName, IsOwner: true}
+		if row.Kind == model.BookingKindEvent {
+			owner = nil
+		}
+		booking.People = people(owner, joinedBy[row.ID], me)
 		all = append(all, booking)
 	}
 	// most recent first; upcoming is then read backwards, soonest first
@@ -228,24 +245,27 @@ func mapParticipation(row model.ListParticipationsByUserRow, now time.Time) Book
 		checkedInAt = &row.CheckedInAt.Time
 	}
 	return BookingDto{
-		Id:               row.ID.String(),
-		StartsAt:         row.StartsAt,
-		EndsAt:           row.EndsAt,
-		Status:           string(row.Status),
-		FacilityId:       row.FacilityID.String(),
-		FacilityName:     row.FacilityName,
-		FacilitySlug:     row.FacilitySlug,
-		TenantSlug:       row.TenantSlug,
-		TenantName:       row.TenantName,
-		CheckedInAt:      checkedInAt,
-		Attendance:       attendance(row.Status, row.EndsAt, row.CheckedInAt.Valid, row.CheckinAtStart, now),
-		CanRate:          ratings.CanRate(row.Status, row.EndsAt, row.CheckedInAt.Valid, row.CheckinAtStart, now),
-		Role:             RoleParticipant,
-		OwnerName:        row.OwnerName,
-		Capacity:         invitableCapacity(row.Capacity),
-		ParticipantCount: int(row.ParticipantCount),
-		CanLeave:         CanLeaveAt(row.Status, row.StartsAt, now),
-		Facility:         FacilityDetails(row.Facility, row.FacilitySport),
+		Id:                row.ID.String(),
+		StartsAt:          row.StartsAt,
+		EndsAt:            row.EndsAt,
+		Status:            string(row.Status),
+		FacilityId:        row.FacilityID.String(),
+		FacilityName:      row.FacilityName,
+		FacilitySlug:      row.FacilitySlug,
+		TenantSlug:        row.TenantSlug,
+		TenantName:        row.TenantName,
+		CheckedInAt:       checkedInAt,
+		Attendance:        attendance(row.Status, row.EndsAt, row.CheckedInAt.Valid, row.CheckinAtStart, now),
+		CanRate:           ratings.CanRate(row.Status, row.EndsAt, row.CheckedInAt.Valid, row.CheckinAtStart, now),
+		Role:              RoleParticipant,
+		OwnerName:         row.OwnerName,
+		Kind:              string(row.Kind),
+		Title:             row.Title,
+		PublicDescription: row.PublicDescription,
+		Capacity:          participationCapacity(row.Capacity, row.Kind),
+		ParticipantCount:  int(row.ParticipantCount),
+		CanLeave:          CanLeaveAt(row.Status, row.StartsAt, now),
+		Facility:          FacilityDetails(row.Facility, row.FacilitySport),
 	}
 }
 
@@ -279,6 +299,7 @@ func mapBooking(row model.ListBookingsByUserRow, now time.Time) BookingDto {
 		CanRate:           ratings.CanRate(row.Status, row.EndsAt, row.CheckedInAt.Valid, row.CheckinAtStart, now),
 		Role:              RoleOwner,
 		IsPublic:          row.IsPublic,
+		Kind:              kindOf(row.IsPublic),
 		PublicDescription: row.PublicDescription,
 		CheckinWays:       checkinWays(row),
 		StaffContacts:     staffContacts(row),

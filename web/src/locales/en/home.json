@@ -74,6 +74,12 @@
     "joined": "You are in.",
     "seeBookings": "See my bookings",
     "spots_one": "{{count}} spot left",
-    "spots_other": "{{count}} spots left"
+    "spots_other": "{{count}} spots left",
+    "eventBy": "Event · {{council}}"
+  },
+  "bookingKind": {
+    "title": "Type of booking",
+    "public": "Public bookings",
+    "event": "Events"
   }
 }

@@ -332,6 +332,52 @@ func (q *Queries) ListConfirmedBookingsByTenantRange(ctx context.Context, arg Li
 	return items, nil
 }
 
+const listJoinableKindsByFacility = `-- name: ListJoinableKindsByFacility :many
+SELECT DISTINCT
+    b.facility_id,
+    b.kind
+FROM
+    booking b
+    JOIN facility f ON f.id = b.facility_id
+WHERE
+    b.kind <> 'private'
+    AND b.status = 'confirmed'
+    AND b.starts_at > NOW()
+    AND f.is_active = TRUE
+    AND (SELECT COUNT(*) FROM booking_participant p WHERE p.booking_id = b.id)
+        < COALESCE(b.event_capacity, f.capacity) - CASE WHEN b.kind = 'event' THEN 0 ELSE 1 END
+`
+
+type ListJoinableKindsByFacilityRow struct {
+	FacilityID uuid.UUID   `json:"facility_id"`
+	Kind       BookingKind `json:"kind"`
+}
+
+// Which facilities have upcoming public bookings or events with spots left, for
+// the facilities list's «type of booking» filter.
+func (q *Queries) ListJoinableKindsByFacility(ctx context.Context) ([]ListJoinableKindsByFacilityRow, error) {
+	rows, err := q.db.QueryContext(ctx, listJoinableKindsByFacility)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListJoinableKindsByFacilityRow
+	for rows.Next() {
+		var i ListJoinableKindsByFacilityRow
+		if err := rows.Scan(&i.FacilityID, &i.Kind); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listOpeningHoursByTenantWeekday = `-- name: ListOpeningHoursByTenantWeekday :many
 SELECT
     oh.facility_id,
@@ -384,7 +430,8 @@ func (q *Queries) ListOpeningHoursByTenantWeekday(ctx context.Context, arg ListO
 
 const listPublicBookingsByTenantRange = `-- name: ListPublicBookingsByTenantRange :many
 SELECT b.id, b.facility_id, b.starts_at, b.ends_at, b.public_description,
-    f.capacity,
+    b.kind, COALESCE(b.title, '')::TEXT AS title,
+    COALESCE(b.event_capacity, f.capacity) AS capacity,
     split_part(trim(COALESCE(owner.full_name, '')), ' ', 1)::TEXT AS owner_name,
     ARRAY(SELECT split_part(trim(COALESCE(u.full_name, p.guest_name, '')), ' ', 1)
           FROM booking_participant p LEFT JOIN app_user u ON u.id = p.user_id
@@ -393,7 +440,7 @@ FROM booking b
 JOIN facility f ON f.id = b.facility_id
 LEFT JOIN app_user owner ON owner.id = b.user_id
 WHERE f.tenant_id = $1
-  AND f.is_active = TRUE AND b.is_public = TRUE AND b.status = 'confirmed'
+  AND f.is_active = TRUE AND b.kind <> 'private' AND b.status = 'confirmed'
   AND b.ends_at > NOW()
   AND b.starts_at < $2 AND b.ends_at > $3
 ORDER BY b.starts_at, b.id
@@ -411,12 +458,15 @@ type ListPublicBookingsByTenantRangeRow struct {
 	StartsAt          time.Time     `json:"starts_at"`
 	EndsAt            time.Time     `json:"ends_at"`
 	PublicDescription string        `json:"public_description"`
+	Kind              BookingKind   `json:"kind"`
+	Title             string        `json:"title"`
 	Capacity          sql.NullInt32 `json:"capacity"`
 	OwnerName         string        `json:"owner_name"`
 	People            []string      `json:"people"`
 }
 
 // Public activity details only; participant contact data and surnames stay private.
+// Events have no owner: owner_name is ” and the capacity is the event's own, if set.
 func (q *Queries) ListPublicBookingsByTenantRange(ctx context.Context, arg ListPublicBookingsByTenantRangeParams) ([]ListPublicBookingsByTenantRangeRow, error) {
 	rows, err := q.db.QueryContext(ctx, listPublicBookingsByTenantRange, arg.TenantID, arg.RangeEnd, arg.RangeStart)
 	if err != nil {
@@ -432,6 +482,8 @@ func (q *Queries) ListPublicBookingsByTenantRange(ctx context.Context, arg ListP
 			&i.StartsAt,
 			&i.EndsAt,
 			&i.PublicDescription,
+			&i.Kind,
+			&i.Title,
 			&i.Capacity,
 			&i.OwnerName,
 			pq.Array(&i.People),

@@ -7,6 +7,7 @@ import { ForYou } from '@/components/ForYou'
 import { Mark } from '@/components/Mark'
 import { SiteFooter } from '@/components/SiteFooter'
 import { TagFilters } from '@/components/TagFilters'
+import { BookingKindFilter } from '@/components/BookingKindFilter'
 import { TopBar } from '@/components/TopBar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -16,7 +17,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { useAsync } from '@/hooks/useAsync'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { useTags } from '@/hooks/useTags'
-import { api, type FacilityCard, type GeoPoint } from '@/lib/api'
+import { api, type FacilityCard, type GeoPoint, type JoinableKind } from '@/lib/api'
 import { inView, type MapView } from '@/lib/geo'
 import { cn } from '@/lib/utils'
 
@@ -44,6 +45,7 @@ export function HomePage() {
   const [query, setQuery] = useState('')
   const [council, setCouncil] = useState('')
   const [tags, setTags] = useState<string[]>([])
+  const [kinds, setKinds] = useState<JoinableKind[]>([])
   const [position, setPosition] = useState<Position>({ state: 'off' })
   const [radius, setRadius] = useState(0)
   // nearest first, within the radius, is the API's job: it gets where the person is
@@ -85,6 +87,7 @@ export function HomePage() {
   const shown: { facility: FacilityCard; km: number | null }[] = all.flatMap((facility) => {
     if (council && facility.council.slug !== council) return []
     if (!tags.every((tag) => facility.tags.includes(tag))) return []
+    if (kinds.length > 0 && !kinds.some((kind) => facility.joinable?.includes(kind))) return []
     const text = normalise([facility.name, facility.council.name, facility.sport, ...facility.tags.map(catalogue.label)].join(' '))
     if (!words.every((word) => text.includes(word))) return []
     return [{ facility, km: facility.distance_km ?? null }]
@@ -104,12 +107,13 @@ export function HomePage() {
         return pin !== null && inView(view, pin)
       })
     : shown
-  const filtering = query !== '' || council !== '' || tags.length > 0 || radius > 0
+  const filtering = query !== '' || council !== '' || tags.length > 0 || kinds.length > 0 || radius > 0
 
   const clear = () => {
     setQuery('')
     setCouncil('')
     setTags([])
+    setKinds([])
     setRadius(0)
   }
 
@@ -150,6 +154,7 @@ export function HomePage() {
               </Select>
             )}
             <TagFilters groups={catalogue.grouped(all.flatMap((f) => f.tags))} chosen={tags} onChange={setTags} clearAll={false} />
+            <BookingKindFilter chosen={kinds} onChange={setKinds} />
             <Button variant={me ? 'default' : 'outline'} aria-pressed={me !== null} disabled={position.state === 'locating'} onClick={locate}>
               {position.state === 'locating' ? <LoaderCircle className="animate-spin" /> : <LocateFixed />}
               {position.state === 'locating' ? t('councils:locating') : t('councils:nearMe')}

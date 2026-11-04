@@ -32,7 +32,7 @@ SELECT
         'tenant_slug',   t.slug,
         'starts_at',     b.starts_at,
         'ends_at',       b.ends_at,
-        'is_public',     b.is_public
+        'is_public',     b.kind = 'public' -- people are rated after public bookings, not after events
     ),
     NOW()
 FROM
@@ -49,7 +49,7 @@ WHERE
     AND b.ends_at <= NOW()
     AND b.ends_at > NOW() - INTERVAL '1 day'
     AND x.user_id IS NOT NULL
-    AND NOT (b.checked_in_at IS NULL AND facility_took_checkin(f.id, b.starts_at))
+    AND NOT (b.checked_in_at IS NULL AND b.kind <> 'event' AND facility_took_checkin(f.id, b.starts_at)) -- nobody checks in to an event
     AND NOT EXISTS (
         SELECT 1
         FROM notification n
@@ -173,9 +173,9 @@ SELECT
     b.starts_at,
     b.ends_at,
     b.status,
-    b.is_public,
+    (b.kind = 'public')::BOOLEAN AS is_public,
     b.checked_in_at,
-    facility_took_checkin(f.id, b.starts_at)::BOOLEAN AS checkin_at_start,
+    (b.kind <> 'event' AND facility_took_checkin(f.id, b.starts_at))::BOOLEAN AS checkin_at_start,
     f.id   AS facility_id,
     f.name AS facility_name,
     f.slug AS facility_slug,

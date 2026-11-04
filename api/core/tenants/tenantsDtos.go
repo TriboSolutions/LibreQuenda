@@ -35,6 +35,8 @@ type FacilityCardDto struct {
 	Longitude *float64  `json:"longitude"`
 	FreeToday int       `json:"free_today"` // turns still free today
 	Council   TenantDto `json:"council"`
+	// what can be joined there, upcoming and with spots left: "public" bookings, "event"s
+	Joinable []string `json:"joinable"`
 	// with ?lat=&lon=: from there, in km (0.1); null without a pin or a position
 	DistanceKm *float64 `json:"distance_km"`
 }
@@ -84,13 +86,16 @@ type ClosureDto struct {
 	Reason   string    `json:"reason"`
 }
 
+// PublicTurnDto: a public booking, or one of the council's events, on the facility's day.
 type PublicTurnDto struct {
 	Id          string    `json:"id"`
+	Kind        string    `json:"kind"`  // "public" or "event"
+	Title       string    `json:"title"` // events only
 	StartsAt    time.Time `json:"starts_at"`
 	EndsAt      time.Time `json:"ends_at"`
 	Description string    `json:"description"`
-	Capacity    int32     `json:"capacity"`
-	People      []string  `json:"people"`
+	Capacity    int32     `json:"capacity"` // people in it at most: with the owner for a public booking, only who joins for an event
+	People      []string  `json:"people"`   // first names: the owner first (not for an event), then who joined
 }
 
 type FacilityDayDto struct {

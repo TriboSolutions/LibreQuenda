@@ -29,6 +29,7 @@ export function PublicTurnDialog({ booking, facility, timeZone, today, now, onCl
   const count = booking.people.length
   const full = count >= booking.capacity
   const started = Date.parse(booking.starts_at) <= Date.parse(now)
+  const event = booking.kind === 'event' // the council's: a title, no owner
 
   const join = async () => {
     if (!token || busy) return
@@ -49,12 +50,13 @@ export function PublicTurnDialog({ booking, facility, timeZone, today, now, onCl
     <Dialog open onOpenChange={(open) => !open && !busy && onClose()}>
       <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{t('public.turnTitle', { facility: facility.name })}</DialogTitle>
+          <DialogTitle className="break-words">{event ? booking.title : t('public.turnTitle', { facility: facility.name })}</DialogTitle>
           <DialogDescription>
+            {event && <>{t('public.eventAt', { facility: facility.name })}<br /></>}
             {formatBookingDay(booking.starts_at, timeZone, today)} · {formatTime(booking.starts_at, timeZone)}–{formatTime(booking.ends_at, timeZone)}
           </DialogDescription>
         </DialogHeader>
-        <p className="whitespace-pre-wrap break-words">{booking.description || t('public.noDescription')}</p>
+        <p className="whitespace-pre-wrap break-words">{booking.description || t(event ? 'public.noEventDescription' : 'public.noDescription')}</p>
         <section aria-labelledby="public-people-title" className="grid gap-2">
           <h3 id="public-people-title" className="font-medium">{t('public.people', { count: count + (joined ? 1 : 0), capacity: booking.capacity })}</h3>
           <ul className="flex flex-wrap gap-2">
@@ -68,7 +70,7 @@ export function PublicTurnDialog({ booking, facility, timeZone, today, now, onCl
           {attending ? (
             <Button asChild><Link to="/reservas">{t('home:forYou.seeBookings')}</Link></Button>
           ) : started ? (
-            <p className="text-sm text-muted-foreground">{t('public.started')}</p>
+            <p className="text-sm text-muted-foreground">{t(event ? 'public.eventStarted' : 'public.started')}</p>
           ) : full ? (
             <p className="text-sm text-muted-foreground">{t('public.full')}</p>
           ) : !token ? (

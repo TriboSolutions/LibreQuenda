@@ -3,6 +3,7 @@ package tenants
 import (
 	"net/http"
 	"regexp"
+	"slices"
 	"strings"
 	"time"
 	"unicode"
@@ -11,6 +12,7 @@ import (
 	"golang.org/x/text/transform"
 	"golang.org/x/text/unicode/norm"
 
+	"librequenda/model"
 	"librequenda/schedule"
 )
 
@@ -20,6 +22,7 @@ type Filters struct {
 	Words   []string // ?q=: every word somewhere in the facility's name, its council's name or slug, its sport, or any of its tags (name or slug); accents and case aside
 	Council string   // ?council=: a council's slug
 	Tags    []string // ?sport= and ?tags=a,b: the facility has them all
+	Booking []string // ?booking=public,event: it has any of these to join (FacilityCardDto.Joinable); /facilities only
 	// /facilities/day only
 	From, Until string // ?from=HH:MM&until=HH:MM: turns starting in [from, until), the council's time
 	Public      bool   // ?public=true: someone's public booking with spots left, instead of free turns
@@ -65,6 +68,17 @@ func filtersFromQuery(r *http.Request, withDay bool) (Filters, bool) {
 				return f, false
 			}
 			f.Tags = append(f.Tags, tag)
+		}
+	}
+	if booking := q.Get("booking"); booking != "" {
+		if withDay {
+			return f, false
+		}
+		for _, kind := range strings.Split(booking, ",") {
+			if kind != string(model.BookingKindPublic) && kind != string(model.BookingKindEvent) {
+				return f, false
+			}
+			f.Booking = append(f.Booking, kind)
 		}
 	}
 	var dayOnly = q.Get("from") != "" || q.Get("until") != "" || q.Get("public") != ""
@@ -131,6 +145,19 @@ func (f Filters) matches(name, council, councilName, sport string, tags []string
 		}
 	}
 	return true
+}
+
+// joinable: the facility has one of the kinds asked for (any, without ?booking=).
+func (f Filters) joinable(kinds []string) bool {
+	if len(f.Booking) == 0 {
+		return true
+	}
+	for _, want := range f.Booking {
+		if slices.Contains(kinds, want) {
+			return true
+		}
+	}
+	return false
 }
 
 // inWindow: a turn starting at, in the council's time, inside [from, until).

@@ -14,7 +14,8 @@
   "role": {
     "owner": "Tuya",
     "invitedBy": "Te invitó {{name}}",
-    "invited": "Invitación"
+    "invited": "Invitación",
+    "event": "Evento del ayuntamiento"
   },
   "spots": "{{taken}} de {{capacity}} personas",
   "actions": {

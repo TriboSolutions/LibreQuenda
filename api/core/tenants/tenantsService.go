@@ -12,6 +12,7 @@ import (
 	"librequenda/shared"
 	"librequenda/storage"
 	"net/http"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -84,6 +85,14 @@ func (s *tenantsService) GetFacilities(ctx context.Context, near *Near, filters 
 		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.tenants_load_failed"}
 	}
 	var names = s.tagNames(ctx)
+	var joinable = map[string][]string{}
+	var kinds, kindsErr = model.New(s.db).ListJoinableKindsByFacility(ctx)
+	if kindsErr != nil {
+		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.tenants_load_failed"}
+	}
+	for _, row := range kinds {
+		joinable[row.FacilityID.String()] = append(joinable[row.FacilityID.String()], string(row.Kind))
+	}
 	var response = &FacilitiesResponse{Facilities: []FacilityCardDto{}}
 	for _, tenant := range tenants {
 		var day, _, _, dayErr = s.loadDay(ctx, tenant.Slug, "")
@@ -98,7 +107,12 @@ func (s *tenantsService) GetFacilities(ctx context.Context, near *Near, filters 
 				}
 			}
 			var km = distanceKm(near, f.Latitude, f.Longitude)
-			if !near.within(km) || !filters.matches(f.Name, day.Tenant.Slug, day.Tenant.Name, f.Sport, f.Tags, names) {
+			var open = joinable[f.Id]
+			if open == nil {
+				open = []string{}
+			}
+			slices.Sort(open) // "event" before "public", whatever the database's order
+			if !near.within(km) || !filters.matches(f.Name, day.Tenant.Slug, day.Tenant.Name, f.Sport, f.Tags, names) || !filters.joinable(open) {
 				continue
 			}
 			response.Facilities = append(response.Facilities, FacilityCardDto{
@@ -113,6 +127,7 @@ func (s *tenantsService) GetFacilities(ctx context.Context, near *Near, filters 
 				Longitude:  f.Longitude,
 				FreeToday:  free,
 				Council:    day.Tenant,
+				Joinable:   open,
 				DistanceKm: km,
 			})
 		}
@@ -258,10 +273,14 @@ func (s *tenantsService) loadDay(ctx context.Context, slug string, dateParam str
 	}
 	var publicByFacility = map[uuid.UUID][]PublicTurnDto{}
 	for _, row := range publicRows {
+		var people = append([]string{row.OwnerName}, row.People...)
+		if row.Kind == model.BookingKindEvent {
+			people = row.People
+		}
 		publicByFacility[row.FacilityID] = append(publicByFacility[row.FacilityID], PublicTurnDto{
-			Id: row.ID.String(), StartsAt: row.StartsAt, EndsAt: row.EndsAt,
+			Id: row.ID.String(), Kind: string(row.Kind), Title: row.Title, StartsAt: row.StartsAt, EndsAt: row.EndsAt,
 			Description: row.PublicDescription, Capacity: row.Capacity.Int32,
-			People: append([]string{row.OwnerName}, row.People...),
+			People: people,
 		})
 	}
 

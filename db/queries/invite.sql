@@ -65,7 +65,8 @@ SELECT
     b.starts_at,
     b.ends_at,
     b.status,
-    f.capacity,
+    b.kind,
+    COALESCE(b.event_capacity, f.capacity) AS capacity, -- an event's own, if set
     f.min_age,
     t.timezone,
     t.id AS tenant_id,
@@ -161,12 +162,15 @@ SELECT
     b.starts_at,
     b.ends_at,
     b.status,
+    b.kind,
+    COALESCE(b.title, '')::TEXT AS title,
+    b.public_description,
     b.checked_in_at,
-    facility_took_checkin(f.id, b.starts_at)::BOOLEAN AS checkin_at_start,
+    (b.kind <> 'event' AND facility_took_checkin(f.id, b.starts_at))::BOOLEAN AS checkin_at_start, -- nobody checks in to an event
     f.id   AS facility_id,
     f.name AS facility_name,
     f.slug AS facility_slug,
-    f.capacity,
+    COALESCE(b.event_capacity, f.capacity) AS capacity,
     t.slug AS tenant_slug,
     t.name AS tenant_name,
     COALESCE(u.full_name, '')::TEXT AS owner_name,
@@ -215,14 +219,15 @@ ORDER BY
     p.joined_at ASC;
 
 -- name: LockPublicBooking :one
--- Inside the join transaction of a public booking, like LockBookingByInviteToken.
+-- Inside the join transaction of a public booking or an event, like LockBookingByInviteToken.
 SELECT
     b.id,
     b.user_id AS owner_id,
     b.starts_at,
     b.ends_at,
     b.status,
-    f.capacity,
+    b.kind,
+    COALESCE(b.event_capacity, f.capacity) AS capacity, -- an event's own, if set
     f.min_age,
     t.timezone,
     t.id AS tenant_id,
@@ -233,14 +238,14 @@ FROM
     JOIN tenant   t ON t.id = f.tenant_id
 WHERE
     b.id = sqlc.arg('id')
-    AND b.is_public = TRUE
+    AND b.kind <> 'private'
 FOR UPDATE OF b;
 
 -- name: SetBookingPublic :execrows
 -- The owner makes an upcoming booking public or private again; capacity is checked in the API.
 UPDATE booking
 SET
-    is_public  = sqlc.arg('is_public'),
+    kind       = CASE WHEN sqlc.arg('is_public')::BOOLEAN THEN 'public' ELSE 'private' END::booking_kind,
     public_description = COALESCE(sqlc.narg('public_description')::TEXT, public_description),
     updated_at = NOW()
 WHERE
@@ -250,15 +255,18 @@ WHERE
     AND starts_at > NOW();
 
 -- name: ListJoinablePublicBookings :many
--- «For you»: upcoming public bookings with spots left that the person neither
--- owns nor has joined, until `until`; the API keeps those near them or like theirs.
+-- «For you»: upcoming public bookings and events with spots left that the person
+-- neither owns nor has joined, until `until`; the API keeps those near them or like
+-- theirs. An event has no owner and no owner's place: all its capacity is for who joins.
 SELECT
     b.id,
+    b.kind,
+    COALESCE(b.title, '')::TEXT AS title,
     b.public_description,
     b.starts_at,
     b.ends_at,
     f.id   AS facility_id,
-    f.capacity,
+    COALESCE(b.event_capacity, f.capacity) AS capacity,
     split_part(trim(COALESCE(u.full_name, '')), ' ', 1)::TEXT AS owner_first_name,
     -- what others gave the owner after public bookings
     (SELECT COALESCE(AVG(r.stars), 0) FROM user_rating r WHERE r.rated_id = b.user_id)::FLOAT8 AS owner_rating_average,
@@ -270,16 +278,16 @@ FROM
     JOIN tenant   t ON t.id = f.tenant_id
     LEFT JOIN app_user u ON u.id = b.user_id
 WHERE
-    b.is_public = TRUE
+    b.kind <> 'private'
     AND b.status = 'confirmed'
     AND b.starts_at > NOW()
     AND b.starts_at < sqlc.arg('until')
     AND f.is_active = TRUE
     AND t.is_active = TRUE
-    AND f.capacity > 1
     AND (b.user_id IS NULL OR b.user_id <> sqlc.arg('user_id'))
     AND NOT EXISTS (SELECT 1 FROM booking_participant p WHERE p.booking_id = b.id AND p.user_id = sqlc.arg('user_id'))
-    AND (SELECT COUNT(*) FROM booking_participant p WHERE p.booking_id = b.id) < f.capacity - 1
+    AND (SELECT COUNT(*) FROM booking_participant p WHERE p.booking_id = b.id)
+        < COALESCE(b.event_capacity, f.capacity) - CASE WHEN b.kind = 'event' THEN 0 ELSE 1 END
 ORDER BY
     b.starts_at
 LIMIT 200;

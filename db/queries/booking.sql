@@ -70,7 +70,7 @@ SELECT
     b.status,
     b.checkin_token,
     b.checked_in_at,
-    b.is_public,
+    (b.kind = 'public')::BOOLEAN AS is_public,
     b.public_description,
     facility_took_checkin(f.id, b.starts_at)::BOOLEAN AS checkin_at_start,
     -- the ways in the facility offers now, for the check-in button

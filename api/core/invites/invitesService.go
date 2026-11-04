@@ -58,8 +58,8 @@ func (s *invitesService) GetInvite(ctx context.Context, ownerId uuid.UUID, booki
 
 	var invite = &InviteDto{
 		Capacity:     int(booking.Capacity.Int32),
-		SpotsLeft:    spotsLeft(booking.Capacity, int64(len(rows))),
-		State:        inviteState(booking.Status, booking.StartsAt, booking.Capacity, int64(len(rows)), time.Now()),
+		SpotsLeft:    spotsLeft(booking.Capacity, model.BookingKindPrivate, int64(len(rows))),
+		State:        inviteState(booking.Status, booking.StartsAt, booking.Capacity, model.BookingKindPrivate, int64(len(rows)), time.Now()),
 		Participants: mapParticipants(rows),
 	}
 	if booking.InviteToken.Valid {
@@ -119,8 +119,8 @@ func (s *invitesService) GetPublicInvite(ctx context.Context, token uuid.UUID) (
 		StartsAt:     row.StartsAt,
 		EndsAt:       row.EndsAt,
 		Capacity:     int(row.Capacity.Int32),
-		SpotsLeft:    spotsLeft(row.Capacity, row.ParticipantCount),
-		State:        inviteState(row.Status, row.StartsAt, row.Capacity, row.ParticipantCount, time.Now()),
+		SpotsLeft:    spotsLeft(row.Capacity, model.BookingKindPrivate, row.ParticipantCount),
+		State:        inviteState(row.Status, row.StartsAt, row.Capacity, model.BookingKindPrivate, row.ParticipantCount, time.Now()),
 		Facility:     bookings.FacilityDetails(row.Facility, row.FacilitySport),
 	}
 	return invite, nil
@@ -167,7 +167,7 @@ func (s *invitesService) SetPublic(ctx context.Context, ownerId uuid.UUID, booki
 	if err != nil {
 		return failed("errors.invite_failed")
 	}
-	if public && !invitable(booking.Capacity) {
+	if public && !invitable(booking.Capacity, model.BookingKindPublic) {
 		return &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.public_needs_capacity"}
 	}
 	var updated int64
@@ -281,7 +281,7 @@ func (s *invitesService) join(ctx context.Context, find lock, add func(*model.Qu
 	if err != nil {
 		return failed("errors.invite_failed")
 	}
-	switch inviteState(booking.Status, booking.StartsAt, booking.Capacity, participants, time.Now()) {
+	switch inviteState(booking.Status, booking.StartsAt, booking.Capacity, booking.Kind, participants, time.Now()) {
 	case StateClosed:
 		return &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.invite_closed"}
 	case StateFull:

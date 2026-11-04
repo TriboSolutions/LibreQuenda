@@ -1,5 +1,11 @@
 {
-  "publicSlot": {"joinable": "Spots available", "ongoing": "In progress", "full": "Full", "joinableLegend": "Public: open to join", "ongoingLegend": "Public: in progress"},
+  "publicSlot": {
+    "joinable": "Spots available",
+    "ongoing": "In progress",
+    "full": "Full",
+    "joinableLegend": "Public: open to join",
+    "ongoingLegend": "Public: in progress"
+  },
   "chooseDate": "Choose date",
   "back": "All facilities",
   "bookTitle": "Book a slot",
@@ -129,5 +135,11 @@
     }
   },
   "ruleCouncilActive_one": "At most {{count}} upcoming booking per person across the council.",
-  "ruleCouncilActive_other": "At most {{count}} upcoming bookings per person across the council."
+  "ruleCouncilActive_other": "At most {{count}} upcoming bookings per person across the council.",
+  "events": {
+    "title": "Events this day",
+    "label": "Event",
+    "spots_one": "{{count}} spot left",
+    "spots_other": "{{count}} spots left"
+  }
 }

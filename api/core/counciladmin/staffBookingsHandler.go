@@ -89,3 +89,76 @@ func (h *counciladminHandler) UndoStaffCheckIn(w http.ResponseWriter, r *http.Re
 	var response, undoErr = GetCounciladminService(h.db).UndoStaffCheckIn(r.Context(), tenantId, bookingId)
 	send(w, r, response, undoErr)
 }
+
+// The "Eventos" tab: the council's own activities, which residents join.
+
+func (h *counciladminHandler) ListEvents(w http.ResponseWriter, r *http.Request) {
+	var tenantId, ok = h.councilAdmin(w, r)
+	if !ok {
+		return
+	}
+	var response, err = bookings.GetBookingsService(h.db).ListEvents(r.Context(), tenantId)
+	send(w, r, response, err)
+}
+
+// PreviewEvent: the bookings and closures in the way of an event at that time
+// (?except=<event id> while moving one).
+func (h *counciladminHandler) PreviewEvent(w http.ResponseWriter, r *http.Request) {
+	var tenantId, ok = h.councilAdmin(w, r)
+	if !ok {
+		return
+	}
+	var except uuid.NullUUID
+	if raw := r.URL.Query().Get("except"); raw != "" {
+		var id, err = uuid.Parse(raw)
+		if err != nil {
+			helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_query_params")
+			return
+		}
+		except = uuid.NullUUID{UUID: id, Valid: true}
+	}
+	var input bookings.EventInput
+	if !decode(w, r, &input) {
+		return
+	}
+	var response, err = bookings.GetBookingsService(h.db).PreviewEvent(r.Context(), tenantId, input, except)
+	send(w, r, response, err)
+}
+
+func (h *counciladminHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
+	var tenantId, staffId, ok = h.councilAdminUser(w, r)
+	if !ok {
+		return
+	}
+	var input bookings.EventInput
+	if !decode(w, r, &input) {
+		return
+	}
+	var response, err = bookings.GetBookingsService(h.db).CreateEvent(r.Context(), tenantId, staffId, input)
+	if err == nil {
+		audit.Target(r.Context(), "booking", uuid.MustParse(response.Id), response.Title)
+		audit.Describe(r.Context(), "%s, %s – %s", response.FacilityName, response.StartsAt.Format("2006-01-02 15:04"), response.EndsAt.Format("2006-01-02 15:04"))
+	}
+	send(w, r, response, err)
+}
+
+func (h *counciladminHandler) UpdateEvent(w http.ResponseWriter, r *http.Request) {
+	var tenantId, ok = h.councilAdmin(w, r)
+	if !ok {
+		return
+	}
+	var eventId, idErr = helpers.GetUUidPathValue("bookingId", r)
+	if idErr != nil {
+		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_query_params")
+		return
+	}
+	var input bookings.EventInput
+	if !decode(w, r, &input) {
+		return
+	}
+	var response, err = bookings.GetBookingsService(h.db).UpdateEvent(r.Context(), tenantId, eventId, input)
+	if err == nil {
+		audit.Describe(r.Context(), "%s: %s – %s", response.Title, response.StartsAt.Format("2006-01-02 15:04"), response.EndsAt.Format("2006-01-02 15:04"))
+	}
+	send(w, r, response, err)
+}

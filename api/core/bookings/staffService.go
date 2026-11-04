@@ -211,8 +211,9 @@ func (s *bookingsService) insertStaffBooking(ctx context.Context, params model.C
 }
 
 // StaffCancel cancels any booking of the council before it starts, for example
-// when the resident phones to say they cannot come. Someone with an account is
-// told, with the reason if staff gave one; it counts as cancelled by the council.
+// when the resident phones to say they cannot come, or an event. Someone with an
+// account is told, with the reason if staff gave one, and so is everyone who
+// joined an event; it counts as cancelled by the council.
 func (s *bookingsService) StaffCancel(ctx context.Context, tenantId uuid.UUID, bookingId uuid.UUID, input StaffCancelInput) *shared.ErrorResponse {
 	var failed = &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.cancel_failed"}
 	var queries = model.New(s.db)
@@ -238,17 +239,18 @@ func (s *bookingsService) StaffCancel(ctx context.Context, tenantId uuid.UUID, b
 		return &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.booking_already_cancelled"}
 	}
 
+	var payload, _ = json.Marshal(map[string]any{
+		"facility_id":   booking.FacilityID,
+		"facility_name": booking.FacilityName,
+		"tenant_slug":   booking.TenantSlug,
+		"tenant_name":   booking.TenantName,
+		"starts_at":     booking.StartsAt,
+		"ends_at":       booking.EndsAt,
+		"reason":        input.Reason,
+		"by_staff":      true,          // one booking, not a closure: the notice says so
+		"title":         booking.Title, // an event's name, "" otherwise
+	})
 	if booking.UserID.Valid {
-		var payload, _ = json.Marshal(map[string]any{
-			"facility_id":   booking.FacilityID,
-			"facility_name": booking.FacilityName,
-			"tenant_slug":   booking.TenantSlug,
-			"tenant_name":   booking.TenantName,
-			"starts_at":     booking.StartsAt,
-			"ends_at":       booking.EndsAt,
-			"reason":        input.Reason,
-			"by_staff":      true, // one booking, not a closure: the notice says so
-		})
 		var notifyErr = queries.CreateNotification(ctx, model.CreateNotificationParams{
 			UserID:    booking.UserID.UUID,
 			BookingID: uuid.NullUUID{UUID: booking.ID, Valid: true},
@@ -258,6 +260,10 @@ func (s *bookingsService) StaffCancel(ctx context.Context, tenantId uuid.UUID, b
 		if notifyErr != nil {
 			shared.Logger.Error("failed to record notification for cancelled booking %s: %v", booking.ID, notifyErr)
 		}
+	}
+	// an event has nobody else to pass the news on: everyone who joined is told
+	if booking.Kind == model.BookingKindEvent {
+		s.notifyParticipants(ctx, queries, booking.ID, model.NotificationTypeBookingCancelledByCouncil, payload)
 	}
 	return nil
 }

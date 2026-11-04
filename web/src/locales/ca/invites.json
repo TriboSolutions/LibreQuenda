@@ -14,7 +14,8 @@
   "role": {
     "owner": "Teva",
     "invitedBy": "T’ha convidat {{name}}",
-    "invited": "Invitació"
+    "invited": "Invitació",
+    "event": "Esdeveniment de l’ajuntament"
   },
   "spots": "{{taken}} de {{capacity}} persones",
   "actions": {

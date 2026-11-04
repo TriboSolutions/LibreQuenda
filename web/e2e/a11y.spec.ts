@@ -48,6 +48,7 @@ const pages: { name: string; path: string; signedIn?: boolean }[] = [
   { name: 'council admin, facilities', path: '/lugo/admin' },
   { name: 'council admin, indicators', path: '/lugo/admin?vista=indicadores' },
   { name: 'council admin, bookings', path: '/lugo/admin?vista=reservas' },
+  { name: 'council admin, events', path: '/lugo/admin?vista=eventos' },
   { name: 'facility editor', path: '/lugo/admin/facilities/f1' },
   { name: 'facility editor, check-in', path: '/lugo/admin/facilities/f1?vista=entrada' },
   { name: 'check-in QR to print', path: '/lugo/admin/facilities/f1/imprimir?que=qr' },
@@ -82,6 +83,32 @@ for (const theme of ['light', 'dark'] as const) {
       await open(page, '/lugo/padel-1', { theme })
       await page.locator('[data-free=true]').first().click()
       await expect(page.getByRole('dialog')).toBeVisible()
+      await page.waitForTimeout(300)
+      await expectAccessible(page, { overlay: true })
+    })
+
+    test('the council\'s event on the facility page, and its dialog', async ({ page }) => {
+      await open(page, '/lugo/padel-1', { theme })
+      const events = page.getByRole('region', { name: 'Eventos este día' })
+      await events.getByRole('button', { name: /Torneo de pádel de outono/ }).click()
+      const dialog = page.getByRole('dialog', { name: 'Torneo de pádel de outono' })
+      await expect(dialog).toContainText('Evento en Pista de pádel 1')
+      await expect(dialog).toContainText('2 de 16 persoas')
+      await page.waitForTimeout(300)
+      await expectAccessible(page, { overlay: true })
+    })
+
+    // saving an event with a booking and a closure in the way: the form says which, and links to manual booking
+    test('event dialog, with what is in the way', async ({ page }) => {
+      await open(page, '/lugo/admin?vista=eventos', { theme })
+      await page.getByRole('listitem').filter({ hasText: 'Torneo de pádel de outono' }).getByRole('button', { name: 'Editar' }).click()
+      const dialog = page.getByRole('dialog', { name: 'Editar o evento' })
+      await expect(dialog.getByLabel('Nome')).toHaveValue('Torneo de pádel de outono')
+      await dialog.getByRole('button', { name: 'Gardar' }).click()
+      await expect(dialog.getByText('Hai 1 reserva a esa hora:')).toBeVisible()
+      await expect(dialog.getByText(/Lucía Varela/)).toBeVisible()
+      await expect(dialog.getByText('A instalación está pechada durante parte dese tempo:')).toBeVisible()
+      await expect(dialog.getByRole('link', { name: 'Cancelalas en Reserva manual' })).toHaveAttribute('href', '/lugo/admin?vista=reservas&instalacion=f1')
       await page.waitForTimeout(300)
       await expectAccessible(page, { overlay: true })
     })
@@ -488,8 +515,8 @@ test.describe('keyboard', () => {
     await open(page, '/')
     const forYou = page.getByRole('region', { name: 'Para ti' })
     await expect(forYou.getByRole('listitem')).toHaveCount(3) // one row; the rest on demand
-    await forYou.getByRole('button', { name: 'Ver 2 máis' }).click()
-    await expect(forYou.getByRole('listitem')).toHaveCount(5)
+    await forYou.getByRole('button', { name: 'Ver 3 máis' }).click()
+    await expect(forYou.getByRole('listitem')).toHaveCount(6)
     await expect(forYou.getByRole('button', { name: 'Ver menos' })).toHaveAttribute('aria-expanded', 'true')
     await expect(forYou).toContainText(/Adoitas reservar os venres ás \d\d:\d\d \(5 veces\)/)
     await expect(forYou).toContainText('Reservaches aquí 3 veces')
@@ -499,7 +526,7 @@ test.describe('keyboard', () => {
   test('a public booking can be joined from «For you», without an invite link', async ({ page }) => {
     await open(page, '/')
     const forYou = page.getByRole('region', { name: 'Para ti' })
-    await forYou.getByRole('button', { name: 'Ver 2 máis' }).click()
+    await forYou.getByRole('button', { name: 'Ver 3 máis' }).click()
     const card = forYou.getByRole('listitem').filter({ hasText: 'Reserva pública de Uxía' })
     await expect(card).toContainText('Quedan 2 prazas')
     const joined = page.waitForRequest((r) => r.method() === 'POST' && r.url().endsWith('/me/bookings/pb1/join'))
@@ -507,6 +534,38 @@ test.describe('keyboard', () => {
     await joined
     await expect(card).toContainText('Xa estás dentro.')
     await expect(card.getByRole('link', { name: 'Ver as miñas reservas' })).toBeVisible()
+  })
+
+  test('the council\'s event is in «For you», with its title and no owner', async ({ page }) => {
+    await open(page, '/')
+    const forYou = page.getByRole('region', { name: 'Para ti' })
+    await forYou.getByRole('button', { name: 'Ver 3 máis' }).click()
+    const card = forYou.getByRole('listitem').filter({ hasText: 'Torneo de pádel de outono' })
+    await expect(card).toContainText('Evento · Concello de Lugo')
+    await expect(card).toContainText('Quedan 14 prazas')
+    const joined = page.waitForRequest((r) => r.method() === 'POST' && r.url().endsWith('/me/bookings/ev1/join'))
+    await card.getByRole('button', { name: 'Unirme' }).click()
+    await joined
+  })
+
+  test('the facilities list filters by the type of booking to join', async ({ page }) => {
+    await open(page, '/')
+    // the list beside the map («For you» links to facilities too)
+    const list = page.locator('section[aria-labelledby="facilities-title"]')
+    await expect(list.getByRole('link', { name: /Piscina municipal/ }).first()).toBeVisible()
+    await page.getByRole('button', { name: 'Tipo de reserva' }).click()
+    await page.getByRole('menuitemcheckbox', { name: 'Eventos' }).click()
+    await page.keyboard.press('Escape')
+    await expect(page.getByRole('button', { name: /^Eventos ?, Tipo de reserva$/ })).toBeVisible()
+    await expect(list.getByRole('link', { name: /Piscina municipal/ })).toHaveCount(0)
+    await expect(list.getByRole('link', { name: /Pista de pádel 1/ }).first()).toBeVisible()
+  })
+
+  test('a joined event shows in My bookings with its title, as the council\'s', async ({ page }) => {
+    await open(page, '/reservas')
+    const row = page.getByRole('listitem').filter({ hasText: 'Torneo de pádel de outono' }).first()
+    await expect(row).toContainText('Evento do concello')
+    await expect(row).toContainText('Por parellas, calquera nivel.')
   })
 
   test('the owner books in public, and makes a booking public or private from My bookings', async ({ page }) => {

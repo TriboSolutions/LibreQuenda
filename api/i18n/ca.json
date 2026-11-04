@@ -191,7 +191,20 @@
     "rating_load_failed": "No s’ha pogut carregar la valoració.",
     "rating_save_failed": "No s’ha pogut desar la teva valoració. Torna-ho a provar.",
     "rating_closed": "Aquesta reserva ja no es pot valorar.",
-    "rating_not_in_booking": "Només pots valorar qui ha jugat amb tu en una reserva pública."
+    "rating_not_in_booking": "Només pots valorar qui ha jugat amb tu en una reserva pública.",
+    "event_title": "Posa a l’esdeveniment un nom de fins a 120 caràcters.",
+    "event_description_too_long": "La descripció pot tenir fins a 1000 caràcters.",
+    "event_ends_before_start": "L’esdeveniment ha d’acabar després de començar.",
+    "event_too_long": "Un esdeveniment pot durar com a molt una setmana.",
+    "event_in_past": "L’esdeveniment ha de començar en el futur.",
+    "event_capacity": "El nombre de persones ha d’estar entre 1 i 10000.",
+    "event_needs_capacity": "Aquesta instal·lació no té aforament: indica quantes persones s’hi poden apuntar.",
+    "event_closed": "La instal·lació està tancada durant part d’aquest temps.",
+    "event_bookings_in_the_way": "Hi ha {{0}} reserva(es) a aquella hora. Cancel·la-les abans des de Reserva manual.",
+    "event_capacity_below_joined": "Ja s’hi han apuntat {{0}} persones: l’aforament no pot ser menor.",
+    "event_facility_fixed": "Un esdeveniment no pot canviar d’instal·lació. Cancel·la’l i crea’n un altre.",
+    "event_failed": "No s’ha pogut desar l’esdeveniment. Torna-ho a provar.",
+    "events_load_failed": "No s’han pogut carregar els esdeveniments."
   },
   "email": {
     "greeting": "Hola {{0}},",

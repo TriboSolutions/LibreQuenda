@@ -306,8 +306,9 @@ SELECT
     COUNT(b.id) FILTER (WHERE b.cancelled_by = 'user') AS cancelled_by_user,
     COUNT(b.id) FILTER (WHERE b.cancelled_by = 'council') AS cancelled_by_council,
     COALESCE(SUM(EXTRACT(EPOCH FROM b.ends_at - b.starts_at) / 60) FILTER (WHERE b.status = 'confirmed'), 0)::BIGINT AS booked_minutes,
-    COUNT(b.id) FILTER (WHERE b.status = 'confirmed' AND b.ends_at <= NOW() AND facility_took_checkin(f.id, b.starts_at)) AS finished,
-    COUNT(b.id) FILTER (WHERE b.status = 'confirmed' AND b.ends_at <= NOW() AND facility_took_checkin(f.id, b.starts_at) AND b.checked_in_at IS NOT NULL) AS attended
+    -- attendance: events are left out, nobody checks in to them
+    COUNT(b.id) FILTER (WHERE b.status = 'confirmed' AND b.kind <> 'event' AND b.ends_at <= NOW() AND facility_took_checkin(f.id, b.starts_at)) AS finished,
+    COUNT(b.id) FILTER (WHERE b.status = 'confirmed' AND b.kind <> 'event' AND b.ends_at <= NOW() AND facility_took_checkin(f.id, b.starts_at) AND b.checked_in_at IS NOT NULL) AS attended
 FROM
     facility f
     LEFT JOIN booking b ON b.facility_id = f.id

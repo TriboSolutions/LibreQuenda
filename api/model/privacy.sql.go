@@ -314,7 +314,7 @@ const revokeInviteLinksOfUser = `-- name: RevokeInviteLinksOfUser :exec
 UPDATE booking
 SET
     invite_token = NULL,
-    is_public = FALSE,
+    kind = 'private',
     public_description = ''
 WHERE
     user_id = $1
