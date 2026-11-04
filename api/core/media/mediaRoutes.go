@@ -35,11 +35,4 @@ func (r *mediaRoutes) RegisterRoutes() {
 		AdditionalMethods: []router.HTTPMethod{router.OPTIONS},
 		Handler:           middlewares.AuthMiddleware(middlewares.WithStrictRateLimit(h.Upload)),
 	})
-	// Public: images on council and facility pages
-	r.router.NewRoute(router.Route{
-		Path:              "/media/{ref...}",
-		Method:            http.MethodGet,
-		AdditionalMethods: []router.HTTPMethod{router.HEAD},
-		Handler:           h.Serve,
-	})
 }

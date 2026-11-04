@@ -1,4 +1,4 @@
-from generators.base import stable_uuid
+from generators.base import council_ref, stable_uuid
 
 
 def generate(context: dict) -> list:
@@ -16,7 +16,7 @@ def generate(context: dict) -> list:
                     "name": f["name"],
                     "description": f["description"],
                     "address": f["address"],
-                    "image_ref": f["image_ref"],
+                    "image_ref": council_ref(context, context["tenants"][council["key"]], f["image_ref"]),
                     "show_weather": f.get("show_weather", False),
                     "latitude": f["latitude"],
                     "longitude": f["longitude"],

@@ -181,7 +181,7 @@ Many residents, often elderly people, phone or come to the desk instead of using
 - **Cancel any booking before it starts,** e.g. when the resident phones to say they cannot come. It counts as cancelled by the council. People with an account get a notice and email, with the reason if staff gave one.
 - **RXPD:** the name and phone of someone without an account are removed 30 days after the booking ends (hourly job). The booking stays, anonymous, for the indicators.
 
-Images (council logos, facility photos) are stored in Garage. The database only keeps a storage reference (`logo_ref`, `image_ref`), never a URL. Uploads are limited to JPEG, PNG and WebP up to 5 MB, with the type detected from the file's bytes (no SVG, which can carry scripts).
+Images (council logos, facility photos, photos of reported problems, profile photos) are stored in Garage, in **private buckets**: one per council (`council-<id>`) for its logo, its facilities' images and the photos of problems reported there, and the installation's (`STORAGE_BUCKET`) for profile photos and the installation logo. Nothing is served without a signature. The database only keeps a storage reference, never a URL: `<council id>/<folder>/<file>` for a council's files, `<folder>/<file>` for the installation's. The API turns a reference into a **presigned link** (S3 SigV4, valid 7 days, the same link reused for 3 days so browsers keep the image cached) only in the responses that show it; Caddy passes `GET`/`HEAD` requests carrying a signature under `/storage/*` to Garage, which checks it. A form can only save a reference to its own council's files (and a profile its own folder), so nobody gets another council's file signed by sending its reference. Uploads (`POST /media`) say whose file they are: `council` (slug, for its administrators) for logos and facility images, `facility` (id, for anyone signed in) for a problem's photo. A council's bucket is created with its first file and deleted with the council. Uploads are limited to JPEG, PNG and WebP up to 5 MB, with the type detected from the file's bytes (no SVG, which can carry scripts).
 
 ## 7. Notifications (avisos)
 
@@ -269,7 +269,7 @@ Development defaults that must change before a real deployment:
 
 | Group | Routes | Auth |
 |---|---|---|
-| Public | `GET /tenants` (council list: name, logo, public contact; no usage figures), `GET /tenants/{slug}` (one council), `GET /tenants/{slug}/day?date=` (every active facility with its slots for one day), `GET /tenants/{slug}/facilities/{facility}?date=` (details, slots, weekly schedule), `GET /media/{ref}` (images) | none |
+| Public | `GET /tenants` (council list: name, logo, public contact; no usage figures), `GET /tenants/{slug}` (one council), `GET /tenants/{slug}/day?date=` (every active facility with its slots for one day), `GET /tenants/{slug}/facilities/{facility}?date=` (details, slots, weekly schedule), images through presigned `/storage/…` links | none |
 | Resident | `GET /me`, `GET\|POST /me/bookings`, `DELETE /me/bookings/{id}` (cancel) | logged in |
 | Council admin | `GET /tenants/{slug}/admin/facilities/{id}/bookings?date=` (staff day view), `POST /tenants/{slug}/admin/bookings` (book for a resident), `POST …/admin/bookings/{id}/cancel`, `GET\|POST /tenants/{slug}/admin/facilities`, `GET\|PUT\|DELETE …/facilities/{id}`, `PUT …/facilities/{id}/schedule`, `GET /tenants/{slug}/admin/indicators?days=&facility=`, `GET …/indicators/export?kind=&excel=` (CSV), `GET …/admin/export` (ZIP, full data), `GET /geocode`, `POST /media` (upload) | council admin or superadmin |
 | Superadmin | `GET\|POST /admin/tenants`, `GET\|PUT\|DELETE /admin/tenants/{slug}`, `POST /admin/tenants/{slug}/invitations`, `DELETE …/invitations/{id}`, `DELETE …/admins/{userId}`, `GET\|POST /admin/superadmins`, `DELETE /admin/superadmins/{userId}` | superadmin |
@@ -285,7 +285,7 @@ Development defaults that must change before a real deployment:
 | `db` | PostgreSQL 18: databases `librequenda` and `zitadel`, each with its own role |
 | `api` | Core API (not published on the host, reachable only through the proxy) |
 | `zitadel-api`, `zitadel-login` | Identity provider (v4.20.0) and its Login v2 UI |
-| `storage` | Garage, S3-compatible store for uploaded images. Internal only: the API uploads to it and serves the images at `/api/media/…`. Secrets (`STORAGE_*`, `GARAGE_*`) must be set in `.env` |
+| `storage` | Garage, S3-compatible store for uploaded images. Internal only: private buckets (one per council); the API uploads to it and hands out presigned links, which the proxy passes to it under `/storage/…`. Secrets (`STORAGE_*`, `GARAGE_*`) must be set in `.env` |
 | `zitadel-setup` | One-off, idempotent: creates the `LibreQuenda` project and its `web` OIDC app (PKCE, no secret) and writes `config.json` (authority, client id, scopes), which the proxy serves to the SPA at `/config.json` |
 
 ```

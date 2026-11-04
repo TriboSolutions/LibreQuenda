@@ -198,6 +198,10 @@ func (s *platformService) UpdateTenant(ctx context.Context, slug string, input T
 	if notFound != nil {
 		return nil, notFound
 	}
+	// only a logo uploaded for this council
+	if input.LogoRef != "" && !storage.Owned(input.LogoRef, tenant.ID, "councils") {
+		return nil, &shared.ErrorResponse{Code: http.StatusUnprocessableEntity, Message: "errors.invalid_image"}
+	}
 	var isActive = tenant.IsActive
 	if input.IsActive != nil {
 		isActive = *input.IsActive
@@ -240,6 +244,10 @@ func (s *platformService) DeleteTenant(ctx context.Context, slug string) *shared
 	}
 	if _, err = queries.DeleteTenant(ctx, tenant.ID); err != nil {
 		return failed("errors.tenant_delete_failed")
+	}
+	// its bucket goes with it; a leftover one only holds files nothing points to
+	if err = storage.DeleteCouncil(ctx, tenant.ID); err != nil {
+		shared.Logger.Error("council %s deleted, its files not: %v", tenant.ID, err)
 	}
 	return nil
 }

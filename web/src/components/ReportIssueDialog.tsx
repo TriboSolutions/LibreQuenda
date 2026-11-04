@@ -124,7 +124,7 @@ export function ReportIssueDialog({ facility, bookingId, onClose }: Props) {
                 {t('issue.whatHelp')}
               </p>
             </div>
-            <ImagePicker label={t('issue.photo')} folder="issues" value={photo} onChange={setPhoto} />
+            <ImagePicker label={t('issue.photo')} folder="issues" owner={{ facility: facility.id }} value={photo} onChange={setPhoto} />
             <div className="flex items-start gap-2">
               <Checkbox id="issue-urgent" checked={urgent} onCheckedChange={(v) => setUrgent(v === true)} aria-describedby="issue-urgent-help" className="mt-0.5" />
               <div className="grid gap-0.5">

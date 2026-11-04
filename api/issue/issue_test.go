@@ -21,8 +21,8 @@ func TestReportClean(t *testing.T) {
 		{"unknown category", func(r *Report) { r.Category = "noise" }, "errors.invalid_issue_category"},
 		{"no description", func(r *Report) { r.Description = "   " }, "errors.invalid_issue_description"},
 		{"description too long", func(r *Report) { r.Description = strings.Repeat("a", MaxDescription+1) }, "errors.invalid_issue_description"},
-		{"photo of a facility", func(r *Report) { r.PhotoRef = "facilities/a.png" }, "errors.invalid_image"},
-		{"photo of the issue", func(r *Report) { r.PhotoRef = "issues/a.png" }, ""},
+		{"not a stored file", func(r *Report) { r.PhotoRef = "issues/../a.png" }, "errors.invalid_image"},
+		{"photo of the issue", func(r *Report) { r.PhotoRef = "0192f5a0-1c2d-7e3f-8a9b-0c1d2e3f4a5b/issues/a.png" }, ""},
 	}
 	for _, c := range cases {
 		var r = valid()

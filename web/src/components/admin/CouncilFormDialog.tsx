@@ -55,7 +55,7 @@ export function CouncilFormDialog({ council, canDeactivate = true, onClose, onSa
             {creating && <DialogDescription>{t('form.createDescription')}</DialogDescription>}
           </DialogHeader>
 
-          <CouncilFields form={form} set={set} logo={logo} setLogo={setLogo} creating={creating} canDeactivate={canDeactivate} />
+          <CouncilFields form={form} set={set} logo={logo} setLogo={setLogo} creating={creating} councilSlug={council?.slug ?? null} canDeactivate={canDeactivate} />
 
           {error && (
             <Alert variant="destructive" aria-live="assertive">

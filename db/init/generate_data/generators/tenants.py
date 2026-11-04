@@ -1,6 +1,6 @@
 from config import TIMEZONE
 
-from generators.base import stable_uuid
+from generators.base import council_ref, stable_uuid
 
 
 def generate(context: dict) -> list:
@@ -17,7 +17,7 @@ def generate(context: dict) -> list:
                 "contact_email": council["contact_email"],
                 "contact_phone": council["contact_phone"],
                 "municipality_code": council["municipality_code"],
-                "logo_ref": council["logo_ref"],
+                "logo_ref": council_ref(context, tenant_id, council["logo_ref"]),
             }
         )
     return rows

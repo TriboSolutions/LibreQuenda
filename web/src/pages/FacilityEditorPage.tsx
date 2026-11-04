@@ -407,7 +407,7 @@ function Editor({ slug, facility, council, token }: { slug: string; facility: Ad
           <h2 id="sec-photo" className="text-lg font-semibold">
             {t('admin:editor.image')}
           </h2>
-          <ImagePicker label={t('admin:editor.image')} hideLabel folder="facilities" shape="large" value={image} onChange={setImage} />
+          <ImagePicker label={t('admin:editor.image')} hideLabel folder="facilities" owner={{ council: slug }} shape="large" value={image} onChange={setImage} />
         </section>
 
         <section aria-labelledby="sec-location" className="grid gap-4 rounded-lg border bg-card p-5">

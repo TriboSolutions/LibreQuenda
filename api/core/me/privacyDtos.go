@@ -7,7 +7,6 @@ import (
 	"io"
 	"librequenda/model"
 	"librequenda/rating"
-	"librequenda/shared"
 	"librequenda/storage"
 	"strconv"
 	"time"
@@ -162,7 +161,7 @@ func mapExportAccount(user model.ExportUserRow) ExportAccount {
 		account.BirthDate = user.BirthDate.Time.Format("2006-01-02")
 	}
 	if user.AvatarRef.Valid {
-		account.AvatarUrl = shared.PUBLIC_URL + storage.URL(user.AvatarRef.String)
+		account.AvatarUrl = storage.URL(user.AvatarRef.String)
 	}
 	return account
 }

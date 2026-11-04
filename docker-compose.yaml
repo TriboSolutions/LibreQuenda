@@ -246,7 +246,8 @@ services:
 
   # ============================================================
   #  STORAGE: Garage (self-hosted, S3-compatible) for uploaded images
-  #  Internal only; the API uploads to it and serves the images at /api/media/…
+  #  Internal only: private buckets (one per council). The API uploads to it and
+  #  hands out presigned links, which the proxy passes to it under /storage/…
   # ============================================================
   storage:
     build: ./storage

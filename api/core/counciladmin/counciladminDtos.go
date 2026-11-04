@@ -68,7 +68,7 @@ func (in *FacilityInput) validate() string {
 		return "errors.invalid_coordinates"
 	case in.Capacity != nil && (*in.Capacity < 1 || *in.Capacity > 100000):
 		return "errors.invalid_capacity"
-	case in.ImageRef != "" && (!storage.ValidRef(in.ImageRef) || !strings.HasPrefix(in.ImageRef, "facilities/")):
+	case in.ImageRef != "" && !storage.ValidRef(in.ImageRef):
 		return "errors.invalid_image"
 	case in.SlotMinutes < 15 || in.SlotMinutes > 480 || in.SlotMinutes%5 != 0:
 		return "errors.invalid_slot_minutes"

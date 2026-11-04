@@ -19,11 +19,12 @@ type Props = {
   logo: StoredImage | null
   setLogo: (logo: StoredImage | null) => void
   creating: boolean
+  councilSlug: string | null // its saved address, whose storage the logo goes to; null while creating it
   canDeactivate: boolean // superadministrators only: a council's own administrators can't switch it off
 }
 
 /** A council's own fields, shared by the "new council" dialog and the council settings. */
-export function CouncilFields({ form, set, logo, setLogo, creating, canDeactivate }: Props) {
+export function CouncilFields({ form, set, logo, setLogo, creating, councilSlug, canDeactivate }: Props) {
   const { t } = useTranslation('admin')
   return (
     <>
@@ -47,7 +48,8 @@ export function CouncilFields({ form, set, logo, setLogo, creating, canDeactivat
         </p>
       </div>
 
-      <ImagePicker label={t('form.logo')} folder="councils" value={logo} onChange={setLogo} />
+      {/* each council's files live in its own storage: the logo comes once it exists, from its settings */}
+      {councilSlug && <ImagePicker label={t('form.logo')} folder="councils" owner={{ council: councilSlug }} value={logo} onChange={setLogo} />}
 
       <div className="grid gap-2">
         <Label htmlFor="council-timezone">{t('form.timezone')}</Label>
