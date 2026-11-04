@@ -57,16 +57,16 @@ export function CouncilPage() {
   const token = auth.user?.access_token
   const subject = auth.user?.profile.sub ?? null
 
+  // only how many councils there are: with one, there is no way to the others
   const tenants = useAsync(() => api.tenants(), 'tenants')
   const { login, register } = useLogin()
-  const councilName = tenants.data?.tenants.find((c) => c.slug === tenantSlug)?.name
-  usePageTitle(t('home:title'), councilName)
 
   // The chosen day belongs to the council it was picked for
   const [picked, setPicked] = useState<{ slug: string; date: string } | null>(null)
   const date = picked?.slug === tenantSlug ? picked.date : undefined
   const setDate = (value: string) => setPicked({ slug: tenantSlug, date: value })
   const day = useAsync(() => api.day(tenantSlug, date), `day:${tenantSlug}:${date ?? 'today'}`)
+  usePageTitle(t('home:title'), day.data?.tenant.name)
 
   // GET /me (MeProvider) first creates the user's row; the bookings load after it
   const me = useMe()
@@ -130,7 +130,7 @@ export function CouncilPage() {
   if (day.error instanceof ApiError && day.error.status === 404) {
     return (
       <div className="min-h-screen">
-        <TopBar tenants={tenants.data?.tenants ?? []} tenantSlug={null} />
+        <TopBar tenantSlug={null} />
         <main id="main" tabIndex={-1} className="mx-auto max-w-[1152px] px-4 pt-8 pb-16 sm:px-6">
           <h1 className="text-[28px] leading-9 font-bold tracking-[-0.02em] sm:text-[32px] sm:leading-10">{t('councils:notFound.title')}</h1>
           <p className="mt-1 max-w-[62ch] text-base text-muted-foreground">{t('councils:notFound.body', { slug: tenantSlug })}</p>
@@ -145,14 +145,14 @@ export function CouncilPage() {
 
   return (
     <div className="min-h-screen">
-      <TopBar tenants={tenants.data?.tenants ?? []} tenantSlug={tenantSlug} />
+      <TopBar tenantSlug={tenantSlug} tenantName={day.data?.tenant.name} />
 
       <main id="main" tabIndex={-1} className="mx-auto max-w-[1152px] px-4 pt-8 pb-16 sm:px-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="min-w-0">
             <CouncilHeading
               section={t('home:title')}
-              council={tenants.data?.tenants.find((c) => c.slug === tenantSlug)}
+              council={day.data?.tenant}
               otherCouncils={(tenants.data?.tenants.length ?? 0) > 1}
             />
             {day.data ? (

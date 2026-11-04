@@ -33,7 +33,6 @@ export function EntrancePage() {
   const token = auth.user?.access_token
   const me = useMe()
   const { login } = useLogin()
-  const tenants = useAsync(() => api.tenants(), 'tenants')
   // GET /me (MeProvider) first creates the user's row
   const entrance = useAsync(token && me.me ? () => api.entrance.get(token, slug, facilitySlug) : null, `entrance:${slug}/${facilitySlug}:${me.me?.id}`)
   usePageTitle(t('entrance:title'), entrance.data?.facility_name)
@@ -202,7 +201,7 @@ export function EntrancePage() {
 
   return (
     <div className="min-h-screen">
-      <TopBar tenants={tenants.data?.tenants ?? []} tenantSlug={slug} />
+      <TopBar tenantSlug={slug} tenantName={entrance.data?.tenant_name} />
       <main id="main" tabIndex={-1} className="mx-auto max-w-[760px] px-4 pt-8 pb-16 sm:px-6">
         <p className="text-muted-foreground">
           <Link to={`/${slug}/${facilitySlug}`} className="underline underline-offset-4">

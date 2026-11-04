@@ -61,16 +61,7 @@ export type Facility = {
 // contact: where residents send accessibility feedback and complaints (RD 1112/2018); "" when not given
 export type Tenant = { slug: string; name: string; logo_url: string; contact_email: string; contact_phone: string }
 
-/** The home page's council card: how the council uses LibreQuenda. */
-export type TenantStats = {
-  facilities: number
-  sports: string[]
-  free_today: number // turns still free today across its facilities
-  bookings: number // confirmed, past and upcoming
-  residents: number // distinct accounts that have booked
-}
 export type GeoPoint = { latitude: number; longitude: number }
-export type TenantCard = Tenant & { stats: TenantStats }
 
 /** Where a page sits in a list the API pages (?page=&pageSize=, 100 by default). */
 export type Pagination = { page: number; page_size: number; total: number; has_more: boolean }
@@ -986,7 +977,8 @@ async function uploadImage(token: string, folder: MediaFolder, file: File): Prom
 
 export const api = {
   uploadImage,
-  tenants: () => request<{ tenants: TenantCard[] }>('/tenants'),
+  tenants: () => request<{ tenants: Tenant[] }>('/tenants'),
+  tenant: (slug: string) => request<Tenant>(`/tenants/${encodeURIComponent(slug)}`),
   tags: () => request<TagCatalogue>('/tags'),
   branding: () => request<Branding>('/branding'),
   // near: nearest first and each one's distance_km (the API sorts); radiusKm keeps those within it.

@@ -36,13 +36,13 @@ export function CouncilAdminPage() {
   const invitedHere = me?.email_verified ? undefined : me?.pending_invitations?.find((p) => p.tenant_slug === slug)
   const verify = useVerifyEmail()
   const token = auth.user?.access_token ?? ''
-  const tenants = useAsync(() => api.tenants(), 'tenants')
-  usePageTitle(t('admin:councilAdmin.title'), tenants.data?.tenants.find((c) => c.slug === slug)?.name)
+  const tenant = useAsync(() => api.tenant(slug), `tenant:${slug}`)
+  const council = tenant.data ?? undefined
+  usePageTitle(t('admin:councilAdmin.title'), council?.name)
   const facilities = useAsync(allowed ? () => api.council.facilities(token, slug) : null, `council-admin:${slug}:${allowed}`)
   // the badge on the Maintenance tab: reports nobody has looked at yet
   const newIssues = useAsync(allowed ? () => api.council.newIssueCount(token, slug) : null, `issue-count:${slug}:${allowed}`)
   const newIssueCount = newIssues.data?.new ?? 0
-  const council = tenants.data?.tenants.find((c) => c.slug === slug)
   const [searchParams, setSearchParams] = useSearchParams()
   const vista = searchParams.get('vista')
   const view =
@@ -241,7 +241,7 @@ export function CouncilAdminPage() {
 
   return (
     <div className="min-h-screen">
-      <TopBar tenants={tenants.data?.tenants ?? []} tenantSlug={slug} />
+      <TopBar tenantSlug={slug} tenantName={council?.name} />
       <main id="main" tabIndex={-1} className="mx-auto max-w-[1152px] px-4 pt-8 pb-16 sm:px-6">
         <CouncilHeading section={t('admin:councilAdmin.title')} council={council} otherCouncils={false} />
         <p className="mt-1 text-base text-muted-foreground">{t('admin:councilAdmin.subtitle')}</p>

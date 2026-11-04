@@ -40,7 +40,7 @@ export function CouncilSettingsPage() {
   // a superadministrator also switches the council on or off and deletes it
   const superadmin = me?.is_superadmin ?? false
   const token = auth.user?.access_token ?? ''
-  const tenants = useAsync(() => api.tenants(), 'tenants')
+  const tenant = useAsync(() => api.tenant(slug), `tenant:${slug}`)
   const council = useAsync(allowed ? () => api.admin.council(token, slug) : null, `council:${slug}:${allowed}`)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [inviteEmail, setInviteEmail] = useState('')
@@ -48,7 +48,7 @@ export function CouncilSettingsPage() {
   const [error, setError] = useState<string | null>(null)
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
-  const heading = tenants.data?.tenants.find((c) => c.slug === slug)
+  const heading = tenant.data ?? undefined
   usePageTitle(t('admin:councilSettings.title'), heading?.name)
 
   const run = async (action: () => Promise<unknown>, message: string) => {
@@ -112,7 +112,7 @@ export function CouncilSettingsPage() {
           canDeactivate={superadmin}
           onSaved={(saved) => {
             council.reload()
-            tenants.reload()
+            tenant.reload()
             // its address changed: this page moves with it
             if (saved.slug !== slug) navigate(`/${saved.slug}/admin/axustes`, { replace: true })
           }}
@@ -220,7 +220,7 @@ export function CouncilSettingsPage() {
 
   return (
     <div className="min-h-screen">
-      <TopBar tenants={tenants.data?.tenants ?? []} tenantSlug={slug} />
+      <TopBar tenantSlug={slug} tenantName={heading?.name} />
       <main id="main" tabIndex={-1} className="mx-auto max-w-[1152px] px-4 pt-8 pb-16 sm:px-6">
         <p>
           {/* back to where they came from, like the browser's back; straight from a link, to the council's administration */}
