@@ -15,11 +15,6 @@ func AuthMiddleware(handler http.HandlerFunc) http.HandlerFunc {
 
 func withAccessToken(handler http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodOptions {
-			handler(w, r)
-			return
-		}
-
 		var accessToken, ok = strings.CutPrefix(r.Header.Get("Authorization"), "Bearer ")
 		if !ok || accessToken == "" {
 			helpers.SendI18NErrorResponse(w, r, http.StatusUnauthorized, "errors.unauthorized")
