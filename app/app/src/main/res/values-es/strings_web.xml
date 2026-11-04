@@ -254,6 +254,9 @@
     <string name="notice_left">Has salido de la reserva en %1$s.</string>
     <string name="role_invited_by">Te invitó %1$s</string>
     <string name="role_invited">Invitación</string>
+    <string name="role_event">Evento del ayuntamiento</string>
+    <string name="event_label">Evento</string>
+    <string name="event_no_description">El ayuntamiento no añadió descripción.</string>
     <string name="public_label">Pública</string>
     <string name="public_turn_title">Reserva pública · %1$s</string>
     <string name="public_edit">Editar descripción</string>

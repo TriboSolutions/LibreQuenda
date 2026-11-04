@@ -23,6 +23,8 @@ data class Booking(
     val canLeave: Boolean = false,
     val isPublic: Boolean = false,
     val publicDescription: String = "", // what they are doing, for people who join
+    val kind: String = "private", // private, public, or event: the council's, joined by the person
+    val title: String = "", // events only
     val cancelUntil: Instant? = null,
     val facility: FacilityDetails = FacilityDetails(),
     // checking in (owner only): how the facility takes it, and the booking's QR for the reader
@@ -35,8 +37,10 @@ data class Booking(
     val checkinRadiusM: Int = 0,
     val staffContacts: List<StaffContact> = emptyList(),
 ) {
-    /** People coming, the owner included. */
-    val people: Int get() = participantCount + 1
+    val isEvent: Boolean get() = kind == "event"
+
+    /** People coming, the owner included; an event has no owner, and its capacity is all for who joins. */
+    val people: Int get() = participantCount + if (isEvent) 0 else 1
 }
 
 /** Who to ask on site to mark the entry. */
@@ -85,6 +89,8 @@ private fun JSONObject.toBooking() = Booking(
     canLeave = optBoolean("can_leave"),
     isPublic = optBoolean("is_public"),
     publicDescription = optString("public_description"),
+    kind = optString("kind", "private"),
+    title = optString("title"),
     cancelUntil = optString("cancel_until").takeIf { it.isNotBlank() }?.let { runCatching { java.time.OffsetDateTime.parse(it).toInstant() }.getOrNull() },
     facility = optJSONObject("facility")?.let { f ->
         FacilityDetails(

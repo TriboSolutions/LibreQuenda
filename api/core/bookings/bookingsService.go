@@ -584,6 +584,8 @@ func (s *bookingsService) CancelBooking(ctx context.Context, userId uuid.UUID, b
 		facilityName = facility.Name
 	}
 	s.notify(ctx, queries, userId, cancelled.ID, model.NotificationTypeBookingCancelled, facilityName, cancelled.StartsAt, cancelled.EndsAt)
+	// who joined loses the place too: they are told the same
+	s.notifyParticipants(ctx, queries, cancelled.ID, model.NotificationTypeBookingCancelled, NotificationPayload(facilityName, cancelled.StartsAt, cancelled.EndsAt))
 	return nil
 }
 

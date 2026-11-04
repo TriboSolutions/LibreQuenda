@@ -110,6 +110,8 @@ KEYS = {
  'leave_title': (I,'leaveDialog.title'), 'leave_description': (I,'leaveDialog.description'), 'leave_keep': (I,'leaveDialog.keep'),
  'leave_confirm': (I,'leaveDialog.confirm'), 'leave_confirming': (I,'leaveDialog.confirming'), 'notice_left': (I,'notice.left'),
  'role_invited_by': (I,'role.invitedBy'), 'role_invited': (I,'role.invited'),
+ # the council's events, joined like a public booking
+ 'role_event': (I,'role.event'), 'event_label': (F,'events.label'), 'event_no_description': (B,'public.noEventDescription'),
  'public_label': (B,'public.label'), 'public_turn_title': (B,'public.turnTitle'), 'public_edit': (B,'public.edit'), 'public_save': (B,'public.save'),
  'public_confirm_title': (B,'public.confirmTitle'), 'public_confirm_text': (B,'public.confirmDescription'), 'public_confirm': (B,'public.confirm'),
  'public_publishing': (B,'public.publishing'), 'public_keep_private': (B,'public.keepPrivate'),
