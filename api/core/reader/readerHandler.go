@@ -51,9 +51,6 @@ func (h *readerHandler) device(w http.ResponseWriter, r *http.Request) (model.Ge
 }
 
 func (h *readerHandler) GetReader(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		return
-	}
 	var device, ok = h.device(w, r)
 	if !ok {
 		return
@@ -62,9 +59,6 @@ func (h *readerHandler) GetReader(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *readerHandler) CheckIn(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		return
-	}
 	var device, ok = h.device(w, r)
 	if !ok {
 		return

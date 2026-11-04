@@ -54,12 +54,17 @@ func withVersion(handler http.HandlerFunc) http.HandlerFunc {
 			w.Header().Set("X-App-Version", appVersion)
 		}
 
-		if r.Method != http.MethodOptions {
-			var clientVersion = r.Header.Get("X-App-Version")
-			if appVersion != "" && clientVersion != "" && clientVersion != appVersion {
-				helpers.SendI18NErrorResponse(w, r, http.StatusConflict, "errors.version_mismatch")
-				return
-			}
+		// CORS answers preflights before this; any other OPTIONS stops here,
+		// so no handler runs (and no query or Zitadel call) without a session
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
+		var clientVersion = r.Header.Get("X-App-Version")
+		if appVersion != "" && clientVersion != "" && clientVersion != appVersion {
+			helpers.SendI18NErrorResponse(w, r, http.StatusConflict, "errors.version_mismatch")
+			return
 		}
 
 		handler(w, r)

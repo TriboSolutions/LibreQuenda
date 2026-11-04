@@ -321,7 +321,16 @@ func (s *counciladminService) UpdateFacility(ctx context.Context, tenantId uuid.
 // DeleteFacility removes a facility created by mistake; one with bookings is deactivated instead.
 func (s *counciladminService) DeleteFacility(ctx context.Context, tenantId uuid.UUID, id uuid.UUID) *shared.ErrorResponse {
 	var queries = model.New(s.db)
-	var bookings, err = queries.CountBookingsByFacility(ctx, id)
+	// another council's facility is not found, whatever it holds
+	var _, err = queries.GetFacilityForAdmin(ctx, model.GetFacilityForAdminParams{ID: id, TenantID: tenantId})
+	if errors.Is(err, sql.ErrNoRows) {
+		return &shared.ErrorResponse{Code: http.StatusNotFound, Message: "errors.facility_not_found"}
+	}
+	if err != nil {
+		return failed("errors.facility_delete_failed")
+	}
+	var bookings int64
+	bookings, err = queries.CountBookingsByFacility(ctx, id)
 	if err != nil {
 		return failed("errors.facility_delete_failed")
 	}

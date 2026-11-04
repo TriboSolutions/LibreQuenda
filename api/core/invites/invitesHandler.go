@@ -141,9 +141,6 @@ func (h *invitesHandler) JoinAsUser(w http.ResponseWriter, r *http.Request) {
 // --- public ----------------------------------------------------------------
 
 func (h *invitesHandler) GetPublicInvite(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		return
-	}
 	var token, ok = uuidPath(w, r, "token")
 	if !ok {
 		return
@@ -157,9 +154,6 @@ func (h *invitesHandler) GetPublicInvite(w http.ResponseWriter, r *http.Request)
 }
 
 func (h *invitesHandler) JoinAsGuest(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		return
-	}
 	var token, ok = uuidPath(w, r, "token")
 	if !ok {
 		return
