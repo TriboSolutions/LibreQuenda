@@ -34,7 +34,7 @@ export function AccessibilityPage() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <TopBar tenants={councils} tenantSlug={null} />
+      <TopBar tenantSlug={null} />
       <main id="main" tabIndex={-1} className="mx-auto w-full max-w-[1152px] flex-1 px-4 pt-8 pb-16 sm:px-6">
         <h1 className="text-[28px] leading-9 font-bold tracking-[-0.02em] sm:text-[32px] sm:leading-10">{t('title')}</h1>
         {/* long reading: lines under 80 characters and roomy leading (WCAG 1.4.8) */}

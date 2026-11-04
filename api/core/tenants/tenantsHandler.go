@@ -36,6 +36,21 @@ func (h *tenantsHandler) GetTenants(w http.ResponseWriter, r *http.Request) {
 	helpers.SendSuccessResponse(w, response)
 }
 
+// GetTenant: GET /tenants/{slug}, one active council.
+func (h *tenantsHandler) GetTenant(w http.ResponseWriter, r *http.Request) {
+	var slug, slugErr = helpers.GetStringPathValue("slug", r)
+	if slugErr != nil {
+		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_query_params")
+		return
+	}
+	var response, err = GetTenantsService(h.db).GetTenant(r.Context(), slug)
+	if err != nil {
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
+		return
+	}
+	helpers.SendSuccessResponse(w, response)
+}
+
 // GetFacilities returns every active facility of every council, for the home
 // page; with ?lat=&lon=, nearest first and each one's distance_km.
 func (h *tenantsHandler) GetFacilities(w http.ResponseWriter, r *http.Request) {

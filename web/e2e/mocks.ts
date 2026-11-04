@@ -27,7 +27,6 @@ import type {
   Superadmin,
   TagCatalogue,
   Tenant,
-  TenantCard,
   WeeklyWindow,
 } from '../src/lib/api'
 
@@ -74,13 +73,7 @@ const facilityCards: FacilityCard[] = [
   { id: 'f3', slug: 'piscina', name: 'Piscina municipal', sport: 'Natación', tags: ['natacion', 'piscina'], image_url: '', address: '', latitude: null, longitude: null, free_today: 0, council: tenant, joinable: [] },
 ]
 
-const tenants: TenantCard[] = [
-  {
-    ...tenant,
-    stats: { facilities: 6, sports: ['Natación', 'Pádel', 'Tenis'], free_today: 42, bookings: 6179, residents: 20 },
-  },
-  { slug: 'ourense', name: 'Concello de Ourense', logo_url: '', contact_email: '', contact_phone: '', stats: { facilities: 5, sports: [], free_today: 0, bookings: 0, residents: 0 } },
-]
+const tenants: Tenant[] = [tenant, { slug: 'ourense', name: 'Concello de Ourense', logo_url: '', contact_email: '', contact_phone: '' }]
 
 function slots(): Facility['slots'] {
   // past, then free and booked turns, then one too far ahead and one closed
@@ -654,6 +647,7 @@ export const eventInTheWay = {
 /** GET handlers by path (without /api), first match wins. */
 const routes: [RegExp, () => unknown][] = [
   [/^\/tenants$/, () => ({ tenants })],
+  [/^\/tenants\/[^/?]+$/, () => tenant],
   [/^\/tags$/, () => tagCatalogue],
   [/^\/facilities$/, () => ({ facilities: facilityCards })],
   [/^\/tenants\/[^/]+\/day/, () => day],

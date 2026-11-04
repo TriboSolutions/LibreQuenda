@@ -50,7 +50,6 @@ export function MyBookingsPage() {
   const token = auth.user?.access_token
   const me = useMe()
   const { login } = useLogin()
-  const tenants = useAsync(() => api.tenants(), 'tenants')
   usePageTitle(t('invites:myBookings.title'))
   // GET /me (MeProvider) first creates the user's row; the bookings load after it
   const bookings = useAsync(token && me.me ? () => api.myBookings(token) : null, `bookings:${me.me?.id}`)
@@ -238,7 +237,7 @@ export function MyBookingsPage() {
 
   return (
     <div className="min-h-screen">
-      <TopBar tenants={tenants.data?.tenants ?? []} tenantSlug={null} />
+      <TopBar tenantSlug={null} />
       <main id="main" tabIndex={-1} className="mx-auto max-w-[1152px] px-4 pt-8 pb-16 sm:px-6">
         <h1 className="text-[28px] leading-9 font-bold tracking-[-0.02em] sm:text-[32px] sm:leading-10">{t('invites:myBookings.title')}</h1>
         <p className="mt-1 text-base text-muted-foreground">{t('invites:myBookings.subtitle')}</p>

@@ -24,11 +24,10 @@ import { useBranding } from '@/hooks/useBranding'
 import { useCouncilAdmin } from '@/hooks/useCouncilAdmin'
 import { useLogin } from '@/hooks/useLogin'
 import { useMe } from '@/hooks/useMe'
-import type { Tenant } from '@/lib/api'
 
 type Props = {
-  tenants: Tenant[]
   tenantSlug: string | null // the council the page is about (its name is in the page title); null when none
+  tenantName?: string // its name, for the link to its administration; the slug until it loads
 }
 
 function initials(name: string) {
@@ -40,7 +39,7 @@ function initials(name: string) {
     .join('')
 }
 
-export function TopBar({ tenants, tenantSlug }: Props) {
+export function TopBar({ tenantSlug, tenantName }: Props) {
   const { t } = useTranslation(['common', 'admin', 'profile', 'invites'])
   const auth = useAuth()
   const { me } = useMe()
@@ -48,7 +47,6 @@ export function TopBar({ tenants, tenantSlug }: Props) {
   const managesCouncil = useCouncilAdmin(tenantSlug)
   const navigate = useNavigate()
   const { login, register } = useLogin()
-  const tenant = tenants.find((t) => t.slug === tenantSlug)
   const profile = auth.user?.profile
   const name = profile?.name ?? profile?.email ?? ''
   const [qrOpen, setQrOpen] = useState(false)
@@ -111,7 +109,7 @@ export function TopBar({ tenants, tenantSlug }: Props) {
                 {tenantSlug && managesCouncil && !me?.is_superadmin && (
                   <DropdownMenuItem onSelect={() => navigate(`/${tenantSlug}/admin`)}>
                     <Building2 />
-                    {t('admin:councilMenuLink', { council: tenant?.name ?? tenantSlug })}
+                    {t('admin:councilMenuLink', { council: tenantName ?? tenantSlug })}
                   </DropdownMenuItem>
                 )}
                 {me?.is_superadmin && (
