@@ -74,6 +74,12 @@
     "joined": "Ja hi ets.",
     "seeBookings": "Mostra les meves reserves",
     "spots_one": "Queda {{count}} plaça",
-    "spots_other": "Queden {{count}} places"
+    "spots_other": "Queden {{count}} places",
+    "eventBy": "Esdeveniment · {{council}}"
+  },
+  "bookingKind": {
+    "title": "Tipus de reserva",
+    "public": "Reserves públiques",
+    "event": "Esdeveniments"
   }
 }

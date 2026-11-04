@@ -6,6 +6,7 @@ import { Link, useParams, useSearchParams } from 'react-router'
 import { AuditLogPanel } from '@/components/admin/AuditLogPanel'
 import { IssuesPanel } from '@/components/admin/IssuesPanel'
 import { StaffBookingsPanel } from '@/components/admin/StaffBookingsPanel'
+import { EventsPanel } from '@/components/admin/EventsPanel'
 import { useVerifyEmail } from '@/hooks/useVerifyEmail'
 import { CouncilHeading } from '@/components/CouncilHeading'
 import { TopBar } from '@/components/TopBar'
@@ -23,7 +24,7 @@ import { SiteFooter } from '@/components/SiteFooter'
 // charts (Recharts) load only when an administrator opens the indicators
 const IndicatorsPanel = lazy(() => import('@/components/admin/IndicatorsPanel').then((m) => ({ default: m.IndicatorsPanel })))
 
-/** /:slug/admin: the council's facilities, manual booking (?vista=reservas&instalacion=<id>) and indicators (?vista=indicadores), as tabs for its administrators; the gear opens the council's settings. */
+/** /:slug/admin: the council's facilities, manual booking (?vista=reservas&instalacion=<id>), its events (?vista=eventos) and indicators (?vista=indicadores), as tabs for its administrators; the gear opens the council's settings. */
 export function CouncilAdminPage() {
   const { slug = '' } = useParams()
   const { t } = useTranslation(['admin', 'common'])
@@ -45,8 +46,8 @@ export function CouncilAdminPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const vista = searchParams.get('vista')
   const view =
-    vista === 'indicadores' ? 'indicators' : vista === 'reservas' ? 'bookings' : vista === 'rexistro' ? 'audit' : vista === 'incidencias' ? 'issues' : 'facilities'
-  const viewParam: Record<string, string> = { indicators: 'indicadores', bookings: 'reservas', audit: 'rexistro', issues: 'incidencias' }
+    vista === 'indicadores' ? 'indicators' : vista === 'reservas' ? 'bookings' : vista === 'eventos' ? 'events' : vista === 'rexistro' ? 'audit' : vista === 'incidencias' ? 'issues' : 'facilities'
+  const viewParam: Record<string, string> = { indicators: 'indicadores', bookings: 'reservas', events: 'eventos', audit: 'rexistro', issues: 'incidencias' }
   const changeView = (value: string) => setSearchParams(viewParam[value] ? { vista: viewParam[value] } : {}, { replace: true })
   const bookingsFacility = searchParams.get('instalacion') ?? ''
 
@@ -193,6 +194,7 @@ export function CouncilAdminPage() {
           <TabsList className="min-w-0 flex-wrap justify-start group-data-[orientation=horizontal]/tabs:h-auto *:h-10">
             <TabsTrigger value="facilities">{t('admin:facilities.title')}</TabsTrigger>
             <TabsTrigger value="bookings">{t('admin:staff.tab')}</TabsTrigger>
+            <TabsTrigger value="events">{t('admin:events.tab')}</TabsTrigger>
             <TabsTrigger value="indicators">{t('admin:indicators.title')}</TabsTrigger>
             <TabsTrigger value="issues">
               {t('admin:issues.tab')}
@@ -218,6 +220,9 @@ export function CouncilAdminPage() {
             facilityId={bookingsFacility}
             onFacilityChange={(id) => setSearchParams({ vista: 'reservas', instalacion: id }, { replace: true })}
           />
+        </TabsContent>
+        <TabsContent value="events">
+          <EventsPanel slug={slug} facilities={list} />
         </TabsContent>
         <TabsContent value="issues">
           <IssuesPanel slug={slug} facilities={list} onChanged={newIssues.reload} />

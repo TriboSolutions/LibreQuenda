@@ -335,11 +335,13 @@ func (q *Queries) LeaveBooking(ctx context.Context, arg LeaveBookingParams) (int
 const listJoinablePublicBookings = `-- name: ListJoinablePublicBookings :many
 SELECT
     b.id,
+    b.kind,
+    COALESCE(b.title, '')::TEXT AS title,
     b.public_description,
     b.starts_at,
     b.ends_at,
     f.id   AS facility_id,
-    f.capacity,
+    COALESCE(b.event_capacity, f.capacity) AS capacity,
     split_part(trim(COALESCE(u.full_name, '')), ' ', 1)::TEXT AS owner_first_name,
     -- what others gave the owner after public bookings
     (SELECT COALESCE(AVG(r.stars), 0) FROM user_rating r WHERE r.rated_id = b.user_id)::FLOAT8 AS owner_rating_average,
@@ -351,16 +353,16 @@ FROM
     JOIN tenant   t ON t.id = f.tenant_id
     LEFT JOIN app_user u ON u.id = b.user_id
 WHERE
-    b.is_public = TRUE
+    b.kind <> 'private'
     AND b.status = 'confirmed'
     AND b.starts_at > NOW()
     AND b.starts_at < $1
     AND f.is_active = TRUE
     AND t.is_active = TRUE
-    AND f.capacity > 1
     AND (b.user_id IS NULL OR b.user_id <> $2)
     AND NOT EXISTS (SELECT 1 FROM booking_participant p WHERE p.booking_id = b.id AND p.user_id = $2)
-    AND (SELECT COUNT(*) FROM booking_participant p WHERE p.booking_id = b.id) < f.capacity - 1
+    AND (SELECT COUNT(*) FROM booking_participant p WHERE p.booking_id = b.id)
+        < COALESCE(b.event_capacity, f.capacity) - CASE WHEN b.kind = 'event' THEN 0 ELSE 1 END
 ORDER BY
     b.starts_at
 LIMIT 200
@@ -373,6 +375,8 @@ type ListJoinablePublicBookingsParams struct {
 
 type ListJoinablePublicBookingsRow struct {
 	ID                 uuid.UUID     `json:"id"`
+	Kind               BookingKind   `json:"kind"`
+	Title              string        `json:"title"`
 	PublicDescription  string        `json:"public_description"`
 	StartsAt           time.Time     `json:"starts_at"`
 	EndsAt             time.Time     `json:"ends_at"`
@@ -384,8 +388,9 @@ type ListJoinablePublicBookingsRow struct {
 	ParticipantCount   int64         `json:"participant_count"`
 }
 
-// «For you»: upcoming public bookings with spots left that the person neither
-// owns nor has joined, until `until`; the API keeps those near them or like theirs.
+// «For you»: upcoming public bookings and events with spots left that the person
+// neither owns nor has joined, until `until`; the API keeps those near them or like
+// theirs. An event has no owner and no owner's place: all its capacity is for who joins.
 func (q *Queries) ListJoinablePublicBookings(ctx context.Context, arg ListJoinablePublicBookingsParams) ([]ListJoinablePublicBookingsRow, error) {
 	rows, err := q.db.QueryContext(ctx, listJoinablePublicBookings, arg.Until, arg.UserID)
 	if err != nil {
@@ -397,6 +402,8 @@ func (q *Queries) ListJoinablePublicBookings(ctx context.Context, arg ListJoinab
 		var i ListJoinablePublicBookingsRow
 		if err := rows.Scan(
 			&i.ID,
+			&i.Kind,
+			&i.Title,
 			&i.PublicDescription,
 			&i.StartsAt,
 			&i.EndsAt,
@@ -479,12 +486,15 @@ SELECT
     b.starts_at,
     b.ends_at,
     b.status,
+    b.kind,
+    COALESCE(b.title, '')::TEXT AS title,
+    b.public_description,
     b.checked_in_at,
-    facility_took_checkin(f.id, b.starts_at)::BOOLEAN AS checkin_at_start,
+    (b.kind <> 'event' AND facility_took_checkin(f.id, b.starts_at))::BOOLEAN AS checkin_at_start, -- nobody checks in to an event
     f.id   AS facility_id,
     f.name AS facility_name,
     f.slug AS facility_slug,
-    f.capacity,
+    COALESCE(b.event_capacity, f.capacity) AS capacity,
     t.slug AS tenant_slug,
     t.name AS tenant_name,
     COALESCE(u.full_name, '')::TEXT AS owner_name,
@@ -504,22 +514,25 @@ ORDER BY
 `
 
 type ListParticipationsByUserRow struct {
-	ID               uuid.UUID     `json:"id"`
-	StartsAt         time.Time     `json:"starts_at"`
-	EndsAt           time.Time     `json:"ends_at"`
-	Status           BookingStatus `json:"status"`
-	CheckedInAt      sql.NullTime  `json:"checked_in_at"`
-	CheckinAtStart   bool          `json:"checkin_at_start"`
-	FacilityID       uuid.UUID     `json:"facility_id"`
-	FacilityName     string        `json:"facility_name"`
-	FacilitySlug     string        `json:"facility_slug"`
-	Capacity         sql.NullInt32 `json:"capacity"`
-	TenantSlug       string        `json:"tenant_slug"`
-	TenantName       string        `json:"tenant_name"`
-	OwnerName        string        `json:"owner_name"`
-	ParticipantCount int64         `json:"participant_count"`
-	FacilitySport    string        `json:"facility_sport"`
-	Facility         Facility      `json:"facility"`
+	ID                uuid.UUID     `json:"id"`
+	StartsAt          time.Time     `json:"starts_at"`
+	EndsAt            time.Time     `json:"ends_at"`
+	Status            BookingStatus `json:"status"`
+	Kind              BookingKind   `json:"kind"`
+	Title             string        `json:"title"`
+	PublicDescription string        `json:"public_description"`
+	CheckedInAt       sql.NullTime  `json:"checked_in_at"`
+	CheckinAtStart    bool          `json:"checkin_at_start"`
+	FacilityID        uuid.UUID     `json:"facility_id"`
+	FacilityName      string        `json:"facility_name"`
+	FacilitySlug      string        `json:"facility_slug"`
+	Capacity          sql.NullInt32 `json:"capacity"`
+	TenantSlug        string        `json:"tenant_slug"`
+	TenantName        string        `json:"tenant_name"`
+	OwnerName         string        `json:"owner_name"`
+	ParticipantCount  int64         `json:"participant_count"`
+	FacilitySport     string        `json:"facility_sport"`
+	Facility          Facility      `json:"facility"`
 }
 
 // Bookings someone else made that this user joined.
@@ -537,6 +550,9 @@ func (q *Queries) ListParticipationsByUser(ctx context.Context, userID uuid.Null
 			&i.StartsAt,
 			&i.EndsAt,
 			&i.Status,
+			&i.Kind,
+			&i.Title,
+			&i.PublicDescription,
 			&i.CheckedInAt,
 			&i.CheckinAtStart,
 			&i.FacilityID,
@@ -648,7 +664,8 @@ SELECT
     b.starts_at,
     b.ends_at,
     b.status,
-    f.capacity,
+    b.kind,
+    COALESCE(b.event_capacity, f.capacity) AS capacity, -- an event's own, if set
     f.min_age,
     t.timezone,
     t.id AS tenant_id,
@@ -668,6 +685,7 @@ type LockBookingByInviteTokenRow struct {
 	StartsAt     time.Time     `json:"starts_at"`
 	EndsAt       time.Time     `json:"ends_at"`
 	Status       BookingStatus `json:"status"`
+	Kind         BookingKind   `json:"kind"`
 	Capacity     sql.NullInt32 `json:"capacity"`
 	MinAge       sql.NullInt32 `json:"min_age"`
 	Timezone     string        `json:"timezone"`
@@ -686,6 +704,7 @@ func (q *Queries) LockBookingByInviteToken(ctx context.Context, inviteToken uuid
 		&i.StartsAt,
 		&i.EndsAt,
 		&i.Status,
+		&i.Kind,
 		&i.Capacity,
 		&i.MinAge,
 		&i.Timezone,
@@ -702,7 +721,8 @@ SELECT
     b.starts_at,
     b.ends_at,
     b.status,
-    f.capacity,
+    b.kind,
+    COALESCE(b.event_capacity, f.capacity) AS capacity, -- an event's own, if set
     f.min_age,
     t.timezone,
     t.id AS tenant_id,
@@ -713,7 +733,7 @@ FROM
     JOIN tenant   t ON t.id = f.tenant_id
 WHERE
     b.id = $1
-    AND b.is_public = TRUE
+    AND b.kind <> 'private'
 FOR UPDATE OF b
 `
 
@@ -723,6 +743,7 @@ type LockPublicBookingRow struct {
 	StartsAt     time.Time     `json:"starts_at"`
 	EndsAt       time.Time     `json:"ends_at"`
 	Status       BookingStatus `json:"status"`
+	Kind         BookingKind   `json:"kind"`
 	Capacity     sql.NullInt32 `json:"capacity"`
 	MinAge       sql.NullInt32 `json:"min_age"`
 	Timezone     string        `json:"timezone"`
@@ -730,7 +751,7 @@ type LockPublicBookingRow struct {
 	FacilityName string        `json:"facility_name"`
 }
 
-// Inside the join transaction of a public booking, like LockBookingByInviteToken.
+// Inside the join transaction of a public booking or an event, like LockBookingByInviteToken.
 func (q *Queries) LockPublicBooking(ctx context.Context, id uuid.UUID) (LockPublicBookingRow, error) {
 	row := q.db.QueryRowContext(ctx, lockPublicBooking, id)
 	var i LockPublicBookingRow
@@ -740,6 +761,7 @@ func (q *Queries) LockPublicBooking(ctx context.Context, id uuid.UUID) (LockPubl
 		&i.StartsAt,
 		&i.EndsAt,
 		&i.Status,
+		&i.Kind,
 		&i.Capacity,
 		&i.MinAge,
 		&i.Timezone,
@@ -802,7 +824,7 @@ func (q *Queries) SetBookingInviteToken(ctx context.Context, arg SetBookingInvit
 const setBookingPublic = `-- name: SetBookingPublic :execrows
 UPDATE booking
 SET
-    is_public  = $1,
+    kind       = CASE WHEN $1::BOOLEAN THEN 'public' ELSE 'private' END::booking_kind,
     public_description = COALESCE($2::TEXT, public_description),
     updated_at = NOW()
 WHERE

@@ -191,7 +191,20 @@
     "rating_load_failed": "Could not load the rating.",
     "rating_save_failed": "Could not save your rating. Try again.",
     "rating_closed": "This booking can no longer be rated.",
-    "rating_not_in_booking": "You can only rate the people who played with you in a public booking."
+    "rating_not_in_booking": "You can only rate the people who played with you in a public booking.",
+    "event_title": "Give the event a name of up to 120 characters.",
+    "event_description_too_long": "The description can be up to 1000 characters.",
+    "event_ends_before_start": "The event must end after it starts.",
+    "event_too_long": "An event can last a week at most.",
+    "event_in_past": "The event must start in the future.",
+    "event_capacity": "The number of people must be between 1 and 10000.",
+    "event_needs_capacity": "This facility has no capacity: say how many people can join the event.",
+    "event_closed": "The facility is closed during part of that time.",
+    "event_bookings_in_the_way": "{{0}} booking(s) are in the way at that time. Cancel them from Manual booking first.",
+    "event_capacity_below_joined": "{{0}} people have already joined: the capacity cannot be lower.",
+    "event_facility_fixed": "An event cannot move to another facility. Cancel it and create a new one.",
+    "event_failed": "Could not save the event. Try again.",
+    "events_load_failed": "Could not load the events."
   },
   "email": {
     "greeting": "Hello {{0}},",

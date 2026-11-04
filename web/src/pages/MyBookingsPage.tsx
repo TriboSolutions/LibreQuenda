@@ -390,7 +390,7 @@ function HistoryRow({ booking, today, onRate }: { booking: Booking; today: strin
     <li className="grid gap-0.5 border-t py-3 first:border-t-0">
       <div className="flex items-start justify-between gap-3">
         <Link to={`/${booking.tenant_slug}/${booking.facility_slug}`} className="min-w-0 font-medium underline-offset-4 hover:text-primary hover:underline">
-          {booking.facility_name}
+          {booking.kind === 'event' ? `${booking.title} · ${booking.facility_name}` : booking.facility_name}
         </Link>
         <BookingOutcome booking={booking} />
       </div>
@@ -419,12 +419,14 @@ function BookingRow({ booking, today, now, children }: RowProps) {
   const rulesId = `rules-${booking.id}`
   const opensAt = Date.parse(booking.starts_at) - EARLY_WINDOW_MS
   const showEntryTime = booking.role === 'owner' && !!booking.checkin_ways?.length && !booking.checked_in_at && now < opensAt
+  const event = booking.kind === 'event' // the council's: a title, no owner taking a spot
 
   return (
     <li className="grid gap-4 rounded-lg border bg-card p-5">
       <div className="flex gap-4">
         {facility.image_url && <img src={facility.image_url} alt="" className="h-16 w-20 shrink-0 rounded-md object-cover sm:h-24 sm:w-36" />}
         <div className="grid min-w-0 flex-1 content-start gap-1">
+          {event && <p className="min-w-0 text-lg font-semibold break-words">{booking.title}</p>}
           <p className="min-w-0 font-medium">
             <Link to={`/${booking.tenant_slug}/${booking.facility_slug}`} className="underline-offset-4 hover:text-primary hover:underline">
               {booking.facility_name}
@@ -460,7 +462,7 @@ function BookingRow({ booking, today, now, children }: RowProps) {
           <p className="mt-1 flex flex-wrap items-center gap-2 text-sm">
             <Countdown booking={booking} now={now} />
             <span className={booking.role === 'owner' ? pill.neutral : pill.positive}>
-              {booking.role === 'owner' ? t('role.owner') : booking.owner_name ? t('role.invitedBy', { name: booking.owner_name }) : t('role.invited')}
+              {booking.role === 'owner' ? t('role.owner') : event ? t('role.event') : booking.owner_name ? t('role.invitedBy', { name: booking.owner_name }) : t('role.invited')}
             </span>
             {booking.role === 'owner' && (
               // the deadline passed: say so instead of leaving the buttons out silently
@@ -474,7 +476,7 @@ function BookingRow({ booking, today, now, children }: RowProps) {
 
       {booking.capacity > 0 && (
         <div className="max-w-sm">
-          <SpotsMeter capacity={booking.capacity} taken={booking.participant_count + 1} />
+          <SpotsMeter capacity={booking.capacity} taken={booking.participant_count + (event ? 0 : 1)} />
         </div>
       )}
       {booking.people.length > 0 && <PeopleList people={booking.people} />}
@@ -496,11 +498,11 @@ function BookingRow({ booking, today, now, children }: RowProps) {
           <FacilityInfo facility={facility} withAddress={false} />
         </div>
       )}
-      {booking.is_public && (
+      {(booking.is_public || event) && (
         <div className="grid min-w-0 gap-1">
           <h3 className="text-sm font-medium">{t('bookings:public.activity')}</h3>
           <p className="whitespace-pre-wrap break-words text-sm text-muted-foreground">
-            {booking.public_description || t('bookings:public.noDescription')}
+            {booking.public_description || t(event ? 'bookings:public.noEventDescription' : 'bookings:public.noDescription')}
           </p>
         </div>
       )}

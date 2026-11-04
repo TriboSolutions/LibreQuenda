@@ -137,7 +137,10 @@
     "confirmDescription": "La teva reserva a {{facility}} apareixerà a «Per a tu». Altres persones la podran trobar i unir-s’hi mentre quedin places.",
     "keepPrivate": "Mantenir privada",
     "confirm": "Fer pública",
-    "publishing": "Publicant…"
+    "publishing": "Publicant…",
+    "eventAt": "Esdeveniment a {{facility}}",
+    "noEventDescription": "L’ajuntament no ha afegit cap descripció.",
+    "eventStarted": "Aquest esdeveniment ja ha començat."
   },
   "rating": {
     "button": "Valorar",

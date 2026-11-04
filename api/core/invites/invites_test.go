@@ -17,25 +17,30 @@ func TestInviteState(t *testing.T) {
 		status       model.BookingStatus
 		startsAt     time.Time
 		capacity     sql.NullInt32
+		kind         model.BookingKind
 		participants int64
 		want         string
 		wantSpots    int
 	}{
-		{"open", model.BookingStatusConfirmed, later, ten, 0, StateOpen, 9},
-		{"last spot", model.BookingStatusConfirmed, later, ten, 8, StateOpen, 1},
-		{"full: owner + 9", model.BookingStatusConfirmed, later, ten, 9, StateFull, 0},
-		{"cancelled", model.BookingStatusCancelled, later, ten, 0, StateClosed, 9},
-		{"started", model.BookingStatusConfirmed, now, ten, 0, StateClosed, 9},
-		{"no capacity", model.BookingStatusConfirmed, later, sql.NullInt32{}, 0, StateClosed, 0},
-		{"capacity one", model.BookingStatusConfirmed, later, sql.NullInt32{Int32: 1, Valid: true}, 0, StateClosed, 0},
-		{"capacity lowered below participants", model.BookingStatusConfirmed, later, sql.NullInt32{Int32: 3, Valid: true}, 5, StateFull, 0},
+		{"open", model.BookingStatusConfirmed, later, ten, model.BookingKindPrivate, 0, StateOpen, 9},
+		{"last spot", model.BookingStatusConfirmed, later, ten, model.BookingKindPrivate, 8, StateOpen, 1},
+		{"full: owner + 9", model.BookingStatusConfirmed, later, ten, model.BookingKindPrivate, 9, StateFull, 0},
+		{"cancelled", model.BookingStatusCancelled, later, ten, model.BookingKindPrivate, 0, StateClosed, 9},
+		{"started", model.BookingStatusConfirmed, now, ten, model.BookingKindPrivate, 0, StateClosed, 9},
+		{"no capacity", model.BookingStatusConfirmed, later, sql.NullInt32{}, model.BookingKindPrivate, 0, StateClosed, 0},
+		{"capacity one", model.BookingStatusConfirmed, later, sql.NullInt32{Int32: 1, Valid: true}, model.BookingKindPrivate, 0, StateClosed, 0},
+		{"event: no owner's place", model.BookingStatusConfirmed, later, ten, model.BookingKindEvent, 9, StateOpen, 1},
+		{"event full", model.BookingStatusConfirmed, later, ten, model.BookingKindEvent, 10, StateFull, 0},
+		{"event for one", model.BookingStatusConfirmed, later, sql.NullInt32{Int32: 1, Valid: true}, model.BookingKindEvent, 0, StateOpen, 1},
+		{"event without capacity", model.BookingStatusConfirmed, later, sql.NullInt32{}, model.BookingKindEvent, 0, StateClosed, 0},
+		{"capacity lowered below participants", model.BookingStatusConfirmed, later, sql.NullInt32{Int32: 3, Valid: true}, model.BookingKindPrivate, 5, StateFull, 0},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			if got := inviteState(c.status, c.startsAt, c.capacity, c.participants, now); got != c.want {
+			if got := inviteState(c.status, c.startsAt, c.capacity, c.kind, c.participants, now); got != c.want {
 				t.Errorf("inviteState() = %q, want %q", got, c.want)
 			}
-			if got := spotsLeft(c.capacity, c.participants); got != c.wantSpots {
+			if got := spotsLeft(c.capacity, c.kind, c.participants); got != c.wantSpots {
 				t.Errorf("spotsLeft() = %d, want %d", got, c.wantSpots)
 			}
 		})

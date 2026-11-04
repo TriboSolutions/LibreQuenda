@@ -98,7 +98,7 @@ WHERE
 UPDATE booking
 SET
     invite_token = NULL,
-    is_public = FALSE,
+    kind = 'private',
     public_description = ''
 WHERE
     user_id = sqlc.arg('user_id');

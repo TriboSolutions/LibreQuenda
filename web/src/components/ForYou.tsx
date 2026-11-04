@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import { Link } from 'react-router'
-import { CalendarClock, ChevronDown, EyeOff, Repeat, Sparkles, Users } from 'lucide-react'
+import { CalendarClock, ChevronDown, EyeOff, PartyPopper, Repeat, Sparkles, Users } from 'lucide-react'
 import { RatingBadge } from '@/components/Stars'
 import { Mark } from '@/components/Mark'
 import { Button } from '@/components/ui/button'
@@ -124,7 +124,7 @@ function SuggestionCard({ item }: { item: Recommendation }) {
   )
 }
 
-/** Someone's public booking with spots left: join it here, no invite link needed. */
+/** Someone's public booking, or one of the council's events, with spots left: join it here, no invite link needed. */
 function PublicBookingCard({ item, booking }: { item: Recommendation; booking: NonNullable<Recommendation['booking']> }) {
   const { t } = useTranslation(['home', 'common'])
   const auth = useAuth()
@@ -133,6 +133,7 @@ function PublicBookingCard({ item, booking }: { item: Recommendation; booking: N
   const [error, setError] = useState<string | null>(null)
   const [today] = useState(() => localDate(new Date().toISOString(), TIME_ZONE))
   const f = item.facility
+  const event = booking.kind === 'event'
   const when = `${formatBookingDay(booking.starts_at, TIME_ZONE, today)}, ${formatTime(booking.starts_at, TIME_ZONE)}–${formatTime(booking.ends_at, TIME_ZONE)}`
 
   const join = async () => {
@@ -154,18 +155,35 @@ function PublicBookingCard({ item, booking }: { item: Recommendation; booking: N
     <li className="flex min-w-0 gap-3 rounded-lg border bg-card p-3">
       <Thumb url={f.image_url} />
       <div className="grid min-w-0 flex-1 content-start gap-1">
-        <h3 className="leading-5 font-semibold">
-          <Link to={`/${f.council.slug}/${f.slug}`} className="underline-offset-4 hover:underline">
-            {f.name}
-          </Link>
-        </h3>
-        <p className="flex items-start gap-1.5 text-sm text-muted-foreground">
-          <Users className="mt-0.5 size-3.5 shrink-0" aria-hidden />
-          <span>
-            {booking.owner_first_name ? t('forYou.publicBy', { name: booking.owner_first_name }) : t('forYou.public')}
-            <RatingBadge rating={booking.owner_rating} className="ml-1.5 align-top" />
-          </span>
-        </p>
+        {event ? (
+          <>
+            <h3 className="leading-5 font-semibold break-words">{booking.title}</h3>
+            <p className="flex items-start gap-1.5 text-sm text-muted-foreground">
+              <PartyPopper className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+              <span>
+                {t('forYou.eventBy', { council: f.council.name })} ·{' '}
+                <Link to={`/${f.council.slug}/${f.slug}`} className="underline underline-offset-4">
+                  {f.name}
+                </Link>
+              </span>
+            </p>
+          </>
+        ) : (
+          <>
+            <h3 className="leading-5 font-semibold">
+              <Link to={`/${f.council.slug}/${f.slug}`} className="underline-offset-4 hover:underline">
+                {f.name}
+              </Link>
+            </h3>
+            <p className="flex items-start gap-1.5 text-sm text-muted-foreground">
+              <Users className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+              <span>
+                {booking.owner_first_name ? t('forYou.publicBy', { name: booking.owner_first_name }) : t('forYou.public')}
+                <RatingBadge rating={booking.owner_rating} className="ml-1.5 align-top" />
+              </span>
+            </p>
+          </>
+        )}
         <p className="num text-sm">{when}</p>
         {booking.description && <p className="whitespace-pre-wrap break-words text-sm">{booking.description}</p>}
         <div aria-live="polite" className="grid gap-1">

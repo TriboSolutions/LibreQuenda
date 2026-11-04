@@ -9,13 +9,19 @@ export type Slot = {
   status: SlotStatus
 }
 
+/** private: only by the owner's invite link; public: a resident's, in «For you»; event: the council's, with a title and no owner. */
+export type BookingKind = 'private' | 'public' | 'event'
+
+/** A public booking or one of the council's events on the facility's day. */
 export type PublicTurn = {
   id: string
+  kind: 'public' | 'event'
+  title: string // events only
   starts_at: string
   ends_at: string
   description: string
-  capacity: number
-  people: string[]
+  capacity: number // with the owner for a public booking; only who joins for an event
+  people: string[] // first names: the owner first (not for an event), then who joined
 }
 
 export type Facility = {
@@ -82,8 +88,12 @@ export type FacilityCard = {
   longitude: number | null
   free_today: number // turns still free today
   council: Tenant
+  joinable?: JoinableKind[] // upcoming, with spots left: residents' public bookings, the council's events
   distance_km?: number | null // with a position: how far, by the API (which also sorts by it)
 }
+
+/** What can be joined at a facility: a resident's public booking, or the council's event. */
+export type JoinableKind = 'public' | 'event'
 
 /** A facility tag from the platform's catalogue; facilities and addresses use its slug. */
 export type Tag = { id: string; slug: string; name: string; facility_count: number }
@@ -254,6 +264,7 @@ export type StaffBooking = {
   starts_at: string
   ends_at: string
   booked_by_staff: boolean
+  is_event: boolean // the council's event: name is its title, nobody checks in
   has_account: boolean
   name: string // "" once a deleted account or a forgotten name
   email: string
@@ -285,6 +296,37 @@ export type StaffDay = {
   slots: StaffSlot[]
   bookings: StaffBooking[]
   staff_checkin: boolean // staff can mark the entry (the facility's Check-in tab)
+}
+
+/** The council's own activity, joined like a public booking: any start and end, not the turns. */
+export type CouncilEvent = {
+  id: string
+  facility_id: string
+  facility_name: string
+  starts_at: string
+  ends_at: string
+  title: string
+  description: string
+  own_capacity: number | null // null: the facility's
+  capacity: number // who can join
+  participant_count: number
+  can_change: boolean // until it starts
+  timezone: string // the council's: the form shows and takes the times in it
+}
+
+export type EventInput = {
+  facility_id: string
+  starts_at: string // local date-time in the council's time zone: "2026-11-15T10:00"
+  ends_at: string
+  title: string
+  description: string
+  capacity: number | null // null: the facility's
+}
+
+/** What stops an event at that time: confirmed bookings (cancel them from manual booking first) and closures. */
+export type EventInTheWay = {
+  bookings: { id: string; starts_at: string; ends_at: string; holder: string; is_event: boolean }[]
+  closures: { starts_at: string; ends_at: string; reason: string }[]
 }
 
 /** For an account (email) or for someone without one (name, phone): exactly one of the two. */
@@ -447,6 +489,8 @@ export type Booking = {
   checkin_code: string // QR content; "" unless the booking is upcoming and confirmed
   public_description?: string
   is_public?: boolean // owner only: anyone signed in finds it in «For you» and can join it
+  kind: BookingKind // event: the council's, joined by the person
+  title: string // events only
   checked_in_at: string | null
   checkin_ways?: CheckinMethod[] | null // owner only: the ways to check in the facility takes, for the check-in button
   staff_contacts?: StaffContact[] // owner only, with staff confirmation on: who to ask on site
@@ -457,7 +501,7 @@ export type Booking = {
   // invites: the owner shares a link and others fill the facility's capacity
   role: 'owner' | 'participant' // participant: joined someone else's booking through an invite
   owner_name: string // participant only
-  capacity: number // people including the owner; 0 when the facility takes no invites
+  capacity: number // people including the owner (an event has none: who can join); 0 when the facility takes no invites
   participant_count: number // people who joined, not counting the owner
   can_leave: boolean
   people: Person[] // who is coming: the owner first; empty while nobody has joined
@@ -555,6 +599,8 @@ export type Recommendation = {
   // public_booking: someone's public booking to join; at most the owner's first name
   booking?: {
     id: string
+    kind?: 'public' | 'event' // event: the council's, with a title and no owner
+    title?: string
     starts_at: string
     ends_at: string
     spots_left: number
@@ -1103,6 +1149,15 @@ export const api = {
     // the resident is told if they have an account, with the reason when there is one
     staffCancel: (token: string, slug: string, bookingId: string, reason: string) =>
       request<void>(`/tenants/${encodeURIComponent(slug)}/admin/bookings/${bookingId}/cancel`, { token, method: 'POST', body: { reason } }),
+    events: (token: string, slug: string) => request<{ timezone: string; events: CouncilEvent[] }>(`/tenants/${encodeURIComponent(slug)}/admin/events`, { token }),
+    // except: the event being moved, which is not in its own way
+    previewEvent: (token: string, slug: string, input: EventInput, except?: string) =>
+      request<EventInTheWay>(`/tenants/${encodeURIComponent(slug)}/admin/events/preview${except ? `?except=${except}` : ''}`, { token, method: 'POST', body: input }),
+    createEvent: (token: string, slug: string, input: EventInput) =>
+      request<CouncilEvent>(`/tenants/${encodeURIComponent(slug)}/admin/events`, { token, method: 'POST', body: input }),
+    // moved, who joined is told the new time
+    updateEvent: (token: string, slug: string, id: string, input: EventInput) =>
+      request<CouncilEvent>(`/tenants/${encodeURIComponent(slug)}/admin/events/${id}`, { token, method: 'PUT', body: input }),
     // staff mark that the person came in; undo only within a few minutes of a staff entry
     staffCheckIn: (token: string, slug: string, bookingId: string) =>
       request<StaffBooking>(`/tenants/${encodeURIComponent(slug)}/admin/bookings/${bookingId}/checkin`, { token, method: 'POST' }),

@@ -137,7 +137,10 @@
     "confirmDescription": "Tu reserva en {{facility}} aparecerá en «Para ti». Otras personas podrán encontrarla y unirse mientras queden plazas.",
     "keepPrivate": "Mantener privada",
     "confirm": "Hacer pública",
-    "publishing": "Publicando…"
+    "publishing": "Publicando…",
+    "eventAt": "Evento en {{facility}}",
+    "noEventDescription": "El ayuntamiento no añadió descripción.",
+    "eventStarted": "Este evento ya empezó."
   },
   "rating": {
     "button": "Valorar",

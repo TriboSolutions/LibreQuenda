@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import QRCode from 'qrcode'
-import { CircleCheck, ChevronLeft, ChevronRight, Plus, Printer, Undo2, UserCheck } from 'lucide-react'
+import { CircleCheck, ChevronLeft, ChevronRight, PartyPopper, Plus, Printer, Undo2, UserCheck } from 'lucide-react'
 import { DatePicker } from '@/components/DatePicker'
 import { QrImage } from '@/components/QrImage'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -341,10 +341,13 @@ function DayColumn({ day, axis, height, now, onBook, onOpen }: DayColumnProps) {
               onClick={() => onOpen(day, b)}
               className={cn(
                 'flex size-full flex-col overflow-hidden rounded-md border-l-4 px-1.5 py-0.5 text-left text-xs shadow-xs transition-[filter] hover:brightness-95 dark:hover:brightness-125',
-                b.has_account ? 'border-primary bg-pill-accent-bg text-pill-accent-ink' : 'border-pill-neutral-ink/50 bg-pill-neutral-bg text-pill-neutral-ink',
+                b.is_event
+                  ? 'border-pill-positive-ink bg-pill-positive-bg text-pill-positive-ink'
+                  : b.has_account ? 'border-primary bg-pill-accent-bg text-pill-accent-ink' : 'border-pill-neutral-ink/50 bg-pill-neutral-bg text-pill-neutral-ink',
               )}
             >
               <span className="flex items-center gap-1 font-semibold">
+                {b.is_event && <PartyPopper className="size-3 shrink-0" aria-label={t('events.label')} />}
                 <span className="truncate">{b.name || <span className="italic">{t('staff.noNameShort')}</span>}</span>
                 {b.checked_in_at && <CircleCheck className="size-3 shrink-0" aria-hidden="true" />}
               </span>
@@ -444,10 +447,14 @@ function DetailsDialog({ slug, token, booking, zone, facilityName, onClose, onCa
         </DialogHeader>
         <div className="grid gap-3">
           <p className="flex flex-wrap gap-1.5">
-            <span className={`${pill} ${b.has_account ? 'bg-pill-accent-bg text-pill-accent-ink' : 'bg-pill-neutral-bg text-pill-neutral-ink'}`}>
-              {b.has_account ? t('staff.withAccount') : t('staff.withoutAccount')}
-            </span>
-            {b.booked_by_staff && <span className={`${pill} bg-pill-neutral-bg text-pill-neutral-ink`}>{t('staff.bookedByStaff')}</span>}
+            {b.is_event ? (
+              <span className={`${pill} bg-pill-positive-bg text-pill-positive-ink`}>{t('events.label')}</span>
+            ) : (
+              <span className={`${pill} ${b.has_account ? 'bg-pill-accent-bg text-pill-accent-ink' : 'bg-pill-neutral-bg text-pill-neutral-ink'}`}>
+                {b.has_account ? t('staff.withAccount') : t('staff.withoutAccount')}
+              </span>
+            )}
+            {b.booked_by_staff && !b.is_event && <span className={`${pill} bg-pill-neutral-bg text-pill-neutral-ink`}>{t('staff.bookedByStaff')}</span>}
             {b.checked_in_at && <span className={`${pill} num bg-pill-positive-bg text-pill-positive-ink`}>{t('staff.checkedIn', { time: formatTime(b.checked_in_at, zone) })}</span>}
             {b.participant_count > 0 && <span className={`${pill} num bg-pill-neutral-bg text-pill-neutral-ink`}>{t('staff.joined', { count: b.participant_count })}</span>}
           </p>
@@ -705,8 +712,12 @@ function CancelDialog({ slug, token, facilityName, timeZone, booking, onClose, o
             })}
           </DialogDescription>
         </DialogHeader>
-        <p>{booking.has_account ? t('staff.cancelNotice') : booking.phone ? t('staff.cancelCall', { phone: booking.phone }) : t('staff.cancelNoContact')}</p>
-        {booking.has_account && (
+        <p>
+          {booking.is_event
+            ? t('events.cancelNotice', { count: booking.participant_count })
+            : booking.has_account ? t('staff.cancelNotice') : booking.phone ? t('staff.cancelCall', { phone: booking.phone }) : t('staff.cancelNoContact')}
+        </p>
+        {(booking.has_account || booking.is_event) && (
           <div className="grid gap-1.5">
             <Label htmlFor="staff-reason">
               {t('staff.reason')} <span className="font-normal text-muted-foreground">({t('staff.optional')})</span>

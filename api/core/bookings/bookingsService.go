@@ -107,6 +107,7 @@ func (s *bookingsService) CreateBooking(ctx context.Context, userId uuid.UUID, b
 		var id = uuid.MustParse(booking.Id)
 		if _, err := queries.SetBookingPublic(ctx, model.SetBookingPublicParams{ID: id, OwnerID: uuid.NullUUID{UUID: userId, Valid: true}, IsPublic: true, PublicDescription: sql.NullString{String: body.PublicDescription, Valid: true}}); err == nil {
 			booking.IsPublic = true
+			booking.Kind = string(model.BookingKindPublic)
 			booking.PublicDescription = body.PublicDescription
 		}
 	}

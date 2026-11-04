@@ -137,7 +137,10 @@
     "confirmDescription": "Your booking at {{facility}} will appear in “For you”. Other people can find it and join while there are places available.",
     "keepPrivate": "Keep private",
     "confirm": "Make public",
-    "publishing": "Publishing…"
+    "publishing": "Publishing…",
+    "eventAt": "Event at {{facility}}",
+    "noEventDescription": "The council has not added a description.",
+    "eventStarted": "This event has already started."
   },
   "rating": {
     "button": "Rate",

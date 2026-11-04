@@ -14,7 +14,8 @@
   "role": {
     "owner": "Yours",
     "invitedBy": "Invited by {{name}}",
-    "invited": "Invited"
+    "invited": "Invited",
+    "event": "Council event"
   },
   "spots": "{{taken}} of {{capacity}} people",
   "actions": {
