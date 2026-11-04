@@ -27,9 +27,17 @@ data class FacilityDay(
     val publicTurns: List<PublicTurn> = emptyList(),
 )
 
-/** Someone's public booking at the facility that day: join it instead of booking. */
-data class PublicTurn(val id: String, val startsAt: Instant, val endsAt: Instant, val description: String, val capacity: Int, val people: List<String>) {
-    /** The owner is the first of people. */
+/**
+ * Someone's public booking at the facility that day, or the council's event: join it
+ * instead of booking. An event has a title and no owner, and can start at any minute.
+ */
+data class PublicTurn(
+    val id: String, val startsAt: Instant, val endsAt: Instant, val description: String, val capacity: Int, val people: List<String>,
+    val kind: String = "public", val title: String = "",
+) {
+    val isEvent: Boolean get() = kind == "event"
+
+    /** A public booking's owner is the first of people; an event's people are only who joined. */
     val spotsLeft: Int get() = capacity - people.size
 }
 
@@ -71,6 +79,8 @@ suspend fun fetchFacilityDay(councilSlug: String, facilitySlug: String, date: Lo
                 description = p.optString("description"),
                 capacity = p.optInt("capacity"),
                 people = List(people?.length() ?: 0) { people!!.optString(it) },
+                kind = p.optString("kind", "public"),
+                title = p.optString("title"),
             )
         },
     )

@@ -213,7 +213,7 @@ func (s *bookingsService) insertStaffBooking(ctx context.Context, params model.C
 // StaffCancel cancels any booking of the council before it starts, for example
 // when the resident phones to say they cannot come, or an event. Someone with an
 // account is told, with the reason if staff gave one, and so is everyone who
-// joined an event; it counts as cancelled by the council.
+// joined it; it counts as cancelled by the council.
 func (s *bookingsService) StaffCancel(ctx context.Context, tenantId uuid.UUID, bookingId uuid.UUID, input StaffCancelInput) *shared.ErrorResponse {
 	var failed = &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.cancel_failed"}
 	var queries = model.New(s.db)
@@ -261,10 +261,8 @@ func (s *bookingsService) StaffCancel(ctx context.Context, tenantId uuid.UUID, b
 			shared.Logger.Error("failed to record notification for cancelled booking %s: %v", booking.ID, notifyErr)
 		}
 	}
-	// an event has nobody else to pass the news on: everyone who joined is told
-	if booking.Kind == model.BookingKindEvent {
-		s.notifyParticipants(ctx, queries, booking.ID, model.NotificationTypeBookingCancelledByCouncil, payload)
-	}
+	// everyone who joined is told too, not only the owner (an event has none)
+	s.notifyParticipants(ctx, queries, booking.ID, model.NotificationTypeBookingCancelledByCouncil, payload)
 	return nil
 }
 

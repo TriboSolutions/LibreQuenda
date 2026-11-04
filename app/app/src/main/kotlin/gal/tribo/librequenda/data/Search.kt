@@ -43,7 +43,10 @@ data class DayFacility(
 )
 
 /** Someone's public booking at a facility that day: join it to fill a spot. */
-data class PublicGame(val id: String, val startsAt: Instant, val endsAt: Instant, val spotsLeft: Int, val ownerFirstName: String)
+/** A public booking with spots left, or the council's event (a title, no owner). */
+data class PublicGame(val id: String, val startsAt: Instant, val endsAt: Instant, val spotsLeft: Int, val ownerFirstName: String, val title: String = "") {
+    val isEvent: Boolean get() = title.isNotBlank()
+}
 
 /** A page of a list the API pages (?page=, 100 by default): its items and whether more follow. */
 data class Page<T>(val items: List<T>, val page: Int, val hasMore: Boolean, val total: Int)
@@ -111,15 +114,18 @@ private fun JSONObject.toDayFacility(): DayFacility {
             freeSlots = List(slots?.length() ?: 0) { slots!!.getJSONObject(it) }
                 .filter { it.optString("status") == "free" }
                 .map { OffsetDateTime.parse(it.getString("starts_at")).toInstant() },
-            // capacity counts the owner, and people lists the owner first
+            // a public booking's capacity counts the owner, and people lists the owner first;
+            // an event has no owner: people are only who joined
             publicGames = List(games?.length() ?: 0) { games!!.getJSONObject(it) }.map { g ->
                 val people = g.optJSONArray("people")
+                val event = g.optString("kind") == "event"
                 PublicGame(
                     id = g.getString("id"),
                     startsAt = OffsetDateTime.parse(g.getString("starts_at")).toInstant(),
                     endsAt = OffsetDateTime.parse(g.getString("ends_at")).toInstant(),
-                    spotsLeft = g.optInt("capacity") - (people?.length() ?: 1),
-                    ownerFirstName = people?.optString(0).orEmpty(),
+                    spotsLeft = g.optInt("capacity") - (people?.length() ?: if (event) 0 else 1),
+                    ownerFirstName = if (event) "" else people?.optString(0).orEmpty(),
+                    title = if (event) g.optString("title") else "",
                 )
             }.filter { it.spotsLeft > 0 },
             distanceKm = if (f.isNull("distance_km")) null else f.optDouble("distance_km"),

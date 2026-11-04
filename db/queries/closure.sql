@@ -72,10 +72,11 @@ WHERE
     AND starts_at < sqlc.arg('range_end')
     AND ends_at   > sqlc.arg('range_start');
 
--- name: CancelBookingsInRange :execrows
+-- name: CancelBookingsInRange :one
 -- Cancels them and leaves a "booking_cancelled_by_council" notice (and email) for
--- each owner. closed_from / closed_until are set for a closure, NULL when the
--- facility is deactivated.
+-- each owner and everyone with an account who joined; answers how many bookings.
+-- closed_from / closed_until are set for a closure, NULL when the facility is
+-- deactivated.
 WITH cancelled AS (
     UPDATE booking b
     SET
@@ -93,7 +94,8 @@ WITH cancelled AS (
         b.user_id,
         b.starts_at,
         b.ends_at
-)
+),
+told AS (
 INSERT INTO notification (
     user_id,
     booking_id,
@@ -101,7 +103,7 @@ INSERT INTO notification (
     payload
 )
 SELECT
-    c.user_id,
+    x.user_id,
     c.id,
     'booking_cancelled_by_council',
     jsonb_build_object(
@@ -118,8 +120,16 @@ FROM
     cancelled c
     JOIN facility f ON f.id = sqlc.arg('facility_id')
     JOIN tenant   t ON t.id = f.tenant_id
+    CROSS JOIN LATERAL (
+        SELECT c.user_id
+        UNION
+        SELECT p.user_id FROM booking_participant p WHERE p.booking_id = c.id
+    ) x
 WHERE
-    c.user_id IS NOT NULL;
+    x.user_id IS NOT NULL
+RETURNING 1
+)
+SELECT COUNT(*) FROM cancelled;
 
 -- name: SetFacilityActive :execrows
 UPDATE facility
