@@ -13,7 +13,7 @@ import (
 	"github.com/google/uuid"
 )
 
-const cancelBookingsInRange = `-- name: CancelBookingsInRange :execrows
+const cancelBookingsInRange = `-- name: CancelBookingsInRange :one
 WITH cancelled AS (
     UPDATE booking b
     SET
@@ -21,17 +21,18 @@ WITH cancelled AS (
         cancelled_at = NOW(),
         cancelled_by = 'council'
     WHERE
-        b.facility_id = $4
+        b.facility_id = $1
         AND b.status = 'confirmed'
         AND b.starts_at > NOW()
-        AND b.starts_at < $5
-        AND b.ends_at   > $6
+        AND b.starts_at < $2
+        AND b.ends_at   > $3
     RETURNING
         b.id,
         b.user_id,
         b.starts_at,
         b.ends_at
-)
+),
+told AS (
 INSERT INTO notification (
     user_id,
     booking_id,
@@ -39,7 +40,7 @@ INSERT INTO notification (
     payload
 )
 SELECT
-    c.user_id,
+    x.user_id,
     c.id,
     'booking_cancelled_by_council',
     jsonb_build_object(
@@ -48,43 +49,51 @@ SELECT
         'tenant_slug',   t.slug,
         'starts_at',     c.starts_at,
         'ends_at',       c.ends_at,
-        'reason',        $1::TEXT,
-        'closed_from',   $2::TIMESTAMPTZ,
-        'closed_until',  $3::TIMESTAMPTZ
+        'reason',        $4::TEXT,
+        'closed_from',   $5::TIMESTAMPTZ,
+        'closed_until',  $6::TIMESTAMPTZ
     )
 FROM
     cancelled c
-    JOIN facility f ON f.id = $4
+    JOIN facility f ON f.id = $1
     JOIN tenant   t ON t.id = f.tenant_id
+    CROSS JOIN LATERAL (
+        SELECT c.user_id
+        UNION
+        SELECT p.user_id FROM booking_participant p WHERE p.booking_id = c.id
+    ) x
 WHERE
-    c.user_id IS NOT NULL
+    x.user_id IS NOT NULL
+RETURNING 1
+)
+SELECT COUNT(*) FROM cancelled
 `
 
 type CancelBookingsInRangeParams struct {
-	Reason      string       `json:"reason"`
-	ClosedFrom  sql.NullTime `json:"closed_from"`
-	ClosedUntil sql.NullTime `json:"closed_until"`
 	FacilityID  uuid.UUID    `json:"facility_id"`
 	RangeEnd    time.Time    `json:"range_end"`
 	RangeStart  time.Time    `json:"range_start"`
+	Reason      string       `json:"reason"`
+	ClosedFrom  sql.NullTime `json:"closed_from"`
+	ClosedUntil sql.NullTime `json:"closed_until"`
 }
 
 // Cancels them and leaves a "booking_cancelled_by_council" notice (and email) for
-// each owner. closed_from / closed_until are set for a closure, NULL when the
-// facility is deactivated.
+// each owner and everyone with an account who joined; answers how many bookings.
+// closed_from / closed_until are set for a closure, NULL when the facility is
+// deactivated.
 func (q *Queries) CancelBookingsInRange(ctx context.Context, arg CancelBookingsInRangeParams) (int64, error) {
-	result, err := q.db.ExecContext(ctx, cancelBookingsInRange,
-		arg.Reason,
-		arg.ClosedFrom,
-		arg.ClosedUntil,
+	row := q.db.QueryRowContext(ctx, cancelBookingsInRange,
 		arg.FacilityID,
 		arg.RangeEnd,
 		arg.RangeStart,
+		arg.Reason,
+		arg.ClosedFrom,
+		arg.ClosedUntil,
 	)
-	if err != nil {
-		return 0, err
-	}
-	return result.RowsAffected()
+	var count int64
+	err := row.Scan(&count)
+	return count, err
 }
 
 const countBookingsToCancel = `-- name: CountBookingsToCancel :one

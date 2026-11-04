@@ -209,7 +209,9 @@ private fun PublicSection(home: HomeState, onOpen: (FacilityCard, Instant?) -> U
                 f.id, f.slug, f.name, f.imageUrl, f.latitude, f.longitude, f.freeSlots.size, f.councilSlug, f.councilName, f.distanceKm,
             )
             val spots = pluralStringResource(R.plurals.spots_left, game.spotsLeft, game.spotsLeft)
-            FacilityCarouselCard(card, here, badge = "${format(game.startsAt)} · $spots", onClick = { onOpen(card, game.startsAt) })
+            // the council's event says what it is
+            val badge = listOfNotNull(game.title.takeIf { game.isEvent }, format(game.startsAt), spots).joinToString(" · ")
+            FacilityCarouselCard(card, here, badge = badge, onClick = { onOpen(card, game.startsAt) })
         }
     }
     Spacer(Modifier.height(28.dp))

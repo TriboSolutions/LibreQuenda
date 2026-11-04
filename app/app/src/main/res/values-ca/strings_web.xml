@@ -254,6 +254,9 @@
     <string name="notice_left">Has sortit de la reserva a %1$s.</string>
     <string name="role_invited_by">T’ha convidat %1$s</string>
     <string name="role_invited">Invitació</string>
+    <string name="role_event">Esdeveniment de l’ajuntament</string>
+    <string name="event_label">Esdeveniment</string>
+    <string name="event_no_description">L’ajuntament no ha afegit cap descripció.</string>
     <string name="public_label">Pública</string>
     <string name="public_turn_title">Reserva pública · %1$s</string>
     <string name="public_edit">Editar descripció</string>

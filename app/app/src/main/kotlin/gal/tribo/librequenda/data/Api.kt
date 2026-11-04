@@ -258,7 +258,7 @@ suspend fun fetchFacilities(near: GeoPoint? = null): List<FacilityCard> {
 data class GeoPoint(val latitude: Double, val longitude: Double)
 
 /** Someone's public booking with spots left: what «For you» shows of it. */
-data class PublicBooking(val id: String, val startsAt: java.time.Instant, val endsAt: java.time.Instant, val spotsLeft: Int, val ownerFirstName: String)
+data class PublicBooking(val id: String, val startsAt: java.time.Instant, val endsAt: java.time.Instant, val spotsLeft: Int, val ownerFirstName: String, val title: String = "") // title: the council's event
 
 /** One «For you» item (POST /api/me/recommendations): a facility to book, or a public booking to join. */
 data class Recommendation(
@@ -289,6 +289,7 @@ suspend fun fetchRecommendations(accessToken: String, near: GeoPoint?): List<Rec
                     endsAt = java.time.Instant.parse(it.getString("ends_at")),
                     spotsLeft = it.optInt("spots_left"),
                     ownerFirstName = it.optString("owner_first_name"),
+                    title = if (it.optString("kind") == "event") it.optString("title") else "",
                 )
             },
         )

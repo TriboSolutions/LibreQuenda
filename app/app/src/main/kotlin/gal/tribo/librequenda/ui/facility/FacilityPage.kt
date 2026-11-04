@@ -183,6 +183,7 @@ fun FacilityPage(
                                         horizontalAlignment = Alignment.CenterHorizontally,
                                     ) {
                                         Text(time(at), style = MaterialTheme.typography.labelLarge, color = ink)
+                                        if (turn?.isEvent == true) Text(stringResource(R.string.event_label), style = MaterialTheme.typography.labelSmall, color = ink)
                                         if (turn != null) Text(
                                             pluralStringResource(R.plurals.spots_left, turn.spotsLeft.coerceAtLeast(0), turn.spotsLeft.coerceAtLeast(0)),
                                             style = MaterialTheme.typography.labelSmall, color = ink,
@@ -202,11 +203,12 @@ fun FacilityPage(
                                     Icon(painterResource(R.drawable.ic_users), contentDescription = null, tint = Lq.colors.pillPositiveInk, modifier = Modifier.size(20.dp))
                                     Spacer(Modifier.size(8.dp))
                                     Text(
-                                        "${stringResource(R.string.public_label)} · ${time(turn.startsAt)}–${time(turn.endsAt)}",
+                                        "${stringResource(if (turn.isEvent) R.string.event_label else R.string.public_label)} · ${time(turn.startsAt)}–${time(turn.endsAt)}",
                                         style = MaterialTheme.typography.titleSmall, color = Lq.colors.pillPositiveInk,
                                     )
                                 }
-                                Text(turn.description.ifBlank { stringResource(R.string.public_no_description) }, style = MaterialTheme.typography.bodyMedium, color = Lq.colors.foreground)
+                                if (turn.isEvent) Text(turn.title, style = MaterialTheme.typography.titleMedium, color = Lq.colors.foreground)
+                                Text(turn.description.ifBlank { stringResource(if (turn.isEvent) R.string.event_no_description else R.string.public_no_description) }, style = MaterialTheme.typography.bodyMedium, color = Lq.colors.foreground)
                                 Text(stringResource(R.string.people_count, turn.people.size, turn.capacity), style = MaterialTheme.typography.labelLarge, color = Lq.colors.foreground)
                                 FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                                     turn.people.forEach { name ->
@@ -304,7 +306,7 @@ fun ConfirmBookingPage(choice: Checkout?, actions: ProfileActions, onBack: () ->
 
         Column(Modifier.fillMaxSize()) {
             Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
-                Text(stringResource(if (turn != null) R.string.public_turn_title else R.string.confirm_title, d.name), style = MaterialTheme.typography.headlineMedium, color = Lq.colors.foreground, modifier = Modifier.semantics { heading() })
+                Text(if (turn?.isEvent == true) turn.title else stringResource(if (turn != null) R.string.public_turn_title else R.string.confirm_title, d.name), style = MaterialTheme.typography.headlineMedium, color = Lq.colors.foreground, modifier = Modifier.semantics { heading() })
                 Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                     Fact(R.drawable.ic_calendar, "${dayLabel(slot.startsAt.atZone(ZONE).toLocalDate())} · ${time(slot.startsAt)}–${time(slot.endsAt)}")
                     Fact(R.drawable.ic_map_pin, listOf(d.councilName, f.address).filter { it.isNotBlank() }.joinToString(" · "))
@@ -317,8 +319,8 @@ fun ConfirmBookingPage(choice: Checkout?, actions: ProfileActions, onBack: () ->
                 if (turn != null) {
                     HorizontalDivider(color = Lq.colors.border)
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(stringResource(R.string.public_label), style = MaterialTheme.typography.titleMedium, color = Lq.colors.foreground)
-                        Text(turn.description.ifBlank { stringResource(R.string.public_no_description) }, style = MaterialTheme.typography.bodyMedium, color = Lq.colors.mutedForeground)
+                        Text(stringResource(if (turn.isEvent) R.string.event_label else R.string.public_label), style = MaterialTheme.typography.titleMedium, color = Lq.colors.foreground)
+                        Text(turn.description.ifBlank { stringResource(if (turn.isEvent) R.string.event_no_description else R.string.public_no_description) }, style = MaterialTheme.typography.bodyMedium, color = Lq.colors.mutedForeground)
                         Fact(R.drawable.ic_users, stringResource(R.string.people_count, turn.people.size, turn.capacity) + " · " + turn.people.filter { it.isNotBlank() }.joinToString(", "))
                         Text(pluralStringResource(R.plurals.public_spots, turn.spotsLeft, turn.spotsLeft), style = MaterialTheme.typography.labelLarge, color = Lq.colors.pillPositiveInk)
                     }

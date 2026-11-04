@@ -20,6 +20,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -448,6 +449,7 @@ private fun ResultRow(f: DayFacility, filters: SearchFilters, onOpen: () -> Unit
                             .clickable { onGame(game) }
                             .padding(horizontal = 14.dp, vertical = 10.dp),
                     ) {
+                        if (game.isEvent) Text(game.title, style = MaterialTheme.typography.labelLarge, color = Lq.colors.pillPositiveInk, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.widthIn(max = 180.dp))
                         Text(game.startsAt.atZone(ZONE).format(DateTimeFormatter.ofPattern("HH:mm", locale)), style = MaterialTheme.typography.labelLarge, color = Lq.colors.pillPositiveInk)
                         Text(pluralStringResource(R.plurals.public_spots, game.spotsLeft, game.spotsLeft), style = MaterialTheme.typography.bodySmall, color = Lq.colors.pillPositiveInk)
                     }

@@ -418,7 +418,9 @@ private fun UpcomingRow(b: Booking, onOpen: () -> Unit) {
         )
         Spacer(Modifier.size(14.dp))
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(b.facilityName, style = MaterialTheme.typography.titleMedium, color = Lq.colors.foreground, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            // an event: its title first, then where
+            if (b.isEvent) Text(b.title, style = MaterialTheme.typography.titleMedium, color = Lq.colors.foreground, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            Text(b.facilityName, style = if (b.isEvent) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.titleMedium, color = Lq.colors.foreground, maxLines = 2, overflow = TextOverflow.Ellipsis)
             Text("${bookingDay(b.startsAt)} · ${time(b.startsAt)}–${time(b.endsAt)}", style = MaterialTheme.typography.bodyMedium, color = Lq.colors.foreground)
             Text(b.councilName, style = MaterialTheme.typography.bodySmall, color = Lq.colors.mutedForeground)
             Tags(b, Modifier.padding(top = 4.dp))
@@ -436,7 +438,11 @@ private fun Tags(b: Booking, modifier: Modifier = Modifier) {
         if (live) Pill(stringResource(R.string.in_progress), Lq.colors.primary, Lq.colors.primaryForeground)
         if (b.checkedIn) Pill(stringResource(R.string.status_checked_in), Lq.colors.pillPositiveBg, Lq.colors.pillPositiveInk)
         if (!b.owner) Pill(
-            if (b.ownerName.isNotBlank()) stringResource(R.string.role_invited_by, b.ownerName) else stringResource(R.string.role_invited),
+            when {
+                b.isEvent -> stringResource(R.string.role_event)
+                b.ownerName.isNotBlank() -> stringResource(R.string.role_invited_by, b.ownerName)
+                else -> stringResource(R.string.role_invited)
+            },
             Lq.colors.pillNeutralBg, Lq.colors.pillNeutralInk,
         )
     }
@@ -524,7 +530,8 @@ private fun BookingContent(
                     modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth().height(190.dp).clip(RoundedCornerShape(16.dp)).background(Lq.colors.muted),
                 )
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(booking.facilityName, style = MaterialTheme.typography.headlineMedium, color = Lq.colors.foreground)
+                    if (booking.isEvent) Text(booking.title, style = MaterialTheme.typography.headlineMedium, color = Lq.colors.foreground)
+                    Text(booking.facilityName, style = if (booking.isEvent) MaterialTheme.typography.titleMedium else MaterialTheme.typography.headlineMedium, color = Lq.colors.foreground)
                     Text("${bookingDay(booking.startsAt)} · ${time(booking.startsAt)}–${time(booking.endsAt)}", style = MaterialTheme.typography.bodyLarge, color = Lq.colors.foreground)
                     Text(booking.councilName, style = MaterialTheme.typography.bodyMedium, color = Lq.colors.mutedForeground)
                 }
@@ -602,6 +609,22 @@ private fun BookingContent(
                     Text(stringResource(R.string.people_count, booking.people, booking.capacity), style = MaterialTheme.typography.bodyLarge, color = Lq.colors.foreground)
                 }
             }
+            // an event they joined: what the council does, and how many are in (no owner among them)
+            if (booking.isEvent) item {
+                HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = Lq.colors.border)
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(
+                        booking.publicDescription.ifBlank { stringResource(R.string.event_no_description) },
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = if (booking.publicDescription.isBlank()) Lq.colors.mutedForeground else Lq.colors.foreground,
+                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(painterResource(R.drawable.ic_users), contentDescription = null, tint = Lq.colors.foreground, modifier = Modifier.size(22.dp))
+                        Spacer(Modifier.size(16.dp))
+                        Text(stringResource(R.string.people_count, booking.people, booking.capacity), style = MaterialTheme.typography.bodyLarge, color = Lq.colors.foreground)
+                    }
+                }
+            }
             // the details: drag the sheet up to read them
             item {
                 HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = Lq.colors.border)
@@ -665,7 +688,7 @@ private fun DangerOutline(text: String, onClick: () -> Unit) {
 private fun HistoryRow(b: Booking) {
     Row(Modifier.fillMaxWidth().padding(vertical = 14.dp), verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f)) {
-            Text(b.facilityName, style = MaterialTheme.typography.bodyLarge, color = Lq.colors.foreground, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(if (b.isEvent) "${b.title} · ${b.facilityName}" else b.facilityName, style = MaterialTheme.typography.bodyLarge, color = Lq.colors.foreground, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Text("${bookingDay(b.startsAt)} · ${time(b.startsAt)}", style = MaterialTheme.typography.bodySmall, color = Lq.colors.mutedForeground)
         }
         val (label, positive) = when {
