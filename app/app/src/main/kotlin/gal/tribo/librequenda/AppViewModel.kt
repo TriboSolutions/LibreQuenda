@@ -28,9 +28,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-/** Home: «For you» and public bookings (signed in), and every facility for the rest. */
+/** Home: the councils' events, «For you» and public bookings (signed in), and every facility for the rest. */
 data class HomeState(
     val facilities: List<FacilityCard> = emptyList(),
+    val events: List<gal.tribo.librequenda.data.UpcomingEvent> = emptyList(), // not started, soonest first
     val recommendations: List<Recommendation> = emptyList(),
     val location: GeoPoint? = null, // shared by the person, for distances; never stored
     val loading: Boolean = true,
@@ -91,6 +92,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application), Pr
             val near = homeState.value.location
             val list = runCatching { fetchFacilities(near) }.getOrNull() // the first page, nearest first
             homeState.update { it.copy(loading = false, facilities = list ?: it.facilities) }
+            // the councils' events, whenever there are any: on top of the home
+            runCatching { gal.tribo.librequenda.data.fetchUpcomingEvents(near) }
+                .onSuccess { events -> homeState.update { it.copy(events = events) } }
             // today at every council, nearest first: all the public bookings with spots, not only the few «For you» picks
             // the API keeps only the facilities with a public booking with spots left, nearest first
             runCatching {

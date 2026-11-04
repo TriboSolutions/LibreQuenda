@@ -139,6 +139,8 @@ fun HomeScreen(
                 }
             }
             item { Greeting(session, onSearch) }
+            // the councils' events come first, whenever there are any: always shown, not a suggestion
+            item { EventsSection(home, onOpen) }
             // «For you» is theirs to turn off (Preferences), as on the web
             if (session.me?.showRecommendations != false) item { ForYouSection(home, session, onOpen) }
             item { PublicSection(home, onOpen) }
@@ -199,8 +201,8 @@ private fun ForYouSection(home: HomeState, session: SessionState, onOpen: (Facil
 private fun PublicSection(home: HomeState, onOpen: (FacilityCard, Instant?) -> Unit) {
     val here = home.location
     val now = Instant.now()
-    // the facilities come nearest first from the API, each one's games by time
-    val games = home.today.flatMap { f -> f.publicGames.filter { it.startsAt.isAfter(now) }.map { f to it } }
+    // the facilities come nearest first from the API, each one's games by time; events have their own section
+    val games = home.today.flatMap { f -> f.publicGames.filter { it.startsAt.isAfter(now) && !it.isEvent }.map { f to it } }
     if (games.isEmpty()) return
     SectionHeader(stringResource(R.string.public_title), stringResource(R.string.public_help))
     Carousel {
@@ -212,6 +214,29 @@ private fun PublicSection(home: HomeState, onOpen: (FacilityCard, Instant?) -> U
             // the council's event says what it is
             val badge = listOfNotNull(game.title.takeIf { game.isEvent }, format(game.startsAt), spots).joinToString(" · ")
             FacilityCarouselCard(card, here, badge = badge, onClick = { onOpen(card, game.startsAt) })
+        }
+    }
+    Spacer(Modifier.height(28.dp))
+}
+
+/**
+ * The councils' events that have not started, soonest first, as the API sends them:
+ * the event's title on the facility's photo, when, and the places left. Tapping one
+ * opens the facility at that time, where joining is one step; full ones still show.
+ */
+@Composable
+private fun EventsSection(home: HomeState, onOpen: (FacilityCard, Instant?) -> Unit) {
+    if (home.events.isEmpty()) return
+    SectionHeader(stringResource(R.string.events_title), stringResource(R.string.events_help))
+    Carousel {
+        items(home.events, key = { it.id }) { event ->
+            val spots = if (event.spotsLeft > 0) pluralStringResource(R.plurals.spots_left, event.spotsLeft, event.spotsLeft) else stringResource(R.string.event_full)
+            FacilityCarouselCard(
+                event.facility, home.location,
+                badge = "${formatDay(event.startsAt)} · $spots",
+                title = event.title,
+                onClick = { onOpen(event.facility, event.startsAt) },
+            )
         }
     }
     Spacer(Modifier.height(28.dp))
@@ -315,9 +340,9 @@ private fun Carousel(content: androidx.compose.foundation.lazy.LazyListScope.() 
     )
 }
 
-/** The facility's photo with its name, distance and council on it. */
+/** The facility's photo with its name, distance and council on it; an event's title over them. */
 @Composable
-private fun FacilityCarouselCard(f: FacilityCard, here: GeoPoint?, badge: String?, onClick: () -> Unit) {
+private fun FacilityCarouselCard(f: FacilityCard, here: GeoPoint?, badge: String?, title: String? = null, onClick: () -> Unit) {
     // how far, as the API worked it out
     val distance = f.distanceKm?.let { stringResource(R.string.distance_km, formatKm(it)) }
     Box(
@@ -359,14 +384,14 @@ private fun FacilityCarouselCard(f: FacilityCard, here: GeoPoint?, badge: String
             verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
             Text(
-                f.name,
+                title ?: f.name,
                 color = Color.White,
                 style = MaterialTheme.typography.titleMedium,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
-                listOfNotNull(distance, f.councilName).joinToString(" · "),
+                listOfNotNull(f.name.takeIf { title != null }, distance, f.councilName).joinToString(" · "),
                 color = Color.White.copy(alpha = 0.85f),
                 style = MaterialTheme.typography.bodySmall,
                 maxLines = 1,
@@ -383,6 +408,19 @@ private fun locale(): Locale = LocalConfiguration.current.locales[0]
 @Composable
 private fun formatKm(km: Double): String =
     if (km < 10) String.format(locale(), "%.1f", km) else km.toInt().toString()
+
+/** "18:00" today, "mar 18:00" this week, "21 nov 18:00" further ahead: events are planned weeks before. */
+@Composable
+private fun formatDay(instant: Instant): String {
+    val at = instant.atZone(ZoneId.systemDefault())
+    val days = java.time.temporal.ChronoUnit.DAYS.between(LocalDate.now(), at.toLocalDate())
+    val pattern = when {
+        days == 0L -> "HH:mm"
+        days < 7 -> "EEE HH:mm"
+        else -> "d MMM HH:mm"
+    }
+    return at.format(DateTimeFormatter.ofPattern(pattern, locale()))
+}
 
 /** "18:00" today, "mar 18:00" another day, in the phone's time zone and the app's language. */
 @Composable

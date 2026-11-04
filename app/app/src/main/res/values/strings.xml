@@ -51,6 +51,9 @@
     <string name="for_you_help_signed_out">Instalacións con quendas libres hoxe.</string>
     <string name="public_title">Partidas públicas</string>
     <string name="public_help">Reservas doutras persoas con prazas libres: únete.</string>
+    <string name="events_title">Eventos</string>
+    <string name="events_help">Actividades do concello abertas a todo o mundo: apúntate.</string>
+    <string name="event_full">Completo</string>
     <string name="free_at">Libre ás %1$s</string>
     <string name="distance_km">%1$s km</string>
     <plurals name="spots_left">
