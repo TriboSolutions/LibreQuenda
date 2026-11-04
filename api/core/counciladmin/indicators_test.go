@@ -69,14 +69,30 @@ func TestFillSeries(t *testing.T) {
 	var r, _ = IndicatorsQuery{From: "2026-10-01", To: "2026-10-14"}.parse(madrid, time.Now())
 	r.bucket = "week"
 	var rows = []model.IndicatorsSeriesRow{{Period: day("2026-10-05"), Confirmed: 7, Cancelled: 1}}
-	var series = fillSeries(r, rows)
-	var want = []PeriodBookingsDto{{"2026-09-28", 0, 0}, {"2026-10-05", 7, 1}, {"2026-10-12", 0, 0}}
+	// 3 ratings, 13 stars, in the last week only
+	var rated = []model.IndicatorsRatingSeriesRow{{Period: day("2026-10-12"), Ratings: 3, RatingStars: 13}}
+	var series = fillSeries(r, rows, rated)
+	type point struct {
+		period               string
+		confirmed, cancelled int64
+		ratings              int64
+		average              float64 // 0: none (null)
+	}
+	var want = []point{{"2026-09-28", 0, 0, 0, 0}, {"2026-10-05", 7, 1, 0, 0}, {"2026-10-12", 0, 0, 3, 13.0 / 3}}
 	if len(series) != len(want) {
 		t.Fatalf("got %+v, want %+v", series, want)
 	}
-	for i := range want {
-		if series[i] != want[i] {
-			t.Errorf("period %d: got %+v, want %+v", i, series[i], want[i])
+	for i, w := range want {
+		var got = series[i]
+		var average float64
+		if got.RatingAverage != nil {
+			average = *got.RatingAverage
+		}
+		if got.Period != w.period || got.Confirmed != w.confirmed || got.Cancelled != w.cancelled || got.Ratings != w.ratings || average != w.average {
+			t.Errorf("period %d: got %+v (average %v), want %+v", i, got, average, w)
+		}
+		if w.ratings == 0 && got.RatingAverage != nil {
+			t.Errorf("period %d: nobody rated, the average must be null", i)
 		}
 	}
 }
@@ -98,6 +114,10 @@ func TestFacilityIndicatorRates(t *testing.T) {
 		t.Errorf("no way to check in or no opening hours: the rates must be null, got %v %v", item.NoShowRate, item.Occupancy)
 	}
 
+	if item.RatingAverage != nil {
+		t.Errorf("nobody rated: the average must be null, got %v", *item.RatingAverage)
+	}
+
 	row.BookedMinutes = 50 * 60 // booked before the schedule was cut down
 	item = mapFacilityIndicators(row, 40*60)
 	if *item.Occupancy != 1 {
@@ -105,11 +125,28 @@ func TestFacilityIndicatorRates(t *testing.T) {
 	}
 }
 
+func TestRatingFigures(t *testing.T) {
+	// two facilities: 2 ratings (5 and 4) and 3 ratings (1, 3 and 3)
+	var a = mapFacilityIndicators(model.IndicatorsByFacilityRow{ID: uuid.New(), Ratings: 2, Stars4: 1, Stars5: 1}, 0)
+	var b = mapFacilityIndicators(model.IndicatorsByFacilityRow{ID: uuid.New(), Ratings: 3, Stars1: 1, Stars3: 2}, 0)
+	if *a.RatingAverage != 4.5 || *b.RatingAverage != 7.0/3 {
+		t.Errorf("averages %v %v, want 4.5 and 2.33", *a.RatingAverage, *b.RatingAverage)
+	}
+	// the council's: every rating counts the same, not the facilities' averages averaged
+	var totals IndicatorTotalsDto
+	totals.add(a.IndicatorCountsDto)
+	totals.add(b.IndicatorCountsDto)
+	totals.rates()
+	if totals.Ratings != 5 || *totals.RatingAverage != 16.0/5 || totals.RatingStars != [5]int64{1, 0, 2, 1, 1} {
+		t.Errorf("totals %d ratings, average %v, by stars %v; want 5, 3.2, [1 0 2 1 1]", totals.Ratings, *totals.RatingAverage, totals.RatingStars)
+	}
+}
+
 func TestSummaryCSV(t *testing.T) {
-	var occupancy = 0.125
+	var occupancy, rating = 0.125, 4.25
 	var data = &IndicatorsDto{From: "2026-10-01", To: "2026-10-28", Facilities: []FacilityIndicatorsDto{{
 		Name:               "Pista de pádel 1",
-		IndicatorCountsDto: IndicatorCountsDto{Bookings: 3, Confirmed: 3, BookedHours: 4.5, OpenHours: 36, Occupancy: &occupancy},
+		IndicatorCountsDto: IndicatorCountsDto{Bookings: 3, Confirmed: 3, BookedHours: 4.5, OpenHours: 36, Occupancy: &occupancy, Ratings: 4, RatingAverage: &rating},
 	}}}
 	var out bytes.Buffer
 	if err := writeSummaryCSV(&out, csvFormat{}, data); err != nil {
@@ -119,30 +156,30 @@ func TestSummaryCSV(t *testing.T) {
 	if !strings.HasPrefix(text, "\xef\xbb\xbf") {
 		t.Error("missing the UTF-8 byte order mark")
 	}
-	if !strings.Contains(text, "Pista de pádel 1,2026-10-01,2026-10-28,3,3,0,0,,4.50,36.00,0.1250,0,0,\n") {
+	if !strings.Contains(text, "Pista de pádel 1,2026-10-01,2026-10-28,3,3,0,0,,4.50,36.00,0.1250,0,0,,4,4.25\n") {
 		t.Errorf("unexpected row:\n%s", text)
 	}
 
 	out.Reset()
 	writeSummaryCSV(&out, csvFormat{excel: true}, data)
-	if !strings.Contains(out.String(), "Pista de pádel 1;2026-10-01;2026-10-28;3;3;0;0;;4,50;36,00;0,1250;0;0;\n") {
+	if !strings.Contains(out.String(), "Pista de pádel 1;2026-10-01;2026-10-28;3;3;0;0;;4,50;36,00;0,1250;0;0;;4;4,25\n") {
 		t.Errorf("Excel format must use ';' and a decimal comma:\n%s", out.String())
 	}
 }
 
 func TestSummaryCSVHidesSmallCounts(t *testing.T) {
-	var occupancy, cancellation = 0.05, 0.0625
+	var occupancy, cancellation, rating = 0.05, 0.0625, 5.0
 	var data = &IndicatorsDto{From: "2026-10-01", To: "2026-10-28", Facilities: []FacilityIndicatorsDto{{
 		Name: "Pista de tenis",
 		IndicatorCountsDto: IndicatorCountsDto{
 			Bookings: 32, Confirmed: 30, CancelledByUser: 2, BookedHours: 30, OpenHours: 600, Occupancy: &occupancy, CancellationRate: &cancellation,
-			Finished: 2, Attended: 2,
+			Finished: 2, Attended: 2, Ratings: 2, RatingAverage: &rating,
 		},
 	}}}
 	var out bytes.Buffer
 	writeSummaryCSV(&out, csvFormat{}, data)
-	// 2 cancellations: "<3", and the rate that would give them away stays empty
-	var want = "Pista de tenis,2026-10-01,2026-10-28,32,30,<3,0,,30.00,600.00,0.0500,<3,<3,\n"
+	// 2 cancellations: "<3", and the rate that would give them away stays empty; the same with 2 ratings
+	var want = "Pista de tenis,2026-10-01,2026-10-28,32,30,<3,0,,30.00,600.00,0.0500,<3,<3,,<3,\n"
 	if !strings.HasSuffix(out.String(), want) {
 		t.Errorf("got:\n%s\nwant the row:\n%s", out.String(), want)
 	}

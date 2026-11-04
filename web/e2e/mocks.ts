@@ -365,12 +365,23 @@ const counts = {
   finished: 80,
   attended: 70,
   no_show_rate: 0.125,
+  ratings: 48,
+  rating_average: 188 / 48,
+  rating_stars: [2, 4, 8, 16, 18] as [number, number, number, number, number],
 }
 
 function figures(daysBack: number, scale: number): PeriodFigures {
   const series = Array.from({ length: 14 }, (_, i) => {
     const d = new Date(now.getTime() - (daysBack + 13 - i) * 24 * HOUR)
-    return { period: d.toISOString().slice(0, 10), confirmed: Math.round((5 + ((i * 7) % 9)) * scale), cancelled: i % 3 }
+    // some periods nobody rated: the average line has gaps there
+    const ratings = i % 5 === 2 ? 0 : 2 + (i % 3)
+    return {
+      period: d.toISOString().slice(0, 10),
+      confirmed: Math.round((5 + ((i * 7) % 9)) * scale),
+      cancelled: i % 3,
+      ratings,
+      rating_average: ratings === 0 ? null : Math.min(5, 3.2 * scale + (i % 4) * 0.3),
+    }
   })
   const weekdays = [1, 2, 3, 4, 5, 6, 7].map((weekday) => ({ weekday, booked_hours: 10 + weekday, open_hours: 42, occupancy: (10 + weekday) / 42 }))
   return {
@@ -379,7 +390,18 @@ function figures(daysBack: number, scale: number): PeriodFigures {
     totals: { ...counts, bookings: Math.round(counts.bookings * scale), active_users: 42, avg_party_size: 2.4, median_lead_hours: 30 },
     facilities: [
       { ...counts, id: 'f1', name: 'Pista de pádel 1', is_active: true, takes_checkin: true },
-      { ...counts, id: 'f2', name: 'Pavillón municipal', is_active: false, takes_checkin: false, occupancy: null, no_show_rate: null },
+      {
+        ...counts,
+        id: 'f2',
+        name: 'Pavillón municipal',
+        is_active: false,
+        takes_checkin: false,
+        occupancy: null,
+        no_show_rate: null,
+        ratings: 0,
+        rating_average: null,
+        rating_stars: [0, 0, 0, 0, 0],
+      },
     ],
     series,
     weekdays,

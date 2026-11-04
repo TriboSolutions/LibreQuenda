@@ -726,6 +726,10 @@ export type IndicatorCounts = {
   finished: number // past confirmed bookings at facilities with a QR reader
   attended: number
   no_show_rate: number | null
+  // the residents' stars for the facilities after the period's bookings
+  ratings: number
+  rating_average: number | null // 1-5; null without ratings
+  rating_stars: [number, number, number, number, number] // how many gave 1, 2, 3, 4 and 5 stars
 }
 
 export type FacilityIndicators = IndicatorCounts & { id: string; name: string; is_active: boolean; takes_checkin: boolean } // takes_checkin: a reader, the code, the door QR or staff
@@ -744,7 +748,7 @@ export type PeriodFigures = {
   to: string
   totals: IndicatorTotals
   facilities: FacilityIndicators[]
-  series: { period: string; confirmed: number; cancelled: number }[]
+  series: { period: string; confirmed: number; cancelled: number; ratings: number; rating_average: number | null }[] // rating_average: null when nobody rated
   weekdays: WeekdayOccupancy[]
 }
 

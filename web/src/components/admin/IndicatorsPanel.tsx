@@ -1,10 +1,11 @@
-import { ArrowDownRight, ArrowLeft, ArrowRight, ArrowUpRight, Download, Maximize2, Minimize2, Pencil, RefreshCw } from 'lucide-react'
+import { ArrowDownRight, ArrowLeft, ArrowRight, ArrowUpRight, Download, Maximize2, Minimize2, Pencil, RefreshCw, Star } from 'lucide-react'
 import { type ReactNode, useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import { Link } from 'react-router'
-import { Bar, BarChart, CartesianGrid, ComposedChart, Line, XAxis, YAxis } from 'recharts'
+import { Bar, BarChart, CartesianGrid, ComposedChart, Line, LineChart, XAxis, YAxis } from 'recharts'
 import { DatePicker } from '@/components/DatePicker'
+import { RatingBadge } from '@/components/Stars'
 import { Button } from '@/components/ui/button'
 import { type ChartConfig, ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import {
@@ -470,10 +471,13 @@ export function IndicatorsPanel({ slug, facilities }: { slug: string; facilities
         <>
           <Kpis data={data} caption={caption} />
           <BookingsChart data={data} caption={caption} />
+          <Ratings data={data} caption={caption} />
           <WeekdaysAndHabits data={data} caption={caption} />
           <BusyHours data={data} caption={caption} />
           {!chosen && <FacilityTable data={data} caption={caption} onOpen={openFacility} />}
-          <p className="text-sm text-muted-foreground">{t('admin:indicators.definitions')}</p>
+          <p className="text-sm text-muted-foreground">
+            {t('admin:indicators.definitions')} {t('admin:indicators.ratingsDefinition')}
+          </p>
         </>
       )}
     </section>
@@ -837,6 +841,164 @@ function BusyHours({ data, caption }: { data: Indicators; caption: string }) {
   )
 }
 
+/** An average of stars with one decimal, in the page's language: 3,9. */
+function stars(value: number) {
+  return value.toLocaleString(i18n.resolvedLanguage, { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+}
+
+/** The change of an average of stars, in stars: +0,3. Flat under 0,05. */
+function starsChange(now: number | null, before: number | null | undefined): Change | null {
+  if (now === null || before === null || before === undefined) return null
+  const diff = Math.round((now - before) * 10) / 10
+  const text = (diff > 0 ? '+' : diff < 0 ? '−' : '±') + stars(Math.abs(diff))
+  return { text, direction: diff > 0 ? 'up' : diff < 0 ? 'down' : 'flat' }
+}
+
+/**
+ * The residents' stars for the facilities: the average and how many, how many of
+ * each, and the average over time against the compared period. Nothing to draw
+ * until someone rated.
+ */
+function Ratings({ data, caption }: { data: Indicators; caption: string }) {
+  const { t } = useTranslation(['admin', 'common'])
+  const totals = data.totals
+  const before = data.previous?.totals
+  const config = {
+    average: { label: t('indicators.ratingsAverage'), color: 'var(--star)' },
+    previous: { label: t('indicators.ratingsPreviousAverage'), color: 'var(--chart-previous)' },
+  } satisfies ChartConfig
+  // the compared period, lined up by position as in the bookings chart; a period nobody rated is a gap, not a 0
+  const rows = data.series.map((p, i) => ({
+    period: p.period,
+    label: periodLabel(p.period, data.bucket),
+    average: p.rating_average,
+    ratings: p.ratings,
+    previous: data.previous?.series[i]?.rating_average ?? null,
+  }))
+  const most = Math.max(1, ...totals.rating_stars)
+  return (
+    <Board id="ratings-title" title={t('indicators.ratingsTitle')} hint={t('indicators.ratingsHint')} caption={caption}>
+      {(full) =>
+        totals.ratings === 0 ? (
+          <p className="mt-4 text-sm text-muted-foreground">{t('indicators.ratingsNone')}</p>
+        ) : (
+          <>
+            <div className={cn('mt-4 grid gap-6 lg:grid-cols-[16rem_1fr]', full && 'mt-8 lg:grid-cols-[24rem_1fr]')}>
+              <div className="grid content-start gap-5">
+                <div className="grid gap-1">
+                  <p className="flex items-center gap-2">
+                    <Star aria-hidden className={cn('size-7 fill-star text-star', full && 'size-14')} />
+                    <span className={cn('num text-[28px] leading-9 font-semibold tracking-[-0.01em]', full && 'text-7xl leading-none')}>
+                      {stars(totals.rating_average ?? 0)}
+                    </span>
+                    <span className={cn('text-sm text-muted-foreground', full && 'text-xl')}>{t('indicators.ratingsOutOf')}</span>
+                  </p>
+                  {before && <Delta change={starsChange(totals.rating_average, before.rating_average)} good="up" large={full} />}
+                  <p className={cn('num text-xs text-muted-foreground', full && 'text-base')}>{t('indicators.ratingsCount', { count: totals.ratings })}</p>
+                </div>
+                <div>
+                  <h4 className={cn('mb-2 text-sm font-medium', full && 'text-lg')}>{t('indicators.ratingsDistribution')}</h4>
+                  <ul className="grid gap-1.5">
+                    {[5, 4, 3, 2, 1].map((n) => {
+                      const count = totals.rating_stars[n - 1]
+                      return (
+                        <li key={n} className={cn('num grid grid-cols-[2.5rem_1fr_3rem] items-center gap-2 text-sm', full && 'text-lg')}>
+                          <span className="flex items-center gap-1">
+                            <span aria-hidden>{n}</span>
+                            <Star aria-hidden className="size-3.5 fill-star text-star" />
+                            <span className="sr-only">{t('common:rating.stars', { count: n })}</span>
+                          </span>
+                          <span className={cn('h-2 overflow-hidden rounded-full bg-muted', full && 'h-3')} aria-hidden="true">
+                            <span className="block h-full rounded-full bg-star" style={{ width: `${(count / most) * 100}%` }} />
+                          </span>
+                          <span className="text-right">{count.toLocaleString(i18n.resolvedLanguage)}</span>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                </div>
+              </div>
+              <div className="min-w-0">
+                <h4 className={cn('mb-2 text-sm font-medium', full && 'text-lg')}>{t('indicators.ratingsOverTime')}</h4>
+                <ChartContainer config={config} className={cn('aspect-auto h-56 w-full', full && 'h-[calc(100dvh-16rem)] text-sm')}>
+                  <LineChart data={rows} accessibilityLayer>
+                    <CartesianGrid vertical={false} />
+                    <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} minTickGap={16} />
+                    {/* the whole scale, so a small change does not look like a large one */}
+                    <YAxis domain={[1, 5]} ticks={[1, 2, 3, 4, 5]} allowDecimals={false} tickLine={false} axisLine={false} width={24} />
+                    <ChartTooltip
+                      content={
+                        <ChartTooltipContent
+                          formatter={(value, name, item) => (
+                            <span className="flex w-full items-center justify-between gap-3">
+                              <span className="flex items-center gap-1.5">
+                                <span className="size-2.5 rounded-[2px]" style={{ background: item.color }} aria-hidden />
+                                {config[name as keyof typeof config]?.label}
+                              </span>
+                              <span className="num font-medium text-foreground">
+                                {stars(Number(value))}
+                                {name === 'average' && <span className="ml-1 font-normal text-muted-foreground">({item.payload.ratings})</span>}
+                              </span>
+                            </span>
+                          )}
+                        />
+                      }
+                    />
+                    {data.previous && <ChartLegend content={<ChartLegendContent />} />}
+                    <Line dataKey="average" type="monotone" stroke="var(--color-average)" strokeWidth={2} dot={{ r: 4, strokeWidth: 0, fill: 'var(--color-average)' }} connectNulls={false} />
+                    {data.previous && (
+                      <Line dataKey="previous" type="monotone" stroke="var(--color-previous)" strokeWidth={2} strokeDasharray="5 4" dot={false} connectNulls={false} />
+                    )}
+                  </LineChart>
+                </ChartContainer>
+              </div>
+            </div>
+            {!full && (
+              <details className="mt-3">
+                <summary className="cursor-pointer text-sm text-muted-foreground">{t('indicators.showTable')}</summary>
+                <div className="mt-2 max-h-72 overflow-auto">
+                  <table className="num w-full text-sm">
+                    <thead>
+                      <tr className="text-xs text-muted-foreground">
+                        <th scope="col" className="py-1.5 text-left font-normal">
+                          {t('indicators.colPeriod')}
+                        </th>
+                        <th scope="col" className="py-1.5 text-right font-normal">
+                          {t('indicators.colRatings')}
+                        </th>
+                        <th scope="col" className="py-1.5 text-right font-normal">
+                          {t('indicators.colAverage')}
+                        </th>
+                        {data.previous && (
+                          <th scope="col" className="py-1.5 text-right font-normal">
+                            {t('indicators.ratingsPreviousAverage')}
+                          </th>
+                        )}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {rows.map((p) => (
+                        <tr key={p.period} className="border-t">
+                          <th scope="row" className="py-1.5 text-left font-normal">
+                            {data.bucket === 'week' ? t('indicators.weekOf', { date: p.label }) : p.label}
+                          </th>
+                          <td className="py-1.5 text-right">{p.ratings}</td>
+                          <td className="py-1.5 text-right">{p.average === null ? '—' : stars(p.average)}</td>
+                          {data.previous && <td className="py-1.5 text-right">{p.previous === null ? '—' : stars(p.previous)}</td>}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </details>
+            )}
+          </>
+        )
+      }
+    </Board>
+  )
+}
+
 function FacilityTable({ data, caption, onOpen }: { data: Indicators; caption: string; onOpen: (id: string) => void }) {
   const { t } = useTranslation('admin')
   const before = new Map(data.previous?.facilities.map((f) => [f.id, f]))
@@ -844,7 +1006,7 @@ function FacilityTable({ data, caption, onOpen }: { data: Indicators; caption: s
     <Board id="by-facility-title" title={t('indicators.byFacilityTitle')} hint={t('indicators.byFacilityHint')} caption={caption}>
       {(full) => (
         <div className={cn('mt-3 overflow-x-auto', full && 'mt-8')}>
-          <table className={cn('w-full min-w-[720px]', full && 'text-xl [&_td]:py-5 [&_th[scope=row]]:py-5')}>
+          <table className={cn('w-full min-w-[820px]', full && 'text-xl [&_td]:py-5 [&_th[scope=row]]:py-5')}>
             <thead>
               <tr className="text-xs text-muted-foreground">
                 <th scope="col" className="py-2 text-left font-normal">
@@ -866,6 +1028,9 @@ function FacilityTable({ data, caption, onOpen }: { data: Indicators; caption: s
                 </th>
                 <th scope="col" className="py-2 pl-4 text-right font-normal">
                   {t('indicators.colNoShow')}
+                </th>
+                <th scope="col" className="py-2 pl-4 text-right font-normal">
+                  {t('indicators.colRating')}
                 </th>
               </tr>
             </thead>
@@ -900,6 +1065,13 @@ function FacilityTable({ data, caption, onOpen }: { data: Indicators; caption: s
                   <td className="py-3 pl-4 text-right">{percent(f.cancellation_rate)}</td>
                   <td className="py-3 pl-4 text-right">
                     {f.takes_checkin ? percent(f.no_show_rate) : <span className="text-muted-foreground">{t('indicators.noCheckin')}</span>}
+                  </td>
+                  <td className="py-3 pl-4 text-right">
+                    {f.rating_average === null ? (
+                      <span className="text-muted-foreground">{t('indicators.ratingsNoneInPeriod')}</span>
+                    ) : (
+                      <RatingBadge rating={{ average: f.rating_average, count: f.ratings }} className={cn('justify-end', full && 'text-xl')} />
+                    )}
                   </td>
                 </tr>
               ))}
