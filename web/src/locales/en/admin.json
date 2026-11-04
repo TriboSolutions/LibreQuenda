@@ -386,7 +386,22 @@
     "facilityDetail": "Facility detail",
     "editFacility": "Edit facility",
     "customInvalid": "Choose a start date before the end date, at most a year apart.",
-    "noCheckin": "no check-in"
+    "noCheckin": "no check-in",
+    "ratingsTitle": "Ratings",
+    "ratingsHint": "The stars residents gave the facilities after the period's bookings.",
+    "ratingsNone": "Nobody has rated this period's bookings yet.",
+    "ratingsOutOf": "out of 5",
+    "ratingsCount_one": "{{count}} rating",
+    "ratingsCount_other": "{{count}} ratings",
+    "ratingsDistribution": "How many of each",
+    "ratingsOverTime": "Average over time",
+    "ratingsAverage": "Average",
+    "ratingsPreviousAverage": "Average, compared period",
+    "ratingsNoneInPeriod": "no ratings",
+    "colRatings": "Ratings",
+    "colAverage": "Average",
+    "colRating": "Rating",
+    "ratingsDefinition": "Each rating counts in the period its booking began in, and the council's average weighs them all equally."
   },
   "smtp": {
     "title": "Email server (SMTP)",
