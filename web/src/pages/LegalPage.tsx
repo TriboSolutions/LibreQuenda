@@ -2,10 +2,8 @@ import { Mail, Phone } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { SiteFooter } from '@/components/SiteFooter'
 import { TopBar } from '@/components/TopBar'
-import { useAsync } from '@/hooks/useAsync'
 import { useBranding } from '@/hooks/useBranding'
 import { usePageTitle } from '@/hooks/usePageTitle'
-import { api } from '@/lib/api'
 
 type Section = { title: string; body: string[] }
 
@@ -18,13 +16,12 @@ export function LegalPage({ which }: { which: 'terms' | 'privacy' }) {
   const { t } = useTranslation('legal')
   const { branding } = useBranding()
   usePageTitle(t(`${which}.title`))
-  const tenants = useAsync(() => api.tenants(), 'tenants')
   const app = branding.name
   const sections = t(`${which}.sections`, { returnObjects: true, app }) as Section[]
 
   return (
     <div className="flex min-h-screen flex-col">
-      <TopBar tenants={tenants.data?.tenants ?? []} tenantSlug={null} />
+      <TopBar tenantSlug={null} />
       <main id="main" tabIndex={-1} className="mx-auto w-full max-w-[1152px] flex-1 px-4 pt-8 pb-16 sm:px-6">
         <h1 className="text-[28px] leading-9 font-bold tracking-[-0.02em] sm:text-[32px] sm:leading-10">{t(`${which}.title`)}</h1>
         <p className="mt-2 text-sm text-muted-foreground">{t('updated')}</p>

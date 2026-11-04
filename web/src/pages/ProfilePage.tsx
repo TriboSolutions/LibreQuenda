@@ -17,7 +17,6 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { SettingsRow } from '@/components/SettingsRow'
-import { useAsync } from '@/hooks/useAsync'
 import { useBranding } from '@/hooks/useBranding'
 import { useLogin } from '@/hooks/useLogin'
 import { useMe } from '@/hooks/useMe'
@@ -37,7 +36,6 @@ export function ProfilePage() {
   const { login } = useLogin()
   const [params] = useSearchParams()
   const accountDeleted = (useLocation().state as { accountDeleted?: boolean } | null)?.accountDeleted === true
-  const tenants = useAsync(() => api.tenants(), 'tenants')
   usePageTitle(t('profile:title'))
 
   let body
@@ -74,7 +72,7 @@ export function ProfilePage() {
 
   return (
     <div className="min-h-screen">
-      <TopBar tenants={tenants.data?.tenants ?? []} tenantSlug={null} />
+      <TopBar tenantSlug={null} />
       <main id="main" tabIndex={-1} className="mx-auto max-w-[1152px] px-4 pt-8 pb-16 sm:px-6">
         <h1 className="mb-6 text-[28px] leading-9 font-bold tracking-[-0.02em] sm:text-[32px] sm:leading-10">{t('profile:title')}</h1>
         {body}

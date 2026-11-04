@@ -37,7 +37,6 @@ export function FacilityPage() {
   const { t } = useTranslation(['facility', 'bookings', 'common'])
   const auth = useAuth()
   const { login } = useLogin()
-  const tenants = useAsync(() => api.tenants(), 'tenants')
 
   const [searchParams] = useSearchParams()
   const linked = searchParams.get('dia') ?? ''
@@ -96,11 +95,11 @@ export function FacilityPage() {
 
   const shell = (children: React.ReactNode) => (
     <div className="min-h-screen">
-      <TopBar tenants={tenants.data?.tenants ?? []} tenantSlug={slug} />
+      <TopBar tenantSlug={slug} tenantName={page.data?.tenant.name} />
       <main id="main" tabIndex={-1} className="mx-auto max-w-[1152px] px-4 pt-6 pb-16 sm:px-6">
         <Link to={`/${slug}`} className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground">
           <ArrowLeft className="size-4" aria-hidden="true" />
-          {tenants.data?.tenants.find((c) => c.slug === slug)?.name ?? t('facility:back')}
+          {page.data?.tenant.name ?? t('facility:back')}
         </Link>
         {children}
       </main>

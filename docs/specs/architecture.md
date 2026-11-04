@@ -269,7 +269,7 @@ Development defaults that must change before a real deployment:
 
 | Group | Routes | Auth |
 |---|---|---|
-| Public | `GET /tenants` (council list), `GET /tenants/{slug}/day?date=` (every active facility with its slots for one day), `GET /tenants/{slug}/facilities/{facility}?date=` (details, slots, weekly schedule), `GET /media/{ref}` (images) | none |
+| Public | `GET /tenants` (council list: name, logo, public contact; no usage figures), `GET /tenants/{slug}` (one council), `GET /tenants/{slug}/day?date=` (every active facility with its slots for one day), `GET /tenants/{slug}/facilities/{facility}?date=` (details, slots, weekly schedule), `GET /media/{ref}` (images) | none |
 | Resident | `GET /me`, `GET\|POST /me/bookings`, `DELETE /me/bookings/{id}` (cancel) | logged in |
 | Council admin | `GET /tenants/{slug}/admin/facilities/{id}/bookings?date=` (staff day view), `POST /tenants/{slug}/admin/bookings` (book for a resident), `POST …/admin/bookings/{id}/cancel`, `GET\|POST /tenants/{slug}/admin/facilities`, `GET\|PUT\|DELETE …/facilities/{id}`, `PUT …/facilities/{id}/schedule`, `GET /tenants/{slug}/admin/indicators?days=&facility=`, `GET …/indicators/export?kind=&excel=` (CSV), `GET …/admin/export` (ZIP, full data), `GET /geocode`, `POST /media` (upload) | council admin or superadmin |
 | Superadmin | `GET\|POST /admin/tenants`, `GET\|PUT\|DELETE /admin/tenants/{slug}`, `POST /admin/tenants/{slug}/invitations`, `DELETE …/invitations/{id}`, `DELETE …/admins/{userId}`, `GET\|POST /admin/superadmins`, `DELETE /admin/superadmins/{userId}` | superadmin |

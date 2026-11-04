@@ -13,7 +13,6 @@ import (
 	"librequenda/storage"
 	"net/http"
 	"slices"
-	"strings"
 	"sync"
 	"time"
 
@@ -34,50 +33,47 @@ func GetTenantsService(db *sql.DB) *tenantsService {
 	return sTenantsInstance
 }
 
+// GetTenants lists the active councils: who they are and how to contact them,
+// for the council filter and the switcher. Public, so nothing about how
+// they use LibreQuenda (bookings, residents) goes here.
 func (s *tenantsService) GetTenants(ctx context.Context) (*TenantsResponse, *shared.ErrorResponse) {
-	var queries = model.New(s.db)
-	var rows, err = queries.ListTenants(ctx)
+	var rows, err = model.New(s.db).ListTenants(ctx)
 	if err != nil {
 		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.tenants_load_failed"}
 	}
-	var stats []model.ListTenantStatsRow
-	stats, err = queries.ListTenantStats(ctx)
-	if err != nil {
-		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.tenants_load_failed"}
-	}
-	var statsByTenant = make(map[uuid.UUID]model.ListTenantStatsRow, len(stats))
-	for _, row := range stats {
-		statsByTenant[row.ID] = row
-	}
-	var response = &TenantsResponse{Tenants: make([]TenantCardDto, 0, len(rows))}
+	var response = &TenantsResponse{Tenants: make([]TenantDto, 0, len(rows))}
 	for _, row := range rows {
-		var stat = statsByTenant[row.ID]
-		var sports = []string{}
-		if stat.Sports != "" {
-			sports = strings.Split(stat.Sports, ",")
-		}
-		response.Tenants = append(response.Tenants, TenantCardDto{
-			TenantDto: TenantDto{
-				Slug:         row.Slug,
-				Name:         row.Name,
-				LogoUrl:      storage.URL(row.LogoRef.String),
-				ContactEmail: row.ContactEmail.String,
-				ContactPhone: row.ContactPhone.String,
-			},
-			Stats: TenantStatsDto{
-				Facilities: stat.Facilities,
-				Sports:     sports,
-				FreeToday:  s.freeToday(ctx, row.Slug),
-				Bookings:   stat.Bookings,
-				Residents:  stat.Residents,
-			},
+		response.Tenants = append(response.Tenants, TenantDto{
+			Slug:         row.Slug,
+			Name:         row.Name,
+			LogoUrl:      storage.URL(row.LogoRef.String),
+			ContactEmail: row.ContactEmail.String,
+			ContactPhone: row.ContactPhone.String,
 		})
 	}
 	return response, nil
 }
 
+// GetTenant is one active council, for the pages about it.
+func (s *tenantsService) GetTenant(ctx context.Context, slug string) (*TenantDto, *shared.ErrorResponse) {
+	var row, err = model.New(s.db).GetTenantBySlug(ctx, slug)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, &shared.ErrorResponse{Code: http.StatusNotFound, Message: "errors.tenant_not_found"}
+	}
+	if err != nil {
+		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.tenants_load_failed"}
+	}
+	return &TenantDto{
+		Slug:         row.Slug,
+		Name:         row.Name,
+		LogoUrl:      storage.URL(row.LogoRef.String),
+		ContactEmail: row.ContactEmail.String,
+		ContactPhone: row.ContactPhone.String,
+	}, nil
+}
+
 // GetFacilities is every active facility of every active council, for the home
-// page's list and map. Like freeToday it reuses the day view, a few queries per
+// page's list and map. It reuses the day view, a few queries per
 // council; a council that fails to load is left out rather than failing the page.
 func (s *tenantsService) GetFacilities(ctx context.Context, near *Near, filters Filters, page helpers.PaginationParams) (*FacilitiesResponse, *shared.ErrorResponse) {
 	var tenants, err = model.New(s.db).ListTenants(ctx)
@@ -193,25 +189,6 @@ func (s *tenantsService) GetFacilitiesDay(ctx context.Context, dateParam string,
 	response.Pagination = shared.NewPageDto(page, int64(len(response.Facilities)))
 	response.Facilities = shared.Slice(response.Facilities, page)
 	return response, nil
-}
-
-// freeToday counts the turns still free today at the council's facilities. It
-// reuses the day view, so it costs a few queries per council: fine while the
-// councils fit on one home page. On error the card just shows no free turns.
-func (s *tenantsService) freeToday(ctx context.Context, slug string) int {
-	var day, _, _, err = s.loadDay(ctx, slug, "")
-	if err != nil {
-		return 0
-	}
-	var free = 0
-	for _, f := range day.Facilities {
-		for _, slot := range f.Slots {
-			if slot.Status == schedule.SlotFree {
-				free++
-			}
-		}
-	}
-	return free
 }
 
 func (s *tenantsService) GetDay(ctx context.Context, slug string, dateParam string) (*DayResponse, *shared.ErrorResponse) {

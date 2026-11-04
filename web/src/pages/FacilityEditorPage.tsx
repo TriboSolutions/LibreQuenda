@@ -72,15 +72,15 @@ export function FacilityEditorPage() {
   const allowed = useCouncilAdmin(slug)
   const auth = useAuth()
   const token = auth.user?.access_token ?? ''
-  const tenants = useAsync(() => api.tenants(), 'tenants')
+  const tenant = useAsync(() => api.tenant(slug), `tenant:${slug}`)
   const existing = useAsync(!creating && allowed ? () => api.council.facility(token, slug, id) : null, `facility-admin:${slug}:${id}:${allowed}`)
   const { t } = useTranslation(['admin', 'common'])
-  usePageTitle(creating ? t('admin:editor.newTitle') : existing.data?.name, tenants.data?.tenants.find((c) => c.slug === slug)?.name)
+  usePageTitle(creating ? t('admin:editor.newTitle') : existing.data?.name, tenant.data?.name)
 
   if (!creating && !existing.data) {
     return (
       <div className="min-h-screen">
-        <TopBar tenants={tenants.data?.tenants ?? []} tenantSlug={slug} />
+        <TopBar tenantSlug={slug} tenantName={tenant.data?.name} />
         <main id="main" tabIndex={-1} className="mx-auto max-w-[1152px] px-4 pt-8 sm:px-6">
           {existing.error ? <p className="text-destructive">{existing.error.message}</p> : <Skeleton className="h-40 w-full" />}
           {!allowed && !auth.isLoading && (
@@ -93,14 +93,13 @@ export function FacilityEditorPage() {
       </div>
     )
   }
-  return <Editor key={id} slug={slug} facility={creating ? null : existing.data} tenants={tenants.data?.tenants ?? []} token={token} />
+  return <Editor key={id} slug={slug} facility={creating ? null : existing.data} council={tenant.data ?? undefined} token={token} />
 }
 
-function Editor({ slug, facility, tenants, token }: { slug: string; facility: AdminFacility | null; tenants: Tenant[]; token: string }) {
+function Editor({ slug, facility, council, token }: { slug: string; facility: AdminFacility | null; council: Tenant | undefined; token: string }) {
   const { t } = useTranslation(['admin', 'common'])
   const navigate = useNavigate()
   const creating = facility === null
-  const council = tenants.find((c) => c.slug === slug) // its contact is what an empty facility contact falls back to
   const [form, setForm] = useState<FacilityInput>(facility ? toInput(facility) : EMPTY)
   const [image, setImage] = useState<StoredImage | null>(facility?.image_ref ? { ref: facility.image_ref, url: facility.image_url } : null)
   const [schedule, setSchedule] = useState<WeeklyWindow[]>(facility?.schedule ?? [])
@@ -493,7 +492,7 @@ function Editor({ slug, facility, tenants, token }: { slug: string; facility: Ad
 
   return (
     <div className="min-h-screen">
-      <TopBar tenants={tenants} tenantSlug={slug} />
+      <TopBar tenantSlug={slug} tenantName={council?.name} />
       <main id="main" tabIndex={-1} className="mx-auto max-w-[1152px] px-4 pt-8 pb-16 sm:px-6">
         <Link to={`/${slug}/admin`} className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground">
           <ArrowLeft className="size-4" aria-hidden="true" />

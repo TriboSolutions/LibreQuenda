@@ -23,7 +23,6 @@ import { SiteFooter } from '@/components/SiteFooter'
 export function InvitePage() {
   const { token: inviteToken = '' } = useParams()
   const { t } = useTranslation(['invites', 'common'])
-  const tenants = useAsync(() => api.tenants(), 'tenants')
   const invite = useAsync(() => api.invites.open(inviteToken), `invite:${inviteToken}`)
   usePageTitle(t('invites:page.title'), invite.data?.facility_name)
 
@@ -44,7 +43,7 @@ export function InvitePage() {
 
   return (
     <div className="min-h-screen">
-      <TopBar tenants={tenants.data?.tenants ?? []} tenantSlug={invite.data?.tenant_slug ?? null} />
+      <TopBar tenantSlug={invite.data?.tenant_slug ?? null} tenantName={invite.data?.tenant_name} />
       <main id="main" tabIndex={-1} className="mx-auto max-w-[1152px] px-4 pt-8 pb-16 sm:px-6">
         <h1 className="text-[28px] leading-9 font-bold tracking-[-0.02em] sm:text-[32px] sm:leading-10">
           {invite.data?.owner_name ? t('invites:page.invitedBy', { name: invite.data.owner_name }) : t('invites:page.title')}
