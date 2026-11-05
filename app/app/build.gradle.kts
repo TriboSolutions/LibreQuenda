@@ -88,6 +88,9 @@ dependencies {
   implementation(libs.zxing.core)
   implementation(libs.zxing.android)
 
+  // The facilities on a map: OpenStreetMap's tiles, as on the web (MapLibre, BSD-2; no API key)
+  implementation(libs.maplibre.android)
+
   // Arch Components
   implementation(libs.androidx.lifecycle.runtime.compose)
   implementation(libs.androidx.lifecycle.viewmodel.compose)
