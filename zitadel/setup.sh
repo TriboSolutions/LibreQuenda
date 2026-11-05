@@ -1,7 +1,8 @@
 #!/bin/sh
 # ============================================================
 #  Zitadel bootstrap for LibreQuenda (idempotent, runs on every `up`)
-#  - creates the "LibreQuenda" project and its "web" OIDC app (PKCE, no secret)
+#  - creates the "LibreQuenda" project and its "web" OIDC app (PKCE, no secret),
+#    and the "android" one for the app and councils' own builds (ANDROID_APP_IDS)
 #  - keeps the app's redirect URIs in sync with the environment
 #  - enables "Sign in with Google" when GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET are set
 #  - signs up and in with a password (passkeys only with ZITADEL_PASSKEYS=true)
@@ -41,7 +42,7 @@ for i in $(seq 1 60); do
 done
 if [ ! -s "$PAT_FILE" ]; then
 	if [ -s "$CONFIGURED" ]; then
-		log "no admin token ($PAT_FILE): keeping the existing configuration (see README, 'Zitadel admin token')"
+		log "no admin token ($PAT_FILE): keeping the existing configuration (see docs/self-hosting.md, 'Zitadel admin token')"
 		exit 0
 	fi
 	log "no admin token at $PAT_FILE: Zitadel writes it on its very first start"
@@ -119,14 +120,22 @@ fi
 # --- OIDC app for the Android app (app/) ---
 # A native app: PKCE, no secret, back to the app through its own URI scheme
 # (the applicationId). Same project, so its tokens carry the audience the API checks.
+# Councils' own builds of the app (install.sh) have their own applicationId:
+# ANDROID_APP_IDS lists them (comma-separated), besides LibreQuenda's.
 ANDROID_APP_NAME=android
-ANDROID_REDIRECT="gal.tribo.librequenda:/oauth2redirect"
+ANDROID_APP_IDS_JSON=$(printf '%s' "gal.tribo.librequenda,${ANDROID_APP_IDS:-}" | jq -R -c '
+	split(",") | map(gsub("\\s"; "")) | map(select(. != "")) | unique')
+BAD_ID=$(echo "$ANDROID_APP_IDS_JSON" | jq -r 'map(select(test("^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+$") | not)) | first // empty')
+if [ -n "$BAD_ID" ]; then
+	log "ANDROID_APP_IDS: '$BAD_ID' is not an Android applicationId (e.g. gal.lalin.reservas)"
+	exit 1
+fi
 ANDROID_OIDC_CONFIG=$(jq -n \
-	--arg redirect "$ANDROID_REDIRECT" \
+	--argjson ids "$ANDROID_APP_IDS_JSON" \
 	--argjson dev "$([ "$PUBLIC_SCHEME" = http ] && echo true || echo false)" \
-	'{
-		redirectUris: [$redirect],
-		postLogoutRedirectUris: [$redirect],
+	'($ids | map(. + ":/oauth2redirect")) as $redirects | {
+		redirectUris: $redirects,
+		postLogoutRedirectUris: $redirects,
 		responseTypes: ["OIDC_RESPONSE_TYPE_CODE"],
 		grantTypes: ["OIDC_GRANT_TYPE_AUTHORIZATION_CODE", "OIDC_GRANT_TYPE_REFRESH_TOKEN"],
 		appType: "OIDC_APP_TYPE_NATIVE",
@@ -299,10 +308,12 @@ jq -n \
 	--arg clientId "$CLIENT_ID" \
 	--arg projectId "$PROJECT_ID" \
 	--arg androidClientId "$ANDROID_CLIENT_ID" \
+	--argjson androidAppIds "$ANDROID_APP_IDS_JSON" \
 	'{
 		authority: $authority,
 		clientId: $clientId,
 		androidClientId: $androidClientId,
+		androidAppIds: $androidAppIds,
 		projectId: $projectId,
 		scope: ("openid profile email offline_access urn:zitadel:iam:org:project:id:" + $projectId + ":aud urn:zitadel:iam:org:project:id:zitadel:aud")
 	}' > /runtime/config.json.tmp
