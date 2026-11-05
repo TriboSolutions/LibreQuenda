@@ -3,6 +3,7 @@
 -- ============================================================
 
 CREATE INDEX idx_tenant_membership_tenant ON tenant_membership (tenant_id);
+CREATE INDEX idx_tenant_resident_user ON tenant_resident (user_id);
 
 CREATE INDEX idx_facility_tenant          ON facility (tenant_id) WHERE is_active = TRUE;
 

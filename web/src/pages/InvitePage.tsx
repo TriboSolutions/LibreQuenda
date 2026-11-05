@@ -214,7 +214,9 @@ function InviteCard({ invite, inviteToken, onChanged }: { invite: PublicInvite; 
             <h2 id="join-account" className="text-lg font-semibold">
               {t('invites:page.withAccount')}
             </h2>
-            <p className="mt-1 text-muted-foreground">{t('invites:page.withAccountHint')}</p>
+            <p className="mt-1 text-muted-foreground">
+              {facility.residents_only ? t('invites:page.residentsOnlyHint', { council: invite.tenant_name }) : t('invites:page.withAccountHint')}
+            </p>
             <div className="mt-4">
               {notReady && me ? (
                 <div className="grid justify-items-start gap-2">
@@ -235,43 +237,46 @@ function InviteCard({ invite, inviteToken, onChanged }: { invite: PublicInvite; 
             </div>
           </section>
 
-          <section aria-labelledby="join-guest" className="rounded-lg border bg-card p-5">
-            <h2 id="join-guest" className="text-lg font-semibold">
-              {t('invites:page.asGuest')}
-            </h2>
-            <p className="mt-1 text-muted-foreground">{t('invites:page.asGuestHint')}</p>
-            <form
-              className="mt-4 grid gap-4 sm:grid-cols-[minmax(0,1fr)_120px]"
-              onSubmit={(event) => {
-                event.preventDefault()
-                void join('guest')
-              }}
-            >
-              <div className="grid gap-2">
-                <Label htmlFor="guest-name">{t('invites:page.name')}</Label>
-                <Input id="guest-name" required maxLength={80} autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="guest-age">{t('invites:page.age')}</Label>
-                <Input
-                  id="guest-age"
-                  required
-                  type="number"
-                  inputMode="numeric"
-                  min={facility.min_age ?? 1}
-                  max={120}
-                  value={age}
-                  onChange={(e) => setAge(e.target.value)}
-                  className="num"
-                />
-              </div>
-              <div className="sm:col-span-2">
-                <Button type="submit" variant="outline" disabled={submitting !== null}>
-                  {submitting === 'guest' ? t('invites:page.joining') : t('invites:page.joinAsGuest')}
-                </Button>
-              </div>
-            </form>
-          </section>
+          {/* residents only: a guest has no account the council could have verified */}
+          {!facility.residents_only && (
+            <section aria-labelledby="join-guest" className="rounded-lg border bg-card p-5">
+              <h2 id="join-guest" className="text-lg font-semibold">
+                {t('invites:page.asGuest')}
+              </h2>
+              <p className="mt-1 text-muted-foreground">{t('invites:page.asGuestHint')}</p>
+              <form
+                className="mt-4 grid gap-4 sm:grid-cols-[minmax(0,1fr)_120px]"
+                onSubmit={(event) => {
+                  event.preventDefault()
+                  void join('guest')
+                }}
+              >
+                <div className="grid gap-2">
+                  <Label htmlFor="guest-name">{t('invites:page.name')}</Label>
+                  <Input id="guest-name" required maxLength={80} autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="guest-age">{t('invites:page.age')}</Label>
+                  <Input
+                    id="guest-age"
+                    required
+                    type="number"
+                    inputMode="numeric"
+                    min={facility.min_age ?? 1}
+                    max={120}
+                    value={age}
+                    onChange={(e) => setAge(e.target.value)}
+                    className="num"
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <Button type="submit" variant="outline" disabled={submitting !== null}>
+                    {submitting === 'guest' ? t('invites:page.joining') : t('invites:page.joinAsGuest')}
+                  </Button>
+                </div>
+              </form>
+            </section>
+          )}
         </>
       )}
     </div>

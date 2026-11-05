@@ -127,7 +127,7 @@ ORDER BY
 
 -- name: ExportPeople :many
 -- Everyone who booked at the council, joined one of its bookings or reported
--- a problem at one of its facilities (?personal=1).
+-- a problem at one of its facilities, or whom it verified as its resident (?personal=1).
 SELECT
     u.id,
     u.full_name,
@@ -136,9 +136,11 @@ SELECT
     u.phone,
     u.birth_date,
     u.preferred_language,
-    u.created_at
+    u.created_at,
+    r.verified_at AS resident_verified_at
 FROM
     app_user u
+    LEFT JOIN tenant_resident r ON r.user_id = u.id AND r.tenant_id = sqlc.arg('tenant_id')
 WHERE
     u.id IN (
         SELECT b.user_id
@@ -156,6 +158,10 @@ WHERE
         FROM facility_issue i
         JOIN facility f ON f.id = i.facility_id
         WHERE f.tenant_id = sqlc.arg('tenant_id')
+        UNION
+        SELECT tr.user_id
+        FROM tenant_resident tr
+        WHERE tr.tenant_id = sqlc.arg('tenant_id')
     )
 ORDER BY
     u.id ASC;

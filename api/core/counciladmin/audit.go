@@ -19,6 +19,7 @@ func describeFacility(ctx context.Context, before, after *FacilityDetailDto) {
 	audit.Changed(ctx, "slot_minutes", before.SlotMinutes, after.SlotMinutes)
 	audit.Changed(ctx, "capacity", intOrNone(before.Capacity), intOrNone(after.Capacity))
 	audit.Changed(ctx, "min_age", intOrNone(before.MinAge), intOrNone(after.MinAge))
+	audit.Changed(ctx, "residents_only", before.ResidentsOnly, after.ResidentsOnly)
 	for _, field := range []struct {
 		name          string
 		before, after string

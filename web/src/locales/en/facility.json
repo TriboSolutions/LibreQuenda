@@ -141,5 +141,9 @@
     "label": "Event",
     "spots_one": "{{count}} spot left",
     "spots_other": "{{count}} spots left"
-  }
+  },
+  "residentsOnly": "Only for verified residents of {{council}}.",
+  "residentsOnlyShort": "Only for residents verified by the council.",
+  "residentsOnlySignIn": "This facility is only for residents of {{council}} verified by the council. Sign in to book.",
+  "residentsOnlyNotVerified": "This facility is only for residents of {{council}} verified by the council, and your account is not. Ask the council to verify it."
 }

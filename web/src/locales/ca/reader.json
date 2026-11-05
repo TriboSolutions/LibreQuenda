@@ -66,6 +66,7 @@
     "weekly_limit_reached": "Ja tens les reserves que es permeten per setmana aquí.",
     "other_council_booking": "Ja tens reserves en un altre ajuntament: reserves en un ajuntament cada vegada.",
     "council_limit_reached": "Ja tens les reserves properes que permet aquest ajuntament.",
-    "email_unverified": "Confirma la teva adreça electrònica al perfil de l’app per reservar."
+    "email_unverified": "Confirma la teva adreça electrònica al perfil de l’app per reservar.",
+    "residents_only": "Aquesta instal·lació és només per a veïns verificats per l’ajuntament."
   }
 }

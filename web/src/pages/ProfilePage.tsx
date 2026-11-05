@@ -19,6 +19,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { SettingsRow } from '@/components/SettingsRow'
 import { useBranding } from '@/hooks/useBranding'
 import { useLogin } from '@/hooks/useLogin'
+import { ResidentOf } from '@/components/ResidentOf'
 import { useMe } from '@/hooks/useMe'
 import { languages } from '@/i18n'
 import { api, type Me, type StoredImage } from '@/lib/api'
@@ -63,6 +64,7 @@ export function ProfilePage() {
       <>
         <ProfileForm key={me.id} me={me} />
         <PreferencesForm key={`prefs-${me.id}`} me={me} />
+        <ResidentOf me={me} />
         <AccountSettings />
         <CalendarFeed />
         <PrivacySettings me={me} />

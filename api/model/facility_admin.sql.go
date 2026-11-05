@@ -96,7 +96,7 @@ INSERT INTO facility (
     custom_rules, max_advance_hours, min_advance_minutes, min_cancel_hours, max_active_bookings_per_user,
     max_bookings_per_day, max_turns_in_a_row, max_bookings_per_week, weekly_opening, opens_weekday, opens_minute,
     no_show_penalty, no_show_limit, no_show_window_days, no_show_block_days,
-    min_age, usage_rules_text
+    min_age, residents_only, usage_rules_text
 ) VALUES (
     $1, $2, $3, $4,
     $5, $6, $7, $8,
@@ -105,7 +105,7 @@ INSERT INTO facility (
     $20, $21, $22,
     $23, $24, $25, $26,
     $27, $28, $29, $30,
-    $31, $32
+    $31, $32, $33
 )
 RETURNING
     id
@@ -143,6 +143,7 @@ type CreateFacilityParams struct {
 	NoShowWindowDays         int32           `json:"no_show_window_days"`
 	NoShowBlockDays          int32           `json:"no_show_block_days"`
 	MinAge                   sql.NullInt32   `json:"min_age"`
+	ResidentsOnly            bool            `json:"residents_only"`
 	UsageRulesText           sql.NullString  `json:"usage_rules_text"`
 }
 
@@ -179,6 +180,7 @@ func (q *Queries) CreateFacility(ctx context.Context, arg CreateFacilityParams) 
 		arg.NoShowWindowDays,
 		arg.NoShowBlockDays,
 		arg.MinAge,
+		arg.ResidentsOnly,
 		arg.UsageRulesText,
 	)
 	var id uuid.UUID
@@ -228,7 +230,7 @@ func (q *Queries) EnsureTenantBookingRules(ctx context.Context, tenantID uuid.UU
 
 const getFacilityForAdmin = `-- name: GetFacilityForAdmin :one
 SELECT
-    id, tenant_id, slug, name, description, address, latitude, longitude, capacity, accessibility_info, contact_phone, contact_email, show_weather, image_ref, is_active, slot_minutes, custom_rules, max_advance_hours, min_advance_minutes, min_cancel_hours, max_active_bookings_per_user, max_bookings_per_day, max_turns_in_a_row, max_bookings_per_week, weekly_opening, opens_weekday, opens_minute, no_show_penalty, no_show_limit, no_show_window_days, no_show_block_days, min_age, usage_rules_text, created_at, updated_at
+    id, tenant_id, slug, name, description, address, latitude, longitude, capacity, accessibility_info, contact_phone, contact_email, show_weather, image_ref, is_active, slot_minutes, custom_rules, max_advance_hours, min_advance_minutes, min_cancel_hours, max_active_bookings_per_user, max_bookings_per_day, max_turns_in_a_row, max_bookings_per_week, weekly_opening, opens_weekday, opens_minute, no_show_penalty, no_show_limit, no_show_window_days, no_show_block_days, min_age, residents_only, usage_rules_text, created_at, updated_at
 FROM
     facility
 WHERE
@@ -277,6 +279,7 @@ func (q *Queries) GetFacilityForAdmin(ctx context.Context, arg GetFacilityForAdm
 		&i.NoShowWindowDays,
 		&i.NoShowBlockDays,
 		&i.MinAge,
+		&i.ResidentsOnly,
 		&i.UsageRulesText,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -486,10 +489,11 @@ SET
     is_active                    = $13,
     slot_minutes                 = $14,
     min_age                      = $15,
-    usage_rules_text             = $16
+    residents_only               = $16,
+    usage_rules_text             = $17
 WHERE
-    id = $17
-    AND tenant_id = $18
+    id = $18
+    AND tenant_id = $19
 RETURNING
     id
 `
@@ -510,6 +514,7 @@ type UpdateFacilityParams struct {
 	IsActive          bool            `json:"is_active"`
 	SlotMinutes       int32           `json:"slot_minutes"`
 	MinAge            sql.NullInt32   `json:"min_age"`
+	ResidentsOnly     bool            `json:"residents_only"`
 	UsageRulesText    sql.NullString  `json:"usage_rules_text"`
 	ID                uuid.UUID       `json:"id"`
 	TenantID          uuid.UUID       `json:"tenant_id"`
@@ -532,6 +537,7 @@ func (q *Queries) UpdateFacility(ctx context.Context, arg UpdateFacilityParams) 
 		arg.IsActive,
 		arg.SlotMinutes,
 		arg.MinAge,
+		arg.ResidentsOnly,
 		arg.UsageRulesText,
 		arg.ID,
 		arg.TenantID,

@@ -56,6 +56,7 @@ data class FacilityDetails(
     val slotMinutes: Int = 0,
     val minCancelHours: Int = 0,
     val minAge: Int? = null,
+    val residentsOnly: Boolean = false, // only the council's verified residents book or join
     val usageRules: String = "",
 )
 
@@ -103,6 +104,7 @@ private fun JSONObject.toBooking() = Booking(
             slotMinutes = f.optInt("slot_minutes"),
             minCancelHours = f.optInt("min_cancel_hours"),
             minAge = if (f.isNull("min_age")) null else f.optInt("min_age"),
+            residentsOnly = f.optBoolean("residents_only"),
             usageRules = f.optString("usage_rules"),
         )
     } ?: FacilityDetails(),

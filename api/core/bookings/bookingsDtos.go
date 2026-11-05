@@ -98,7 +98,8 @@ type FacilityDetailsDto struct {
 	AccessibilityInfo string   `json:"accessibility_info"`
 	SlotMinutes       int32    `json:"slot_minutes"`
 	MinCancelHours    int32    `json:"min_cancel_hours"`
-	MinAge            *int32   `json:"min_age"` // age control: null = none
+	MinAge            *int32   `json:"min_age"`        // age control: null = none
+	ResidentsOnly     bool     `json:"residents_only"` // only the council's verified residents book or join
 	UsageRules        string   `json:"usage_rules"`
 }
 
@@ -111,6 +112,7 @@ func FacilityDetails(f model.Facility, sport string) FacilityDetailsDto {
 		AccessibilityInfo: f.AccessibilityInfo.String,
 		SlotMinutes:       f.SlotMinutes,
 		MinCancelHours:    f.MinCancelHours,
+		ResidentsOnly:     f.ResidentsOnly,
 		UsageRules:        f.UsageRulesText.String,
 	}
 	if f.Latitude.Valid && f.Longitude.Valid {

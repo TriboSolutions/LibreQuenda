@@ -49,6 +49,7 @@ const pages: { name: string; path: string; signedIn?: boolean }[] = [
   { name: 'council admin, indicators', path: '/lugo/admin?vista=indicadores' },
   { name: 'council admin, bookings', path: '/lugo/admin?vista=reservas' },
   { name: 'council admin, events', path: '/lugo/admin?vista=eventos' },
+  { name: 'council admin, residents', path: '/lugo/admin?vista=vecinos' },
   { name: 'facility editor', path: '/lugo/admin/facilities/f1' },
   { name: 'facility editor, check-in', path: '/lugo/admin/facilities/f1?vista=entrada' },
   { name: 'check-in QR to print', path: '/lugo/admin/facilities/f1/imprimir?que=qr' },

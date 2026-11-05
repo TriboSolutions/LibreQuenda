@@ -46,6 +46,7 @@ Status: **built** · **in progress** (open work) · **idea** (not started).
 | Feature | Status |
 |---|---|
 | Facilities: create, edit, deactivate (optionally cancelling upcoming bookings with a notice), photo, map pin (address search), tags, capacity, minimum age, usage rules | built |
+| Residents-only facilities: administrators verify people as the council's residents (Veciños tab, by email); only they book and join there | built |
 | Weekly opening hours and closures (cancelling the bookings inside, with an apology and the reason) | built |
 | Ways to check in per facility (Entrada tab) and printable QR and code sheets | built |
 | Booking window per council, inherited by its facilities or overridden in each one's Reserva tab: how far ahead (hours or days), how close to the start from the app, cancel and change deadline, upcoming bookings, bookings per day, turns in a row, optional no-show penalty | built |

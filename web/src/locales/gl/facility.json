@@ -141,5 +141,9 @@
     "label": "Evento",
     "spots_one": "queda {{count}} praza",
     "spots_other": "quedan {{count}} prazas"
-  }
+  },
+  "residentsOnly": "Só para veciños verificados de {{council}}.",
+  "residentsOnlyShort": "Só para veciños verificados polo concello.",
+  "residentsOnlySignIn": "Esta instalación é só para veciños de {{council}} verificados polo concello. Inicia sesión para reservar.",
+  "residentsOnlyNotVerified": "Esta instalación é só para veciños de {{council}} verificados polo concello, e a túa conta non o está. Pide no concello que a verifiquen."
 }

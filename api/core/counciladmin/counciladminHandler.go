@@ -607,3 +607,56 @@ func (h *counciladminHandler) ChangeIssue(w http.ResponseWriter, r *http.Request
 	var response, changeErr = GetCounciladminService(h.db).ChangeIssue(r.Context(), tenantId, staffId, issueId, input)
 	send(w, r, response, changeErr)
 }
+
+// ListResidents: ?q=<name or email>&sort=<name|recent>&page=<n>, all optional.
+func (h *counciladminHandler) ListResidents(w http.ResponseWriter, r *http.Request) {
+	var tenantId, ok = h.councilAdmin(w, r)
+	if !ok {
+		return
+	}
+	var query = r.URL.Query()
+	var page = 1
+	if raw := query.Get("page"); raw != "" {
+		var parsed, err = strconv.Atoi(raw)
+		if err != nil {
+			helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_query_params")
+			return
+		}
+		page = parsed
+	}
+	var response, err = GetCounciladminService(h.db).ListResidents(r.Context(), tenantId, query.Get("q"), query.Get("sort"), page)
+	send(w, r, response, err)
+}
+
+func (h *counciladminHandler) AddResident(w http.ResponseWriter, r *http.Request) {
+	var tenantId, staffId, ok = h.councilAdminUser(w, r)
+	if !ok {
+		return
+	}
+	var input ResidentInput
+	if !decode(w, r, &input) {
+		return
+	}
+	var userId, err = GetCounciladminService(h.db).AddResident(r.Context(), tenantId, staffId, input.Email)
+	if err == nil {
+		audit.TargetUser(r.Context(), userId)
+	}
+	send(w, r, nil, err)
+}
+
+func (h *counciladminHandler) RemoveResident(w http.ResponseWriter, r *http.Request) {
+	var tenantId, ok = h.councilAdmin(w, r)
+	if !ok {
+		return
+	}
+	var id, err = helpers.GetStringPathValue("userId", r)
+	var userId uuid.UUID
+	if err == nil {
+		userId, err = uuid.Parse(id)
+	}
+	if err != nil {
+		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_query_params")
+		return
+	}
+	send(w, r, nil, GetCounciladminService(h.db).RemoveResident(r.Context(), tenantId, userId))
+}

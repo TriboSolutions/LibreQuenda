@@ -206,7 +206,14 @@
     "event_capacity_below_joined": "Ja s’hi han apuntat {{0}} persones: l’aforament no pot ser menor.",
     "event_facility_fixed": "Un esdeveniment no pot canviar d’instal·lació. Cancel·la’l i crea’n un altre.",
     "event_failed": "No s’ha pogut desar l’esdeveniment. Torna-ho a provar.",
-    "events_load_failed": "No s’han pogut carregar els esdeveniments."
+    "events_load_failed": "No s’han pogut carregar els esdeveniments.",
+    "residents_only": "Aquesta instal·lació és només per a veïns verificats per l’ajuntament. Demana a l’ajuntament que verifiquin el teu compte.",
+    "guest_residents_only": "Aquesta instal·lació és només per a veïns verificats per l’ajuntament: per unir-t’hi, inicia la sessió amb un compte verificat.",
+    "resident_user_not_found": "No hi ha cap compte amb aquest correu verificat. La persona ha d’iniciar la sessió una vegada abans.",
+    "resident_already_verified": "Aquesta persona ja està verificada en aquest ajuntament.",
+    "resident_not_found": "Aquesta persona no està verificada en aquest ajuntament.",
+    "resident_save_failed": "No s’ha pogut desar la verificació.",
+    "residents_load_failed": "No s’han pogut carregar els veïns verificats."
   },
   "email": {
     "greeting": "Hola {{0}},",

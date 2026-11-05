@@ -118,6 +118,15 @@ func (s *meService) SyncCurrentUser(ctx context.Context, session auth.Session) (
 	if response.AvatarUrl == "" {
 		response.AvatarUrl = info.Picture
 	}
+	var residentOf []model.ListResidentCouncilsByUserRow
+	residentOf, err = queries.ListResidentCouncilsByUser(ctx, user.ID)
+	if err != nil {
+		return nil, &shared.ErrorResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "errors.user_sync_failed",
+		}
+	}
+	response.ResidentOf = mapResidentOf(residentOf)
 	response.PendingInvitations = make([]PendingInvitationDto, 0, len(pending))
 	for _, p := range pending {
 		response.PendingInvitations = append(response.PendingInvitations, PendingInvitationDto{TenantName: p.TenantName, TenantSlug: p.TenantSlug})

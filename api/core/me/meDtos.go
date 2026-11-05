@@ -4,6 +4,7 @@ import (
 	"librequenda/model"
 	"librequenda/rating"
 	"librequenda/storage"
+	"time"
 )
 
 type TenantRoleDto struct {
@@ -36,6 +37,15 @@ type MeResponse struct {
 
 	// roles waiting for this person: they are granted once the email is verified
 	PendingInvitations []PendingInvitationDto `json:"pending_invitations"`
+
+	// councils that verified this person as their resident: they book at their residents-only facilities
+	ResidentOf []ResidentOfDto `json:"resident_of"`
+}
+
+type ResidentOfDto struct {
+	TenantName string    `json:"tenant_name"`
+	TenantSlug string    `json:"tenant_slug"`
+	VerifiedAt time.Time `json:"verified_at"`
 }
 
 type PendingInvitationDto struct {
@@ -97,4 +107,12 @@ func mapRoles(roles []model.GetUserTenantRolesRow) []TenantRoleDto {
 		})
 	}
 	return dtos
+}
+
+func mapResidentOf(rows []model.ListResidentCouncilsByUserRow) []ResidentOfDto {
+	var out = make([]ResidentOfDto, 0, len(rows))
+	for _, r := range rows {
+		out = append(out, ResidentOfDto{TenantName: r.Name, TenantSlug: r.Slug, VerifiedAt: r.VerifiedAt})
+	}
+	return out
 }

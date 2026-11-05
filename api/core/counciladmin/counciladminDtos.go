@@ -27,7 +27,8 @@ type FacilityInput struct {
 	ImageRef          string   `json:"image_ref"` // a storage reference from POST /media, never a URL
 	IsActive          bool     `json:"is_active"`
 	SlotMinutes       int32    `json:"slot_minutes"`
-	MinAge            *int32   `json:"min_age"` // age control: null = none, else 1 to 80
+	MinAge            *int32   `json:"min_age"`        // age control: null = none, else 1 to 80
+	ResidentsOnly     bool     `json:"residents_only"` // only the council's verified residents book or join here
 	UsageRules        string   `json:"usage_rules"`
 	// create only: the weekly hours, saved with it, so a new facility is set up in one go
 	Schedule *ScheduleInput `json:"schedule,omitempty"`
@@ -197,6 +198,7 @@ type FacilityDetailDto struct {
 	Rules             BookingRulesDto `json:"rules"`         // the window in force
 	CouncilRules      BookingRulesDto `json:"council_rules"` // the council's, to show what it inherits
 	MinAge            *int32          `json:"min_age"`
+	ResidentsOnly     bool            `json:"residents_only"`
 	UsageRules        string          `json:"usage_rules"`
 	BookingCount      int64           `json:"booking_count"`
 	BookingsToCancel  int64           `json:"bookings_to_cancel"` // upcoming bookings that deactivating could cancel
