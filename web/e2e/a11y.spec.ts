@@ -89,6 +89,19 @@ for (const theme of ['light', 'dark'] as const) {
       await expectAccessible(page, { overlay: true })
     })
 
+    // someone's public booking: who booked it answers for it, and everyone shows their rating
+    test('public booking dialog, with who booked it', async ({ page }) => {
+      await open(page, '/lugo/padel-1', { theme })
+      await page.locator('[data-public=true]').first().click()
+      const dialog = page.getByRole('dialog', { name: 'Reserva pública · Pista de pádel 1' })
+      await expect(dialog).toContainText('Reserva pública de Xoán')
+      await expect(dialog.getByRole('listitem').first()).toContainText('Xoán · Responsable')
+      await expect(dialog.getByRole('listitem').first()).toContainText(/Valoración de 4[.,]6 sobre 5, de 7 persoas/)
+      await expect(dialog.getByRole('listitem').nth(1)).toContainText('Sen valoracións')
+      await page.waitForTimeout(300)
+      await expectAccessible(page, { overlay: true })
+    })
+
     test('the council\'s event on the facility page, and its dialog', async ({ page }) => {
       await open(page, '/lugo/padel-1', { theme })
       const events = page.getByRole('region', { name: 'Eventos este día' })
@@ -1139,7 +1152,8 @@ for (const theme of ['light', 'dark'] as const) {
     await page.route(/\/api\/tenants\/lugo\/facilities\/padel-1(?:\?.*)?$/, (route) => route.fulfill({
       json: { ...data, facility: { ...data.facility, slots: [{ starts_at: start, ends_at: end, status: 'booked' }, { starts_at: ongoingStart, ends_at: ongoingEnd, status: 'booked' }], public_bookings: [{
         id: 'public-test', starts_at: start, ends_at: end, description: 'Partido amigable de nivel inicial.', capacity: 4, people: ['Brais', 'Antía'],
-      }, { id: 'ongoing-test', starts_at: ongoingStart, ends_at: ongoingEnd, description: '', capacity: 4, people: ['Uxía'] }] } },
+        owner: { name: 'Brais', rating: null }, joined: [{ name: 'Antía', rating: null }],
+      }, { id: 'ongoing-test', starts_at: ongoingStart, ends_at: ongoingEnd, description: '', capacity: 4, people: ['Uxía'], owner: { name: 'Uxía', rating: null }, joined: [] }] } },
     }))
     await page.reload()
     const turn = page.locator('[data-public-state=joinable]')

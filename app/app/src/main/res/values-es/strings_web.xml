@@ -272,6 +272,9 @@
     <string name="public_started">La reserva ya ha empezado.</string>
     <string name="public_toggle_help">Cualquier persona con cuenta puede verla en «Para ti» y unirse mientras queden plazas.</string>
     <string name="people_count">%1$d de %2$s personas</string>
+    <string name="public_by">Reserva pública de %1$s</string>
+    <string name="public_organiser">Responsable</string>
+    <string name="rating_none">Sin valoraciones</string>
     <string name="checkin_from">Entrada desde las %1$s</string>
     <string name="directions">Cómo llegar</string>
     <string name="conditions">Condiciones de reserva</string>

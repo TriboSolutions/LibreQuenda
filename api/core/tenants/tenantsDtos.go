@@ -82,6 +82,16 @@ type PublicTurnDto struct {
 	Description string    `json:"description"`
 	Capacity    int32     `json:"capacity"` // people in it at most: with the owner for a public booking, only who joins for an event
 	People      []string  `json:"people"`   // first names: the owner first (not for an event), then who joined
+	// who made the public booking and answers for it; nil for an event
+	Owner *PublicPersonDto `json:"owner"`
+	// who joined, in order, each with their public rating
+	Joined []PublicPersonDto `json:"joined"`
+}
+
+// PublicPersonDto: someone in a public booking, by first name, with the stars others gave them.
+type PublicPersonDto struct {
+	Name   string          `json:"name"`
+	Rating *rating.Summary `json:"rating"` // nil until someone rated them, and for guests
 }
 
 type FacilityDayDto struct {

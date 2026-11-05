@@ -115,7 +115,7 @@ KEYS = {
  'public_label': (B,'public.label'), 'public_turn_title': (B,'public.turnTitle'), 'public_edit': (B,'public.edit'), 'public_save': (B,'public.save'),
  'public_confirm_title': (B,'public.confirmTitle'), 'public_confirm_text': (B,'public.confirmDescription'), 'public_confirm': (B,'public.confirm'),
  'public_publishing': (B,'public.publishing'), 'public_keep_private': (B,'public.keepPrivate'),
- 'public_no_description': (B,'public.noDescription'), 'public_person': (B,'public.person'), 'public_full': (B,'public.full'), 'public_started': (B,'public.started'), 'public_toggle_help': (B,'public.help'), 'people_count': (B,'public.people'),
+ 'public_no_description': (B,'public.noDescription'), 'public_person': (B,'public.person'), 'public_full': (B,'public.full'), 'public_started': (B,'public.started'), 'public_toggle_help': (B,'public.help'), 'people_count': (B,'public.people'), 'public_by': (B,'public.by'), 'public_organiser': (B,'public.organiser'), 'rating_none': (C,'rating.none'),
  'checkin_from': (B,'checkin.from'),
  'directions': (F,'directions'), 'conditions': (F,'conditions'), 'min_age': (F,'minAge'),
  'residents_only_short': (F,'residentsOnlyShort'), 'residents_only_not_verified': (F,'residentsOnlyNotVerified'), 'residents_only_sign_in': (F,'residentsOnlySignIn'),

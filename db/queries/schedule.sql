@@ -120,13 +120,23 @@ WHERE
 -- name: ListPublicBookingsByTenantRange :many
 -- Public activity details only; participant contact data and surnames stay private.
 -- Events have no owner: owner_name is '' and the capacity is the event's own, if set.
+-- Everyone's public rating, as on their profile: the owner answers for the booking.
+-- The people_rating_* arrays run parallel to people (a guest's count is 0).
 SELECT b.id, b.facility_id, b.starts_at, b.ends_at, b.public_description,
     b.kind, COALESCE(b.title, '')::TEXT AS title,
     COALESCE(b.event_capacity, f.capacity) AS capacity,
     split_part(trim(COALESCE(owner.full_name, '')), ' ', 1)::TEXT AS owner_name,
+    (SELECT COALESCE(AVG(r.stars), 0) FROM user_rating r WHERE r.rated_id = b.user_id)::FLOAT8 AS owner_rating_average,
+    (SELECT COUNT(*) FROM user_rating r WHERE r.rated_id = b.user_id) AS owner_rating_count,
     ARRAY(SELECT split_part(trim(COALESCE(u.full_name, p.guest_name, '')), ' ', 1)
           FROM booking_participant p LEFT JOIN app_user u ON u.id = p.user_id
-          WHERE p.booking_id = b.id ORDER BY p.joined_at, p.id)::TEXT[] AS people
+          WHERE p.booking_id = b.id ORDER BY p.joined_at, p.id)::TEXT[] AS people,
+    ARRAY(SELECT (SELECT COALESCE(AVG(r.stars), 0) FROM user_rating r WHERE r.rated_id = p.user_id)
+          FROM booking_participant p
+          WHERE p.booking_id = b.id ORDER BY p.joined_at, p.id)::FLOAT8[] AS people_rating_average,
+    ARRAY(SELECT (SELECT COUNT(*) FROM user_rating r WHERE r.rated_id = p.user_id)
+          FROM booking_participant p
+          WHERE p.booking_id = b.id ORDER BY p.joined_at, p.id)::BIGINT[] AS people_rating_count
 FROM booking b
 JOIN facility f ON f.id = b.facility_id
 LEFT JOIN app_user owner ON owner.id = b.user_id

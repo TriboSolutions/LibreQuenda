@@ -123,6 +123,8 @@
     "edit": "Editar descrición",
     "cancel": "Cancelar",
     "save": "Gardar",
+    "by": "Reserva pública de {{name}}",
+    "organiser": "Responsable",
     "turnTitle": "Reserva pública · {{facility}}",
     "noDescription": "Non se engadiu unha descrición.",
     "people": "{{count}} de {{capacity}} persoas",

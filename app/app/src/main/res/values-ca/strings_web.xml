@@ -272,6 +272,9 @@
     <string name="public_started">La reserva ja ha començat.</string>
     <string name="public_toggle_help">Qualsevol persona amb compte la pot veure a «Per a tu» i unir-s’hi mentre quedin places.</string>
     <string name="people_count">%1$d de %2$s persones</string>
+    <string name="public_by">Reserva pública de %1$s</string>
+    <string name="public_organiser">Responsable</string>
+    <string name="rating_none">Sense valoracions</string>
     <string name="checkin_from">Entrada des de les %1$s</string>
     <string name="directions">Com arribar-hi</string>
     <string name="conditions">Condicions de reserva</string>

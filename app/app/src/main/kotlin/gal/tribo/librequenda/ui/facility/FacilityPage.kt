@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -37,6 +38,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -214,19 +216,24 @@ fun FacilityPage(
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Icon(painterResource(R.drawable.ic_users), contentDescription = null, tint = Lq.colors.pillPositiveInk, modifier = Modifier.size(20.dp))
                                     Spacer(Modifier.size(8.dp))
+                                    // whose it is: who booked answers for it
+                                    val what = when {
+                                        turn.isEvent -> stringResource(R.string.event_label)
+                                        turn.owner != null && turn.owner.name.isNotBlank() -> stringResource(R.string.public_by, turn.owner.name)
+                                        else -> stringResource(R.string.public_label)
+                                    }
                                     Text(
-                                        "${stringResource(if (turn.isEvent) R.string.event_label else R.string.public_label)} · ${time(turn.startsAt)}–${time(turn.endsAt)}",
+                                        "$what · ${time(turn.startsAt)}–${time(turn.endsAt)}",
                                         style = MaterialTheme.typography.titleSmall, color = Lq.colors.pillPositiveInk,
                                     )
                                 }
                                 if (turn.isEvent) Text(turn.title, style = MaterialTheme.typography.titleMedium, color = Lq.colors.foreground)
                                 Text(turn.description.ifBlank { stringResource(if (turn.isEvent) R.string.event_no_description else R.string.public_no_description) }, style = MaterialTheme.typography.bodyMedium, color = Lq.colors.foreground)
                                 Text(stringResource(R.string.people_count, turn.people.size, turn.capacity), style = MaterialTheme.typography.labelLarge, color = Lq.colors.foreground)
-                                FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                    turn.people.forEach { name ->
-                                        Text(name.ifBlank { stringResource(R.string.public_person) }, style = MaterialTheme.typography.bodySmall, color = Lq.colors.foreground,
-                                            modifier = Modifier.clip(RoundedCornerShape(6.dp)).background(Lq.colors.card).padding(horizontal = 8.dp, vertical = 4.dp))
-                                    }
+                                // everyone with their public rating: the one who booked first
+                                Column {
+                                    turn.owner?.let { PublicPersonRow(it, organiser = true) }
+                                    turn.joined.forEach { PublicPersonRow(it, organiser = false) }
                                 }
                             }
                         }
@@ -335,7 +342,12 @@ fun ConfirmBookingPage(choice: Checkout?, actions: ProfileActions, onBack: () ->
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text(stringResource(if (turn.isEvent) R.string.event_label else R.string.public_label), style = MaterialTheme.typography.titleMedium, color = Lq.colors.foreground)
                         Text(turn.description.ifBlank { stringResource(if (turn.isEvent) R.string.event_no_description else R.string.public_no_description) }, style = MaterialTheme.typography.bodyMedium, color = Lq.colors.mutedForeground)
-                        Fact(R.drawable.ic_users, stringResource(R.string.people_count, turn.people.size, turn.capacity) + " · " + turn.people.filter { it.isNotBlank() }.joinToString(", "))
+                        if (!turn.isEvent && turn.owner != null && turn.owner.name.isNotBlank()) Text(stringResource(R.string.public_by, turn.owner.name), style = MaterialTheme.typography.bodyLarge, color = Lq.colors.foreground)
+                        Fact(R.drawable.ic_users, stringResource(R.string.people_count, turn.people.size, turn.capacity))
+                        Column {
+                            turn.owner?.let { PublicPersonRow(it, organiser = true) }
+                            turn.joined.forEach { PublicPersonRow(it, organiser = false) }
+                        }
                         Text(pluralStringResource(R.plurals.public_spots, turn.spotsLeft, turn.spotsLeft), style = MaterialTheme.typography.labelLarge, color = Lq.colors.pillPositiveInk)
                     }
                 }
@@ -467,3 +479,20 @@ private fun dayInline(at: Instant): String =
     at.atZone(ZONE).format(DateTimeFormatter.ofPattern("EEEE d MMMM", LocalConfiguration.current.locales[0]))
 
 private fun time(at: Instant): String = at.atZone(ZONE).format(DateTimeFormatter.ofPattern("HH:mm"))
+
+/** One person in a public booking: first name, whether they booked it, and the stars others gave them. */
+@Composable
+private fun PublicPersonRow(person: gal.tribo.librequenda.data.PublicPerson, organiser: Boolean) {
+    Row(Modifier.fillMaxWidth().heightIn(min = 40.dp).padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(
+            buildString {
+                append(person.name.ifBlank { stringResource(R.string.public_person) })
+                if (organiser) append(" · ").append(stringResource(R.string.public_organiser))
+            },
+            style = MaterialTheme.typography.bodyMedium, fontWeight = if (organiser) FontWeight.Medium else null, color = Lq.colors.foreground,
+            modifier = Modifier.weight(1f),
+        )
+        if (person.rating != null) gal.tribo.librequenda.ui.components.RatingBadge(person.rating)
+        else Text(stringResource(R.string.rating_none), style = MaterialTheme.typography.bodySmall, color = Lq.colors.mutedForeground)
+    }
+}

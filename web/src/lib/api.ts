@@ -22,7 +22,12 @@ export type PublicTurn = {
   description: string
   capacity: number // with the owner for a public booking; only who joins for an event
   people: string[] // first names: the owner first (not for an event), then who joined
+  owner: PublicPerson | null // who booked it and answers for it; null for an event
+  joined: PublicPerson[] // who joined, in order
 }
+
+/** Someone in a public booking: first name and the stars others gave them (null until rated, and for guests). */
+export type PublicPerson = { name: string; rating: RatingSummary | null }
 
 export type Facility = {
   public_bookings?: PublicTurn[]

@@ -3,9 +3,10 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { useAuth } from 'react-oidc-context'
 import { Button } from '@/components/ui/button'
+import { RatingBadge } from '@/components/Stars'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useAsync } from '@/hooks/useAsync'
-import { api, type Facility, type PublicTurn } from '@/lib/api'
+import { api, type Facility, type PublicPerson, type PublicTurn } from '@/lib/api'
 import { formatBookingDay, formatTime } from '@/lib/time'
 
 export function PublicTurnDialog({ booking, facility, timeZone, today, now, onClose, onJoined, onLogin }: {
@@ -53,15 +54,19 @@ export function PublicTurnDialog({ booking, facility, timeZone, today, now, onCl
           <DialogTitle className="break-words">{event ? booking.title : t('public.turnTitle', { facility: facility.name })}</DialogTitle>
           <DialogDescription>
             {event && <>{t('public.eventAt', { facility: facility.name })}<br /></>}
+            {/* whose it is: who booked answers for it */}
+            {!event && booking.owner?.name && <>{t('public.by', { name: booking.owner.name })}<br /></>}
             {formatBookingDay(booking.starts_at, timeZone, today)} · {formatTime(booking.starts_at, timeZone)}–{formatTime(booking.ends_at, timeZone)}
           </DialogDescription>
         </DialogHeader>
         <p className="whitespace-pre-wrap break-words">{booking.description || t(event ? 'public.noEventDescription' : 'public.noDescription')}</p>
         <section aria-labelledby="public-people-title" className="grid gap-2">
           <h3 id="public-people-title" className="font-medium">{t('public.people', { count: count + (joined ? 1 : 0), capacity: booking.capacity })}</h3>
-          <ul className="flex flex-wrap gap-2">
-            {booking.people.map((name, index) => <li key={index} className="rounded-md bg-muted px-2 py-1 text-sm">{name || t('public.person')}</li>)}
-            {joined && <li className="rounded-md bg-muted px-2 py-1 text-sm">{t('public.you')}</li>}
+          {/* everyone with their public rating: the one who booked first */}
+          <ul className="divide-y">
+            {booking.owner && <PersonRow person={booking.owner} organiser />}
+            {booking.joined.map((person, index) => <PersonRow key={index} person={person} />)}
+            {joined && <li className="py-2">{t('public.you')}</li>}
           </ul>
         </section>
         {facility.usage_rules && <p className="whitespace-pre-wrap text-sm text-muted-foreground">{facility.usage_rules}</p>}
@@ -81,5 +86,18 @@ export function PublicTurnDialog({ booking, facility, timeZone, today, now, onCl
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  )
+}
+
+function PersonRow({ person, organiser }: { person: PublicPerson; organiser?: boolean }) {
+  const { t } = useTranslation(['bookings', 'common'])
+  return (
+    <li className="flex items-center justify-between gap-3 py-2">
+      <span className="min-w-0 break-words">
+        <span className={organiser ? 'font-medium' : undefined}>{person.name || t('public.person')}</span>
+        {organiser && <span className="text-muted-foreground"> · {t('public.organiser')}</span>}
+      </span>
+      {person.rating ? <RatingBadge rating={person.rating} className="shrink-0" /> : <span className="shrink-0 text-sm text-muted-foreground">{t('common:rating.none')}</span>}
+    </li>
   )
 }

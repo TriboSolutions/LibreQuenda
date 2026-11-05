@@ -123,6 +123,8 @@
     "edit": "Editar descripció",
     "cancel": "Cancel·lar",
     "save": "Desar",
+    "by": "Reserva pública de {{name}}",
+    "organiser": "Responsable",
     "turnTitle": "Reserva pública · {{facility}}",
     "noDescription": "No s’ha afegit cap descripció.",
     "people": "{{count}} de {{capacity}} persones",

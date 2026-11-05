@@ -272,6 +272,9 @@
     <string name="public_started">This booking has already started.</string>
     <string name="public_toggle_help">Anyone with an account can see it in “For you” and join while spots are left.</string>
     <string name="people_count">%1$d of %2$s people</string>
+    <string name="public_by">%1$s\'s public booking</string>
+    <string name="public_organiser">Organiser</string>
+    <string name="rating_none">No ratings yet</string>
     <string name="checkin_from">Check-in from %1$s</string>
     <string name="directions">Directions</string>
     <string name="conditions">Booking conditions</string>
