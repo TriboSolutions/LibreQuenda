@@ -114,4 +114,37 @@
     <string name="nfc_flash_help">Con esta página abierta, acerca el móvil a la etiqueta NFC de la puerta: si el turno está libre, se reserva y entras. Te pediremos la ubicación, que se comprueba y nunca se guarda.</string>
     <string name="nfc_checkin_help">Con esta página abierta, acerca el móvil a la etiqueta NFC de la puerta y registras la entrada. Te pediremos la ubicación, que se comprueba y nunca se guarda.</string>
     <string name="change_done">Reserva cambiada</string>
+    <!-- residents only: asking the council to verify the person as its resident -->
+    <string name="residents_only_badge">Instalación solo para vecinos</string>
+    <string name="resident_not_verified">Esta instalación es solo para vecinos de %1$s verificados por el ayuntamiento, y tu cuenta aún no lo está.</string>
+    <string name="resident_request_row">Pedir ser vecino</string>
+    <string name="resident_request_row_help">Llama al ayuntamiento o envía la petición desde aquí</string>
+    <string name="resident_request_pending">Petición enviada el %1$s, pendiente de revisión</string>
+    <string name="resident_request_pending_help">Toca para verla o retirarla</string>
+    <string name="resident_sheet_title">Pedir ser vecino de %1$s</string>
+    <string name="resident_sheet_text">Para reservar aquí, %1$s tiene que comprobar que estás empadronado o empadronada. Puedes llamar al ayuntamiento o enviarle la petición desde la app.</string>
+    <string name="resident_call">Llamar al ayuntamiento</string>
+    <string name="resident_form_title">O envía la petición</string>
+    <string name="resident_dni">DNI o NIE</string>
+    <string name="resident_full_name">Nombre y apellidos</string>
+    <string name="resident_postal_code">Código postal</string>
+    <string name="resident_postal_code_invalid">El código postal tiene 5 dígitos.</string>
+    <string name="resident_street">Dirección donde vives</string>
+    <string name="resident_street_help">Calle, número y piso</string>
+    <string name="resident_privacy">El ayuntamiento solo usa estos datos para comprobar el empadronamiento; se borran al decidir, y como mucho a los 15 días.</string>
+    <string name="resident_send">Enviar la petición</string>
+    <string name="resident_sending">Enviando…</string>
+    <string name="resident_pending_title">Tu petición</string>
+    <string name="resident_pending_text">%1$s revisará tus datos y te avisará cuando decida.</string>
+    <string name="resident_withdraw">Retirar la petición</string>
+    <string name="resident_withdraw_title">¿Retirar la petición?</string>
+    <string name="resident_withdraw_text">%1$s dejará de revisarla y tus datos se borran. Puedes enviarla de nuevo cuando quieras.</string>
+    <string name="resident_withdrawing">Retirando…</string>
+    <string name="resident_keep">Mantenerla</string>
+    <string name="notification_resident_requested">Petición de vecino</string>
+    <string name="notification_resident_verified">Vecino verificado</string>
+    <string name="notification_resident_rejected">Vecino sin verificar</string>
+    <string name="notif_resident_requested">%5$s quiere ser vecino de %4$s.</string>
+    <string name="notif_resident_verified">%4$s te ha verificado como vecino.</string>
+    <string name="notif_resident_rejected">%4$s no ha podido verificarte como vecino. Llama al ayuntamiento si crees que es un error.</string>
 </resources>

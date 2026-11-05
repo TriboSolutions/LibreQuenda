@@ -859,7 +859,9 @@
       "event.created": "Creou un evento",
       "event.updated": "Cambiou un evento",
       "resident.verified": "Verificou un veciño",
-      "resident.unverified": "Retirou a verificación dun veciño"
+      "resident.unverified": "Retirou a verificación dun veciño",
+      "resident.request_verified": "Verificou un veciño por petición",
+      "resident.request_discarded": "Descartou unha petición de veciño"
     },
     "anyDate": "Calquera data",
     "clearDates": "Limpar datas"
@@ -972,7 +974,7 @@
     "add": "Verificar",
     "added": "{{email}} xa está verificada como veciña.",
     "removed": "Retirouse a verificación de {{name}}. As súas reservas seguen en pé.",
-    "remove": "Retirar",
+    "remove": "Quitar a verificación",
     "search": "Buscar por nome ou correo",
     "searchAction": "Buscar",
     "sort": "Ordenar por",
@@ -987,7 +989,27 @@
     "pages": "Páxinas",
     "page": "Páxina {{page}} de {{pages}}",
     "previous": "Anterior",
-    "next": "Seguinte"
+    "next": "Seguinte",
+    "removeTitle": "Quitar a verificación de {{name}}?",
+    "removeBody": "Deixará de poder reservar e unirse nas instalacións só para veciños. As reservas que xa ten seguen en pé.",
+    "removeCancel": "Cancelar",
+    "requests": {
+      "title": "Peticións pendentes",
+      "help": "Persoas que pediron desde a web ou a app que as verifiques. Compróbaas no padrón do concello e decide. Ao verificar ou descartar, a petición (co DNI e o enderezo) bórrase; se ninguén decide, bórrase aos 15 días.",
+      "empty": "Non hai peticións pendentes.",
+      "fullName": "Nome",
+      "dni": "DNI/NIE",
+      "address": "Enderezo",
+      "account": "Conta",
+      "sent": "Enviada",
+      "sentOn": "o {{date}} · bórrase o {{expires}}",
+      "verify": "Verificar",
+      "discard": "Descartar",
+      "verified": "{{name}} xa está verificada como veciña.",
+      "discarded": "Descartouse a petición de {{name}}.",
+      "count_one": "{{count}} petición pendente",
+      "count_other": "{{count}} peticións pendentes"
+    }
   },
   "settings": "Axustes da plataforma",
   "platformSettings": {

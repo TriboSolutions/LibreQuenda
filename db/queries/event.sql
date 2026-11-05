@@ -179,6 +179,7 @@ SELECT
     f.image_ref,
     f.latitude,
     f.longitude,
+    f.residents_only,
     t.slug AS tenant_slug,
     t.name AS tenant_name
 FROM

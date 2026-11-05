@@ -1,4 +1,4 @@
-import { LoaderCircle, LocateFixed, MapPin, Search, Zap } from 'lucide-react'
+import { House, LoaderCircle, LocateFixed, MapPin, Search, Zap } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
@@ -251,7 +251,7 @@ type RowProps = { facility: FacilityCard; km: number | null; active: boolean; la
 
 /** One facility: photo, name (opens it), its council (opens the council), tags, free turns today and distance. */
 function FacilityRow({ facility: f, km, active, labels }: RowProps) {
-  const { t, i18n } = useTranslation('councils')
+  const { t, i18n } = useTranslation(['councils', 'facility'])
   const distance = km === null ? null : new Intl.NumberFormat(i18n.resolvedLanguage ?? 'gl', { maximumFractionDigits: km < 10 ? 1 : 0 }).format(km)
   return (
     <article
@@ -287,6 +287,12 @@ function FacilityRow({ facility: f, km, active, labels }: RowProps) {
             <Zap className="size-3" aria-hidden="true" />
             {t('card.freeTodayLong', { count: f.free_today })}
           </span>
+          {f.residents_only && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-pill-neutral-bg px-2 py-0.5 text-xs font-medium text-pill-neutral-ink">
+              <House className="size-3" aria-hidden="true" />
+              {t('facility:residentRequest.badge')}
+            </span>
+          )}
           {distance !== null && (
             <span className="num inline-flex items-center gap-1 rounded-full bg-pill-accent-bg px-2 py-0.5 text-xs font-medium text-pill-accent-ink">
               <MapPin className="size-3" aria-hidden="true" />

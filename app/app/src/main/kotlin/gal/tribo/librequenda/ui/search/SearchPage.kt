@@ -464,6 +464,7 @@ private fun ResultRow(f: DayFacility, filters: SearchFilters, onOpen: () -> Unit
         Box(Modifier.fillMaxWidth().height(200.dp).background(Lq.colors.muted).clickable(onClick = onOpen)) {
             AsyncImage(f.imageUrl, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
             Box(Modifier.fillMaxSize().background(Brush.verticalGradient(0.5f to Color.Transparent, 1f to Color.Black.copy(alpha = 0.7f))))
+            if (f.residentsOnly) gal.tribo.librequenda.ui.components.ResidentsOnlyPill(Modifier.align(Alignment.TopStart).padding(12.dp))
             Text(
                 f.name,
                 color = Color.White,

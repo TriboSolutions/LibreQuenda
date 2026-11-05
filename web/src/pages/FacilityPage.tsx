@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import { Link, useParams, useSearchParams } from 'react-router'
 import { RatingBadge } from '@/components/Stars'
+import { ResidentRequestDialog, ResidentsOnlyBadge } from '@/components/ResidentRequestDialog'
 import { PublicTurnDialog } from '@/components/PublicTurnDialog'
 import { BookingDialog } from '@/components/BookingDialog'
 import { DatePicker } from '@/components/DatePicker'
@@ -50,6 +51,7 @@ export function FacilityPage() {
   const [pick, setPick] = useState<{ facility: Facility; slot: Slot } | null>(null)
   const [publicPick, setPublicPick] = useState<PublicTurn | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
+  const [asking, setAsking] = useState(false)
   usePageTitle(page.data?.facility.name, page.data?.tenant.name)
 
   const ticking = useNow()
@@ -133,6 +135,7 @@ export function FacilityPage() {
         <h1 className="text-[28px] leading-9 font-bold tracking-[-0.02em] sm:text-[32px] sm:leading-10">{f.name}</h1>
         <p className="mt-1 text-base text-muted-foreground">{[f.sport, f.address].filter(Boolean).join(' · ')}</p>
         <RatingBadge rating={data.rating} className="mt-1" />
+        {f.residents_only && <ResidentsOnlyBadge className="mt-2" />}
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start">
@@ -168,8 +171,23 @@ export function FacilityPage() {
             {/* residents only: say so before anyone picks a turn the API would refuse */}
             {f.residents_only && !me?.resident_of?.some((r) => r.tenant_slug === slug) && (
               <Alert className="border-0 bg-pill-neutral-bg text-pill-neutral-ink">
-                <AlertDescription className="text-pill-neutral-ink">
-                  {auth.isAuthenticated ? t('facility:residentsOnlyNotVerified', { council: data.tenant.name }) : t('facility:residentsOnlySignIn', { council: data.tenant.name })}
+                <AlertDescription className="grid gap-3 text-pill-neutral-ink">
+                  <span>
+                    {!auth.isAuthenticated
+                      ? t('facility:residentsOnlySignIn', { council: data.tenant.name })
+                      : me?.resident_requests?.some((r) => r.tenant_slug === slug)
+                        ? t('facility:residentRequest.pendingShort', { council: data.tenant.name })
+                        : t('facility:residentsOnlyNotVerified', { council: data.tenant.name })}
+                  </span>
+                  {auth.isAuthenticated ? (
+                    <Button type="button" variant="outline" className="w-fit" onClick={() => setAsking(true)}>
+                      {me?.resident_requests?.some((r) => r.tenant_slug === slug) ? t('facility:residentRequest.see') : t('facility:residentRequest.ask')}
+                    </Button>
+                  ) : (
+                    <Button type="button" variant="outline" className="w-fit" onClick={login}>
+                      {t('facility:residentRequest.signIn')}
+                    </Button>
+                  )}
                 </AlertDescription>
               </Alert>
             )}
@@ -197,6 +215,7 @@ export function FacilityPage() {
                           <PartyPopper className="mt-0.5 size-4 shrink-0" aria-hidden />
                           <span className="grid min-w-0 gap-0.5">
                             <span className="font-semibold break-words">{event.title}</span>
+                            {f.residents_only && <span className="text-sm font-medium">{t('facility:residentRequest.badge')}</span>}
                             <span className="num text-sm">
                               {formatTime(event.starts_at, timeZone)}–{formatTime(event.ends_at, timeZone)} ·{' '}
                               {Date.parse(event.starts_at) <= currentTime ? t('facility:publicSlot.ongoing') : left > 0 ? t('facility:events.spots', { count: left }) : t('facility:publicSlot.full')}
@@ -340,6 +359,7 @@ export function FacilityPage() {
         </aside>
       </div>
 
+      {f.residents_only && <ResidentRequestDialog key={`${slug}:${asking}`} tenant={data.tenant} open={asking} onClose={() => setAsking(false)} />}
       {publicPick && <PublicTurnDialog
         key={publicPick.id}
         booking={publicPick}

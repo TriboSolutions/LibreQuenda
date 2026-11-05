@@ -36,6 +36,19 @@ func (r *meRoutes) RegisterRoutes() {
 		AdditionalMethods: []router.HTTPMethod{router.HEAD, router.OPTIONS},
 		Handler:           middlewares.AuthMiddleware(h.GetMe),
 	})
+	// asking a council to verify the person as its resident, or withdrawing it
+	r.router.NewRoute(router.Route{
+		Path:              "/tenants/{slug}/resident-request",
+		Method:            http.MethodPost,
+		AdditionalMethods: []router.HTTPMethod{router.OPTIONS},
+		Handler:           middlewares.AuthMiddleware(middlewares.WithStrictRateLimit(h.RequestResidency)),
+	})
+	r.router.NewRoute(router.Route{
+		Path:              "/tenants/{slug}/resident-request",
+		Method:            http.MethodDelete,
+		AdditionalMethods: []router.HTTPMethod{router.OPTIONS},
+		Handler:           middlewares.AuthMiddleware(h.WithdrawResidency),
+	})
 	r.router.NewRoute(router.Route{
 		Path:              "/me/profile",
 		Method:            http.MethodPut,

@@ -43,6 +43,8 @@ var actions = map[string]action{
 	"GET /tenants/{slug}/admin/audit":                                   {code: ""},
 	"POST /tenants/{slug}/admin/residents":                              {code: "resident.verified"},
 	"DELETE /tenants/{slug}/admin/residents/{userId}":                   {code: "resident.unverified", target: "user", param: "userId"},
+	"POST /tenants/{slug}/admin/resident-requests/{requestId}/verify":   {code: "resident.request_verified"},
+	"DELETE /tenants/{slug}/admin/resident-requests/{requestId}":        {code: "resident.request_discarded"},
 
 	// superadministrators
 	"POST /admin/tenants":                           {code: "council.created"},

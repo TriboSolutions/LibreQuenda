@@ -112,19 +112,20 @@ func (s *tenantsService) GetFacilities(ctx context.Context, near *Near, filters 
 				continue
 			}
 			response.Facilities = append(response.Facilities, FacilityCardDto{
-				Id:         f.Id,
-				Slug:       f.Slug,
-				Name:       f.Name,
-				Sport:      f.Sport,
-				Tags:       f.Tags,
-				ImageUrl:   f.ImageUrl,
-				Address:    f.Address,
-				Latitude:   f.Latitude,
-				Longitude:  f.Longitude,
-				FreeToday:  free,
-				Council:    day.Tenant,
-				Joinable:   open,
-				DistanceKm: km,
+				Id:            f.Id,
+				Slug:          f.Slug,
+				Name:          f.Name,
+				Sport:         f.Sport,
+				Tags:          f.Tags,
+				ImageUrl:      f.ImageUrl,
+				Address:       f.Address,
+				Latitude:      f.Latitude,
+				Longitude:     f.Longitude,
+				FreeToday:     free,
+				Council:       day.Tenant,
+				ResidentsOnly: f.ResidentsOnly,
+				Joinable:      open,
+				DistanceKm:    km,
 			})
 		}
 	}

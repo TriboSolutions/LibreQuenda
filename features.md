@@ -26,6 +26,7 @@ Status: **built** · **in progress** (open work) · **idea** (not started).
 | Account in Zitadel: sign up and in with a password or Google (passkeys optional), change name, email and password from the profile | built |
 | Verified email required to book, join a turn or book at the door (keeps bot accounts from taking turns) | built |
 | Your data as a file (JSON and CSV) and deleting your account (bookings anonymised, sign-in account deleted) | built |
+| Residents-only facilities marked «Só para veciños» on their page, their cards and their events; someone not verified there asks to be: phone the council, or send a request (DNI or NIE, name, postal code, street), one a week at most, and withdraw it while pending; told by notice and email when the council decides | built |
 | Report a problem at a facility (broken net, no light, dirty changing rooms…) from a booking or the facility's page, with a category, a photo and whether it is urgent; told by notice and email when the council fixes or rejects it | built |
 | Terms of use and privacy policy pages; support contact in the footer | built |
 | Four languages (Galician, Spanish, English, Catalan), light and dark theme | built |
@@ -40,7 +41,7 @@ Status: **built** · **in progress** (open work) · **idea** (not started).
 | Flash booking from the app, also with an NFC tag | built |
 | Notices without push (background check), local reminders, Android notifications to rate a booking once it ends | built |
 | Profile, preferences, language, support and legal texts; texts generated from the web's locales | built |
-| Residents-only facilities shown in the conditions, with a notice when the account is not verified there (administration stays on the web) | built |
+| Residents-only facilities marked «Só para veciños» (facility page, cards, events and public games), and asking to be verified from a bottom sheet: phone the council or send the request, see it pending and withdraw it (administration stays on the web) | built |
 
 ## Checking in at the door
 
@@ -60,7 +61,8 @@ Status: **built** · **in progress** (open work) · **idea** (not started).
 | Feature | Status |
 |---|---|
 | Facilities: create, edit, deactivate (optionally cancelling upcoming bookings with a notice), photo, map pin (address search), tags, capacity, minimum age, usage rules | built |
-| Residents-only facilities: administrators verify people as the council's residents (Veciños tab, by email); only they book and join there (bookings, public games, events, invite links), guests cannot | built |
+| Residents-only facilities: administrators verify people as the council's residents (Veciños tab, by email), and take the verification back (with a confirmation); only they book and join there (bookings, public games, events, invite links), guests cannot | built |
+| Requests to be verified: they reach the Veciños tab (badge with the pending ones), the administrators' bell and their email («X quere ser veciño»); staff check the DNI and address against their own census, then verify or discard. Either way the request is deleted at once, with its DNI and address, and one nobody decided on is deleted after 15 days | built |
 | Weekly opening hours and closures (cancelling the bookings inside, with an apology and the reason) | built |
 | Ways to check in per facility (Entrada tab) and printable QR and code sheets | built |
 | Booking window per council, inherited by its facilities or overridden in each one's Reserva tab: how far ahead (hours or days) or next week opening at a fixed hour (e.g. Sunday 20:00), how close to the start from the app, cancel and change deadline, upcoming bookings, bookings per day and per week, turns in a row, optional no-show penalty | built |

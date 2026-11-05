@@ -1,4 +1,4 @@
-import { AlarmClock, Bell, CalendarCheck, CalendarClock, CalendarX, ShieldCheck, Star, UserPlus, Wrench } from 'lucide-react'
+import { AlarmClock, BadgeCheck, Bell, CalendarCheck, CalendarClock, CalendarX, House, ShieldCheck, Star, UserPlus, Wrench } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
@@ -30,12 +30,17 @@ const icons: Record<NotificationType, typeof Bell> = {
   issue_solved: Wrench,
   issue_rejected: Wrench,
   rating_requested: Star,
+  resident_requested: House,
+  resident_verified: BadgeCheck,
+  resident_rejected: House,
 }
 
 /** Where a notice leads: the council's administration, the facility of a reported problem, the rating dialog, or My bookings. */
 function target(n: AppNotification) {
   if (n.type === 'rating_requested' && n.booking_id) return `/reservas?valorar=${encodeURIComponent(n.booking_id)}`
   if (n.type === 'issue_reported') return `/${n.tenant_slug}/admin?vista=incidencias`
+  if (n.type === 'resident_requested') return `/${n.tenant_slug}/admin?vista=vecinos`
+  if (n.type === 'resident_verified' || n.type === 'resident_rejected') return `/${n.tenant_slug}`
   if (n.type === 'council_admin_granted') return `/${n.tenant_slug}/admin`
   if ((n.type === 'issue_solved' || n.type === 'issue_rejected') && n.facility_slug) return `/${n.tenant_slug}/${n.facility_slug}`
   return '/reservas'

@@ -114,4 +114,37 @@
     <string name="nfc_flash_help">Amb aquesta pàgina oberta, apropa el mòbil a l\'etiqueta NFC de la porta: si el torn és lliure, es reserva i entres. Et demanarem la ubicació, que es comprova i mai no es desa.</string>
     <string name="nfc_checkin_help">Amb aquesta pàgina oberta, apropa el mòbil a l\'etiqueta NFC de la porta i registres l\'entrada. Et demanarem la ubicació, que es comprova i mai no es desa.</string>
     <string name="change_done">Reserva canviada</string>
+    <!-- residents only: asking the council to verify the person as its resident -->
+    <string name="residents_only_badge">Instal·lació només per a veïns</string>
+    <string name="resident_not_verified">Aquesta instal·lació és només per a veïns de %1$s verificats per l’ajuntament, i el teu compte encara no ho està.</string>
+    <string name="resident_request_row">Demana ser veí</string>
+    <string name="resident_request_row_help">Truca a l’ajuntament o envia la petició des d’aquí</string>
+    <string name="resident_request_pending">Petició enviada el %1$s, pendent de revisió</string>
+    <string name="resident_request_pending_help">Toca per veure-la o retirar-la</string>
+    <string name="resident_sheet_title">Demana ser veí de %1$s</string>
+    <string name="resident_sheet_text">Per reservar aquí, %1$s ha de comprovar que estàs empadronat o empadronada. Pots trucar a l’ajuntament o enviar-li la petició des de l’app.</string>
+    <string name="resident_call">Truca a l’ajuntament</string>
+    <string name="resident_form_title">O envia la petició</string>
+    <string name="resident_dni">DNI o NIE</string>
+    <string name="resident_full_name">Nom i cognoms</string>
+    <string name="resident_postal_code">Codi postal</string>
+    <string name="resident_postal_code_invalid">El codi postal té 5 dígits.</string>
+    <string name="resident_street">Adreça on vius</string>
+    <string name="resident_street_help">Carrer, número i pis</string>
+    <string name="resident_privacy">L’ajuntament només fa servir aquestes dades per comprovar l’empadronament; s’esborren en decidir, i com a molt als 15 dies.</string>
+    <string name="resident_send">Envia la petició</string>
+    <string name="resident_sending">Enviant…</string>
+    <string name="resident_pending_title">La teva petició</string>
+    <string name="resident_pending_text">%1$s revisarà les teves dades i t’avisarà quan decideixi.</string>
+    <string name="resident_withdraw">Retira la petició</string>
+    <string name="resident_withdraw_title">Vols retirar la petició?</string>
+    <string name="resident_withdraw_text">%1$s deixarà de revisar-la i les teves dades s’esborren. La pots tornar a enviar quan vulguis.</string>
+    <string name="resident_withdrawing">Retirant…</string>
+    <string name="resident_keep">Mantén-la</string>
+    <string name="notification_resident_requested">Petició de veí</string>
+    <string name="notification_resident_verified">Veí verificat</string>
+    <string name="notification_resident_rejected">Veí sense verificar</string>
+    <string name="notif_resident_requested">%5$s vol ser veí de %4$s.</string>
+    <string name="notif_resident_verified">%4$s t’ha verificat com a veí.</string>
+    <string name="notif_resident_rejected">%4$s no t’ha pogut verificar com a veí. Truca a l’ajuntament si creus que és un error.</string>
 </resources>

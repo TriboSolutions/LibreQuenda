@@ -47,7 +47,10 @@ CREATE TYPE notification_type AS ENUM (
     'issue_reported',               -- new issue for the council administrators
     'issue_solved',                 -- a problem the person reported was fixed (issue_id)
     'issue_rejected',               -- …or turned down, with the council's reason
-    'rating_requested'              -- a booking ended: rate the facility (and, if it was public, the others who played)
+    'rating_requested',             -- a booking ended: rate the facility (and, if it was public, the others who played)
+    'resident_requested',           -- someone asks the council administrators to verify them as a resident
+    'resident_verified',            -- the council verified the person as its resident
+    'resident_rejected'             -- …or could not, from its own census
 );
 
 -- A problem a resident reports at a facility, in the council's maintenance list.
@@ -139,6 +142,7 @@ CREATE TABLE app_user (
     email_reminders    BOOLEAN      NOT NULL DEFAULT TRUE,
     email_notifications BOOLEAN     NOT NULL DEFAULT TRUE,             -- off: booking and problem notices stay in the app only, no email
     show_recommendations BOOLEAN    NOT NULL DEFAULT TRUE,             -- "For you" on the home page, from their own bookings
+    resident_requested_at TIMESTAMPTZ NULL,                            -- the last request to be verified as a resident: one a week
     calendar_token     UUID         NULL UNIQUE,       -- secret in the .ics feed address; NULL = feed off, a new one revokes the old address
     created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
     updated_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW()
@@ -182,6 +186,24 @@ CREATE TABLE tenant_resident (
     verified_by UUID        NULL REFERENCES app_user(id) ON DELETE SET NULL,
     verified_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     PRIMARY KEY (tenant_id, user_id)
+);
+
+-- Someone asking the council to verify them as its resident (for its
+-- residents_only facilities): what the council needs to look them up in its
+-- own census (padrón). Identity data is kept only while it is useful: the row
+-- is deleted when an administrator verifies or discards the request, and the
+-- purge_resident_requests job deletes any left after 15 days. One pending
+-- request per person and council; nothing of it is copied anywhere else.
+CREATE TABLE resident_request (
+    id          UUID         PRIMARY KEY DEFAULT uuidv7(),
+    tenant_id   UUID         NOT NULL REFERENCES tenant(id)   ON DELETE CASCADE,
+    user_id     UUID         NOT NULL REFERENCES app_user(id) ON DELETE CASCADE,
+    dni         VARCHAR(9)   NOT NULL,   -- DNI or NIE, upper case, checked letter
+    full_name   VARCHAR(200) NOT NULL,
+    postal_code CHAR(5)      NOT NULL,
+    street      VARCHAR(200) NOT NULL,   -- street and number where they live
+    created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    UNIQUE (tenant_id, user_id)
 );
 
 -- A role waiting for its person: accepted the first time someone logs in with

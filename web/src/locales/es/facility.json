@@ -145,5 +145,29 @@
   "residentsOnly": "Solo para vecinos verificados de {{council}}.",
   "residentsOnlyShort": "Solo para vecinos verificados por el ayuntamiento.",
   "residentsOnlySignIn": "Esta instalación es solo para vecinos de {{council}} verificados por el ayuntamiento. Inicia sesión para reservar.",
-  "residentsOnlyNotVerified": "Esta instalación es solo para vecinos de {{council}} verificados por el ayuntamiento, y tu cuenta no lo está. Pide en el ayuntamiento que la verifiquen."
+  "residentsOnlyNotVerified": "Esta instalación es solo para vecinos de {{council}} verificados por el ayuntamiento, y tu cuenta no lo está. Pide en el ayuntamiento que la verifiquen.",
+  "residentRequest": {
+    "badge": "Instalación solo para vecinos",
+    "ask": "Pedir ser vecino",
+    "see": "Ver la petición",
+    "signIn": "Iniciar sesión",
+    "pendingShort": "Esta instalación es solo para vecinos de {{council}}. Tu petición está pendiente: el ayuntamiento la revisará.",
+    "title": "Pedir ser vecino de {{council}}",
+    "lead": "Para reservar aquí el ayuntamiento tiene que verificar que vives en {{council}}, mirándolo en su padrón. Puedes llamar o enviarle una petición.",
+    "callTitle": "Llamar al ayuntamiento",
+    "callEmail": "Escribe a {{email}} o acércate a las oficinas.",
+    "callOffice": "Acércate a las oficinas del ayuntamiento.",
+    "formTitle": "O envía una petición",
+    "dni": "DNI o NIE",
+    "dniHelp": "Ocho cifras y la letra, sin espacios.",
+    "fullName": "Nombre y apellidos",
+    "postalCode": "Código postal",
+    "street": "Calle y número donde vives",
+    "privacy": "El ayuntamiento solo usa estos datos para comprobar el empadronamiento. Se borran en cuanto decide, y como mucho a los 15 días.",
+    "send": "Enviar la petición",
+    "sent": "Petición enviada. Te avisaremos cuando el ayuntamiento decida.",
+    "pending": "Petición enviada el {{date}}, pendiente de revisión.",
+    "withdraw": "Retirar la petición",
+    "close": "Cerrar"
+  }
 }
