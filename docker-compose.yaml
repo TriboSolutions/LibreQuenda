@@ -207,6 +207,9 @@ services:
       # Sign-in and sign-up stop at "enter the code we emailed you" until the email
       # is verified. Council roles only follow a verified email (api/core/me).
       EMAIL_VERIFICATION: "true"
+      # The installation's logo (api/zitadel/branding.go) shows within a minute of a
+      # save; the login keeps its other settings for the usual 15 to 60 minutes.
+      API_CACHE_CONFIG: '{"getBrandingSettings":1}'
     healthcheck:
       test: [ "CMD", "/bin/sh", "-c", "node /app/healthcheck.mjs http://localhost:3000/ui/v2/login/healthy" ]
       interval: 10s

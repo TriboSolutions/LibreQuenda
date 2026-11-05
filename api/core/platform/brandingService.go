@@ -33,5 +33,6 @@ func (s *platformService) UpdateBranding(ctx context.Context, input BrandingInpu
 	if err != nil {
 		return nil, failed("errors.branding_save_failed")
 	}
+	branding.SyncZitadel(s.db) // the sign-in pages and Zitadel's emails follow
 	return brandingDto(branding.Branding{CustomName: input.Name, LogoRef: input.LogoRef}), nil
 }

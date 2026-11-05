@@ -7,8 +7,9 @@
 #  - signs up and in with a password (passkeys only with ZITADEL_PASSKEYS=true)
 #  - short access tokens (ZITADEL_ACCESS_TOKEN_MINUTES, 10 by default), renewed by the web
 #  - brands the login and console as LibreQuenda (logo, colours, no Zitadel links)
-#  - creates the "librequenda-api" service account (user manager only) and writes
-#    its token to /api-secrets, for /perfil (name, email, password)
+#  - creates the "librequenda-api" service account (user and settings manager of
+#    the residents' organisation) and writes its token to /api-secrets, for /perfil
+#    (name, email, password) and to copy the installation's name and logo there
 #  - with ZITADEL_SETUP_REVOKE_TOKEN=true, revokes its own admin token at the end;
 #    without a working token, an installation already set up is left as it is
 #  - writes /runtime/config.json, served by Caddy to the SPA; its scope also asks
@@ -237,7 +238,10 @@ call PUT /admin/v1/policies/privacy '{"tosLink":"","privacyLink":"","helpLink":"
 log "branding applied"
 
 # --- service account for the API: residents manage their account from /perfil ---
-# Only ORG_USER_MANAGER on the organisation residents register in, never IAM owner.
+# Only ORG_USER_MANAGER and ORG_SETTINGS_MANAGER on the organisation residents
+# register in, never IAM owner. The settings role lets the API give that organisation
+# the installation's logo and name (its own label policy and email texts,
+# api/zitadel/branding.go); the instance's LibreQuenda branding above stays.
 API_USER=librequenda-api
 API_PAT_FILE=/api-secrets/zitadel-users.pat
 API_USER_ID=$(call POST /management/v1/users/_search \
@@ -248,8 +252,10 @@ if [ -z "$API_USER_ID" ]; then
 		"{\"userName\":\"$API_USER\",\"name\":\"LibreQuenda API\",\"accessTokenType\":\"ACCESS_TOKEN_TYPE_BEARER\"}" | jq -r '.userId')
 	log "created service account $API_USER ($API_USER_ID)"
 fi
-call POST /management/v1/orgs/me/members "{\"userId\":\"$API_USER_ID\",\"roles\":[\"ORG_USER_MANAGER\"]}" \
-	>/dev/null 2>&1 || true # already a member
+API_ROLES='["ORG_USER_MANAGER","ORG_SETTINGS_MANAGER"]'
+call POST /management/v1/orgs/me/members "{\"userId\":\"$API_USER_ID\",\"roles\":$API_ROLES}" >/dev/null 2>&1 ||
+	call PUT "/management/v1/orgs/me/members/$API_USER_ID" "{\"roles\":$API_ROLES}" >/dev/null 2>&1 ||
+	true # already a member with these roles ("no changes" is reported as an error)
 if [ ! -s "$API_PAT_FILE" ]; then
 	call POST "/management/v1/users/$API_USER_ID/pats" '{"expirationDate":"2099-01-01T00:00:00Z"}' | jq -r '.token' > "$API_PAT_FILE.tmp"
 	mv "$API_PAT_FILE.tmp" "$API_PAT_FILE"
