@@ -21,8 +21,14 @@ export type PublicTurn = {
   ends_at: string
   description: string
   capacity: number // with the owner for a public booking; only who joins for an event
-  people: string[] // first names: the owner first (not for an event), then who joined
+  people: string[] // first names: the owner first (not for an event), then who joined; signed out, only the owner
+  people_count: number // everyone in it, owner included: count with this, not people
+  owner: PublicPerson | null // who booked it and answers for it; null for an event
+  joined: PublicPerson[] // who joined, in order; empty signed out
 }
+
+/** Someone in a public booking: first name and the stars others gave them (null until rated, and for guests). */
+export type PublicPerson = { name: string; rating: RatingSummary | null }
 
 export type Facility = {
   public_bookings?: PublicTurn[]
@@ -1086,8 +1092,9 @@ export const api = {
   // a facility's forecast when enabled, from MeteoGalicia through the API
   weather: (slug: string, facility: string, date: string) =>
     request<Weather>(`/tenants/${encodeURIComponent(slug)}/facilities/${encodeURIComponent(facility)}/weather?date=${date}`),
-  facilityPage: (slug: string, facility: string, date?: string) =>
-    request<FacilityPage>(`/tenants/${encodeURIComponent(slug)}/facilities/${encodeURIComponent(facility)}${date ? `?date=${date}` : ''}`),
+  // signed in (token), each public booking also says who joined; signed out, only who answers for it
+  facilityPage: (slug: string, facility: string, date?: string, token?: string) =>
+    request<FacilityPage>(`/tenants/${encodeURIComponent(slug)}/facilities/${encodeURIComponent(facility)}${date ? `?date=${date}` : ''}`, { token }),
   // acceptRules: the resident ticked "I have read the rules"; the API refuses the booking otherwise
   // isPublic: anyone signed in may find it in «For you» and join it (facilities with room for more than one)
   book: (token: string, facilityId: string, startsAt: string, acceptRules: boolean, isPublic = false, description = '') =>

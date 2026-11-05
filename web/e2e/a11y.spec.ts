@@ -95,6 +95,34 @@ for (const theme of ['light', 'dark'] as const) {
       await expectAccessible(page, { overlay: true })
     })
 
+    // someone's public booking: who booked it answers for it, and everyone shows their rating
+    test('public booking dialog, with who booked it', async ({ page }) => {
+      await open(page, '/lugo/padel-1', { theme })
+      await page.locator('[data-public=true]').first().click()
+      const dialog = page.getByRole('dialog', { name: 'Reserva pública · Pista de pádel 1' })
+      await expect(dialog).toContainText('Reserva pública de Xoán')
+      // only who answers for it; who joined, on a view of their own
+      await expect(dialog.getByRole('listitem')).toHaveCount(1)
+      await expect(dialog.getByRole('listitem').first()).toContainText('Xoán · Responsable')
+      await expect(dialog.getByRole('listitem').first()).toContainText(/Valoración de 4[.,]6 sobre 5, de 7 persoas/)
+      await page.waitForTimeout(300)
+      await expectAccessible(page, { overlay: true })
+      await dialog.getByRole('button', { name: 'Ver participantes' }).click()
+      await expect(dialog.getByRole('heading', { name: 'Participantes' })).toBeVisible()
+      await expect(dialog.getByRole('listitem').nth(1)).toContainText('Iria')
+      await expect(dialog.getByRole('listitem').nth(1)).toContainText('Sen valoracións')
+      await expectAccessible(page, { overlay: true })
+    })
+
+    // signed out, only who answers for it: who joined is never offered
+    test('public booking dialog, signed out', async ({ page }) => {
+      await open(page, '/lugo/padel-1', { theme, signedIn: false })
+      await page.locator('[data-public=true]').first().click()
+      const dialog = page.getByRole('dialog', { name: 'Reserva pública · Pista de pádel 1' })
+      await expect(dialog).toContainText('Xoán · Responsable')
+      await expect(dialog.getByRole('button', { name: 'Ver participantes' })).toHaveCount(0)
+    })
+
     test('the council\'s event on the facility page, and its dialog', async ({ page }) => {
       await open(page, '/lugo/padel-1', { theme })
       const events = page.getByRole('region', { name: 'Eventos este día' })
@@ -1168,8 +1196,9 @@ for (const theme of ['light', 'dark'] as const) {
     const ongoingEnd = new Date(Date.now() + 1800000).toISOString()
     await page.route(/\/api\/tenants\/lugo\/facilities\/padel-1(?:\?.*)?$/, (route) => route.fulfill({
       json: { ...data, facility: { ...data.facility, slots: [{ starts_at: start, ends_at: end, status: 'booked' }, { starts_at: ongoingStart, ends_at: ongoingEnd, status: 'booked' }], public_bookings: [{
-        id: 'public-test', starts_at: start, ends_at: end, description: 'Partido amigable de nivel inicial.', capacity: 4, people: ['Brais', 'Antía'],
-      }, { id: 'ongoing-test', starts_at: ongoingStart, ends_at: ongoingEnd, description: '', capacity: 4, people: ['Uxía'] }] } },
+        id: 'public-test', starts_at: start, ends_at: end, description: 'Partido amigable de nivel inicial.', capacity: 4, people: ['Brais', 'Antía'], people_count: 2,
+        owner: { name: 'Brais', rating: null }, joined: [{ name: 'Antía', rating: null }],
+      }, { id: 'ongoing-test', starts_at: ongoingStart, ends_at: ongoingEnd, description: '', capacity: 4, people: ['Uxía'], people_count: 1, owner: { name: 'Uxía', rating: null }, joined: [] }] } },
     }))
     await page.reload()
     const turn = page.locator('[data-public-state=joinable]')
@@ -1186,7 +1215,7 @@ for (const theme of ['light', 'dark'] as const) {
     const dialog = page.getByRole('dialog')
     await expect(dialog.getByText('Partido amigable de nivel inicial.')).toBeVisible()
     await expect(dialog.getByText('2 de 4 persoas')).toBeVisible()
-    await expect(dialog.getByText('Antía', { exact: true })).toBeVisible()
+    await expect(dialog.getByText('Antía', { exact: true })).toHaveCount(0) // who joined is behind «Ver participantes»
     await page.waitForTimeout(350)
     await expectAccessible(page, { overlay: true })
     await page.screenshot({ path: `test-results/public-turn-${theme}.png` })

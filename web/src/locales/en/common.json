@@ -123,6 +123,7 @@
     "reload": "Reload"
   },
   "rating": {
+    "none": "No ratings yet",
     "summary_one": "Rated {{average}} out of 5 by {{count}} person",
     "summary_other": "Rated {{average}} out of 5 by {{count}} people",
     "stars_one": "{{count}} star",
