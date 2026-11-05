@@ -251,13 +251,21 @@ func (s *tenantsService) loadDay(ctx context.Context, slug string, dateParam str
 	var publicByFacility = map[uuid.UUID][]PublicTurnDto{}
 	for _, row := range publicRows {
 		var people = append([]string{row.OwnerName}, row.People...)
+		var owner = &PublicPersonDto{Name: row.OwnerName, Rating: rating.Of(row.OwnerRatingAverage, row.OwnerRatingCount)}
 		if row.Kind == model.BookingKindEvent {
-			people = row.People
+			people, owner = row.People, nil
+		}
+		var joined = make([]PublicPersonDto, len(row.People))
+		for i, name := range row.People {
+			joined[i] = PublicPersonDto{Name: name}
+			if i < len(row.PeopleRatingAverage) && i < len(row.PeopleRatingCount) {
+				joined[i].Rating = rating.Of(row.PeopleRatingAverage[i], row.PeopleRatingCount[i])
+			}
 		}
 		publicByFacility[row.FacilityID] = append(publicByFacility[row.FacilityID], PublicTurnDto{
 			Id: row.ID.String(), Kind: string(row.Kind), Title: row.Title, StartsAt: row.StartsAt, EndsAt: row.EndsAt,
 			Description: row.PublicDescription, Capacity: row.Capacity.Int32,
-			People: people,
+			People: people, PeopleCount: len(people), Owner: owner, Joined: joined,
 		})
 	}
 

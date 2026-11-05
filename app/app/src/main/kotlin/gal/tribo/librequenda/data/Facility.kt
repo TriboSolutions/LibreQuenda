@@ -35,15 +35,24 @@ data class FacilityDay(
 data class PublicTurn(
     val id: String, val startsAt: Instant, val endsAt: Instant, val description: String, val capacity: Int, val people: List<String>,
     val kind: String = "public", val title: String = "",
+    val owner: PublicPerson? = null, // who booked it and answers for it; none for an event
+    val joined: List<PublicPerson> = emptyList(), // who joined, in order; empty signed out
+    val peopleCount: Int = people.size, // everyone in it, owner included, signed in or not
 ) {
     val isEvent: Boolean get() = kind == "event"
 
-    /** A public booking's owner is the first of people; an event's people are only who joined. */
-    val spotsLeft: Int get() = capacity - people.size
+    /** Signed out, only the owner is named (an event names nobody): count with peopleCount. */
+    val spotsLeft: Int get() = capacity - peopleCount
 }
 
-suspend fun fetchFacilityDay(councilSlug: String, facilitySlug: String, date: LocalDate): FacilityDay {
-    val json = Api.getJson(Api.baseUrl + "/tenants/$councilSlug/facilities/$facilitySlug?date=$date")
+/** Someone in a public booking: first name and the stars others gave them (null until rated, and for guests). */
+data class PublicPerson(val name: String, val rating: RatingSummary?)
+
+private fun JSONObject.publicPerson() = PublicPerson(optString("name"), ratingSummary("rating"))
+
+/** Signed in (token), each public booking also says who joined; signed out, only who answers for it. */
+suspend fun fetchFacilityDay(councilSlug: String, facilitySlug: String, date: LocalDate, token: String? = null): FacilityDay {
+    val json = Api.getJson(Api.baseUrl + "/tenants/$councilSlug/facilities/$facilitySlug?date=$date", token)
     val f = json.getJSONObject("facility")
     val slots = f.optJSONArray("slots")
     val publics = f.optJSONArray("public_bookings")
@@ -74,6 +83,7 @@ suspend fun fetchFacilityDay(councilSlug: String, facilitySlug: String, date: Lo
         },
         publicTurns = List(publics?.length() ?: 0) { publics!!.getJSONObject(it) }.map { p ->
             val people = p.optJSONArray("people")
+            val joined = p.optJSONArray("joined")
             PublicTurn(
                 id = p.getString("id"),
                 startsAt = OffsetDateTime.parse(p.getString("starts_at")).toInstant(),
@@ -83,6 +93,9 @@ suspend fun fetchFacilityDay(councilSlug: String, facilitySlug: String, date: Lo
                 people = List(people?.length() ?: 0) { people!!.optString(it) },
                 kind = p.optString("kind", "public"),
                 title = p.optString("title"),
+                owner = p.optJSONObject("owner")?.publicPerson(),
+                joined = List(joined?.length() ?: 0) { joined!!.getJSONObject(it).publicPerson() },
+                peopleCount = if (p.has("people_count")) p.optInt("people_count") else people?.length() ?: 0,
             )
         },
         rating = json.ratingSummary("rating"),

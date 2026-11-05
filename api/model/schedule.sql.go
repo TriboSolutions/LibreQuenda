@@ -439,9 +439,17 @@ SELECT b.id, b.facility_id, b.starts_at, b.ends_at, b.public_description,
     b.kind, COALESCE(b.title, '')::TEXT AS title,
     COALESCE(b.event_capacity, f.capacity) AS capacity,
     split_part(trim(COALESCE(owner.full_name, '')), ' ', 1)::TEXT AS owner_name,
+    (SELECT COALESCE(AVG(r.stars), 0) FROM user_rating r WHERE r.rated_id = b.user_id)::FLOAT8 AS owner_rating_average,
+    (SELECT COUNT(*) FROM user_rating r WHERE r.rated_id = b.user_id) AS owner_rating_count,
     ARRAY(SELECT split_part(trim(COALESCE(u.full_name, p.guest_name, '')), ' ', 1)
           FROM booking_participant p LEFT JOIN app_user u ON u.id = p.user_id
-          WHERE p.booking_id = b.id ORDER BY p.joined_at, p.id)::TEXT[] AS people
+          WHERE p.booking_id = b.id ORDER BY p.joined_at, p.id)::TEXT[] AS people,
+    ARRAY(SELECT (SELECT COALESCE(AVG(r.stars), 0) FROM user_rating r WHERE r.rated_id = p.user_id)
+          FROM booking_participant p
+          WHERE p.booking_id = b.id ORDER BY p.joined_at, p.id)::FLOAT8[] AS people_rating_average,
+    ARRAY(SELECT (SELECT COUNT(*) FROM user_rating r WHERE r.rated_id = p.user_id)
+          FROM booking_participant p
+          WHERE p.booking_id = b.id ORDER BY p.joined_at, p.id)::BIGINT[] AS people_rating_count
 FROM booking b
 JOIN facility f ON f.id = b.facility_id
 LEFT JOIN app_user owner ON owner.id = b.user_id
@@ -459,20 +467,26 @@ type ListPublicBookingsByTenantRangeParams struct {
 }
 
 type ListPublicBookingsByTenantRangeRow struct {
-	ID                uuid.UUID     `json:"id"`
-	FacilityID        uuid.UUID     `json:"facility_id"`
-	StartsAt          time.Time     `json:"starts_at"`
-	EndsAt            time.Time     `json:"ends_at"`
-	PublicDescription string        `json:"public_description"`
-	Kind              BookingKind   `json:"kind"`
-	Title             string        `json:"title"`
-	Capacity          sql.NullInt32 `json:"capacity"`
-	OwnerName         string        `json:"owner_name"`
-	People            []string      `json:"people"`
+	ID                  uuid.UUID     `json:"id"`
+	FacilityID          uuid.UUID     `json:"facility_id"`
+	StartsAt            time.Time     `json:"starts_at"`
+	EndsAt              time.Time     `json:"ends_at"`
+	PublicDescription   string        `json:"public_description"`
+	Kind                BookingKind   `json:"kind"`
+	Title               string        `json:"title"`
+	Capacity            sql.NullInt32 `json:"capacity"`
+	OwnerName           string        `json:"owner_name"`
+	OwnerRatingAverage  float64       `json:"owner_rating_average"`
+	OwnerRatingCount    int64         `json:"owner_rating_count"`
+	People              []string      `json:"people"`
+	PeopleRatingAverage []float64     `json:"people_rating_average"`
+	PeopleRatingCount   []int64       `json:"people_rating_count"`
 }
 
 // Public activity details only; participant contact data and surnames stay private.
 // Events have no owner: owner_name is ” and the capacity is the event's own, if set.
+// Everyone's public rating, as on their profile: the owner answers for the booking.
+// The people_rating_* arrays run parallel to people (a guest's count is 0).
 func (q *Queries) ListPublicBookingsByTenantRange(ctx context.Context, arg ListPublicBookingsByTenantRangeParams) ([]ListPublicBookingsByTenantRangeRow, error) {
 	rows, err := q.db.QueryContext(ctx, listPublicBookingsByTenantRange, arg.TenantID, arg.RangeEnd, arg.RangeStart)
 	if err != nil {
@@ -492,7 +506,11 @@ func (q *Queries) ListPublicBookingsByTenantRange(ctx context.Context, arg ListP
 			&i.Title,
 			&i.Capacity,
 			&i.OwnerName,
+			&i.OwnerRatingAverage,
+			&i.OwnerRatingCount,
 			pq.Array(&i.People),
+			pq.Array(&i.PeopleRatingAverage),
+			pq.Array(&i.PeopleRatingCount),
 		); err != nil {
 			return nil, err
 		}

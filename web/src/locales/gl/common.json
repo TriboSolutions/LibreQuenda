@@ -123,6 +123,7 @@
     "reload": "Recargar"
   },
   "rating": {
+    "none": "Sen valoracións",
     "summary_one": "Valoración de {{average}} sobre 5, de {{count}} persoa",
     "summary_other": "Valoración de {{average}} sobre 5, de {{count}} persoas",
     "stars_one": "{{count}} estrela",

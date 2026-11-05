@@ -123,6 +123,7 @@
     "reload": "Torna a carregar"
   },
   "rating": {
+    "none": "Sense valoracions",
     "summary_one": "Valoració de {{average}} sobre 5, d’{{count}} persona",
     "summary_other": "Valoració de {{average}} sobre 5, de {{count}} persones",
     "stars_one": "{{count}} estrella",

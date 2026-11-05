@@ -34,3 +34,13 @@ func withAccessToken(handler http.HandlerFunc) http.HandlerFunc {
 		handler(w, r.WithContext(ctx))
 	}
 }
+
+// SignedIn: whether the request carries a valid access token, on a route anyone can call.
+func SignedIn(r *http.Request) bool {
+	var accessToken, ok = strings.CutPrefix(r.Header.Get("Authorization"), "Bearer ")
+	if !ok || accessToken == "" {
+		return false
+	}
+	var _, err = auth.VerifyAccessToken(accessToken)
+	return err == nil
+}

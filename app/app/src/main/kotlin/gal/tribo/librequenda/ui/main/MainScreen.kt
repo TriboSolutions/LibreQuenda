@@ -251,7 +251,8 @@ fun MainScreen(
             // the facility, with that turn chosen; signed out, booking there asks to sign in
             onSlot = { f, slot -> facilityOpen = FacilityTarget(f.councilSlug, f.slug, searchFilters.day, slot) },
         )
-        FacilityPage(facilityOpen, signedIn = session.signedIn, residentOf = session.me?.residentOf.orEmpty(), onSignIn = onSignIn, onBack = { facilityOpen = null }, onCheckout = { confirming = it })
+        FacilityPage(facilityOpen, signedIn = session.signedIn, residentOf = session.me?.residentOf.orEmpty(), onSignIn = onSignIn, onBack = { facilityOpen = null }, onCheckout = { confirming = it },
+            token = { runCatching { actions.authed { it } }.getOrNull() })
         ConfirmBookingPage(confirming, actions, onBack = { confirming = null }, onBooked = { id ->
             // booked: on to it, the way back to the bookings
             confirming = null; facilityOpen = null; searchOpen = false

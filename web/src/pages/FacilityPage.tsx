@@ -45,7 +45,8 @@ export function FacilityPage() {
   const [picked, setPicked] = useState<{ key: string; date: string } | null>(null)
   const key = `${slug}/${facilitySlug}`
   const date = picked?.key === key ? picked.date : DATE.test(linked) ? linked : undefined
-  const page = useAsync(() => api.facilityPage(slug, facilitySlug, date), `facility:${key}:${date ?? 'today'}`)
+  const token = auth.user?.access_token
+  const page = useAsync(() => api.facilityPage(slug, facilitySlug, date, token), `facility:${key}:${date ?? 'today'}:${token ? 'in' : 'out'}`)
   const [pick, setPick] = useState<{ facility: Facility; slot: Slot } | null>(null)
   const [publicPick, setPublicPick] = useState<PublicTurn | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
@@ -185,7 +186,7 @@ export function FacilityPage() {
                 <h3 id="events-title" className="font-medium">{t('facility:events.title')}</h3>
                 <ul className="grid gap-2">
                   {events.map((event) => {
-                    const left = Math.max(event.capacity - event.people.length, 0)
+                    const left = Math.max(event.capacity - event.people_count, 0)
                     return (
                       <li key={event.id}>
                         <button
@@ -216,7 +217,7 @@ export function FacilityPage() {
                   {f.slots.map((slot) => {
                     const publicBooking = f.public_bookings?.find((b) => Date.parse(b.ends_at) > currentTime && Date.parse(b.starts_at) < Date.parse(slot.ends_at) && Date.parse(b.ends_at) > Date.parse(slot.starts_at))
                     const publicState = publicBooking
-                      ? Date.parse(publicBooking.starts_at) <= currentTime ? 'ongoing' : publicBooking.people.length >= publicBooking.capacity ? 'full' : 'joinable'
+                      ? Date.parse(publicBooking.starts_at) <= currentTime ? 'ongoing' : publicBooking.people_count >= publicBooking.capacity ? 'full' : 'joinable'
                       : undefined
                     const publicLabel = publicBooking?.kind === 'event' ? t('facility:events.label') : t('bookings:public.label')
                     return (
