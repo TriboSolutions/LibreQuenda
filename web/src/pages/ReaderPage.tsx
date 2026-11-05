@@ -10,6 +10,7 @@ import { useAsync } from '@/hooks/useAsync'
 import { api, ApiError, type CheckinResult, type Reader } from '@/lib/api'
 import { formatBookingDay, formatTime, localDate } from '@/lib/time'
 import { usePageTitle } from '@/hooks/usePageTitle'
+import { useReloadOnNewVersion } from '@/hooks/useNewVersion'
 import { useQrCamera } from '@/hooks/useQrCamera'
 import { CameraProblem } from '@/components/CameraProblem'
 
@@ -57,6 +58,7 @@ export function ReaderPage() {
   const rejected = reader.error instanceof ApiError && reader.error.status === 401
   const { t } = useTranslation('reader')
   usePageTitle(reader.data?.facility_name ?? t('signIn.title'))
+  useReloadOnNewVersion()
 
   const signIn = (value: string) => {
     storeKey(value)

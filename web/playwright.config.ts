@@ -23,7 +23,8 @@ export default defineConfig({
   ],
   // the production build: the dev server re-optimises lazy dependencies (recharts) and reloads mid-test
   webServer: {
-    command: `pnpm exec vite build --logLevel warn && pnpm exec vite preview --port ${PORT} --strictPort`,
+    // built with a version, as in a deployment: the tests on a newer API's version need one
+    command: `VITE_APP_VERSION=e2e pnpm exec vite build --logLevel warn && pnpm exec vite preview --port ${PORT} --strictPort`,
     port: PORT,
     reuseExistingServer: !process.env.CI,
   },

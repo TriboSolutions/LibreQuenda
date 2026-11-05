@@ -117,6 +117,11 @@
     "setUp": "Set up a second factor",
     "signInAgain": "Sign in again"
   },
+  "newVersion": {
+    "title": "A new version is available.",
+    "body": "Reload the page to carry on; until then nothing can be saved.",
+    "reload": "Reload"
+  },
   "rating": {
     "summary_one": "Rated {{average}} out of 5 by {{count}} person",
     "summary_other": "Rated {{average}} out of 5 by {{count}} people",
