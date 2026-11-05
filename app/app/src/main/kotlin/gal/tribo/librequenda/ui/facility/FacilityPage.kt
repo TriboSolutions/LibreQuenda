@@ -72,7 +72,6 @@ import gal.tribo.librequenda.ui.components.DateSheet
 import gal.tribo.librequenda.ui.components.LqTextField
 import gal.tribo.librequenda.ui.components.Notice
 import gal.tribo.librequenda.ui.components.PrimaryButton
-import gal.tribo.librequenda.ui.components.SecondaryButton
 import gal.tribo.librequenda.ui.components.SuccessOverlay
 import gal.tribo.librequenda.ui.profile.ProfileActions
 import gal.tribo.librequenda.ui.profile.Texts
@@ -236,22 +235,23 @@ fun FacilityPage(
                                 // who answers for it; who joined, signed in only, on a page of their own
                                 turn.owner?.let { PublicPersonRow(it, organiser = true) }
                                 if (signedIn && turn.joined.isNotEmpty()) {
-                                    SecondaryButton(stringResource(R.string.public_see_people), { participants = turn }, height = 40.dp)
+                                    ChevronRow(stringResource(R.string.public_see_people), Lq.colors.pillPositiveInk) { participants = turn }
                                 }
                             }
                         }
                         HorizontalDivider(Modifier.padding(16.dp), color = Lq.colors.border)
                         Column(Modifier.padding(horizontal = 16.dp).padding(bottom = 24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                             val f = d.details
-                            Detail(R.drawable.ic_map_pin, stringResource(R.string.directions)) {
-                                Text(f.address.ifBlank { stringResource(R.string.no_location) }, style = MaterialTheme.typography.bodyMedium, color = Lq.colors.mutedForeground)
-                                if (f.latitude != null && f.longitude != null) {
-                                    Spacer(Modifier.height(6.dp))
-                                    SecondaryButton(stringResource(R.string.directions), {
-                                        val geo = Intent(Intent.ACTION_VIEW, Uri.parse("geo:0,0?q=${f.latitude},${f.longitude}(${Uri.encode(d.name)})"))
-                                        runCatching { context.startActivity(geo) }
-                                    }, height = 40.dp)
+                            // with a pin, the whole row opens the maps app
+                            val directions = if (f.latitude != null && f.longitude != null) {
+                                {
+                                    val geo = Intent(Intent.ACTION_VIEW, Uri.parse("geo:0,0?q=${f.latitude},${f.longitude}(${Uri.encode(d.name)})"))
+                                    runCatching { context.startActivity(geo) }
+                                    Unit
                                 }
+                            } else null
+                            Detail(R.drawable.ic_map_pin, stringResource(R.string.directions), onClick = directions) {
+                                Text(f.address.ifBlank { stringResource(R.string.no_location) }, style = MaterialTheme.typography.bodyMedium, color = Lq.colors.mutedForeground)
                             }
                             Detail(R.drawable.ic_clipboard_list, stringResource(R.string.conditions)) {
                                 if (f.slotMinutes > 0) Bullet(pluralStringResource(R.plurals.rule_slot, f.slotMinutes, f.slotMinutes))
@@ -477,14 +477,30 @@ private fun DayChip(label: String, onClick: () -> Unit) {
 }
 
 @Composable
-private fun Detail(@DrawableRes icon: Int, title: String, content: @Composable () -> Unit) {
-    Row {
-        Icon(painterResource(icon), contentDescription = null, tint = Lq.colors.foreground, modifier = Modifier.padding(top = 1.dp).size(22.dp))
+private fun Detail(@DrawableRes icon: Int, title: String, onClick: (() -> Unit)? = null, content: @Composable () -> Unit) {
+    Row(
+        (if (onClick != null) Modifier.fillMaxWidth().clickable(role = Role.Button, onClick = onClick) else Modifier.fillMaxWidth()),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(painterResource(icon), contentDescription = null, tint = Lq.colors.foreground, modifier = Modifier.align(Alignment.Top).padding(top = 1.dp).size(22.dp))
         Spacer(Modifier.size(16.dp))
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(title, style = MaterialTheme.typography.titleSmall, color = Lq.colors.foreground)
             content()
         }
+        if (onClick != null) Icon(painterResource(R.drawable.ic_chevron_right), contentDescription = null, tint = Lq.colors.mutedForeground, modifier = Modifier.size(20.dp))
+    }
+}
+
+/** A line that opens something: its label and the right chevron, 48dp to tap. */
+@Composable
+private fun ChevronRow(label: String, color: androidx.compose.ui.graphics.Color, onClick: () -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(role = Role.Button, onClick = onClick),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(label, style = MaterialTheme.typography.titleSmall, color = color, modifier = Modifier.weight(1f))
+        Icon(painterResource(R.drawable.ic_chevron_right), contentDescription = null, tint = color, modifier = Modifier.size(20.dp))
     }
 }
 
