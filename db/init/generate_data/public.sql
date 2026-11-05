@@ -2,8 +2,7 @@
 -- (in «For you», most with a note), {INVITE_SHARE} shared by invite link only.
 -- On those, people from the same council and guests (name and age) joined:
 -- some still have room, some are full. The local tester's own stays private.
--- Then each council's events: one at its roomiest facility, past the upcoming
--- days (nothing booked there yet), with some neighbours already in.
+-- Then who joined the councils' events (made in events.sql).
 SELECT setseed(0.23);
 
 CREATE TEMP TABLE seed_shared AS
@@ -67,35 +66,31 @@ WHERE j.guest_roll < 0.3;
 DROP TABLE seed_join;
 DROP TABLE seed_shared;
 
--- events: the council's, no owner; 10:00–14:00 a few days after the upcoming bookings end
-CREATE TEMP TABLE seed_event AS
-SELECT DISTINCT ON (f.tenant_id)
-    f.id AS facility_id, f.tenant_id,
-    ({LOCAL_DAY} + {UPCOMING_DAYS} + 2 + TIME '10:00') AT TIME ZONE '{TIMEZONE}' AS starts_at,
-    ({LOCAL_DAY} + {UPCOMING_DAYS} + 2 + TIME '14:00') AT TIME ZONE '{TIMEZONE}' AS ends_at,
-    (ARRAY['Fiesta do deporte', 'Torneo de fútbol 5x5', 'Xornada de portas abertas', 'Maratón de baloncesto 3x3'])[1 + floor(random() * 4)::INT] AS title,
-    (SELECT m.user_id FROM tenant_membership m WHERE m.tenant_id = f.tenant_id AND m.role = 'admin' ORDER BY m.user_id LIMIT 1) AS booked_by
-FROM facility f
-WHERE f.is_active AND f.capacity > 1
-ORDER BY f.tenant_id, f.capacity DESC, f.id;
+-- who joined the councils' events (events.sql): neighbours of the council, free
+-- at that time and old enough. The smallest ones are full, the rest about half.
+CREATE TEMP TABLE seed_event_join AS
+SELECT b.id, b.starts_at, b.ends_at, b.created_at, f.tenant_id, f.min_age,
+       CASE WHEN COALESCE(b.event_capacity, f.capacity) <= 12 THEN COALESCE(b.event_capacity, f.capacity)
+            ELSE floor(COALESCE(b.event_capacity, f.capacity) * (0.3 + random() * 0.4))::INT END AS wanted
+FROM booking b JOIN facility f ON f.id = b.facility_id
+WHERE b.kind = 'event' AND b.status = 'confirmed';
 
-INSERT INTO booking (facility_id, starts_at, ends_at, channel, booked_by, kind, title, public_description, event_capacity, created_at)
-SELECT e.facility_id, e.starts_at, e.ends_at, 'staff', e.booked_by, 'event', e.title,
-       'Actividade aberta organizada polo concello. Ven coa túa familia e amizades; non fai falta experiencia.',
-       30, NOW() - INTERVAL '3 days'
-FROM seed_event e
-WHERE NOT EXISTS (
-    SELECT 1 FROM booking b WHERE b.facility_id = e.facility_id AND b.status = 'confirmed'
-      AND b.starts_at < e.ends_at AND b.ends_at > e.starts_at);
-
--- a handful of the council's residents already joined
 INSERT INTO booking_participant (booking_id, user_id, joined_at)
-SELECT b.id, h.ids[1 + ((g.i * 7) % h.n)], NOW() - make_interval(hours => g.i)
-FROM booking b
-JOIN seed_event e ON e.facility_id = b.facility_id AND e.starts_at = b.starts_at
-JOIN seed_homes h ON h.tenant_id = e.tenant_id
-CROSS JOIN generate_series(1, 8) AS g(i)
-WHERE b.kind = 'event'
+SELECT e.id, pick.user_id, LEAST(NOW() - INTERVAL '5 minutes', e.created_at + make_interval(hours => pick.n::INT))
+FROM seed_event_join e
+CROSS JOIN LATERAL (
+    SELECT u.id AS user_id, row_number() OVER () AS n
+    FROM seed_user_home h JOIN app_user u ON u.id = h.user_id
+    WHERE h.tenant_id = e.tenant_id AND u.idp_subject <> 'seed-tester'
+      AND (e.min_age IS NULL OR date_part('year', age(e.starts_at::DATE, u.birth_date)) >= e.min_age)
+      AND NOT EXISTS (
+          SELECT 1 FROM booking o WHERE o.user_id = u.id AND o.status = 'confirmed' AND o.starts_at < e.ends_at AND o.ends_at > e.starts_at)
+      AND NOT EXISTS (
+          SELECT 1 FROM booking_participant p JOIN booking o ON o.id = p.booking_id
+          WHERE p.user_id = u.id AND o.status = 'confirmed' AND o.starts_at < e.ends_at AND o.ends_at > e.starts_at)
+    ORDER BY md5(u.id::TEXT || e.id::TEXT)
+    LIMIT e.wanted
+) pick
 ON CONFLICT DO NOTHING;
 
-DROP TABLE seed_event;
+DROP TABLE seed_event_join;
