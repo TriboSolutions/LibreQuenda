@@ -80,6 +80,37 @@ def tester_email() -> str:
     return email
 
 
+def superadmin_email() -> str:
+    """The first superadministrator, as the stack sees it: SUPERADMIN_EMAIL, else the Zitadel admin."""
+    email = os.environ.get("SUPERADMIN_EMAIL", "")
+    if not email and ENV_FILE.exists():
+        for line in ENV_FILE.read_text(encoding="utf-8").splitlines():
+            if line.startswith("SUPERADMIN_EMAIL="):
+                email = line.split("=", 1)[1].strip().strip('"').strip("'")
+    return email or tester_email()
+
+
+def generate_zero_sql(sql_file: Path) -> None:
+    """The zero seed: only the superadministrator, taken over at their first sign-in (AdoptSeedTester)."""
+    email = superadmin_email()
+    if not email:
+        raise SystemExit("zero: no SUPERADMIN_EMAIL or ZITADEL_ADMIN_EMAIL in the environment or .env")
+    quoted = email.replace("'", "''")
+    sql_file.write_text(
+        "-- ============================================================\n"
+        "--  INITIAL DATA  (auto-generated — do not edit manually)\n"
+        "--  Profile: zero. Re-generate with:  python generate_data/main.py --profile zero\n"
+        "-- ============================================================\n\n"
+        "-- the superadministrator, and nothing more\n"
+        "INSERT INTO app_user (idp_subject, email, full_name, email_verified)\n"
+        f"VALUES ('seed-tester', '{quoted}', 'Superadministrador', TRUE);\n"
+        "INSERT INTO platform_admin (user_id) SELECT id FROM app_user WHERE idp_subject = 'seed-tester';\n",
+        encoding="utf-8",
+    )
+    print(f"  [sql]     superadmin  ({email})")
+    print(f"\n  Written -> {sql_file.relative_to(sql_file.parent.parent.parent)}")
+
+
 def generate_sql(csv_dir: Path, sql_file: Path, seed: dict) -> None:
     lines = [
         "-- ============================================================",

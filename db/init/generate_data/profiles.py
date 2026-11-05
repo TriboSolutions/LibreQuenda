@@ -3,6 +3,8 @@ Two seeds from the same generator:
 
   dev   small and quick to load: three councils, ~60 residents, a week of
         upcoming bookings. What local development and the screenshots need.
+  zero  nothing but the superadministrator (SUPERADMIN_EMAIL, else the Zitadel
+        admin of .env): no councils, facilities, residents or bookings.
   prod  production-sized: thirteen councils, ~120 facilities, thousands of
         residents, two weeks of upcoming bookings, problems, notices and log.
         For demos, load testing and indicators that look like a real year.
@@ -18,7 +20,7 @@ import prod_councils
 from config import CHECKIN, CLOSURES, COUNCILS, READERS, RESIDENTS
 from people import residents
 
-PROFILES = ("dev", "prod")
+PROFILES = ("dev", "prod", "zero")
 
 
 def load(name: str) -> dict:
