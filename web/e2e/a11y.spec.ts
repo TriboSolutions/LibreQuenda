@@ -141,6 +141,13 @@ for (const theme of ['light', 'dark'] as const) {
       await expect(page).toHaveURL(/\/lugo\/admin\/eventos\/ev1$/)
       await expect(page.getByRole('heading', { level: 1, name: 'Editar o evento' })).toBeVisible()
       await expect(page.getByLabel('Nome')).toHaveValue('Torneo de pádel de outono')
+      // its own 16 places; switching to the facility's capacity hides the number
+      const facilityCapacity = page.getByRole('switch', { name: 'O aforo da instalación' })
+      await expect(facilityCapacity).not.toBeChecked()
+      await expect(page.getByRole('spinbutton', { name: 'Persoas que poden apuntarse' })).toHaveValue('16')
+      await facilityCapacity.click()
+      await expect(page.getByRole('spinbutton', { name: 'Persoas que poden apuntarse' })).toBeHidden()
+      await facilityCapacity.click()
       await page.getByRole('button', { name: 'Gardar' }).click()
       await expect(page.getByText('Hai 1 reserva a esa hora:')).toBeVisible()
       await expect(page.getByText(/Lucía Varela/)).toBeVisible()
