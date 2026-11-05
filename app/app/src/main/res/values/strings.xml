@@ -156,4 +156,25 @@
     <string name="notif_resident_requested">%5$s quere ser veciño de %4$s.</string>
     <string name="notif_resident_verified">%4$s verificoute como veciño.</string>
     <string name="notif_resident_rejected">%4$s non puido verificarte como veciño. Chama ao concello se cres que é un erro.</string>
+
+    <!-- the first-run tour -->
+    <string name="tour_skip">Omitir</string>
+    <string name="tour_next">Seguinte</string>
+    <string name="tour_start">Comezar</string>
+    <string name="tour_position">Paso %1$d de %2$d</string>
+    <string name="tour_group">Axuda</string>
+    <string name="tour_title">Ver o tutorial</string>
+    <string name="tour_sub">O que podes facer na app</string>
+    <string name="tour_find_title">Atopa onde xogar</string>
+    <string name="tour_find_body">Busca pistas, pavillóns e piscinas por deporte, día e hora, na lista ou no mapa, coas máis próximas primeiro.</string>
+    <string name="tour_book_title">Reserva a túa quenda</string>
+    <string name="tour_book_body">Escolle unha quenda libre, le as normas da instalación e confirma. Podes convidar a quen vaia xogar contigo.</string>
+    <string name="tour_games_title">Únete a partidas</string>
+    <string name="tour_games_body">Fai pública a túa reserva para que se sume máis xente, ou únete ás partidas abertas preto de ti.</string>
+    <string name="tour_flash_title">Reserva ao momento</string>
+    <string name="tour_flash_body">Xa estás alí? O raio do medio reserva unha quenda libre agora mesmo e déixate entrar.</string>
+    <string name="tour_enter_title">Entra sen chaves</string>
+    <string name="tour_enter_body">Rexistra a entrada co QR da reserva no lector, co código, co QR ou a etiqueta NFC da porta, ou co persoal.</string>
+    <string name="tour_bookings_title">Todo ao día</string>
+    <string name="tour_bookings_body">Nas túas reservas tes as próximas e o historial. Lembrámosche cada unha e, ao rematar, podes valorar a instalación.</string>
 </resources>

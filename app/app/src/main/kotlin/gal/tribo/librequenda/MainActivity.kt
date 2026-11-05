@@ -11,6 +11,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -18,6 +20,7 @@ import gal.tribo.librequenda.data.Api
 import androidx.lifecycle.viewmodel.compose.viewModel
 import gal.tribo.librequenda.ui.main.MainScreen
 import gal.tribo.librequenda.ui.theme.LibreQuendaTheme
+import gal.tribo.librequenda.ui.welcome.TourScreen
 import gal.tribo.librequenda.ui.welcome.WelcomeScreen
 import kotlinx.coroutines.launch
 
@@ -57,6 +60,9 @@ class MainActivity : ComponentActivity() {
                     model.signInIntent(register)?.let(signInLauncher::launch)
                 }
 
+                // the tour again, from the menu; it survives the language change (the activity is recreated)
+                var tourAgain by rememberSaveable { mutableStateOf(false) }
+
                 if (!session.signedIn && !session.welcomeSeen) {
                     WelcomeScreen(
                         busy = session.busy,
@@ -65,6 +71,10 @@ class MainActivity : ComponentActivity() {
                         onRegister = { signIn(register = true) },
                         onExplore = model::skipWelcome,
                     )
+                } else if (!session.tourSeen) {
+                    // once in, signed in or exploring without an account: the tour, the first time.
+                    // Instead of the app, not over it: Home asks for the location only after it.
+                    TourScreen(onDone = model::finishTour)
                 } else {
                     MainScreen(
                         session = session,
@@ -80,7 +90,9 @@ class MainActivity : ComponentActivity() {
                         onMarkRead = model::markNotificationsRead,
                         opening = opening.value,
                         onOpened = { opening.value = null },
+                        onTour = { tourAgain = true },
                     )
+                    if (tourAgain) TourScreen(onDone = { tourAgain = false })
                 }
             }
         }
