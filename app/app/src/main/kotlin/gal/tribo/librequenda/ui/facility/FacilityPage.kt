@@ -128,6 +128,7 @@ fun FacilityPage(
     onSignIn: () -> Unit, // signed out, the page is to look at: booking asks to sign in
     onBack: () -> Unit,
     onCheckout: (Checkout) -> Unit, // book a free turn, or join a public booking: both confirm first
+    token: suspend () -> String? = { null }, // signed in, the day also says who joined each public booking
 ) {
     var last by remember { mutableStateOf<FacilityTarget?>(null) }
     if (target != null) last = target
@@ -139,10 +140,11 @@ fun FacilityPage(
         var day by remember(t) { mutableStateOf<FacilityDay?>(null) }
         var failed by remember(t) { mutableStateOf(false) }
         var picking by remember { mutableStateOf(false) }
+        var participants by remember(t) { mutableStateOf<PublicTurn?>(null) } // their own page
         val now = Instant.now()
         LaunchedEffect(t, date) {
             failed = false
-            try { day = fetchFacilityDay(t.councilSlug, t.facilitySlug, date) } catch (c: CancellationException) { throw c } catch (_: Exception) { failed = true }
+            try { day = fetchFacilityDay(t.councilSlug, t.facilitySlug, date, if (signedIn) token() else null) } catch (c: CancellationException) { throw c } catch (_: Exception) { failed = true }
         }
         val d = day
         Column(Modifier.fillMaxSize()) {
@@ -229,11 +231,11 @@ fun FacilityPage(
                                 }
                                 if (turn.isEvent) Text(turn.title, style = MaterialTheme.typography.titleMedium, color = Lq.colors.foreground)
                                 Text(turn.description.ifBlank { stringResource(if (turn.isEvent) R.string.event_no_description else R.string.public_no_description) }, style = MaterialTheme.typography.bodyMedium, color = Lq.colors.foreground)
-                                Text(stringResource(R.string.people_count, turn.people.size, turn.capacity), style = MaterialTheme.typography.labelLarge, color = Lq.colors.foreground)
-                                // everyone with their public rating: the one who booked first
-                                Column {
-                                    turn.owner?.let { PublicPersonRow(it, organiser = true) }
-                                    turn.joined.forEach { PublicPersonRow(it, organiser = false) }
+                                Text(stringResource(R.string.people_count, turn.peopleCount, turn.capacity), style = MaterialTheme.typography.labelLarge, color = Lq.colors.foreground)
+                                // who answers for it; who joined, signed in only, on a page of their own
+                                turn.owner?.let { PublicPersonRow(it, organiser = true) }
+                                if (signedIn && turn.joined.isNotEmpty()) {
+                                    SecondaryButton(stringResource(R.string.public_see_people), { participants = turn }, height = 40.dp)
                                 }
                             }
                         }
@@ -290,6 +292,30 @@ fun FacilityPage(
                 if (selected?.atZone(ZONE)?.toLocalDate() != it) selected = null // the turn chosen was on another day
             }, onDismiss = { picking = false })
         }
+        ParticipantsPage(participants, onBack = { participants = null })
+    }
+}
+
+/** Everyone in a public booking or an event, each with the stars others gave them: who booked it first. */
+@Composable
+private fun ParticipantsPage(turn: PublicTurn?, onBack: () -> Unit) {
+    var last by remember { mutableStateOf<PublicTurn?>(null) }
+    if (turn != null) last = turn
+    Pushed(open = turn != null, onBack = onBack) {
+        val p = last ?: return@Pushed
+        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp).padding(bottom = 24.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(stringResource(R.string.public_people_title), style = MaterialTheme.typography.headlineMedium, color = Lq.colors.foreground, modifier = Modifier.semantics { heading() })
+            Text(
+                "${if (p.isEvent) p.title else stringResource(R.string.public_label)} · ${time(p.startsAt)}–${time(p.endsAt)} · ${stringResource(R.string.people_count, p.peopleCount, p.capacity)}",
+                style = MaterialTheme.typography.bodyMedium, color = Lq.colors.mutedForeground,
+            )
+            Spacer(Modifier.height(8.dp))
+            p.owner?.let { PublicPersonRow(it, organiser = true) }
+            p.joined.forEach {
+                HorizontalDivider(color = Lq.colors.border)
+                PublicPersonRow(it, organiser = false)
+            }
+        }
     }
 }
 
@@ -343,11 +369,8 @@ fun ConfirmBookingPage(choice: Checkout?, actions: ProfileActions, onBack: () ->
                         Text(stringResource(if (turn.isEvent) R.string.event_label else R.string.public_label), style = MaterialTheme.typography.titleMedium, color = Lq.colors.foreground)
                         Text(turn.description.ifBlank { stringResource(if (turn.isEvent) R.string.event_no_description else R.string.public_no_description) }, style = MaterialTheme.typography.bodyMedium, color = Lq.colors.mutedForeground)
                         if (!turn.isEvent && turn.owner != null && turn.owner.name.isNotBlank()) Text(stringResource(R.string.public_by, turn.owner.name), style = MaterialTheme.typography.bodyLarge, color = Lq.colors.foreground)
-                        Fact(R.drawable.ic_users, stringResource(R.string.people_count, turn.people.size, turn.capacity))
-                        Column {
-                            turn.owner?.let { PublicPersonRow(it, organiser = true) }
-                            turn.joined.forEach { PublicPersonRow(it, organiser = false) }
-                        }
+                        Fact(R.drawable.ic_users, stringResource(R.string.people_count, turn.peopleCount, turn.capacity))
+                        turn.owner?.let { PublicPersonRow(it, organiser = true) }
                         Text(pluralStringResource(R.plurals.public_spots, turn.spotsLeft, turn.spotsLeft), style = MaterialTheme.typography.labelLarge, color = Lq.colors.pillPositiveInk)
                     }
                 }

@@ -81,11 +81,27 @@ type PublicTurnDto struct {
 	EndsAt      time.Time `json:"ends_at"`
 	Description string    `json:"description"`
 	Capacity    int32     `json:"capacity"` // people in it at most: with the owner for a public booking, only who joins for an event
-	People      []string  `json:"people"`   // first names: the owner first (not for an event), then who joined
+	// first names: the owner first (not for an event), then who joined; signed out, only the owner
+	People []string `json:"people"`
+	// everyone in it, owner included; what to count spots with, since people may leave names out
+	PeopleCount int `json:"people_count"`
 	// who made the public booking and answers for it; nil for an event
 	Owner *PublicPersonDto `json:"owner"`
-	// who joined, in order, each with their public rating
+	// who joined, in order, each with their public rating; empty when signed out
 	Joined []PublicPersonDto `json:"joined"`
+}
+
+// HidePeople leaves only who answers for each public booking: someone signed out
+// sees the owner's name and how many are in it, never who joined.
+func (d *FacilityDayDto) HidePeople() {
+	for i := range d.PublicBookings {
+		var b = &d.PublicBookings[i]
+		b.Joined = []PublicPersonDto{}
+		b.People = []string{}
+		if b.Owner != nil {
+			b.People = []string{b.Owner.Name}
+		}
+	}
 }
 
 // PublicPersonDto: someone in a public booking, by first name, with the stars others gave them.

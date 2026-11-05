@@ -265,7 +265,7 @@ func (s *tenantsService) loadDay(ctx context.Context, slug string, dateParam str
 		publicByFacility[row.FacilityID] = append(publicByFacility[row.FacilityID], PublicTurnDto{
 			Id: row.ID.String(), Kind: string(row.Kind), Title: row.Title, StartsAt: row.StartsAt, EndsAt: row.EndsAt,
 			Description: row.PublicDescription, Capacity: row.Capacity.Int32,
-			People: people, Owner: owner, Joined: joined,
+			People: people, PeopleCount: len(people), Owner: owner, Joined: joined,
 		})
 	}
 

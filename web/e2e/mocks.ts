@@ -133,10 +133,10 @@ const facilityPage: FacilityPage = {
   facility: {
     ...facilities[0],
     public_bookings: [
-      { id: 'ev1', kind: 'event', title: 'Torneo de pádel de outono', starts_at: at(4), ends_at: at(5), description: 'Por parellas, calquera nivel.', capacity: 16, people: ['Uxía', 'Brais'], owner: null, joined: [{ name: 'Uxía', rating: null }, { name: 'Brais', rating: null }] },
+      { id: 'ev1', kind: 'event', title: 'Torneo de pádel de outono', starts_at: at(4), ends_at: at(5), description: 'Por parellas, calquera nivel.', capacity: 16, people: ['Uxía', 'Brais'], people_count: 2, owner: null, joined: [{ name: 'Uxía', rating: null }, { name: 'Brais', rating: null }] },
       // someone's public booking on a booked turn: who booked it, and everyone's rating
       {
-        id: 'pb1', kind: 'public', title: '', starts_at: at(1), ends_at: at(2), description: 'Adestramento suave. Trae auga!', capacity: 4, people: ['Xoán', 'Iria'],
+        id: 'pb1', kind: 'public', title: '', starts_at: at(1), ends_at: at(2), description: 'Adestramento suave. Trae auga!', capacity: 4, people: ['Xoán', 'Iria'], people_count: 2,
         owner: { name: 'Xoán', rating: { average: 4.6, count: 7 } }, joined: [{ name: 'Iria', rating: null }],
       },
     ],

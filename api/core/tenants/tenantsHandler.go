@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"librequenda/auth"
+	"librequenda/middlewares"
 	"librequenda/shared"
 	"net/http"
 	"sync"
@@ -84,6 +85,11 @@ func (h *tenantsHandler) GetFacilitiesDay(w http.ResponseWriter, r *http.Request
 		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
 		return
 	}
+	if !middlewares.SignedIn(r) {
+		for i := range response.Facilities {
+			response.Facilities[i].HidePeople()
+		}
+	}
 	helpers.SendSuccessResponse(w, response)
 }
 
@@ -99,6 +105,9 @@ func (h *tenantsHandler) GetFacility(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
 		return
+	}
+	if !middlewares.SignedIn(r) {
+		response.Facility.HidePeople()
 	}
 	helpers.SendSuccessResponse(w, response)
 }
@@ -116,6 +125,11 @@ func (h *tenantsHandler) GetDay(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
 		return
+	}
+	if !middlewares.SignedIn(r) {
+		for i := range response.Facilities {
+			response.Facilities[i].HidePeople()
+		}
 	}
 	helpers.SendSuccessResponse(w, response)
 }

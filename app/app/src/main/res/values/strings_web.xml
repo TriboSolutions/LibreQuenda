@@ -274,6 +274,8 @@
     <string name="people_count">%1$d de %2$s persoas</string>
     <string name="public_by">Reserva pública de %1$s</string>
     <string name="public_organiser">Responsable</string>
+    <string name="public_see_people">Ver participantes</string>
+    <string name="public_people_title">Participantes</string>
     <string name="rating_none">Sen valoracións</string>
     <string name="checkin_from">Entrada desde as %1$s</string>
     <string name="directions">Como chegar</string>
