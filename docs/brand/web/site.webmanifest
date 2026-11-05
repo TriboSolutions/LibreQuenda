@@ -1,0 +1,25 @@
+{
+  "name": "LibreQuenda",
+  "short_name": "LibreQuenda",
+  "description": "Reserva de instalaci\u00f3ns deportivas",
+  "theme_color": "#0B2544",
+  "background_color": "#0B2544",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
