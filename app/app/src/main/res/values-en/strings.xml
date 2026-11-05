@@ -79,6 +79,9 @@
     <string name="apply">Apply</string>
     <string name="clear_filters">Clear</string>
     <string name="facilities_title">Facilities</string>
+    <string name="show_map">View on map</string>
+    <string name="show_list">View list</string>
+    <string name="map_label">Map of the facilities</string>
     <string name="quick_join">Join a game</string>
     <string name="day">Day</string>
     <string name="time_of_day">Time</string>
