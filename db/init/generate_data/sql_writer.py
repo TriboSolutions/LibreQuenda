@@ -58,6 +58,7 @@ RELATIVE_COLUMN_TYPES = {
 # {LOCAL_DAY}, {TIMEZONE} and the profile's numbers (profiles.py) are filled in.
 HERE = Path(__file__).parent
 SQL_PARTS = [
+    ("events.sql", "the councils' events  (before the upcoming bookings fill around them)"),
     ("upcoming.sql", "upcoming bookings  (today and the next days, staff ones too)"),
     ("public.sql", "public and shared bookings  (notes, invite links, people and guests who joined)"),
     ("history.sql", "booking history"),
