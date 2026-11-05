@@ -29,6 +29,8 @@ type FacilityCardDto struct {
 	Longitude *float64  `json:"longitude"`
 	FreeToday int       `json:"free_today"` // turns still free today
 	Council   TenantDto `json:"council"`
+	// only the council's verified residents book or join there (also its events)
+	ResidentsOnly bool `json:"residents_only"`
 	// what can be joined there, upcoming and with spots left: "public" bookings, "event"s
 	Joinable []string `json:"joinable"`
 	// with ?lat=&lon=: from there, in km (0.1); null without a pin or a position

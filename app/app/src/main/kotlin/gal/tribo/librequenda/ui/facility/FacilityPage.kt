@@ -123,7 +123,8 @@ internal fun Pushed(open: Boolean, onBack: () -> Unit, content: @Composable () -
 fun FacilityPage(
     target: FacilityTarget?,
     signedIn: Boolean,
-    residentOf: Set<String> = emptySet(), // councils that verified the person: their residents-only facilities take them
+    me: gal.tribo.librequenda.data.Me? = null, // signed in: the councils that verified them, and their pending requests
+    actions: ProfileActions? = null, // to ask the council to verify them as its resident
     onSignIn: () -> Unit, // signed out, the page is to look at: booking asks to sign in
     onBack: () -> Unit,
     onCheckout: (Checkout) -> Unit, // book a free turn, or join a public booking: both confirm first
@@ -147,6 +148,7 @@ fun FacilityPage(
             try { day = fetchFacilityDay(t.councilSlug, t.facilitySlug, date, if (signedIn) token() else null) } catch (c: CancellationException) { throw c } catch (_: Exception) { failed = true }
         }
         val d = day
+        val residentOf = me?.residentOf.orEmpty() // their residents-only facilities take them
         Column(Modifier.fillMaxSize()) {
             Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
                 when {
@@ -158,6 +160,7 @@ fun FacilityPage(
                         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Text(d.name, style = MaterialTheme.typography.headlineMedium, color = Lq.colors.foreground, modifier = Modifier.semantics { heading() })
                             Text(listOf(d.councilName, d.sport).filter { it.isNotBlank() }.joinToString(" · "), style = MaterialTheme.typography.bodyMedium, color = Lq.colors.mutedForeground)
+                            if (d.details.residentsOnly) gal.tribo.librequenda.ui.components.ResidentsOnlyPill(Modifier.padding(top = 4.dp))
                             // the residents' stars after their bookings; nothing until someone rated
                             gal.tribo.librequenda.ui.components.RatingBadge(d.rating, Modifier.padding(top = 2.dp))
                             if (d.description.isNotBlank()) {
@@ -172,12 +175,19 @@ fun FacilityPage(
                         }
                         // residents only: say so before anyone picks a turn the API would refuse
                         if (d.details.residentsOnly && d.councilSlug !in residentOf) {
+                            val asking = signedIn && me != null && actions != null // they can ask the council here
                             Text(
-                                stringResource(if (signedIn) R.string.residents_only_not_verified else R.string.residents_only_sign_in, d.councilName),
+                                if (asking) stringResource(R.string.resident_not_verified, d.councilName)
+                                else stringResource(if (signedIn) R.string.residents_only_not_verified else R.string.residents_only_sign_in, d.councilName),
                                 style = MaterialTheme.typography.bodyMedium, color = Lq.colors.pillNeutralInk,
                                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).fillMaxWidth().clip(RoundedCornerShape(12.dp))
                                     .background(Lq.colors.pillNeutralBg).padding(14.dp),
                             )
+                            // ask to be verified, or the request already waiting for the council
+                            if (asking && me != null && actions != null) {
+                                ResidentRequestRow(Council(d.councilSlug, d.councilName, d.councilPhone), me, actions)
+                                HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = Lq.colors.border)
+                            }
                         }
                         // free turns to book, and other people's public bookings to join (green, with their spots left)
                         val free = d.slots.filter { it.free }
@@ -230,6 +240,8 @@ fun FacilityPage(
                                     )
                                 }
                                 if (turn.isEvent) Text(turn.title, style = MaterialTheme.typography.titleMedium, color = Lq.colors.foreground)
+                                // only the council's verified residents join it, as they book here
+                                if (d.details.residentsOnly) gal.tribo.librequenda.ui.components.ResidentsOnlyPill()
                                 Text(turn.description.ifBlank { stringResource(if (turn.isEvent) R.string.event_no_description else R.string.public_no_description) }, style = MaterialTheme.typography.bodyMedium, color = Lq.colors.foreground)
                                 Text(stringResource(R.string.people_count, turn.peopleCount, turn.capacity), style = MaterialTheme.typography.labelLarge, color = Lq.colors.foreground)
                                 // who answers for it; who joined, signed in only, on a page of their own

@@ -65,6 +65,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application), Pr
     private val homeState = MutableStateFlow(HomeState())
     val home = homeState.asStateFlow()
     private var facilitiesRequest: Job? = null
+    private val residentNoticesSeen = java.util.Collections.synchronizedSet(mutableSetOf<String>()) // resident_* notices already acted on
 
     init {
         refreshFacilities()
@@ -198,6 +199,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application), Pr
                 val token = auth.accessToken() ?: return@launch
                 val notifications = fetchNotifications(token)
                 sessionState.update { it.copy(notifications = notifications) }
+                // a council decided on their request to be verified as a resident: /me says so now
+                val decided = notifications.items.filter { !it.read && it.type in RESIDENT_DECISIONS && residentNoticesSeen.add(it.id) }
+                if (decided.isNotEmpty()) runCatching { fetchMe(token) }.onSuccess { me -> sessionState.update { it.copy(me = me) } }
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Exception) {
@@ -252,5 +256,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application), Pr
     private companion object {
         const val TAG = "LibreQuenda"
         const val KEY_WELCOME_SEEN = "welcome_seen"
+        val RESIDENT_DECISIONS = setOf("resident_verified", "resident_rejected")
     }
 }

@@ -859,7 +859,9 @@
       "event.created": "Created an event",
       "event.updated": "Changed an event",
       "resident.verified": "Verified a resident",
-      "resident.unverified": "Removed a resident’s verification"
+      "resident.unverified": "Removed a resident’s verification",
+      "resident.request_verified": "Verified a resident from a request",
+      "resident.request_discarded": "Discarded a resident request"
     },
     "anyDate": "Any date",
     "clearDates": "Clear dates"
@@ -966,13 +968,13 @@
   "residents": {
     "tab": "Residents",
     "title": "Verified residents",
-    "help": "People the council checked live here. Only they book at facilities marked «Verified residents only». Check their identity and census registration before verifying someone.",
+    "help": "People the council checked live here. Only they book at facilities marked «Verified residents only». Check their identity and census registration before verifying someone. The council's administrators and the superadministrators already count as verified, with no request.",
     "addLabel": "Email of the person’s account",
     "addHelp": "The person must have signed in once with that email verified.",
     "add": "Verify",
     "added": "{{email}} is now verified as a resident.",
     "removed": "{{name}} is no longer verified. Their bookings stay.",
-    "remove": "Remove",
+    "remove": "Remove verification",
     "search": "Search by name or email",
     "searchAction": "Search",
     "sort": "Sort by",
@@ -987,7 +989,27 @@
     "pages": "Pages",
     "page": "Page {{page}} of {{pages}}",
     "previous": "Previous",
-    "next": "Next"
+    "next": "Next",
+    "removeTitle": "Remove the verification of {{name}}?",
+    "removeBody": "They will no longer book or join at residents-only facilities. The bookings they already have stay.",
+    "removeCancel": "Cancel",
+    "requests": {
+      "title": "Pending requests",
+      "help": "People who asked from the web or the app to be verified. Check them against the council's census and decide. Verifying or discarding deletes the request (with the DNI and address); if nobody decides, it is deleted after 15 days.",
+      "empty": "No pending requests.",
+      "fullName": "Name",
+      "dni": "DNI/NIE",
+      "address": "Address",
+      "account": "Account",
+      "sent": "Sent",
+      "sentOn": "on {{date}} · deleted on {{expires}}",
+      "verify": "Verify",
+      "discard": "Discard",
+      "verified": "{{name}} is now verified as a resident.",
+      "discarded": "The request from {{name}} was discarded.",
+      "count_one": "{{count}} pending request",
+      "count_other": "{{count}} pending requests"
+    }
   },
   "settings": "Platform settings",
   "platformSettings": {

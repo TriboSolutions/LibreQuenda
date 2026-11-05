@@ -333,6 +333,9 @@ const (
 	NotificationTypeIssueSolved               NotificationType = "issue_solved"
 	NotificationTypeIssueRejected             NotificationType = "issue_rejected"
 	NotificationTypeRatingRequested           NotificationType = "rating_requested"
+	NotificationTypeResidentRequested         NotificationType = "resident_requested"
+	NotificationTypeResidentVerified          NotificationType = "resident_verified"
+	NotificationTypeResidentRejected          NotificationType = "resident_rejected"
 )
 
 func (e *NotificationType) Scan(src interface{}) error {
@@ -432,6 +435,7 @@ type AppUser struct {
 	EmailReminders      bool           `json:"email_reminders"`
 	EmailNotifications  bool           `json:"email_notifications"`
 	ShowRecommendations bool           `json:"show_recommendations"`
+	ResidentRequestedAt sql.NullTime   `json:"resident_requested_at"`
 	CalendarToken       uuid.NullUUID  `json:"calendar_token"`
 	CreatedAt           time.Time      `json:"created_at"`
 	UpdatedAt           time.Time      `json:"updated_at"`
@@ -626,6 +630,17 @@ type OpeningHour struct {
 type PlatformAdmin struct {
 	UserID    uuid.UUID `json:"user_id"`
 	CreatedAt time.Time `json:"created_at"`
+}
+
+type ResidentRequest struct {
+	ID         uuid.UUID `json:"id"`
+	TenantID   uuid.UUID `json:"tenant_id"`
+	UserID     uuid.UUID `json:"user_id"`
+	Dni        string    `json:"dni"`
+	FullName   string    `json:"full_name"`
+	PostalCode string    `json:"postal_code"`
+	Street     string    `json:"street"`
+	CreatedAt  time.Time `json:"created_at"`
 }
 
 type Tag struct {

@@ -41,6 +41,10 @@ func (s *meService) Export(ctx context.Context, session auth.Session) (*ExportRe
 	if residentOf, err = queries.ListResidentCouncilsByUser(ctx, userId); err != nil {
 		return nil, failed
 	}
+	var requests []model.ListResidentRequestsByUserRow
+	if requests, err = queries.ListResidentRequestsByUser(ctx, userId); err != nil {
+		return nil, failed
+	}
 	var bookings []model.ExportBookingsByUserRow
 	if bookings, err = queries.ExportBookingsByUser(ctx, owner); err != nil {
 		return nil, failed
@@ -71,16 +75,17 @@ func (s *meService) Export(ctx context.Context, session auth.Session) (*ExportRe
 	}
 
 	return &ExportResponse{
-		GeneratedAt:    time.Now().UTC(),
-		Account:        mapExportAccount(user),
-		IsSuperadmin:   isSuperadmin,
-		Roles:          mapRoles(roles),
-		ResidentOf:     mapResidentOf(residentOf),
-		Bookings:       mapExportBookings(bookings),
-		Participations: mapExportParticipations(participations),
-		Notifications:  mapExportNotifications(notifications),
-		Issues:         mapExportIssues(issues),
-		Ratings:        mapExportRatings(facilityRatings, peopleRatings, received),
+		GeneratedAt:      time.Now().UTC(),
+		Account:          mapExportAccount(user),
+		IsSuperadmin:     isSuperadmin,
+		Roles:            mapRoles(roles),
+		ResidentOf:       mapResidentOf(residentOf),
+		ResidentRequests: mapExportResidentRequests(requests),
+		Bookings:         mapExportBookings(bookings),
+		Participations:   mapExportParticipations(participations),
+		Notifications:    mapExportNotifications(notifications),
+		Issues:           mapExportIssues(issues),
+		Ratings:          mapExportRatings(facilityRatings, peopleRatings, received),
 	}, nil
 }
 

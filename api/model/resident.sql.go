@@ -7,6 +7,8 @@ package model
 
 import (
 	"context"
+	"database/sql"
+	"encoding/json"
 	"time"
 
 	"github.com/google/uuid"
@@ -37,11 +39,145 @@ func (q *Queries) AddTenantResident(ctx context.Context, arg AddTenantResidentPa
 	return added, err
 }
 
+const claimWeeklyResidentRequest = `-- name: ClaimWeeklyResidentRequest :one
+UPDATE app_user
+SET
+    resident_requested_at = NOW()
+WHERE
+    id = $1
+    AND (resident_requested_at IS NULL OR resident_requested_at <= NOW() - INTERVAL '7 days')
+RETURNING id
+`
+
+// One request a week per person, whatever the council: takes this week's, or
+// returns no row when it was used (withdrawing a request does not give it back).
+func (q *Queries) ClaimWeeklyResidentRequest(ctx context.Context, userID uuid.UUID) (uuid.UUID, error) {
+	row := q.db.QueryRowContext(ctx, claimWeeklyResidentRequest, userID)
+	var id uuid.UUID
+	err := row.Scan(&id)
+	return id, err
+}
+
+const countResidentRequests = `-- name: CountResidentRequests :one
+SELECT
+    COUNT(*)
+FROM
+    resident_request
+WHERE
+    tenant_id = $1
+`
+
+func (q *Queries) CountResidentRequests(ctx context.Context, tenantID uuid.UUID) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countResidentRequests, tenantID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const createResidentRequest = `-- name: CreateResidentRequest :one
+
+INSERT INTO resident_request (tenant_id, user_id, dni, full_name, postal_code, street)
+VALUES ($1, $2, $3, $4, $5, $6)
+ON CONFLICT (tenant_id, user_id) DO NOTHING
+RETURNING id, created_at
+`
+
+type CreateResidentRequestParams struct {
+	TenantID   uuid.UUID `json:"tenant_id"`
+	UserID     uuid.UUID `json:"user_id"`
+	Dni        string    `json:"dni"`
+	FullName   string    `json:"full_name"`
+	PostalCode string    `json:"postal_code"`
+	Street     string    `json:"street"`
+}
+
+type CreateResidentRequestRow struct {
+	ID        uuid.UUID `json:"id"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+// ============================================================
+//
+//	Requests to be verified (resident_request): deleted once decided,
+//	and after 15 days at the latest (PurgeResidentRequests).
+//
+// ============================================================
+// One pending request per person and council: a second one returns no row.
+func (q *Queries) CreateResidentRequest(ctx context.Context, arg CreateResidentRequestParams) (CreateResidentRequestRow, error) {
+	row := q.db.QueryRowContext(ctx, createResidentRequest,
+		arg.TenantID,
+		arg.UserID,
+		arg.Dni,
+		arg.FullName,
+		arg.PostalCode,
+		arg.Street,
+	)
+	var i CreateResidentRequestRow
+	err := row.Scan(&i.ID, &i.CreatedAt)
+	return i, err
+}
+
+const deleteOwnResidentRequest = `-- name: DeleteOwnResidentRequest :execrows
+DELETE FROM resident_request
+WHERE
+    tenant_id = $1
+    AND user_id = $2
+`
+
+type DeleteOwnResidentRequestParams struct {
+	TenantID uuid.UUID `json:"tenant_id"`
+	UserID   uuid.UUID `json:"user_id"`
+}
+
+// The person withdraws their request.
+func (q *Queries) DeleteOwnResidentRequest(ctx context.Context, arg DeleteOwnResidentRequestParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, deleteOwnResidentRequest, arg.TenantID, arg.UserID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
+const deleteResidentRequestOfUser = `-- name: DeleteResidentRequestOfUser :exec
+DELETE FROM resident_request
+WHERE
+    tenant_id = $1
+    AND user_id = $2
+`
+
+type DeleteResidentRequestOfUserParams struct {
+	TenantID uuid.UUID `json:"tenant_id"`
+	UserID   uuid.UUID `json:"user_id"`
+}
+
+// Verified by email from the Veciños tab: their pending request has done its job.
+func (q *Queries) DeleteResidentRequestOfUser(ctx context.Context, arg DeleteResidentRequestOfUserParams) error {
+	_, err := q.db.ExecContext(ctx, deleteResidentRequestOfUser, arg.TenantID, arg.UserID)
+	return err
+}
+
+const getResidentRequestedAt = `-- name: GetResidentRequestedAt :one
+SELECT
+    resident_requested_at
+FROM
+    app_user
+WHERE
+    id = $1
+`
+
+func (q *Queries) GetResidentRequestedAt(ctx context.Context, userID uuid.UUID) (sql.NullTime, error) {
+	row := q.db.QueryRowContext(ctx, getResidentRequestedAt, userID)
+	var resident_requested_at sql.NullTime
+	err := row.Scan(&resident_requested_at)
+	return resident_requested_at, err
+}
+
 const isTenantResident = `-- name: IsTenantResident :one
-SELECT EXISTS (
-    SELECT 1 FROM tenant_resident
-    WHERE tenant_id = $1 AND user_id = $2
-) AS verified
+SELECT (
+    EXISTS (SELECT 1 FROM tenant_resident r WHERE r.tenant_id = $1 AND r.user_id = $2)
+    OR EXISTS (SELECT 1 FROM tenant_membership m WHERE m.tenant_id = $1 AND m.user_id = $2 AND m.role = 'admin')
+    OR EXISTS (SELECT 1 FROM platform_admin p WHERE p.user_id = $2)
+)::BOOLEAN AS verified
 `
 
 type IsTenantResidentParams struct {
@@ -49,6 +185,8 @@ type IsTenantResidentParams struct {
 	UserID   uuid.UUID `json:"user_id"`
 }
 
+// Verified by the council, or verified by their role: the council's own
+// administrators, and the superadministrators everywhere, need no request.
 func (q *Queries) IsTenantResident(ctx context.Context, arg IsTenantResidentParams) (bool, error) {
 	row := q.db.QueryRowContext(ctx, isTenantResident, arg.TenantID, arg.UserID)
 	var verified bool
@@ -56,16 +194,108 @@ func (q *Queries) IsTenantResident(ctx context.Context, arg IsTenantResidentPara
 	return verified, err
 }
 
+const listPendingResidentEmails = `-- name: ListPendingResidentEmails :many
+SELECT
+    n.id,
+    n.type,
+    n.payload,
+    u.email,
+    u.full_name,
+    u.preferred_language,
+    u.email_notifications,
+    t.name AS tenant_name,
+    t.slug AS tenant_slug,
+    t.id   AS tenant_id,
+    t.contact_phone AS tenant_phone,
+    s.config AS smtp_config
+FROM
+    notification n
+    JOIN app_user u ON u.id = n.user_id
+    JOIN tenant   t ON t.slug = n.payload->>'tenant_slug'
+    LEFT JOIN tenant_smtp s ON s.tenant_id = t.id
+WHERE
+    n.emailed_at IS NULL
+    AND n.type IN ('resident_requested', 'resident_verified', 'resident_rejected')
+    AND ($1::BOOLEAN OR s.tenant_id IS NOT NULL)
+ORDER BY
+    n.created_at ASC
+LIMIT $2
+`
+
+type ListPendingResidentEmailsParams struct {
+	EnvRelay bool  `json:"env_relay"`
+	MaxRows  int32 `json:"max_rows"`
+}
+
+type ListPendingResidentEmailsRow struct {
+	ID                 uuid.UUID        `json:"id"`
+	Type               NotificationType `json:"type"`
+	Payload            json.RawMessage  `json:"payload"`
+	Email              string           `json:"email"`
+	FullName           sql.NullString   `json:"full_name"`
+	PreferredLanguage  sql.NullString   `json:"preferred_language"`
+	EmailNotifications bool             `json:"email_notifications"`
+	TenantName         string           `json:"tenant_name"`
+	TenantSlug         string           `json:"tenant_slug"`
+	TenantID           uuid.UUID        `json:"tenant_id"`
+	TenantPhone        sql.NullString   `json:"tenant_phone"`
+	SmtpConfig         []byte           `json:"smtp_config"`
+}
+
+// The email queue for resident notices (no booking, no facility): to the
+// council's administrators, or to the person verified or not. Through the
+// council's relay or else the environment's.
+func (q *Queries) ListPendingResidentEmails(ctx context.Context, arg ListPendingResidentEmailsParams) ([]ListPendingResidentEmailsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listPendingResidentEmails, arg.EnvRelay, arg.MaxRows)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListPendingResidentEmailsRow
+	for rows.Next() {
+		var i ListPendingResidentEmailsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Type,
+			&i.Payload,
+			&i.Email,
+			&i.FullName,
+			&i.PreferredLanguage,
+			&i.EmailNotifications,
+			&i.TenantName,
+			&i.TenantSlug,
+			&i.TenantID,
+			&i.TenantPhone,
+			&i.SmtpConfig,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listResidentCouncilsByUser = `-- name: ListResidentCouncilsByUser :many
 SELECT
     t.slug,
     t.name,
-    r.verified_at
-FROM
-    tenant_resident r
-    JOIN tenant t ON t.id = r.tenant_id
-WHERE
-    r.user_id = $1
+    MIN(v.since)::TIMESTAMPTZ AS verified_at
+FROM (
+    SELECT r.tenant_id, r.verified_at AS since FROM tenant_resident r WHERE r.user_id = $1
+    UNION ALL
+    SELECT m.tenant_id, m.created_at FROM tenant_membership m WHERE m.user_id = $1 AND m.role = 'admin'
+    UNION ALL
+    SELECT t2.id, p.created_at FROM platform_admin p CROSS JOIN tenant t2 WHERE p.user_id = $1 AND t2.is_active = TRUE
+) v
+JOIN tenant t ON t.id = v.tenant_id
+GROUP BY
+    t.id, t.slug, t.name
 ORDER BY
     t.name
 `
@@ -76,7 +306,9 @@ type ListResidentCouncilsByUserRow struct {
 	VerifiedAt time.Time `json:"verified_at"`
 }
 
-// The councils that verified the person, for their profile.
+// The councils where the person counts as verified, for /me and their profile:
+// those that verified them, those they administer, and every active council
+// for a superadministrator (as IsTenantResident), each since the earliest.
 func (q *Queries) ListResidentCouncilsByUser(ctx context.Context, userID uuid.UUID) ([]ListResidentCouncilsByUserRow, error) {
 	rows, err := q.db.QueryContext(ctx, listResidentCouncilsByUser, userID)
 	if err != nil {
@@ -87,6 +319,143 @@ func (q *Queries) ListResidentCouncilsByUser(ctx context.Context, userID uuid.UU
 	for rows.Next() {
 		var i ListResidentCouncilsByUserRow
 		if err := rows.Scan(&i.Slug, &i.Name, &i.VerifiedAt); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listResidentRequests = `-- name: ListResidentRequests :many
+SELECT
+    q.id,
+    q.user_id,
+    u.email,
+    COALESCE(u.full_name, '')::TEXT AS account_name,
+    q.dni,
+    q.full_name,
+    q.postal_code,
+    q.street,
+    q.created_at,
+    COUNT(*) OVER () AS total
+FROM
+    resident_request q
+    JOIN app_user u ON u.id = q.user_id
+WHERE
+    q.tenant_id = $1
+ORDER BY
+    q.created_at ASC,
+    q.id
+LIMIT $3 OFFSET $2
+`
+
+type ListResidentRequestsParams struct {
+	TenantID   uuid.UUID `json:"tenant_id"`
+	PageOffset int32     `json:"page_offset"`
+	PageSize   int32     `json:"page_size"`
+}
+
+type ListResidentRequestsRow struct {
+	ID          uuid.UUID `json:"id"`
+	UserID      uuid.UUID `json:"user_id"`
+	Email       string    `json:"email"`
+	AccountName string    `json:"account_name"`
+	Dni         string    `json:"dni"`
+	FullName    string    `json:"full_name"`
+	PostalCode  string    `json:"postal_code"`
+	Street      string    `json:"street"`
+	CreatedAt   time.Time `json:"created_at"`
+	Total       int64     `json:"total"`
+}
+
+// The council's pending requests, the oldest first (it expires first), a page at a time.
+func (q *Queries) ListResidentRequests(ctx context.Context, arg ListResidentRequestsParams) ([]ListResidentRequestsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listResidentRequests, arg.TenantID, arg.PageOffset, arg.PageSize)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListResidentRequestsRow
+	for rows.Next() {
+		var i ListResidentRequestsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Email,
+			&i.AccountName,
+			&i.Dni,
+			&i.FullName,
+			&i.PostalCode,
+			&i.Street,
+			&i.CreatedAt,
+			&i.Total,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listResidentRequestsByUser = `-- name: ListResidentRequestsByUser :many
+SELECT
+    t.slug,
+    t.name,
+    q.dni,
+    q.full_name,
+    q.postal_code,
+    q.street,
+    q.created_at
+FROM
+    resident_request q
+    JOIN tenant t ON t.id = q.tenant_id
+WHERE
+    q.user_id = $1
+ORDER BY
+    q.created_at
+`
+
+type ListResidentRequestsByUserRow struct {
+	Slug       string    `json:"slug"`
+	Name       string    `json:"name"`
+	Dni        string    `json:"dni"`
+	FullName   string    `json:"full_name"`
+	PostalCode string    `json:"postal_code"`
+	Street     string    `json:"street"`
+	CreatedAt  time.Time `json:"created_at"`
+}
+
+// The person's pending requests, for /me and their data export.
+func (q *Queries) ListResidentRequestsByUser(ctx context.Context, userID uuid.UUID) ([]ListResidentRequestsByUserRow, error) {
+	rows, err := q.db.QueryContext(ctx, listResidentRequestsByUser, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListResidentRequestsByUserRow
+	for rows.Next() {
+		var i ListResidentRequestsByUserRow
+		if err := rows.Scan(
+			&i.Slug,
+			&i.Name,
+			&i.Dni,
+			&i.FullName,
+			&i.PostalCode,
+			&i.Street,
+			&i.CreatedAt,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -182,6 +551,60 @@ func (q *Queries) ListTenantResidents(ctx context.Context, arg ListTenantResiden
 	return items, nil
 }
 
+const notifyCouncilAdminsOfResidentRequest = `-- name: NotifyCouncilAdminsOfResidentRequest :exec
+INSERT INTO notification (user_id, type, payload)
+SELECT m.user_id, 'resident_requested', jsonb_build_object('tenant_name', t.name, 'tenant_slug', t.slug, 'name', $1::TEXT)
+FROM tenant t
+JOIN tenant_membership m ON m.tenant_id = t.id AND m.role = 'admin'
+WHERE t.id = $2
+`
+
+type NotifyCouncilAdminsOfResidentRequestParams struct {
+	Name     string    `json:"name"`
+	TenantID uuid.UUID `json:"tenant_id"`
+}
+
+// One notice per council administrator (bell and email), with the name the
+// person gave; the DNI and address stay in the request alone.
+func (q *Queries) NotifyCouncilAdminsOfResidentRequest(ctx context.Context, arg NotifyCouncilAdminsOfResidentRequestParams) error {
+	_, err := q.db.ExecContext(ctx, notifyCouncilAdminsOfResidentRequest, arg.Name, arg.TenantID)
+	return err
+}
+
+const notifyResidentRequestDecided = `-- name: NotifyResidentRequestDecided :exec
+INSERT INTO notification (user_id, type, payload)
+SELECT $1, $2::notification_type, jsonb_build_object('tenant_name', t.name, 'tenant_slug', t.slug)
+FROM tenant t
+WHERE t.id = $3
+`
+
+type NotifyResidentRequestDecidedParams struct {
+	UserID   uuid.UUID        `json:"user_id"`
+	Type     NotificationType `json:"type"`
+	TenantID uuid.UUID        `json:"tenant_id"`
+}
+
+// Tells the person how the council decided (resident_verified or resident_rejected).
+func (q *Queries) NotifyResidentRequestDecided(ctx context.Context, arg NotifyResidentRequestDecidedParams) error {
+	_, err := q.db.ExecContext(ctx, notifyResidentRequestDecided, arg.UserID, arg.Type, arg.TenantID)
+	return err
+}
+
+const purgeResidentRequests = `-- name: PurgeResidentRequests :execrows
+DELETE FROM resident_request
+WHERE
+    created_at < NOW() - make_interval(days => $1::INT)
+`
+
+// Requests nobody decided on: their identity data goes after the retention period.
+func (q *Queries) PurgeResidentRequests(ctx context.Context, days int32) (int64, error) {
+	result, err := q.db.ExecContext(ctx, purgeResidentRequests, days)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
 const removeTenantResident = `-- name: RemoveTenantResident :execrows
 DELETE FROM tenant_resident
 WHERE
@@ -200,4 +623,25 @@ func (q *Queries) RemoveTenantResident(ctx context.Context, arg RemoveTenantResi
 		return 0, err
 	}
 	return result.RowsAffected()
+}
+
+const takeResidentRequest = `-- name: TakeResidentRequest :one
+DELETE FROM resident_request
+WHERE
+    id = $1
+    AND tenant_id = $2
+RETURNING user_id
+`
+
+type TakeResidentRequestParams struct {
+	ID       uuid.UUID `json:"id"`
+	TenantID uuid.UUID `json:"tenant_id"`
+}
+
+// Deletes the request as the administrator decides on it, returning whose it was.
+func (q *Queries) TakeResidentRequest(ctx context.Context, arg TakeResidentRequestParams) (uuid.UUID, error) {
+	row := q.db.QueryRowContext(ctx, takeResidentRequest, arg.ID, arg.TenantID)
+	var user_id uuid.UUID
+	err := row.Scan(&user_id)
+	return user_id, err
 }

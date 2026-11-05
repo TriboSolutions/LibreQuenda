@@ -145,5 +145,29 @@
   "residentsOnly": "Only for verified residents of {{council}}.",
   "residentsOnlyShort": "Only for residents verified by the council.",
   "residentsOnlySignIn": "This facility is only for residents of {{council}} verified by the council. Sign in to book.",
-  "residentsOnlyNotVerified": "This facility is only for residents of {{council}} verified by the council, and your account is not. Ask the council to verify it."
+  "residentsOnlyNotVerified": "This facility is only for residents of {{council}} verified by the council, and your account is not. Ask the council to verify it.",
+  "residentRequest": {
+    "badge": "Residents only",
+    "ask": "Ask to be a resident",
+    "see": "See your request",
+    "signIn": "Sign in",
+    "pendingShort": "This facility is only for residents of {{council}}. Your request is pending: the council will review it.",
+    "title": "Ask to be a resident of {{council}}",
+    "lead": "To book here the council has to verify that you live in {{council}}, checking its census. You can phone it or send it a request.",
+    "callTitle": "Phone the council",
+    "callEmail": "Write to {{email}} or visit its offices.",
+    "callOffice": "Visit the council's offices.",
+    "formTitle": "Or send a request",
+    "dni": "DNI or NIE",
+    "dniHelp": "Eight digits and the letter, no spaces.",
+    "fullName": "Full name",
+    "postalCode": "Postal code",
+    "street": "Street and number where you live",
+    "privacy": "The council only uses this to check your registration in its census. It is deleted as soon as it decides, and after 15 days at the latest.",
+    "send": "Send the request",
+    "sent": "Request sent. We will let you know when the council decides.",
+    "pending": "Request sent on {{date}}, pending review.",
+    "withdraw": "Withdraw the request",
+    "close": "Close"
+  }
 }

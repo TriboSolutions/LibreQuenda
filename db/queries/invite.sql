@@ -291,8 +291,11 @@ WHERE
     AND t.is_active = TRUE
     AND (b.user_id IS NULL OR b.user_id <> sqlc.arg('user_id'))
     AND NOT EXISTS (SELECT 1 FROM booking_participant p WHERE p.booking_id = b.id AND p.user_id = sqlc.arg('user_id'))
-    -- residents only: offered to the council's verified residents alone
-    AND (NOT f.residents_only OR EXISTS (SELECT 1 FROM tenant_resident r WHERE r.tenant_id = t.id AND r.user_id = sqlc.arg('user_id')))
+    -- residents only: offered to the council's verified residents alone (its administrators and superadministrators count, as IsTenantResident)
+    AND (NOT f.residents_only
+         OR EXISTS (SELECT 1 FROM tenant_resident r WHERE r.tenant_id = t.id AND r.user_id = sqlc.arg('user_id'))
+         OR EXISTS (SELECT 1 FROM tenant_membership m WHERE m.tenant_id = t.id AND m.user_id = sqlc.arg('user_id') AND m.role = 'admin')
+         OR EXISTS (SELECT 1 FROM platform_admin pa WHERE pa.user_id = sqlc.arg('user_id')))
     AND (SELECT COUNT(*) FROM booking_participant p WHERE p.booking_id = b.id)
         < COALESCE(b.event_capacity, f.capacity) - CASE WHEN b.kind = 'event' THEN 0 ELSE 1 END
 ORDER BY

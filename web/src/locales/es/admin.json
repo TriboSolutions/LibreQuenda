@@ -859,7 +859,9 @@
       "event.created": "Creó un evento",
       "event.updated": "Cambió un evento",
       "resident.verified": "Verificó a un vecino",
-      "resident.unverified": "Retiró la verificación de un vecino"
+      "resident.unverified": "Retiró la verificación de un vecino",
+      "resident.request_verified": "Verificó a un vecino por petición",
+      "resident.request_discarded": "Descartó una petición de vecino"
     },
     "anyDate": "Cualquier fecha",
     "clearDates": "Limpiar fechas"
@@ -966,13 +968,13 @@
   "residents": {
     "tab": "Vecinos",
     "title": "Vecinos verificados",
-    "help": "Personas que el ayuntamiento comprobó que son vecinas. Solo ellas reservan en las instalaciones marcadas como «Solo vecinos verificados». Comprueba la identidad y el empadronamiento antes de verificar a alguien.",
+    "help": "Personas que el ayuntamiento comprobó que son vecinas. Solo ellas reservan en las instalaciones marcadas como «Solo vecinos verificados». Comprueba la identidad y el empadronamiento antes de verificar a alguien. Los administradores del ayuntamiento y los superadministradores ya cuentan como verificados, sin petición.",
     "addLabel": "Correo de la cuenta de la persona",
     "addHelp": "La persona tiene que iniciar sesión una vez con el correo verificado.",
     "add": "Verificar",
     "added": "{{email}} ya está verificada como vecina.",
     "removed": "Se retiró la verificación de {{name}}. Sus reservas siguen en pie.",
-    "remove": "Retirar",
+    "remove": "Quitar la verificación",
     "search": "Buscar por nombre o correo",
     "searchAction": "Buscar",
     "sort": "Ordenar por",
@@ -987,7 +989,27 @@
     "pages": "Páginas",
     "page": "Página {{page}} de {{pages}}",
     "previous": "Anterior",
-    "next": "Siguiente"
+    "next": "Siguiente",
+    "removeTitle": "¿Quitar la verificación de {{name}}?",
+    "removeBody": "Dejará de poder reservar y unirse en las instalaciones solo para vecinos. Las reservas que ya tiene se mantienen.",
+    "removeCancel": "Cancelar",
+    "requests": {
+      "title": "Peticiones pendientes",
+      "help": "Personas que pidieron desde la web o la app que las verifiques. Compruébalas en el padrón del ayuntamiento y decide. Al verificar o descartar, la petición (con el DNI y la dirección) se borra; si nadie decide, se borra a los 15 días.",
+      "empty": "No hay peticiones pendientes.",
+      "fullName": "Nombre",
+      "dni": "DNI/NIE",
+      "address": "Dirección",
+      "account": "Cuenta",
+      "sent": "Enviada",
+      "sentOn": "el {{date}} · se borra el {{expires}}",
+      "verify": "Verificar",
+      "discard": "Descartar",
+      "verified": "{{name}} ya está verificada como vecina.",
+      "discarded": "Se descartó la petición de {{name}}.",
+      "count_one": "{{count}} petición pendiente",
+      "count_other": "{{count}} peticiones pendientes"
+    }
   },
   "settings": "Ajustes de la plataforma",
   "platformSettings": {

@@ -44,21 +44,185 @@ WHERE
     AND user_id = sqlc.arg('user_id');
 
 -- name: IsTenantResident :one
-SELECT EXISTS (
-    SELECT 1 FROM tenant_resident
-    WHERE tenant_id = sqlc.arg('tenant_id') AND user_id = sqlc.arg('user_id')
-) AS verified;
+-- Verified by the council, or verified by their role: the council's own
+-- administrators, and the superadministrators everywhere, need no request.
+SELECT (
+    EXISTS (SELECT 1 FROM tenant_resident r WHERE r.tenant_id = sqlc.arg('tenant_id') AND r.user_id = sqlc.arg('user_id'))
+    OR EXISTS (SELECT 1 FROM tenant_membership m WHERE m.tenant_id = sqlc.arg('tenant_id') AND m.user_id = sqlc.arg('user_id') AND m.role = 'admin')
+    OR EXISTS (SELECT 1 FROM platform_admin p WHERE p.user_id = sqlc.arg('user_id'))
+)::BOOLEAN AS verified;
 
 -- name: ListResidentCouncilsByUser :many
--- The councils that verified the person, for their profile.
+-- The councils where the person counts as verified, for /me and their profile:
+-- those that verified them, those they administer, and every active council
+-- for a superadministrator (as IsTenantResident), each since the earliest.
 SELECT
     t.slug,
     t.name,
-    r.verified_at
-FROM
-    tenant_resident r
-    JOIN tenant t ON t.id = r.tenant_id
-WHERE
-    r.user_id = sqlc.arg('user_id')
+    MIN(v.since)::TIMESTAMPTZ AS verified_at
+FROM (
+    SELECT r.tenant_id, r.verified_at AS since FROM tenant_resident r WHERE r.user_id = sqlc.arg('user_id')
+    UNION ALL
+    SELECT m.tenant_id, m.created_at FROM tenant_membership m WHERE m.user_id = sqlc.arg('user_id') AND m.role = 'admin'
+    UNION ALL
+    SELECT t2.id, p.created_at FROM platform_admin p CROSS JOIN tenant t2 WHERE p.user_id = sqlc.arg('user_id') AND t2.is_active = TRUE
+) v
+JOIN tenant t ON t.id = v.tenant_id
+GROUP BY
+    t.id, t.slug, t.name
 ORDER BY
     t.name;
+
+-- ============================================================
+--  Requests to be verified (resident_request): deleted once decided,
+--  and after 15 days at the latest (PurgeResidentRequests).
+-- ============================================================
+
+-- name: CreateResidentRequest :one
+-- One pending request per person and council: a second one returns no row.
+INSERT INTO resident_request (tenant_id, user_id, dni, full_name, postal_code, street)
+VALUES (sqlc.arg('tenant_id'), sqlc.arg('user_id'), sqlc.arg('dni'), sqlc.arg('full_name'), sqlc.arg('postal_code'), sqlc.arg('street'))
+ON CONFLICT (tenant_id, user_id) DO NOTHING
+RETURNING id, created_at;
+
+-- name: ClaimWeeklyResidentRequest :one
+-- One request a week per person, whatever the council: takes this week's, or
+-- returns no row when it was used (withdrawing a request does not give it back).
+UPDATE app_user
+SET
+    resident_requested_at = NOW()
+WHERE
+    id = sqlc.arg('user_id')
+    AND (resident_requested_at IS NULL OR resident_requested_at <= NOW() - INTERVAL '7 days')
+RETURNING id;
+
+-- name: GetResidentRequestedAt :one
+SELECT
+    resident_requested_at
+FROM
+    app_user
+WHERE
+    id = sqlc.arg('user_id');
+
+-- name: NotifyCouncilAdminsOfResidentRequest :exec
+-- One notice per council administrator (bell and email), with the name the
+-- person gave; the DNI and address stay in the request alone.
+INSERT INTO notification (user_id, type, payload)
+SELECT m.user_id, 'resident_requested', jsonb_build_object('tenant_name', t.name, 'tenant_slug', t.slug, 'name', sqlc.arg('name')::TEXT)
+FROM tenant t
+JOIN tenant_membership m ON m.tenant_id = t.id AND m.role = 'admin'
+WHERE t.id = sqlc.arg('tenant_id');
+
+-- name: NotifyResidentRequestDecided :exec
+-- Tells the person how the council decided (resident_verified or resident_rejected).
+INSERT INTO notification (user_id, type, payload)
+SELECT sqlc.arg('user_id'), sqlc.arg('type')::notification_type, jsonb_build_object('tenant_name', t.name, 'tenant_slug', t.slug)
+FROM tenant t
+WHERE t.id = sqlc.arg('tenant_id');
+
+-- name: DeleteOwnResidentRequest :execrows
+-- The person withdraws their request.
+DELETE FROM resident_request
+WHERE
+    tenant_id = sqlc.arg('tenant_id')
+    AND user_id = sqlc.arg('user_id');
+
+-- name: ListResidentRequestsByUser :many
+-- The person's pending requests, for /me and their data export.
+SELECT
+    t.slug,
+    t.name,
+    q.dni,
+    q.full_name,
+    q.postal_code,
+    q.street,
+    q.created_at
+FROM
+    resident_request q
+    JOIN tenant t ON t.id = q.tenant_id
+WHERE
+    q.user_id = sqlc.arg('user_id')
+ORDER BY
+    q.created_at;
+
+-- name: ListResidentRequests :many
+-- The council's pending requests, the oldest first (it expires first), a page at a time.
+SELECT
+    q.id,
+    q.user_id,
+    u.email,
+    COALESCE(u.full_name, '')::TEXT AS account_name,
+    q.dni,
+    q.full_name,
+    q.postal_code,
+    q.street,
+    q.created_at,
+    COUNT(*) OVER () AS total
+FROM
+    resident_request q
+    JOIN app_user u ON u.id = q.user_id
+WHERE
+    q.tenant_id = sqlc.arg('tenant_id')
+ORDER BY
+    q.created_at ASC,
+    q.id
+LIMIT sqlc.arg('page_size') OFFSET sqlc.arg('page_offset');
+
+-- name: CountResidentRequests :one
+SELECT
+    COUNT(*)
+FROM
+    resident_request
+WHERE
+    tenant_id = sqlc.arg('tenant_id');
+
+-- name: TakeResidentRequest :one
+-- Deletes the request as the administrator decides on it, returning whose it was.
+DELETE FROM resident_request
+WHERE
+    id = sqlc.arg('id')
+    AND tenant_id = sqlc.arg('tenant_id')
+RETURNING user_id;
+
+-- name: DeleteResidentRequestOfUser :exec
+-- Verified by email from the Veciños tab: their pending request has done its job.
+DELETE FROM resident_request
+WHERE
+    tenant_id = sqlc.arg('tenant_id')
+    AND user_id = sqlc.arg('user_id');
+
+-- name: PurgeResidentRequests :execrows
+-- Requests nobody decided on: their identity data goes after the retention period.
+DELETE FROM resident_request
+WHERE
+    created_at < NOW() - make_interval(days => sqlc.arg('days')::INT);
+
+-- name: ListPendingResidentEmails :many
+-- The email queue for resident notices (no booking, no facility): to the
+-- council's administrators, or to the person verified or not. Through the
+-- council's relay or else the environment's.
+SELECT
+    n.id,
+    n.type,
+    n.payload,
+    u.email,
+    u.full_name,
+    u.preferred_language,
+    u.email_notifications,
+    t.name AS tenant_name,
+    t.slug AS tenant_slug,
+    t.id   AS tenant_id,
+    t.contact_phone AS tenant_phone,
+    s.config AS smtp_config
+FROM
+    notification n
+    JOIN app_user u ON u.id = n.user_id
+    JOIN tenant   t ON t.slug = n.payload->>'tenant_slug'
+    LEFT JOIN tenant_smtp s ON s.tenant_id = t.id
+WHERE
+    n.emailed_at IS NULL
+    AND n.type IN ('resident_requested', 'resident_verified', 'resident_rejected')
+    AND (sqlc.arg('env_relay')::BOOLEAN OR s.tenant_id IS NOT NULL)
+ORDER BY
+    n.created_at ASC
+LIMIT sqlc.arg('max_rows');

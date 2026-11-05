@@ -213,7 +213,16 @@
     "resident_already_verified": "Esa persona ya está verificada en este ayuntamiento.",
     "resident_not_found": "Esa persona no está verificada en este ayuntamiento.",
     "resident_save_failed": "No se pudo guardar la verificación.",
-    "residents_load_failed": "No se pudieron cargar los vecinos verificados."
+    "residents_load_failed": "No se pudieron cargar los vecinos verificados.",
+    "invalid_dni": "El DNI o NIE no es válido: ocho cifras y la letra (o X, Y, Z al principio).",
+    "invalid_postal_code": "El código postal no es válido: cinco cifras.",
+    "resident_request_invalid": "Escribe el nombre completo y la calle donde vives.",
+    "resident_request_pending": "Ya tienes una petición pendiente en este ayuntamiento.",
+    "resident_request_not_found": "Esa petición ya no existe: alguien ya decidió o caducó.",
+    "resident_already_verified_self": "El ayuntamiento ya te verificó como vecino.",
+    "resident_request_failed": "No se pudo enviar la petición.",
+    "resident_requests_load_failed": "No se pudieron cargar las peticiones.",
+    "resident_request_weekly": "Solo puedes enviar una petición de vecino a la semana. Podrás enviar otra a partir del {{0}}."
   },
   "email": {
     "greeting": "Hola {{0}}:",
@@ -288,6 +297,23 @@
       "intro": "Han avisado de un problema en {{0}} ({{1}}). Revisa la incidencia en la administración del ayuntamiento.",
       "manage": "Ver incidencias",
       "footer": "Recibes este correo porque administras este ayuntamiento en {{0}}."
-    }
+    },
+    "resident_requested": {
+      "subject": "{{1}} quiere ser vecino de {{0}}",
+      "intro": "{{1}} pidió que el ayuntamiento lo verifique como vecino de {{0}}. Comprueba sus datos en el padrón y decide en la pestaña Vecinos.",
+      "manage": "Ver peticiones"
+    },
+    "resident_verified": {
+      "subject": "Ya eres vecino verificado de {{0}}",
+      "intro": "{{0}} te verificó como vecino. Ya puedes reservar y unirte en sus instalaciones solo para vecinos.",
+      "manage": "Ver las instalaciones"
+    },
+    "resident_rejected": {
+      "subject": "Tu petición para ser vecino de {{0}}",
+      "intro": "{{0}} no pudo verificarte como vecino con su padrón. Si crees que es un error, llama al ayuntamiento.",
+      "manage": "Ver el ayuntamiento",
+      "phone": "Teléfono del ayuntamiento: {{0}}"
+    },
+    "resident_footer": "Recibes este correo porque pediste ser vecino de un ayuntamiento en {{0}}. Los datos de la petición ya se borraron."
   }
 }

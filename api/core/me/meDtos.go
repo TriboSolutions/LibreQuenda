@@ -40,6 +40,9 @@ type MeResponse struct {
 
 	// councils that verified this person as their resident: they book at their residents-only facilities
 	ResidentOf []ResidentOfDto `json:"resident_of"`
+
+	// councils this person asked to verify them, still undecided
+	ResidentRequests []ResidentRequestDto `json:"resident_requests"`
 }
 
 type ResidentOfDto struct {

@@ -15,16 +15,37 @@ import (
 // ExportResponse: everything LibreQuenda keeps about the user (GET /me/export).
 // Other people's details are left out: bookings only say how many joined.
 type ExportResponse struct {
-	GeneratedAt    time.Time             `json:"generated_at"`
-	Account        ExportAccount         `json:"account"`
-	IsSuperadmin   bool                  `json:"is_superadmin"`
-	Roles          []TenantRoleDto       `json:"roles"`
-	ResidentOf     []ResidentOfDto       `json:"resident_of"` // councils that verified the user as their resident
-	Bookings       []ExportBooking       `json:"bookings"`
-	Participations []ExportParticipation `json:"participations"` // bookings of someone else the user joined
-	Notifications  []ExportNotification  `json:"notifications"`
-	Issues         []ExportIssue         `json:"issues"` // problems the user reported at facilities
-	Ratings        ExportRatings         `json:"ratings"`
+	GeneratedAt  time.Time       `json:"generated_at"`
+	Account      ExportAccount   `json:"account"`
+	IsSuperadmin bool            `json:"is_superadmin"`
+	Roles        []TenantRoleDto `json:"roles"`
+	ResidentOf   []ResidentOfDto `json:"resident_of"` // councils that verified the user as their resident
+	// pending requests to be verified, with the identity data the user gave
+	ResidentRequests []ExportResidentRequest `json:"resident_requests"`
+	Bookings         []ExportBooking         `json:"bookings"`
+	Participations   []ExportParticipation   `json:"participations"` // bookings of someone else the user joined
+	Notifications    []ExportNotification    `json:"notifications"`
+	Issues           []ExportIssue           `json:"issues"` // problems the user reported at facilities
+	Ratings          ExportRatings           `json:"ratings"`
+}
+
+// ExportResidentRequest: a request to be verified, until the council decides
+// (or 15 days pass); then it is deleted.
+type ExportResidentRequest struct {
+	Council     string    `json:"council"`
+	Dni         string    `json:"dni"`
+	FullName    string    `json:"full_name"`
+	PostalCode  string    `json:"postal_code"`
+	Street      string    `json:"street"`
+	RequestedAt time.Time `json:"requested_at"`
+}
+
+func mapExportResidentRequests(rows []model.ListResidentRequestsByUserRow) []ExportResidentRequest {
+	var out = make([]ExportResidentRequest, 0, len(rows))
+	for _, r := range rows {
+		out = append(out, ExportResidentRequest{Council: r.Name, Dni: r.Dni, FullName: r.FullName, PostalCode: r.PostalCode, Street: r.Street, RequestedAt: r.CreatedAt})
+	}
+	return out
 }
 
 // ExportRatings: the stars the user gave, and the average others gave them.
@@ -289,6 +310,13 @@ func writeExportCSV(w io.Writer, data *ExportResponse) error {
 	out.Write([]string{"type", "created_at", "read_at", "emailed_at", "payload"})
 	for _, n := range data.Notifications {
 		out.Write([]string{n.Type, csvTime(n.CreatedAt), csvOptionalTime(n.ReadAt), csvOptionalTime(n.EmailedAt), string(n.Payload)})
+	}
+
+	out.Write(nil)
+	out.Write([]string{"resident_requests"})
+	out.Write([]string{"council", "dni", "full_name", "postal_code", "street", "requested_at"})
+	for _, q := range data.ResidentRequests {
+		out.Write([]string{q.Council, q.Dni, q.FullName, q.PostalCode, q.Street, csvTime(q.RequestedAt)})
 	}
 
 	out.Write(nil)

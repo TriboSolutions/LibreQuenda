@@ -59,13 +59,14 @@ func (s *tenantsService) UpcomingEvents(ctx context.Context, near *Near) (*Upcom
 func mapUpcomingEvent(row model.ListUpcomingEventsRow, near *Near) UpcomingEventDto {
 	var places = bookings.Places(row.Capacity, model.BookingKindEvent)
 	var card = FacilityCardDto{
-		Id:       row.FacilityID.String(),
-		Slug:     row.FacilitySlug,
-		Name:     row.FacilityName,
-		Tags:     []string{},
-		ImageUrl: storage.URL(row.ImageRef.String),
-		Council:  TenantDto{Slug: row.TenantSlug, Name: row.TenantName},
-		Joinable: []string{string(model.BookingKindEvent)},
+		Id:            row.FacilityID.String(),
+		Slug:          row.FacilitySlug,
+		Name:          row.FacilityName,
+		Tags:          []string{},
+		ImageUrl:      storage.URL(row.ImageRef.String),
+		Council:       TenantDto{Slug: row.TenantSlug, Name: row.TenantName},
+		ResidentsOnly: row.ResidentsOnly,
+		Joinable:      []string{string(model.BookingKindEvent)},
 	}
 	if row.Latitude.Valid && row.Longitude.Valid {
 		card.Latitude, card.Longitude = &row.Latitude.Float64, &row.Longitude.Float64

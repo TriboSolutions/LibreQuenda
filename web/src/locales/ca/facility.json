@@ -145,5 +145,29 @@
   "residentsOnly": "Només per a veïns verificats de {{council}}.",
   "residentsOnlyShort": "Només per a veïns verificats per l’ajuntament.",
   "residentsOnlySignIn": "Aquesta instal·lació és només per a veïns de {{council}} verificats per l’ajuntament. Inicia la sessió per reservar.",
-  "residentsOnlyNotVerified": "Aquesta instal·lació és només per a veïns de {{council}} verificats per l’ajuntament, i el teu compte no ho està. Demana a l’ajuntament que el verifiquin."
+  "residentsOnlyNotVerified": "Aquesta instal·lació és només per a veïns de {{council}} verificats per l’ajuntament, i el teu compte no ho està. Demana a l’ajuntament que el verifiquin.",
+  "residentRequest": {
+    "badge": "Instal·lació només per a veïns",
+    "ask": "Demanar ser veí",
+    "see": "Veure la petició",
+    "signIn": "Inicia la sessió",
+    "pendingShort": "Aquesta instal·lació és només per a veïns de {{council}}. La teva petició està pendent: l’ajuntament la revisarà.",
+    "title": "Demanar ser veí de {{council}}",
+    "lead": "Per reservar aquí l’ajuntament ha de verificar que vius a {{council}}, mirant-ho al seu padró. Pots trucar o enviar-li una petició.",
+    "callTitle": "Trucar a l’ajuntament",
+    "callEmail": "Escriu a {{email}} o passa per les oficines.",
+    "callOffice": "Passa per les oficines de l’ajuntament.",
+    "formTitle": "O envia una petició",
+    "dni": "DNI o NIE",
+    "dniHelp": "Vuit xifres i la lletra, sense espais.",
+    "fullName": "Nom i cognoms",
+    "postalCode": "Codi postal",
+    "street": "Carrer i número on vius",
+    "privacy": "L’ajuntament només fa servir aquestes dades per comprovar l’empadronament. S’esborren tan bon punt decideix, i com a molt als 15 dies.",
+    "send": "Enviar la petició",
+    "sent": "Petició enviada. T’avisarem quan l’ajuntament decideixi.",
+    "pending": "Petició enviada el {{date}}, pendent de revisió.",
+    "withdraw": "Retirar la petició",
+    "close": "Tancar"
+  }
 }

@@ -20,6 +20,7 @@ data class FacilityDay(
     val imageUrl: String?,
     val councilSlug: String,
     val councilName: String,
+    val councilPhone: String = "", // the council's contact_phone; "" when not given
     val capacity: Int,
     val maxAdvanceHours: Int,
     val details: FacilityDetails,
@@ -65,6 +66,7 @@ suspend fun fetchFacilityDay(councilSlug: String, facilitySlug: String, date: Lo
         imageUrl = f.optString("image_url").takeIf { it.isNotBlank() }?.let(Api::absolute),
         councilSlug = councilSlug,
         councilName = json.getJSONObject("tenant").optString("name"),
+        councilPhone = json.getJSONObject("tenant").optString("contact_phone").trim(),
         capacity = f.optInt("capacity"),
         maxAdvanceHours = f.optInt("max_advance_hours"),
         details = FacilityDetails(

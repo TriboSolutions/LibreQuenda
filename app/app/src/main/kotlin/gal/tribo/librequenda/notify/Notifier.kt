@@ -137,6 +137,9 @@ object Notifier {
             "issue_solved" -> R.string.notification_issue_solved
             "issue_rejected" -> R.string.notification_issue_rejected
             "rating_requested", "rating_requested_public" -> R.string.rating_title
+            "resident_requested" -> R.string.notification_resident_requested // to the council's administrators
+            "resident_verified" -> R.string.notification_resident_verified
+            "resident_rejected" -> R.string.notification_resident_rejected
             else -> null
         }?.let(context::getString)
             ?: if (type == "council_admin_granted") context.getString(R.string.notification_council_admin_granted, n.tenantName)
@@ -167,6 +170,9 @@ object Notifier {
         "issue_reported" -> R.string.notif_issue_reported
         "rating_requested" -> R.string.notif_rating_requested
         "rating_requested_public" -> R.string.notif_rating_requested_public
+        "resident_requested" -> R.string.notif_resident_requested
+        "resident_verified" -> R.string.notif_resident_verified
+        "resident_rejected" -> R.string.notif_resident_rejected
         else -> null
     }
 

@@ -123,4 +123,37 @@
     <string name="nfc_flash_help">Con esta páxina aberta, achega o móbil á etiqueta NFC da porta: se a quenda está libre, resérvase e entras. Pedirémosche a localización, que se comproba e nunca se garda.</string>
     <string name="nfc_checkin_help">Con esta páxina aberta, achega o móbil á etiqueta NFC da porta e rexistras a entrada. Pedirémosche a localización, que se comproba e nunca se garda.</string>
     <string name="change_done">Reserva cambiada</string>
+    <!-- residents only: asking the council to verify the person as its resident -->
+    <string name="residents_only_badge">Instalación só para veciños</string>
+    <string name="resident_not_verified">Esta instalación é só para veciños de %1$s verificados polo concello, e a túa conta aínda non o está.</string>
+    <string name="resident_request_row">Pedir ser veciño</string>
+    <string name="resident_request_row_help">Chama ao concello ou envía a petición desde aquí</string>
+    <string name="resident_request_pending">Petición enviada o %1$s, pendente de revisión</string>
+    <string name="resident_request_pending_help">Toca para vela ou retirala</string>
+    <string name="resident_sheet_title">Pedir ser veciño de %1$s</string>
+    <string name="resident_sheet_text">Para reservar aquí, %1$s ten que comprobar que estás empadroado ou empadroada. Podes chamar ao concello ou enviarlle a petición desde a app.</string>
+    <string name="resident_call">Chamar ao concello</string>
+    <string name="resident_form_title">Ou envía a petición</string>
+    <string name="resident_dni">DNI ou NIE</string>
+    <string name="resident_full_name">Nome e apelidos</string>
+    <string name="resident_postal_code">Código postal</string>
+    <string name="resident_postal_code_invalid">O código postal ten 5 díxitos.</string>
+    <string name="resident_street">Enderezo onde vives</string>
+    <string name="resident_street_help">Rúa, número e piso</string>
+    <string name="resident_privacy">O concello só usa estes datos para comprobar o empadroamento; bórranse ao decidir, e como moito aos 15 días.</string>
+    <string name="resident_send">Enviar a petición</string>
+    <string name="resident_sending">Enviando…</string>
+    <string name="resident_pending_title">A túa petición</string>
+    <string name="resident_pending_text">%1$s revisará os teus datos e avisarate cando decida.</string>
+    <string name="resident_withdraw">Retirar a petición</string>
+    <string name="resident_withdraw_title">Retirar a petición?</string>
+    <string name="resident_withdraw_text">%1$s deixará de revisala e os teus datos bórranse. Podes enviala de novo cando queiras.</string>
+    <string name="resident_withdrawing">Retirando…</string>
+    <string name="resident_keep">Mantela</string>
+    <string name="notification_resident_requested">Petición de veciño</string>
+    <string name="notification_resident_verified">Veciño verificado</string>
+    <string name="notification_resident_rejected">Veciño sen verificar</string>
+    <string name="notif_resident_requested">%5$s quere ser veciño de %4$s.</string>
+    <string name="notif_resident_verified">%4$s verificoute como veciño.</string>
+    <string name="notif_resident_rejected">%4$s non puido verificarte como veciño. Chama ao concello se cres que é un erro.</string>
 </resources>

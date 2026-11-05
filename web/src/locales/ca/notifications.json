@@ -19,7 +19,10 @@
     "booking_joined": "{{name}} s’ha unit a la teva reserva a {{facility}}, {{day}} a les {{time}}.",
     "issue_reported": "Nova incidència a {{facility}}.",
     "rating_requested": "Què tal {{facility}}? Valora-la d’1 a 5 estrelles.",
-    "rating_requested_public": "Què tal {{facility}}? Valora-la, i també qui ha jugat amb tu."
+    "rating_requested_public": "Què tal {{facility}}? Valora-la, i també qui ha jugat amb tu.",
+    "resident_requested": "{{name}} vol ser veí de {{council}}.",
+    "resident_verified": "{{council}} t’ha verificat com a veí: ja pots reservar a les seves instal·lacions només per a veïns.",
+    "resident_rejected": "{{council}} no t’ha pogut verificar com a veí. Truca a l’ajuntament si creus que és un error."
   },
   "reason": "Motiu: {{reason}}",
   "councilNote": "Nota de l’ajuntament: {{reason}}",
