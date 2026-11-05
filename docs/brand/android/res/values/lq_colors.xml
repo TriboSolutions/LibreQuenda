@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <color name="lq_blue">#0096D1</color>
+  <color name="lq_band">#3FB0DD</color>
+  <color name="lq_navy">#0B2544</color>
+  <color name="lq_sky">#67BFE3</color>
+  <color name="lq_white">#FFFFFF</color>
+</resources>

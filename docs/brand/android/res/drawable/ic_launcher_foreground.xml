@@ -1,0 +1,21 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+  <!-- 120-unit mark scaled to fit the 66dp safe zone -->
+  <group android:translateX="54" android:translateY="54" android:scaleX="0.6" android:scaleY="0.6">
+   <group android:translateX="-60" android:translateY="-60">
+    <path android:pathData="M67.51,12.59 A48,48 0 0,1 104.81,77.20" android:strokeColor="@color/lq_white" android:strokeWidth="7.5" android:strokeLineCap="round"/>
+    <path android:pathData="M97.30,90.21 A48,48 0 0,1 22.70,90.21" android:strokeColor="@color/lq_navy" android:strokeWidth="7.5" android:strokeLineCap="round"/>
+    <path android:pathData="M15.19,77.20 A48,48 0 0,1 52.49,12.59" android:strokeColor="@color/lq_navy" android:strokeWidth="7.5" android:strokeLineCap="round"/>
+    <path android:pathData="M25,60 a35,35 0 1,0 70,0 a35,35 0 1,0 -70,0" android:fillColor="@color/lq_white"/>
+    <group>
+      <clip-path android:pathData="M25,60 a35,35 0 1,0 70,0 a35,35 0 1,0 -70,0"/>
+      <group android:translateX="60" android:translateY="61" android:scaleX="1.1" android:scaleY="1.1" android:rotation="-8">
+        <group android:rotation="0"><path android:pathData="M0 0 C 0 -16, 13 -27, 25 -21 C 35 -15, 31 -2, 21 -3 C 15 -4, 14 -11, 19 -13" android:strokeColor="@color/lq_navy" android:strokeWidth="5.5" android:strokeLineCap="round" android:strokeLineJoin="round"/></group>
+        <group android:rotation="120"><path android:pathData="M0 0 C 0 -16, 13 -27, 25 -21 C 35 -15, 31 -2, 21 -3 C 15 -4, 14 -11, 19 -13" android:strokeColor="@color/lq_navy" android:strokeWidth="5.5" android:strokeLineCap="round" android:strokeLineJoin="round"/></group>
+        <group android:rotation="240"><path android:pathData="M0 0 C 0 -16, 13 -27, 25 -21 C 35 -15, 31 -2, 21 -3 C 15 -4, 14 -11, 19 -13" android:strokeColor="@color/lq_navy" android:strokeWidth="5.5" android:strokeLineCap="round" android:strokeLineJoin="round"/></group>
+      </group>
+    </group>
+    <path android:pathData="M25,60 a35,35 0 1,0 70,0 a35,35 0 1,0 -70,0" android:strokeColor="@color/lq_navy" android:strokeWidth="4.5"/>
+   </group>
+  </group>
+</vector>

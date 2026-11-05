@@ -1,16 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The mark for the status bar, where Android draws one colour only. A ring with a
-     band across reads as a «no entry» sign there, so this is the clock face filled,
-     with the band (inside a whole ring) and the four hour ticks cut out of it. -->
+<!-- The mark for the status bar, where Android draws one colour only: the
+     one-colour mark (docs/brand/svg/mark-mono.svg), cropped to the ring. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"
-    android:viewportWidth="200"
-    android:viewportHeight="200">
-    <path
-        android:fillColor="#FFFFFFFF"
-        android:fillType="evenOdd"
-        android:pathData="M100,8a92,92 0,1 0,0.01 0z
-            M64.2,33L167,135.8L135.8,167L33,64.2z
-            M93,30h14v22h-14z M93,148h14v22h-14z M30,93h22v14h-22z M148,93h22v14h-22z" />
+    android:viewportWidth="104"
+    android:viewportHeight="104">
+  <group android:translateX="-8" android:translateY="-8">
+    <path android:pathData="M67.51,12.59 A48,48 0 0,1 104.81,77.20" android:strokeColor="#FFFFFFFF" android:strokeWidth="7.5" android:strokeLineCap="round"/>
+    <path android:pathData="M97.30,90.21 A48,48 0 0,1 22.70,90.21" android:strokeColor="#FFFFFFFF" android:strokeWidth="7.5" android:strokeLineCap="round"/>
+    <path android:pathData="M15.19,77.20 A48,48 0 0,1 52.49,12.59" android:strokeColor="#FFFFFFFF" android:strokeWidth="7.5" android:strokeLineCap="round"/>
+    <group>
+      <clip-path android:pathData="M25,60 a35,35 0 1,0 70,0 a35,35 0 1,0 -70,0"/>
+      <group android:translateX="60" android:translateY="61" android:scaleX="1.1" android:scaleY="1.1" android:rotation="-8">
+        <group android:rotation="0"><path android:pathData="M0 0 C 0 -16, 13 -27, 25 -21 C 35 -15, 31 -2, 21 -3 C 15 -4, 14 -11, 19 -13" android:strokeColor="#FFFFFFFF" android:strokeWidth="5.5" android:strokeLineCap="round" android:strokeLineJoin="round"/></group>
+        <group android:rotation="120"><path android:pathData="M0 0 C 0 -16, 13 -27, 25 -21 C 35 -15, 31 -2, 21 -3 C 15 -4, 14 -11, 19 -13" android:strokeColor="#FFFFFFFF" android:strokeWidth="5.5" android:strokeLineCap="round" android:strokeLineJoin="round"/></group>
+        <group android:rotation="240"><path android:pathData="M0 0 C 0 -16, 13 -27, 25 -21 C 35 -15, 31 -2, 21 -3 C 15 -4, 14 -11, 19 -13" android:strokeColor="#FFFFFFFF" android:strokeWidth="5.5" android:strokeLineCap="round" android:strokeLineJoin="round"/></group>
+      </group>
+    </group>
+    <path android:pathData="M25,60 a35,35 0 1,0 70,0 a35,35 0 1,0 -70,0" android:strokeColor="#FFFFFFFF" android:strokeWidth="4.5"/>
+  </group>
 </vector>
