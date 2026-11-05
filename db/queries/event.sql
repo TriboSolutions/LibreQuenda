@@ -162,8 +162,9 @@ WHERE
     AND p.user_id IS NOT NULL;
 
 -- name: ListUpcomingEvents :many
--- The app's home: every council's events that have not started, soonest first,
--- full ones too (they still say what is on). Public, like the facilities list.
+-- The app's home: every council's events that have not started and still have
+-- spots, soonest first (a full one is left out, like a full public booking).
+-- Public, like the facilities list.
 SELECT
     b.id,
     COALESCE(b.title, '')::TEXT AS title,
@@ -190,6 +191,7 @@ WHERE
     AND b.starts_at > NOW()
     AND f.is_active = TRUE
     AND t.is_active = TRUE
+    AND (SELECT COUNT(*) FROM booking_participant p WHERE p.booking_id = b.id) < COALESCE(b.event_capacity, f.capacity)
 ORDER BY
     b.starts_at,
     b.id

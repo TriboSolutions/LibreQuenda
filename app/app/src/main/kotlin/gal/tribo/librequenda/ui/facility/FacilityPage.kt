@@ -132,6 +132,8 @@ fun FacilityPage(
 ) {
     var last by remember { mutableStateOf<FacilityTarget?>(null) }
     if (target != null) last = target
+    var participants by remember { mutableStateOf<PublicTurn?>(null) } // their own page, over this one
+    if (target == null) participants = null
     Pushed(open = target != null, onBack = onBack) {
         val t = last ?: return@Pushed
         val context = LocalContext.current
@@ -140,7 +142,6 @@ fun FacilityPage(
         var day by remember(t) { mutableStateOf<FacilityDay?>(null) }
         var failed by remember(t) { mutableStateOf(false) }
         var picking by remember { mutableStateOf(false) }
-        var participants by remember(t) { mutableStateOf<PublicTurn?>(null) } // their own page
         val now = Instant.now()
         LaunchedEffect(t, date) {
             failed = false
@@ -292,8 +293,8 @@ fun FacilityPage(
                 if (selected?.atZone(ZONE)?.toLocalDate() != it) selected = null // the turn chosen was on another day
             }, onDismiss = { picking = false })
         }
-        ParticipantsPage(participants, onBack = { participants = null })
     }
+    ParticipantsPage(participants, onBack = { participants = null })
 }
 
 /** Everyone in a public booking or an event, each with the stars others gave them: who booked it first. */
@@ -305,11 +306,24 @@ private fun ParticipantsPage(turn: PublicTurn?, onBack: () -> Unit) {
         val p = last ?: return@Pushed
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp).padding(bottom = 24.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(stringResource(R.string.public_people_title), style = MaterialTheme.typography.headlineMedium, color = Lq.colors.foreground, modifier = Modifier.semantics { heading() })
-            Text(
-                "${if (p.isEvent) p.title else stringResource(R.string.public_label)} · ${time(p.startsAt)}–${time(p.endsAt)} · ${stringResource(R.string.people_count, p.peopleCount, p.capacity)}",
-                style = MaterialTheme.typography.bodyMedium, color = Lq.colors.mutedForeground,
-            )
-            Spacer(Modifier.height(8.dp))
+            // what it is, in the public booking's green, as on the facility's turns
+            Column(
+                Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(Lq.colors.pillPositiveBg).padding(14.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(painterResource(R.drawable.ic_users), contentDescription = null, tint = Lq.colors.pillPositiveInk, modifier = Modifier.size(20.dp))
+                    Spacer(Modifier.size(8.dp))
+                    val what = when {
+                        p.isEvent -> p.title
+                        p.owner != null && p.owner.name.isNotBlank() -> stringResource(R.string.public_by, p.owner.name)
+                        else -> stringResource(R.string.public_label)
+                    }
+                    Text("$what · ${time(p.startsAt)}–${time(p.endsAt)}", style = MaterialTheme.typography.titleSmall, color = Lq.colors.pillPositiveInk)
+                }
+                Text(stringResource(R.string.people_count, p.peopleCount, p.capacity), style = MaterialTheme.typography.labelLarge, color = Lq.colors.foreground)
+            }
+            Spacer(Modifier.height(4.dp))
             p.owner?.let { PublicPersonRow(it, organiser = true) }
             p.joined.forEach {
                 HorizontalDivider(color = Lq.colors.border)
