@@ -7,6 +7,7 @@
 #  - signs up and in with a password (passkeys only with ZITADEL_PASSKEYS=true)
 #  - short access tokens (ZITADEL_ACCESS_TOKEN_MINUTES, 10 by default), renewed by the web
 #  - brands the login and console as LibreQuenda (logo, colours, no Zitadel links)
+#  - Spanish as the default language (Zitadel has no Galician or Catalan)
 #  - creates the "librequenda-api" service account (user and settings manager of
 #    the residents' organisation) and writes its token to /api-secrets, for /perfil
 #    (name, email, password) and to copy the installation's name and logo there
@@ -236,6 +237,13 @@ call POST /admin/v1/policies/label/_activate '{}' >/dev/null
 call PUT /admin/v1/policies/privacy '{"tosLink":"","privacyLink":"","helpLink":"","supportEmail":"","docsLink":"","customLink":"","customLinkText":""}' \
 	>/dev/null 2>&1 || true
 log "branding applied"
+
+# --- default language: Spanish ---
+# Zitadel has no Galician or Catalan: their speakers (and anyone without a
+# language it has) get its emails and sign-in pages in the default language,
+# Spanish rather than English.
+call PUT /admin/v1/languages/default/es '{}' >/dev/null 2>&1 || true # "no changes" is reported as an error
+log "default language: es"
 
 # --- service account for the API: residents manage their account from /perfil ---
 # Only ORG_USER_MANAGER and ORG_SETTINGS_MANAGER on the organisation residents
