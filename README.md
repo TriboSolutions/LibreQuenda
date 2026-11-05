@@ -30,6 +30,7 @@ app/       Mobile app (optional, later)
 deploy/    Self-hosting kit (production)
 proxy/     Caddy: serves the web app, proxies the API and Zitadel
 storage/   Garage: S3-compatible storage for uploaded images
+backup/    Daily PostgreSQL backups into Garage, and their restore
 zitadel/   One-off setup: creates the LibreQuenda project + OIDC app, writes config.json
 docs/      Architecture specs, brand assets, generated OpenAPI spec
 api/       Go core API
@@ -100,6 +101,16 @@ docker volume rm librequenda_zitadel-bootstrap   # once everything works
 A local `docker-compose.dev.yaml` keeps working as it is; to mirror production, mount `zitadel-admin` at `/zitadel/bootstrap` in `zitadel-setup` and `zitadel-login-client` at `/zitadel/login-client` in `zitadel-login` (with `ZITADEL_SERVICE_USER_TOKEN_FILE` and the `ZITADEL_FIRSTINSTANCE_*PATPATH` paths as in `docker-compose.yaml`).
 
 **TLS behind another proxy:** if a load balancer in front already terminates TLS, set `CADDY_AUTO_HTTPS=false` and keep `PUBLIC_SCHEME=https`; Caddy then serves plain HTTP to it.
+
+**Backups:** the `backup` service dumps PostgreSQL every day at 03:30 (`BACKUP_AT`, Europe/Madrid): LibreQuenda's database and Zitadel's (the accounts the bookings belong to), each with `pg_dump` and read back before it is kept, plus the roles. They go into the `backups` bucket of this server's Garage (`BACKUP_BUCKET`), one folder per backup, and are removed after 14 days (`BACKUP_KEEP_DAYS`). The service turns unhealthy in `docker compose ps` after a backup fails, until the next one works; `docker compose logs backup` says why. A backup on the same server does not survive losing its disk: point `BACKUP_S3_URL`, `BACKUP_S3_REGION`, `BACKUP_S3_ACCESS_KEY` and `BACKUP_S3_SECRET_KEY` to an S3-compatible storage elsewhere (another Garage, a provider) to keep them off it. Uploaded images stay in Garage and are not in these backups. Zitadel's data is encrypted with `ZITADEL_MASTERKEY`: keep a copy of `.env` apart, since a backup cannot be restored without it.
+
+```sh
+docker compose exec backup backup                 # one now
+docker compose stop api zitadel-api zitadel-login # nothing may use the databases while restoring
+docker compose exec backup restore                # lists the backups
+docker compose exec backup restore 20261105T023000Z
+docker compose start api zitadel-api zitadel-login
+```
 
 **Images from CI:** every push to `main` and every version tag builds the images and publishes them to `ghcr.io/<owner>/librequenda-<image>` (`.github/workflows/ci.yml`).
 

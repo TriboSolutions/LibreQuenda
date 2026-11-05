@@ -267,6 +267,39 @@ services:
       retries: 12
     restart: unless-stopped
 
+  # ============================================================
+  #  BACKUP: every day, PostgreSQL (LibreQuenda's and Zitadel's databases)
+  #  into a Garage bucket, kept BACKUP_KEEP_DAYS. By hand: docker compose exec backup backup
+  # ============================================================
+  backup:
+    build: ./backup
+    environment:
+      TZ: Europe/Madrid
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB}
+      BACKUP_AT: ${BACKUP_AT:-03:30}
+      BACKUP_KEEP_DAYS: ${BACKUP_KEEP_DAYS:-14}
+      BACKUP_BUCKET: ${BACKUP_BUCKET:-backups}
+      # this server's Garage unless another S3-compatible storage is set
+      BACKUP_S3_URL: ${BACKUP_S3_URL:-http://storage:3900}
+      BACKUP_S3_REGION: ${BACKUP_S3_REGION:-garage}
+      BACKUP_S3_ACCESS_KEY: ${BACKUP_S3_ACCESS_KEY:-${STORAGE_ACCESS_KEY}}
+      BACKUP_S3_SECRET_KEY: ${BACKUP_S3_SECRET_KEY:-${STORAGE_SECRET_KEY}}
+    depends_on:
+      db:
+        condition: service_healthy
+      storage:
+        condition: service_healthy
+    # unhealthy after a backup failed, until the next one works
+    healthcheck:
+      test: [ "CMD-SHELL", "test \"$$(cat /tmp/backup-status 2>/dev/null)\" != failed" ]
+      interval: 1m
+      timeout: 5s
+      retries: 1
+      start_period: 10s
+    restart: unless-stopped
+
 volumes:
   postgres_data:
   zitadel-admin: # the setup's admin token: Zitadel writes it, only zitadel-setup reads it
