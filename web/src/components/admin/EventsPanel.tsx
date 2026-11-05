@@ -1,20 +1,16 @@
-import { CalendarOff, PartyPopper, Plus } from 'lucide-react'
-import { useState, type FormEvent } from 'react'
+import { PartyPopper, Plus } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
-import { Link } from 'react-router'
-import { DatePicker } from '@/components/DatePicker'
-import { TimeSelect } from '@/components/TimeSelect'
+import { Link, useLocation, useNavigate } from 'react-router'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Textarea } from '@/components/ui/textarea'
 import { useAsync } from '@/hooks/useAsync'
-import { api, type AdminFacilitySummary, type CouncilEvent, type EventInTheWay, type EventInput } from '@/lib/api'
+import { api, type AdminFacilitySummary, type CouncilEvent } from '@/lib/api'
 import { formatDateTime, formatTime, localDate } from '@/lib/time'
 
 type Props = {
@@ -33,13 +29,18 @@ export function EventsPanel({ slug, facilities }: Props) {
   const token = useAuth().user?.access_token ?? ''
   const active = facilities.filter((f) => f.is_active)
   const events = useAsync(() => api.council.events(token, slug), `council-events:${slug}`)
-  const [editing, setEditing] = useState<CouncilEvent | 'new' | null>(null)
   const [cancelling, setCancelling] = useState<CouncilEvent | null>(null)
-  const [notice, setNotice] = useState<string | null>(null)
+  // what the editor page saved, handed over on the way back
+  const location = useLocation()
+  const navigate = useNavigate()
+  const [notice, setNotice] = useState<string | null>(() => (location.state as { notice?: string } | null)?.notice ?? null)
+  useEffect(() => {
+    // said once: a reload or going back here does not say it again
+    if ((location.state as { notice?: string } | null)?.notice) navigate(location.pathname + location.search, { replace: true, state: null })
+  }, [location, navigate])
   const zone = events.data?.timezone ?? 'Europe/Madrid'
 
   const done = (message: string) => {
-    setEditing(null)
     setCancelling(null)
     setNotice(message)
     events.reload()
@@ -55,9 +56,11 @@ export function EventsPanel({ slug, facilities }: Props) {
           <p className="max-w-[70ch] text-muted-foreground">{t('events.help')}</p>
         </div>
         {active.length > 0 && (
-          <Button onClick={() => { setNotice(null); setEditing('new') }}>
-            <Plus />
-            {t('events.create')}
+          <Button asChild>
+            <Link to={`/${slug}/admin/eventos/novo`}>
+              <Plus />
+              {t('events.create')}
+            </Link>
           </Button>
         )}
       </div>
@@ -97,8 +100,10 @@ export function EventsPanel({ slug, facilities }: Props) {
               </div>
               {event.can_change && (
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={() => { setNotice(null); setEditing(event) }}>
-                    {t('events.edit')}
+                  <Button asChild variant="outline" size="sm">
+                    <Link to={`/${slug}/admin/eventos/${event.id}`}>
+                      {t('events.edit')}
+                    </Link>
                   </Button>
                   <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => { setNotice(null); setCancelling(event) }}>
                     {t('events.cancel')}
@@ -110,17 +115,6 @@ export function EventsPanel({ slug, facilities }: Props) {
         </ul>
       )}
 
-      {editing && (
-        <EventDialog
-          slug={slug}
-          token={token}
-          zone={zone}
-          facilities={active}
-          event={editing === 'new' ? null : editing}
-          onClose={() => setEditing(null)}
-          onSaved={(saved) => done(t(editing === 'new' ? 'events.created' : 'events.saved', { title: saved.title }))}
-        />
-      )}
       {cancelling && (
         <CancelEventDialog
           slug={slug}
@@ -136,213 +130,6 @@ export function EventsPanel({ slug, facilities }: Props) {
 }
 
 const sameDay = (event: CouncilEvent, zone: string) => localDate(event.starts_at, zone) === localDate(event.ends_at, zone)
-
-type DialogProps = {
-  slug: string
-  token: string
-  zone: string
-  facilities: AdminFacilitySummary[]
-  event: CouncilEvent | null // null: a new one
-  onClose: () => void
-  onSaved: (event: CouncilEvent) => void
-}
-
-function EventDialog({ slug, token, zone, facilities, event, onClose, onSaved }: DialogProps) {
-  const { t } = useTranslation(['admin', 'common'])
-  const [today] = useState(() => localDate(new Date().toISOString(), zone))
-  const [fields, setFields] = useState(() => ({
-    facilityId: event?.facility_id ?? facilities[0]?.id ?? '',
-    fromDate: event ? localDate(event.starts_at, zone) : '',
-    fromTime: event ? formatTime(event.starts_at, zone) : '10:00',
-    untilDate: event ? localDate(event.ends_at, zone) : '',
-    untilTime: event ? formatTime(event.ends_at, zone) : '14:00',
-    title: event?.title ?? '',
-    description: event?.description ?? '',
-    capacity: event?.own_capacity ? String(event.own_capacity) : '',
-  }))
-  const set = (field: keyof typeof fields, value: string) => setFields((f) => ({ ...f, [field]: value }))
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [inTheWay, setInTheWay] = useState<EventInTheWay | null>(null)
-
-  const input: EventInput = {
-    facility_id: fields.facilityId,
-    starts_at: fields.fromDate && `${fields.fromDate}T${fields.fromTime}`,
-    ends_at: fields.untilDate && `${fields.untilDate}T${fields.untilTime}`,
-    title: fields.title,
-    description: fields.description,
-    capacity: fields.capacity.trim() ? Number(fields.capacity) : null,
-  }
-  const missing = !fields.facilityId || !fields.fromDate || !fields.untilDate || !fields.title.trim()
-
-  // first what is in the way; with nothing, save
-  const submit = async (e: FormEvent) => {
-    e.preventDefault()
-    if (busy || missing) return
-    setBusy(true)
-    setError(null)
-    setInTheWay(null)
-    try {
-      const found = await api.council.previewEvent(token, slug, input, event?.id)
-      if (found.bookings.length > 0 || found.closures.length > 0) {
-        setInTheWay(found)
-        return
-      }
-      onSaved(event ? await api.council.updateEvent(token, slug, event.id, input) : await api.council.createEvent(token, slug, input))
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err))
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  return (
-    <Dialog open onOpenChange={(open) => !open && !busy && onClose()}>
-      <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>{t(event ? 'events.editTitle' : 'events.createTitle')}</DialogTitle>
-          <DialogDescription>{t('events.formHelp')}</DialogDescription>
-        </DialogHeader>
-        <form id="event-form" onSubmit={(e) => void submit(e)} className="grid gap-3 sm:grid-cols-2">
-          <div className="grid gap-1.5 sm:col-span-2">
-            <Label htmlFor="event-title">{t('events.name')}</Label>
-            <Input id="event-title" required maxLength={120} placeholder={t('events.namePlaceholder')} value={fields.title} onChange={(e) => set('title', e.target.value)} />
-          </div>
-          <div className="grid gap-1.5 sm:col-span-2">
-            <Label htmlFor="event-facility">{t('staff.facility')}</Label>
-            {/* an event stays where it was created: moving it would leave who joined somewhere else */}
-            <Select value={fields.facilityId} onValueChange={(id) => set('facilityId', id)} disabled={!!event}>
-              <SelectTrigger id="event-facility" className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {facilities.map((f) => (
-                  <SelectItem key={f.id} value={f.id}>
-                    {f.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="grid gap-1.5">
-            <Label htmlFor="event-from">{t('events.from')}</Label>
-            <div className="flex gap-2">
-              <DatePicker
-                id="event-from"
-                value={fields.fromDate}
-                onChange={(date) => setFields((f) => ({ ...f, fromDate: date, untilDate: !f.untilDate || f.untilDate < date ? date : f.untilDate }))}
-                min={today}
-                defaultMonth={fields.fromDate || today}
-                placeholder={t('closures.pickDay')}
-                className="min-w-0 flex-1"
-              />
-              <TimeSelect value={fields.fromTime} onChange={(time) => set('fromTime', time)} aria-label={t('events.fromTime')} className="w-24" />
-            </div>
-          </div>
-          <div className="grid gap-1.5">
-            <Label htmlFor="event-until">{t('events.until')}</Label>
-            <div className="flex gap-2">
-              <DatePicker
-                id="event-until"
-                value={fields.untilDate}
-                onChange={(date) => set('untilDate', date)}
-                min={fields.fromDate || today}
-                defaultMonth={fields.untilDate || fields.fromDate || today}
-                placeholder={t('closures.pickDay')}
-                className="min-w-0 flex-1"
-              />
-              <TimeSelect value={fields.untilTime} onChange={(time) => set('untilTime', time)} aria-label={t('events.untilTime')} className="w-24" />
-            </div>
-          </div>
-          <div className="grid gap-1.5 sm:col-span-2">
-            <Label htmlFor="event-capacity">
-              {t('events.capacity')} <span className="font-normal text-muted-foreground">({t('staff.optional')})</span>
-            </Label>
-            <Input
-              id="event-capacity"
-              type="number"
-              inputMode="numeric"
-              min={Math.max(1, event?.participant_count ?? 1)}
-              max={10000}
-              className="num w-32"
-              value={fields.capacity}
-              onChange={(e) => set('capacity', e.target.value)}
-              aria-describedby="event-capacity-help"
-            />
-            <p id="event-capacity-help" className="text-sm text-muted-foreground">{t('events.capacityHelp')}</p>
-          </div>
-          <div className="grid gap-1.5 sm:col-span-2">
-            <Label htmlFor="event-description">
-              {t('events.description')} <span className="font-normal text-muted-foreground">({t('staff.optional')})</span>
-            </Label>
-            <Textarea id="event-description" maxLength={1000} placeholder={t('events.descriptionPlaceholder')} value={fields.description} onChange={(e) => set('description', e.target.value)} />
-          </div>
-        </form>
-
-        <div aria-live="polite" className="empty:hidden">
-          {inTheWay && <InTheWay found={inTheWay} zone={zone} slug={slug} facilityId={fields.facilityId} />}
-          {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-        </div>
-
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={busy}>
-            {t('form.cancel')}
-          </Button>
-          <Button type="submit" form="event-form" disabled={busy || missing}>
-            {busy ? t('events.saving') : t(event ? 'events.save' : 'events.createConfirm')}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-/** What stops the event: the bookings to cancel first from manual booking, and the closures. */
-function InTheWay({ found, zone, slug, facilityId }: { found: EventInTheWay; zone: string; slug: string; facilityId: string }) {
-  const { t } = useTranslation('admin')
-  return (
-    <Alert className="border-pill-accent-ink bg-pill-accent-bg text-pill-accent-ink">
-      <AlertDescription className="grid gap-2 text-pill-accent-ink">
-        {found.bookings.length > 0 && (
-          <>
-            <p className="font-medium">{t('events.bookingsInTheWay', { count: found.bookings.length })}</p>
-            <ul className="grid gap-1">
-              {found.bookings.map((b) => (
-                <li key={b.id} className="num">
-                  {formatDateTime(b.starts_at, zone)}–{formatTime(b.ends_at, zone)} · {b.holder || t('staff.noName')}
-                  {b.is_event && ` (${t('events.label')})`}
-                </li>
-              ))}
-            </ul>
-            <p>
-              <Link to={`/${slug}/admin?vista=reservas&instalacion=${facilityId}`} className="font-medium underline underline-offset-4">
-                {t('events.goCancel')}
-              </Link>
-            </p>
-          </>
-        )}
-        {found.closures.length > 0 && (
-          <>
-            <p className="font-medium">{t('events.closuresInTheWay')}</p>
-            <ul className="grid gap-1">
-              {found.closures.map((c) => (
-                <li key={c.starts_at} className="num flex items-center gap-1.5">
-                  <CalendarOff className="size-4 shrink-0" aria-hidden />
-                  {formatDateTime(c.starts_at, zone)} – {formatDateTime(c.ends_at, zone)}
-                  {c.reason && ` · ${c.reason}`}
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
-      </AlertDescription>
-    </Alert>
-  )
-}
 
 type CancelProps = {
   slug: string
