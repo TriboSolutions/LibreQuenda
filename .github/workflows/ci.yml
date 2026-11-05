@@ -3,7 +3,7 @@
 #  the Docker images and scan them for vulnerabilities (Trivy).
 #  On main and on version tags (v1.2.3) the images are published to the
 #  GitHub Container Registry (ghcr.io/<owner>/librequenda-<image>).
-#  No deployment: the server pulls or builds them with docker-compose.prod.yaml.
+#  No deployment: the server pulls them with docker-compose.yaml.
 #  The Android app is linted and built (the debug APK is kept as an artifact);
 #  on version tags a signed release APK goes to the GitHub release.
 #
@@ -74,6 +74,7 @@ jobs:
               - "storage/**"
               - "db/*.sh"
               - "zitadel/*.sh"
+              - "backup/**"
               - ".github/workflows/**"
 
   api:
@@ -281,6 +282,9 @@ jobs:
           - image: zitadel-setup
             context: zitadel
             dockerfile: zitadel/dockerfile
+          - image: backup
+            context: backup
+            dockerfile: backup/dockerfile
     env:
       PUBLISH: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')) }}
     steps:
@@ -296,13 +300,16 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # main -> :main and :sha-<commit>; v1.2.3 -> :1.2.3, :1.2 and :latest
+      # main -> :latest, :main and :sha-<commit> (what docker-compose.yaml pulls);
+      # v1.2.3 -> :1.2.3 and :1.2
       - name: Tags
         id: meta
         uses: docker/metadata-action@v6
         with:
           images: ghcr.io/${{ github.repository_owner }}/librequenda-${{ matrix.image }}
+          flavor: latest=false
           tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
             type=ref,event=branch
             type=ref,event=pr
             type=semver,pattern={{version}}

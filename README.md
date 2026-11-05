@@ -42,11 +42,17 @@ web/       React web app
 
 Requirements: a server with Docker (Compose v2), two DNS names pointing to it (the web app and the sign-in, e.g. `reservas.concello.gal` and `auth.reservas.concello.gal`), ports 80 and 443 open, and an SMTP relay for email.
 
+Only two files are needed on the server: `docker-compose.yaml` and `.env`. The images are prebuilt by CI and pulled from `ghcr.io/tribosolutions/librequenda-*` (`api`, `db`, `proxy` with the web app inside, `storage`, `zitadel-setup`, `backup`); nothing is built there.
+
 ```sh
-cp .env.example .env
+mkdir librequenda && cd librequenda
+curl -fLO https://raw.githubusercontent.com/TriboSolutions/LibreQuenda/main/docker-compose.yaml
+curl -fL -o .env https://raw.githubusercontent.com/TriboSolutions/LibreQuenda/main/.env.example
 # fill in every value: domains, SMTP, the first admin, and the secrets (each line says how to generate it)
-docker compose up -d --build --wait
+docker compose up -d --wait
 ```
+
+`LIBREQUENDA_VERSION` in `.env` picks the images' tag: `latest` follows `main`; a release tag (e.g. `1.2.3`) stays on that release. To update: `docker compose pull && docker compose up -d --wait`. To run your own changes instead, build the images from this repository with the same names (e.g. `docker build -t ghcr.io/tribosolutions/librequenda-api:latest api`).
 
 The stack refuses to start while a required value is missing. Everything goes through one Caddy proxy (`proxy/`), which obtains and renews the TLS certificates:
 
