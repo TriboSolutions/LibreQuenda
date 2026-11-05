@@ -76,6 +76,7 @@ private const val ME_SOURCE = "me"
 private const val PINS = "pins"
 private const val SELECTED = "pin-selected"
 private const val CLUSTERS = "clusters"
+private const val LABELS = "labels"
 
 /**
  * The facilities the search found, on OpenStreetMap: a pin each (in bubbles with how
@@ -147,6 +148,14 @@ fun FacilityMap(
                     PropertyFactory.circleRadius(7f), PropertyFactory.circleColor(0xFF2563EB.toInt()),
                     PropertyFactory.circleStrokeColor(Color.White.toArgb()), PropertyFactory.circleStrokeWidth(3f),
                 ))
+                // a pin on its own is named under it; a name that would cover another one hides until zoomed in
+                // (an image too: no fonts for text layers)
+                s.addLayer(SymbolLayer(LABELS, SOURCE).withFilter(single).withProperties(
+                    PropertyFactory.iconImage(Expression.concat(Expression.literal("label-"), Expression.get("id"))),
+                    PropertyFactory.iconAnchor(org.maplibre.android.style.layers.Property.ICON_ANCHOR_TOP),
+                    PropertyFactory.iconOffset(arrayOf(0f, 11f)),
+                    PropertyFactory.iconAllowOverlap(false),
+                ))
                 s.addLayer(CircleLayer(PINS, SOURCE).withFilter(single).withProperties(
                     PropertyFactory.circleRadius(9f), PropertyFactory.circleColor(primary),
                     PropertyFactory.circleStrokeColor(Color.White.toArgb()), PropertyFactory.circleStrokeWidth(2.5f),
@@ -189,6 +198,7 @@ fun FacilityMap(
         val m = map ?: return@LaunchedEffect
         // a bubble can hold at most every pin: one image for each count it may show
         for (n in 2..pinned.size) if (s.getImage("cluster-$n") == null) s.addImage("cluster-$n", bubble(n, primary, ink, density))
+        for (f in pinned) if (s.getImage("label-${f.id}") == null) s.addImage("label-${f.id}", nameLabel(f.name, density))
         s.getSourceAs<GeoJsonSource>(SOURCE)?.setGeoJson(FeatureCollection.fromFeatures(pinned.map { f ->
             Feature.fromGeometry(Point.fromLngLat(f.longitude!!, f.latitude!!)).apply { addStringProperty("id", f.id) }
         }))
@@ -247,5 +257,29 @@ private fun bubble(count: Int, fill: Int, ink: Int, density: Float): Bitmap {
     paint.typeface = Typeface.DEFAULT_BOLD
     paint.textSize = 15 * density
     canvas.drawText(count.toString(), c, c - (paint.descent() + paint.ascent()) / 2, paint)
+    return bitmap
+}
+
+/** A facility's name under its pin: dark text with a white halo, readable over any tile; long names end in «…». */
+private fun nameLabel(name: String, density: Float): Bitmap {
+    val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        textSize = 12.5f * density
+        typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+    }
+    val text = android.text.TextUtils.ellipsize(name, android.text.TextPaint(paint), 170 * density, android.text.TextUtils.TruncateAt.END).toString()
+    val halo = 2.5f * density
+    val width = (paint.measureText(text) + 2 * halo).toInt().coerceAtLeast(1)
+    val height = (paint.descent() - paint.ascent() + 2 * halo).toInt()
+    val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bitmap)
+    val y = halo - paint.ascent()
+    paint.style = Paint.Style.STROKE
+    paint.strokeWidth = 2 * halo
+    paint.strokeJoin = Paint.Join.ROUND
+    paint.color = android.graphics.Color.WHITE
+    canvas.drawText(text, halo, y, paint)
+    paint.style = Paint.Style.FILL
+    paint.color = 0xFF1F2937.toInt()
+    canvas.drawText(text, halo, y, paint)
     return bitmap
 }
