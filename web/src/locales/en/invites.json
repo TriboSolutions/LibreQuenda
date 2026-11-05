@@ -82,7 +82,8 @@
     "seeMyBookings": "See my bookings",
     "facilityPage": "See the facility",
     "error": "Could not join the booking.",
-    "or": "or"
+    "or": "or",
+    "residentsOnlyHint": "This facility is only for residents of {{council}} verified by the council: join with your verified account."
   },
   "people": {
     "label": "Who’s coming",

@@ -47,6 +47,7 @@ export function FacilityInfo({ facility, withAddress = true, headingLevel = 3 }:
           <li>{t('facility:ruleSlot', { count: facility.slot_minutes })}</li>
           <li>{t('facility:ruleCancel', { count: facility.min_cancel_hours })}</li>
           {facility.min_age !== null && <li className="font-medium text-foreground">{t('facility:minAge', { count: facility.min_age })}</li>}
+          {facility.residents_only && <li className="font-medium text-foreground">{t('facility:residentsOnlyShort')}</li>}
         </ul>
       </section>
 

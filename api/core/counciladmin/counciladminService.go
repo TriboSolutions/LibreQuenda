@@ -179,6 +179,7 @@ func (s *counciladminService) GetFacility(ctx context.Context, tenantId uuid.UUI
 		CustomRules:       f.CustomRules,
 		Rules:             rulesOfFacility(f),
 		MinAge:            intPtr(f.MinAge),
+		ResidentsOnly:     f.ResidentsOnly,
 		UsageRules:        f.UsageRulesText.String,
 		BookingCount:      bookings,
 		BookingsToCancel:  toCancel,
@@ -254,6 +255,7 @@ func (s *counciladminService) CreateFacility(ctx context.Context, tenantId uuid.
 			OpensWeekday:             rules.OpensWeekday,
 			OpensMinute:              rules.OpensMinute,
 			MinAge:                   nullInt(input.MinAge),
+			ResidentsOnly:            input.ResidentsOnly,
 			UsageRulesText:           nullString(input.UsageRules),
 		})
 		if createErr != nil {
@@ -304,6 +306,7 @@ func (s *counciladminService) UpdateFacility(ctx context.Context, tenantId uuid.
 			IsActive:          input.IsActive,
 			SlotMinutes:       input.SlotMinutes,
 			MinAge:            nullInt(input.MinAge),
+			ResidentsOnly:     input.ResidentsOnly,
 			UsageRulesText:    nullString(input.UsageRules),
 		})
 		if updateErr != nil {

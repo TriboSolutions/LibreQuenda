@@ -172,6 +172,18 @@ CREATE TABLE tenant_membership (
     PRIMARY KEY (user_id, tenant_id, role)
 );
 
+-- People a council's administrators (or a superadministrator) verified as its
+-- residents: they book and join at its residents_only facilities. A row means
+-- verified; removing it takes the verification back, without touching the
+-- bookings already made. Gone with the account or the council.
+CREATE TABLE tenant_resident (
+    tenant_id   UUID        NOT NULL REFERENCES tenant(id)   ON DELETE CASCADE,
+    user_id     UUID        NOT NULL REFERENCES app_user(id) ON DELETE CASCADE,
+    verified_by UUID        NULL REFERENCES app_user(id) ON DELETE SET NULL,
+    verified_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (tenant_id, user_id)
+);
+
 -- A role waiting for its person: accepted the first time someone logs in with
 -- this email verified (they may not have an account yet when invited).
 CREATE TABLE tenant_invitation (
@@ -232,6 +244,7 @@ CREATE TABLE facility (
     no_show_window_days          INT          NOT NULL DEFAULT 30 CHECK (no_show_window_days > 0),    -- …within these days…
     no_show_block_days           INT          NOT NULL DEFAULT 7  CHECK (no_show_block_days > 0),     -- …block booking for these days
     min_age                      INT          NULL CHECK (min_age BETWEEN 1 AND 80),  -- age control: NULL = none
+    residents_only               BOOLEAN      NOT NULL DEFAULT FALSE, -- only people the council verified as its residents (tenant_resident) book or join here
     usage_rules_text             TEXT         NULL,       -- free-text rules shown to residents
 
     created_at                   TIMESTAMPTZ  NOT NULL DEFAULT NOW(),

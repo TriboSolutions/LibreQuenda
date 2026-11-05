@@ -167,6 +167,7 @@ app_user ─┬─< notification
 | `app_user` | id, idp_subject (Zitadel `sub`), email, full_name, email_verified | Mirror of identity, nothing more |
 | `platform_admin` | user_id | Superadministrators |
 | `tenant_membership` | user_id, tenant_id, role | Authorisation |
+| `tenant_resident` | tenant_id, user_id, verified_by, verified_at | People a council verified as its residents (§6.2) |
 | `tenant_invitation` | tenant_id, email, role, invited_by, accepted_at | A role waiting for its person (§5.5) |
 | `notification` | id, user_id, booking_id, type, payload, created_at, read_at, emailed_at | "Avisos". `emailed_at` NULL = pending in the email queue |
 
@@ -182,6 +183,16 @@ Many residents, often elderly people, phone or come to the desk instead of using
 - **RXPD:** the name and phone of someone without an account are removed 30 days after the booking ends (hourly job). The booking stays, anonymous, for the indicators.
 
 Images (council logos, facility photos, photos of reported problems, profile photos) are stored in Garage, in **private buckets**: one per council (`council-<id>`) for its logo, its facilities' images and the photos of problems reported there, and the installation's (`STORAGE_BUCKET`) for profile photos and the installation logo. Nothing is served without a signature. The database only keeps a storage reference, never a URL: `<council id>/<folder>/<file>` for a council's files, `<folder>/<file>` for the installation's. The API turns a reference into a **presigned link** (S3 SigV4, valid 7 days, the same link reused for 3 days so browsers keep the image cached) only in the responses that show it; Caddy passes `GET`/`HEAD` requests carrying a signature under `/storage/*` to Garage, which checks it. A form can only save a reference to its own council's files (and a profile its own folder), so nobody gets another council's file signed by sending its reference. Uploads (`POST /media`) say whose file they are: `council` (slug, for its administrators) for logos and facility images, `facility` (id, for anyone signed in) for a problem's photo. A council's bucket is created with its first file and deleted with the council. Uploads are limited to JPEG, PNG and WebP up to 5 MB, with the type detected from the file's bytes (no SVG, which can carry scripts).
+
+### 6.2 Residents-only facilities
+
+A council can keep a facility for its own residents (`facility.residents_only`, a switch in the facility editor). Its administrators, or a superadministrator, verify people as the council's residents in the **Veciños** tab (`/<council>/admin?vista=vecinos`): by the email of an account that has signed in once with that email verified, after checking who they are at the desk or against the census. A row in `tenant_resident` means verified; removing it takes the verification back without cancelling bookings already made.
+
+- At a residents-only facility only verified residents book (app, web and the personal QR at a reader) and join public bookings, events and invite links. Guests without an account cannot join there.
+- «For you» does not offer public bookings or events there to people who are not verified.
+- Staff booking from the Reservas tab skip the check, like the age and per-person limits: staff are talking to the person.
+- People see which councils verified them on their profile (`resident_of` in `GET /me`), and in their data export.
+- Verifying and unverifying go to the audit log (`resident.verified`, `resident.unverified`).
 
 ## 7. Notifications (avisos)
 

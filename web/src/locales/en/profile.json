@@ -156,5 +156,11 @@
   "rating": {
     "title": "Your rating",
     "help": "What the people you played public bookings with gave you, 1 to 5 stars. Nobody sees who gave which."
+  },
+  "resident": {
+    "title": "Verified resident",
+    "help": "The councils that checked you live there. Some facilities are only for their verified residents.",
+    "none": "No council has verified your account. If a facility is for residents only, ask the council to verify you with this account’s email.",
+    "since": "Verified since {{date}}"
   }
 }

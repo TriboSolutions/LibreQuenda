@@ -141,5 +141,9 @@
     "label": "Esdeveniment",
     "spots_one": "queda {{count}} plaça",
     "spots_other": "queden {{count}} places"
-  }
+  },
+  "residentsOnly": "Només per a veïns verificats de {{council}}.",
+  "residentsOnlyShort": "Només per a veïns verificats per l’ajuntament.",
+  "residentsOnlySignIn": "Aquesta instal·lació és només per a veïns de {{council}} verificats per l’ajuntament. Inicia la sessió per reservar.",
+  "residentsOnlyNotVerified": "Aquesta instal·lació és només per a veïns de {{council}} verificats per l’ajuntament, i el teu compte no ho està. Demana a l’ajuntament que el verifiquin."
 }

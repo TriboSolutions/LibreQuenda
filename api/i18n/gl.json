@@ -206,7 +206,14 @@
     "event_capacity_below_joined": "Xa se apuntaron {{0}} persoas: o aforo non pode ser menor.",
     "event_facility_fixed": "Un evento non pode cambiar de instalación. Cancélao e crea outro.",
     "event_failed": "Non foi posible gardar o evento. Téntao de novo.",
-    "events_load_failed": "Non foi posible cargar os eventos."
+    "events_load_failed": "Non foi posible cargar os eventos.",
+    "residents_only": "Esta instalación é só para veciños verificados polo concello. Pide no concello que verifiquen a túa conta.",
+    "guest_residents_only": "Esta instalación é só para veciños verificados polo concello: para unirte, inicia sesión cunha conta verificada.",
+    "resident_user_not_found": "Non hai ningunha conta con ese correo verificado. A persoa ten que iniciar sesión unha vez antes.",
+    "resident_already_verified": "Esa persoa xa está verificada neste concello.",
+    "resident_not_found": "Esa persoa non está verificada neste concello.",
+    "resident_save_failed": "Non se puido gardar a verificación.",
+    "residents_load_failed": "Non se puideron cargar os veciños verificados."
   },
   "email": {
     "greeting": "Ola {{0}},",

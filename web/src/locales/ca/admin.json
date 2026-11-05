@@ -195,7 +195,9 @@
     "tabCheckin": "Entrada",
     "tabBooking": "Reserva",
     "showWeather": "Mostrar la previsió meteorològica",
-    "showWeatherHelp": "Mostra el temps de MeteoGalicia a la pàgina de la instal·lació i en reservar. Requereix el codi INE de l’ajuntament. És independent de les etiquetes."
+    "showWeatherHelp": "Mostra el temps de MeteoGalicia a la pàgina de la instal·lació i en reservar. Requereix el codi INE de l’ajuntament. És independent de les etiquetes.",
+    "residentsOnly": "Només veïns verificats",
+    "residentsOnlyHelp": "Només reserven i s’uneixen a reserves aquí les persones que l’ajuntament ha verificat com a veïnes (pestanya Veïns). No admet convidats sense compte. El personal pot reservar per qualsevol des de la pestanya Reserves."
   },
   "readers": {
     "title": "Lectors QR de l’entrada",
@@ -807,7 +809,8 @@
       "account": "Comptes",
       "other": "Altres",
       "booking_policy": "Normes de reserva de la plataforma",
-      "issue": "Incidències"
+      "issue": "Incidències",
+      "resident": "Veïns verificats"
     },
     "actions": {
       "facility.created": "Ha creat una instal·lació",
@@ -854,7 +857,9 @@
       "booking_policy.changed": "Ha canviat les normes de reserva de la plataforma",
       "issue.changed": "Ha canviat l’estat d’una incidència",
       "event.created": "Ha creat un esdeveniment",
-      "event.updated": "Ha canviat un esdeveniment"
+      "event.updated": "Ha canviat un esdeveniment",
+      "resident.verified": "Ha verificat un veí",
+      "resident.unverified": "Ha retirat la verificació d’un veí"
     },
     "anyDate": "Qualsevol data",
     "clearDates": "Netejar dates"
@@ -950,5 +955,31 @@
     "cancelNotice_one": "Avisarem la {{count}} persona apuntada, amb el motiu si l’indiques.",
     "cancelNotice_other": "Avisarem les {{count}} persones apuntades, amb el motiu si l’indiques.",
     "confirmCancel": "Cancel·la l’esdeveniment"
+  },
+  "residents": {
+    "tab": "Veïns",
+    "title": "Veïns verificats",
+    "help": "Persones que l’ajuntament ha comprovat que són veïnes. Només elles reserven a les instal·lacions marcades com a «Només veïns verificats». Comprova la identitat i l’empadronament abans de verificar algú.",
+    "addLabel": "Correu del compte de la persona",
+    "addHelp": "La persona ha d’iniciar la sessió una vegada amb el correu verificat.",
+    "add": "Verificar",
+    "added": "{{email}} ja està verificada com a veïna.",
+    "removed": "S’ha retirat la verificació de {{name}}. Les seves reserves es mantenen.",
+    "remove": "Retirar",
+    "search": "Cerca per nom o correu",
+    "searchAction": "Cercar",
+    "sort": "Ordena per",
+    "sortName": "Nom",
+    "sortRecent": "Verificació més recent",
+    "count_one": "{{count}} veí verificat",
+    "count_other": "{{count}} veïns verificats",
+    "empty": "Encara no hi ha ningú verificat.",
+    "noMatch": "Ningú coincideix amb la cerca.",
+    "verifiedBy": "Verificat el {{date}} per {{name}}",
+    "verifiedOn": "Verificat el {{date}}",
+    "pages": "Pàgines",
+    "page": "Pàgina {{page}} de {{pages}}",
+    "previous": "Anterior",
+    "next": "Següent"
   }
 }

@@ -66,6 +66,7 @@ suspend fun fetchFacilityDay(councilSlug: String, facilitySlug: String, date: Lo
             slotMinutes = f.optInt("slot_minutes"),
             minCancelHours = f.optInt("min_cancel_hours"),
             minAge = if (f.isNull("min_age")) null else f.optInt("min_age"),
+            residentsOnly = f.optBoolean("residents_only"),
             usageRules = f.optString("usage_rules"),
         ),
         slots = List(slots?.length() ?: 0) { slots!!.getJSONObject(it) }.map {

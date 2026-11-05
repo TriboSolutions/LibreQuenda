@@ -220,6 +220,9 @@ func addUser(ctx context.Context, userId uuid.UUID) func(*model.Queries, model.L
 		if limitErr := bookings.CouncilLimits(ctx, queries, userId, booking.TenantID, false); limitErr != nil {
 			return limitErr
 		}
+		if residentErr := bookings.CheckResident(ctx, queries, userId, booking.TenantID, booking.ResidentsOnly); residentErr != nil {
+			return residentErr
+		}
 		if booking.MinAge.Valid {
 			var birth, err = queries.GetUserBirthDate(ctx, userId)
 			if err != nil || !birth.Valid {
@@ -244,6 +247,10 @@ func addUser(ctx context.Context, userId uuid.UUID) func(*model.Queries, model.L
 // JoinAsGuest adds someone without an account: only a name and an age are kept.
 func (s *invitesService) JoinAsGuest(ctx context.Context, token uuid.UUID, guest GuestJoinDto) *shared.ErrorResponse {
 	return s.join(ctx, lockByToken(token), func(queries *model.Queries, booking model.LockBookingByInviteTokenRow, _ time.Time) *shared.ErrorResponse {
+		// a guest has no account the council could have verified
+		if booking.ResidentsOnly {
+			return &shared.ErrorResponse{Code: http.StatusForbidden, Message: "errors.guest_residents_only"}
+		}
 		if booking.MinAge.Valid && guest.Age < int(booking.MinAge.Int32) {
 			return &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.guest_age_restricted"}
 		}

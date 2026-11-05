@@ -118,6 +118,7 @@ KEYS = {
  'public_no_description': (B,'public.noDescription'), 'public_person': (B,'public.person'), 'public_full': (B,'public.full'), 'public_started': (B,'public.started'), 'public_toggle_help': (B,'public.help'), 'people_count': (B,'public.people'),
  'checkin_from': (B,'checkin.from'),
  'directions': (F,'directions'), 'conditions': (F,'conditions'), 'min_age': (F,'minAge'),
+ 'residents_only_short': (F,'residentsOnlyShort'), 'residents_only_not_verified': (F,'residentsOnlyNotVerified'), 'residents_only_sign_in': (F,'residentsOnlySignIn'),
  'usage_rules': (F,'rules'), 'no_rules': (F,'noRules'), 'no_location': (F,'noLocation'),
  'accessibility': (I,'details.accessibility'), 'cancel_until': (I,'details.cancelUntil'),
  # the notices as Android notifications: same words as the web's list

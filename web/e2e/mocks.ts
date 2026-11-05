@@ -21,6 +21,7 @@ import type {
   MyBookings,
   Notifications,
   PublicInvite,
+  ResidentsPage,
   Reader,
   StaffBooking,
   StaffDay,
@@ -110,6 +111,7 @@ function facility(id: string, name: string, slug: string): Facility {
     weekly_opening: { weekday: 7, at: '20:00' },
     capacity: 4,
     min_age: 16,
+    residents_only: false,
     usage_rules: 'Calzado deportivo obrigatorio.\nRespecta o horario.',
     windows: [{ opens_at: '08:00', closes_at: '22:00' }],
     closures: [{ starts_at: at(5), ends_at: at(6), reason: 'Mantemento' }],
@@ -148,6 +150,7 @@ const details: FacilityDetails = {
   slot_minutes: 60,
   min_cancel_hours: 2,
   min_age: 16,
+  residents_only: false,
   usage_rules: 'Calzado deportivo obrigatorio.',
 }
 
@@ -254,6 +257,7 @@ const me: Me = {
   rating: { average: 4.8, count: 5 },
   profile_complete: true,
   pending_invitations: [],
+  resident_of: [{ tenant_name: 'Lugo', tenant_slug: 'lugo', verified_at: at(-24 * 40) }],
 }
 
 /** The same person before confirming their email: booking and joining with the account point to the profile. */
@@ -346,6 +350,7 @@ const adminFacility: AdminFacility = {
   rules: councilRules,
   council_rules: councilRules,
   min_age: 16,
+  residents_only: true,
   usage_rules: 'Calzado deportivo obrigatorio.',
   booking_count: 12,
   bookings_to_cancel: 3,
@@ -668,6 +673,16 @@ export const eventInTheWay = {
 }
 
 /** GET handlers by path (without /api), first match wins. */
+const residents: ResidentsPage = {
+  residents: [
+    { user_id: 'u2', email: 'lucia.varela@example.com', full_name: 'Lucía Varela', verified_at: at(-24 * 10), verified_by: 'Marta Castro' },
+    { user_id: 'u3', email: 'xoan@example.com', full_name: '', verified_at: at(-24 * 3), verified_by: '' },
+  ],
+  total: 2,
+  page: 1,
+  page_size: 50,
+}
+
 const routes: [RegExp, () => unknown][] = [
   [/^\/tenants$/, () => ({ tenants })],
   [/^\/tenants\/[^/?]+$/, () => tenant],
@@ -689,6 +704,7 @@ const routes: [RegExp, () => unknown][] = [
   [/^\/tenants\/[^/]+\/admin\/facilities\/[^/]+$/, () => adminFacility],
   [/^\/tenants\/[^/]+\/admin\/indicators/, indicators],
   [/^\/tenants\/[^/]+\/admin\/smtp$/, () => smtp],
+  [/^\/tenants\/[^/]+\/admin\/residents/, () => residents],
   [/^\/me$/, () => me],
   [/^\/me\/account$/, () => account],
   [/^\/me\/qr$/, () => ({ code: 'lq2:0b5e1a8e-6f1d-4c1e-9a55-3f6c2d7b9e10', expires_at: at(1), refresh_seconds: 60 })],

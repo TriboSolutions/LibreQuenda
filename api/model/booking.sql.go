@@ -405,7 +405,7 @@ SELECT
     t.slug AS tenant_slug,
     t.name AS tenant_name,
     facility_sport(f.id)::TEXT AS facility_sport,
-    f.id, f.tenant_id, f.slug, f.name, f.description, f.address, f.latitude, f.longitude, f.capacity, f.accessibility_info, f.contact_phone, f.contact_email, f.show_weather, f.image_ref, f.is_active, f.slot_minutes, f.custom_rules, f.max_advance_hours, f.min_advance_minutes, f.min_cancel_hours, f.max_active_bookings_per_user, f.max_bookings_per_day, f.max_turns_in_a_row, f.max_bookings_per_week, f.weekly_opening, f.opens_weekday, f.opens_minute, f.no_show_penalty, f.no_show_limit, f.no_show_window_days, f.no_show_block_days, f.min_age, f.usage_rules_text, f.created_at, f.updated_at -- what the booking details show: image, address, rules
+    f.id, f.tenant_id, f.slug, f.name, f.description, f.address, f.latitude, f.longitude, f.capacity, f.accessibility_info, f.contact_phone, f.contact_email, f.show_weather, f.image_ref, f.is_active, f.slot_minutes, f.custom_rules, f.max_advance_hours, f.min_advance_minutes, f.min_cancel_hours, f.max_active_bookings_per_user, f.max_bookings_per_day, f.max_turns_in_a_row, f.max_bookings_per_week, f.weekly_opening, f.opens_weekday, f.opens_minute, f.no_show_penalty, f.no_show_limit, f.no_show_window_days, f.no_show_block_days, f.min_age, f.residents_only, f.usage_rules_text, f.created_at, f.updated_at -- what the booking details show: image, address, rules
 FROM
     booking b
     JOIN facility f ON f.id = b.facility_id
@@ -517,6 +517,7 @@ func (q *Queries) ListBookingsByUser(ctx context.Context, userID uuid.NullUUID) 
 			&i.Facility.NoShowWindowDays,
 			&i.Facility.NoShowBlockDays,
 			&i.Facility.MinAge,
+			&i.Facility.ResidentsOnly,
 			&i.Facility.UsageRulesText,
 			&i.Facility.CreatedAt,
 			&i.Facility.UpdatedAt,

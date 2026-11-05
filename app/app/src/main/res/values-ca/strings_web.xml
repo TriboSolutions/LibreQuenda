@@ -276,6 +276,9 @@
     <string name="directions">Com arribar-hi</string>
     <string name="conditions">Condicions de reserva</string>
     <string name="min_age">Edat mínima: %1$d anys.</string>
+    <string name="residents_only_short">Només per a veïns verificats per l’ajuntament.</string>
+    <string name="residents_only_not_verified">Aquesta instal·lació és només per a veïns de %1$s verificats per l’ajuntament, i el teu compte no ho està. Demana a l’ajuntament que el verifiquin.</string>
+    <string name="residents_only_sign_in">Aquesta instal·lació és només per a veïns de %1$s verificats per l’ajuntament. Inicia la sessió per reservar.</string>
     <string name="usage_rules">Normes d’ús</string>
     <string name="no_rules">Sense normes específiques: s’apliquen les normes generals de l’ajuntament.</string>
     <string name="no_location">Aquesta instal·lació encara no té ubicació al mapa.</string>

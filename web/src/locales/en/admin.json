@@ -195,7 +195,9 @@
     "tabCheckin": "Check-in",
     "tabBooking": "Booking",
     "showWeather": "Show weather forecast",
-    "showWeatherHelp": "Show MeteoGalicia forecasts on the facility page and when booking. Requires the council’s INE code. Independent of tags."
+    "showWeatherHelp": "Show MeteoGalicia forecasts on the facility page and when booking. Requires the council’s INE code. Independent of tags.",
+    "residentsOnly": "Verified residents only",
+    "residentsOnlyHelp": "Only people the council verified as its residents (Residents tab) book and join bookings here. Guests without an account cannot join. Staff can still book for anyone from the Bookings tab."
   },
   "readers": {
     "title": "Entrance QR readers",
@@ -807,7 +809,8 @@
       "account": "Accounts",
       "other": "Other",
       "booking_policy": "Platform booking rules",
-      "issue": "Reported problems"
+      "issue": "Reported problems",
+      "resident": "Verified residents"
     },
     "actions": {
       "facility.created": "Created a facility",
@@ -854,7 +857,9 @@
       "booking_policy.changed": "Changed the platform's booking rules",
       "issue.changed": "Changed a reported problem’s status",
       "event.created": "Created an event",
-      "event.updated": "Changed an event"
+      "event.updated": "Changed an event",
+      "resident.verified": "Verified a resident",
+      "resident.unverified": "Removed a resident’s verification"
     },
     "anyDate": "Any date",
     "clearDates": "Clear dates"
@@ -950,5 +955,31 @@
     "cancelNotice_one": "We will tell the {{count}} person who joined, with the reason if you give one.",
     "cancelNotice_other": "We will tell the {{count}} people who joined, with the reason if you give one.",
     "confirmCancel": "Cancel the event"
+  },
+  "residents": {
+    "tab": "Residents",
+    "title": "Verified residents",
+    "help": "People the council checked live here. Only they book at facilities marked «Verified residents only». Check their identity and census registration before verifying someone.",
+    "addLabel": "Email of the person’s account",
+    "addHelp": "The person must have signed in once with that email verified.",
+    "add": "Verify",
+    "added": "{{email}} is now verified as a resident.",
+    "removed": "{{name}} is no longer verified. Their bookings stay.",
+    "remove": "Remove",
+    "search": "Search by name or email",
+    "searchAction": "Search",
+    "sort": "Sort by",
+    "sortName": "Name",
+    "sortRecent": "Most recently verified",
+    "count_one": "{{count}} verified resident",
+    "count_other": "{{count}} verified residents",
+    "empty": "Nobody is verified yet.",
+    "noMatch": "Nobody matches the search.",
+    "verifiedBy": "Verified on {{date}} by {{name}}",
+    "verifiedOn": "Verified on {{date}}",
+    "pages": "Pages",
+    "page": "Page {{page}} of {{pages}}",
+    "previous": "Previous",
+    "next": "Next"
   }
 }

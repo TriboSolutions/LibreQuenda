@@ -276,6 +276,9 @@
     <string name="directions">Cómo llegar</string>
     <string name="conditions">Condiciones de reserva</string>
     <string name="min_age">Edad mínima: %1$d años.</string>
+    <string name="residents_only_short">Solo para vecinos verificados por el ayuntamiento.</string>
+    <string name="residents_only_not_verified">Esta instalación es solo para vecinos de %1$s verificados por el ayuntamiento, y tu cuenta no lo está. Pide en el ayuntamiento que la verifiquen.</string>
+    <string name="residents_only_sign_in">Esta instalación es solo para vecinos de %1$s verificados por el ayuntamiento. Inicia sesión para reservar.</string>
     <string name="usage_rules">Normas de uso</string>
     <string name="no_rules">Sin normas específicas: se aplican las normas generales del ayuntamiento.</string>
     <string name="no_location">Esta instalación todavía no tiene ubicación en el mapa.</string>

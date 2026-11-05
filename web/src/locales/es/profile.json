@@ -156,5 +156,11 @@
   "rating": {
     "title": "Tu valoración",
     "help": "Lo que te dieron, de 1 a 5 estrellas, las personas con las que jugaste reservas públicas. Nadie ve quién dio cada una."
+  },
+  "resident": {
+    "title": "Vecino verificado",
+    "help": "Los ayuntamientos que comprobaron que eres vecino. Algunas instalaciones son solo para sus vecinos verificados.",
+    "none": "Ningún ayuntamiento ha verificado tu cuenta. Si una instalación es solo para vecinos, pide en el ayuntamiento que te verifiquen con el correo de esta cuenta.",
+    "since": "Verificado desde el {{date}}"
   }
 }

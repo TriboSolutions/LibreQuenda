@@ -209,10 +209,35 @@ func (s *bookingsService) bookableSlot(ctx context.Context, queries *model.Queri
 	var start = startsAt.In(loc)
 	var day = time.Date(start.Year(), start.Month(), start.Day(), 0, 0, 0, 0, loc)
 
-	if ageErr := checkAge(ctx, queries, userId, facility, day); ageErr != nil {
+	if ageErr := checkEligible(ctx, queries, userId, facility, day); ageErr != nil {
 		return nil, ageErr
 	}
 	return s.findSlot(ctx, queries, facility, loc, day, day.AddDate(0, 0, 1), start, true)
+}
+
+// checkEligible: the person may book the facility on that day: a verified
+// resident where it asks for one (CheckResident), and old enough (checkAge).
+func checkEligible(ctx context.Context, queries *model.Queries, userId uuid.UUID, facility model.GetFacilityForBookingRow, day time.Time) *shared.ErrorResponse {
+	if residentErr := CheckResident(ctx, queries, userId, facility.TenantID, facility.ResidentsOnly); residentErr != nil {
+		return residentErr
+	}
+	return checkAge(ctx, queries, userId, facility, day)
+}
+
+// CheckResident: at a residents_only facility, the person is one of the
+// council's verified residents (tenant_resident). Staff booking for someone skip it.
+func CheckResident(ctx context.Context, queries *model.Queries, userId uuid.UUID, tenantId uuid.UUID, residentsOnly bool) *shared.ErrorResponse {
+	if !residentsOnly {
+		return nil
+	}
+	var verified, err = queries.IsTenantResident(ctx, model.IsTenantResidentParams{TenantID: tenantId, UserID: userId})
+	if err != nil {
+		return &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.booking_failed"}
+	}
+	if !verified {
+		return &shared.ErrorResponse{Code: http.StatusForbidden, Message: "errors.residents_only"}
+	}
+	return nil
 }
 
 // checkAge: the person is old enough for the facility on that day, when it has a minimum age.
@@ -361,7 +386,7 @@ func (s *bookingsService) QuickBook(ctx context.Context, userId uuid.UUID, facil
 	if reason != "" {
 		return nil, &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors." + reason}
 	}
-	if ageErr := checkAge(ctx, queries, userId, facility, startOfDay(slot.Start, loc)); ageErr != nil {
+	if ageErr := checkEligible(ctx, queries, userId, facility, startOfDay(slot.Start, loc)); ageErr != nil {
 		return nil, ageErr
 	}
 	return s.book(ctx, queries, userId, facility, &slot)

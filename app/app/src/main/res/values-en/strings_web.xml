@@ -276,6 +276,9 @@
     <string name="directions">Directions</string>
     <string name="conditions">Booking conditions</string>
     <string name="min_age">Minimum age: %1$d years.</string>
+    <string name="residents_only_short">Only for residents verified by the council.</string>
+    <string name="residents_only_not_verified">This facility is only for residents of %1$s verified by the council, and your account is not. Ask the council to verify it.</string>
+    <string name="residents_only_sign_in">This facility is only for residents of %1$s verified by the council. Sign in to book.</string>
     <string name="usage_rules">Rules of use</string>
     <string name="no_rules">No specific rules: the council’s general rules apply.</string>
     <string name="no_location">This facility has no map pin yet.</string>

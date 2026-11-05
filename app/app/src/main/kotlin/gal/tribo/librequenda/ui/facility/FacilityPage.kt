@@ -122,6 +122,7 @@ internal fun Pushed(open: Boolean, onBack: () -> Unit, content: @Composable () -
 fun FacilityPage(
     target: FacilityTarget?,
     signedIn: Boolean,
+    residentOf: Set<String> = emptySet(), // councils that verified the person: their residents-only facilities take them
     onSignIn: () -> Unit, // signed out, the page is to look at: booking asks to sign in
     onBack: () -> Unit,
     onCheckout: (Checkout) -> Unit, // book a free turn, or join a public booking: both confirm first
@@ -164,6 +165,15 @@ fun FacilityPage(
                         Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                             Text(stringResource(R.string.book_title), style = MaterialTheme.typography.titleLarge, color = Lq.colors.foreground, modifier = Modifier.weight(1f))
                             DayChip(dayLabel(date)) { picking = true }
+                        }
+                        // residents only: say so before anyone picks a turn the API would refuse
+                        if (d.details.residentsOnly && d.councilSlug !in residentOf) {
+                            Text(
+                                stringResource(if (signedIn) R.string.residents_only_not_verified else R.string.residents_only_sign_in, d.councilName),
+                                style = MaterialTheme.typography.bodyMedium, color = Lq.colors.pillNeutralInk,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).fillMaxWidth().clip(RoundedCornerShape(12.dp))
+                                    .background(Lq.colors.pillNeutralBg).padding(14.dp),
+                            )
                         }
                         // free turns to book, and other people's public bookings to join (green, with their spots left)
                         val free = d.slots.filter { it.free }
@@ -237,6 +247,7 @@ fun FacilityPage(
                                 if (f.slotMinutes > 0) Bullet(pluralStringResource(R.plurals.rule_slot, f.slotMinutes, f.slotMinutes))
                                 Bullet(pluralStringResource(R.plurals.rule_cancel, f.minCancelHours, f.minCancelHours))
                                 f.minAge?.let { Bullet(stringResource(R.string.min_age, it)) }
+                                if (f.residentsOnly) Bullet(stringResource(R.string.residents_only_short))
                             }
                             Detail(R.drawable.ic_scroll_text, stringResource(R.string.usage_rules)) {
                                 Text(f.usageRules.ifBlank { stringResource(R.string.no_rules) }, style = MaterialTheme.typography.bodyMedium, color = Lq.colors.mutedForeground)
@@ -316,6 +327,7 @@ fun ConfirmBookingPage(choice: Checkout?, actions: ProfileActions, onBack: () ->
                     val until = slot.startsAt.minus(Duration.ofHours(f.minCancelHours.toLong()))
                     if (turn == null) Fact(R.drawable.ic_x_circle, "${stringResource(R.string.cancellation)}: ${stringResource(R.string.cancellation_until, "${dayInline(until)} ${time(until)}")}")
                     f.minAge?.let { Fact(R.drawable.ic_user, stringResource(R.string.min_age, it)) }
+                    if (f.residentsOnly) Fact(R.drawable.ic_user, stringResource(R.string.residents_only_short))
                 }
                 // joining: what they are doing, and who is coming
                 if (turn != null) {

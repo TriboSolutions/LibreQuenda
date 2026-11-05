@@ -45,6 +45,7 @@ const EMPTY: FacilityInput = {
   is_active: true,
   slot_minutes: 60,
   min_age: null,
+  residents_only: false,
   usage_rules: '',
 }
 
@@ -363,6 +364,15 @@ function Editor({ slug, facility, council, token }: { slug: string; facility: Ad
               <p id="f-min-age-help" className="text-xs text-muted-foreground">
                 {t('admin:editor.minAgeHelp')}
               </p>
+            </div>
+            <div className="flex items-start gap-3">
+              <Switch id="f-residents-only" checked={form.residents_only} onCheckedChange={(value) => set('residents_only', value)} aria-describedby="f-residents-only-help" />
+              <div className="grid gap-1">
+                <Label htmlFor="f-residents-only">{t('admin:editor.residentsOnly')}</Label>
+                <p id="f-residents-only-help" className="text-sm text-muted-foreground">
+                  {t('admin:editor.residentsOnlyHelp')}
+                </p>
+              </div>
             </div>
             {/* creating: one button at the very end, after the weekly hours that are saved with it */}
             {!creating && (
