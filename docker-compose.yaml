@@ -1,12 +1,14 @@
 # ============================================================
 #  LibreQuenda: the whole stack behind one Caddy proxy.
-#  Configure .env from .env.example, then: docker compose up -d --build --wait
+#  Prebuilt images from ghcr.io: no source code needed on the server.
+#  Configure .env from .env.example, then: docker compose up -d --wait
+#  Update: docker compose pull && docker compose up -d --wait
 # ============================================================
 name: librequenda
 
 services:
   db:
-    build: ./db
+    image: ghcr.io/tribosolutions/librequenda-db:${LIBREQUENDA_VERSION:-latest}
     # not published: only the API and Zitadel reach it, on the compose network
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -27,7 +29,7 @@ services:
       - postgres_data:/var/lib/postgresql
 
   api:
-    build: ./api
+    image: ghcr.io/tribosolutions/librequenda-api:${LIBREQUENDA_VERSION:-latest}
     environment:
       TZ: Europe/Madrid
       # not the owner: row-level security applies to this role (db/init/04_app_role.sh)
@@ -95,11 +97,7 @@ services:
   #  ${ZITADEL_DOMAIN}  -> Zitadel (OIDC, login, console)
   # ============================================================
   proxy:
-    build:
-      context: .
-      dockerfile: proxy/dockerfile
-      args:
-        VITE_APP_VERSION: ${APP_VERSION}
+    image: ghcr.io/tribosolutions/librequenda-proxy:${LIBREQUENDA_VERSION:-latest} # the web app is inside it
     ports:
       - "${PROXY_HTTP_PORT:-80}:80"
       - "${PROXY_HTTPS_PORT:-443}:443"
@@ -224,7 +222,7 @@ services:
 
   # One-off: creates the LibreQuenda project + OIDC app, writes config.json for the SPA
   zitadel-setup:
-    build: ./zitadel
+    image: ghcr.io/tribosolutions/librequenda-zitadel-setup:${LIBREQUENDA_VERSION:-latest}
     environment:
       PUBLIC_SCHEME: ${PUBLIC_SCHEME}
       WEB_DOMAIN: ${WEB_DOMAIN}
@@ -253,7 +251,7 @@ services:
   #  hands out presigned links, which the proxy passes to it under /storage/…
   # ============================================================
   storage:
-    build: ./storage
+    image: ghcr.io/tribosolutions/librequenda-storage:${LIBREQUENDA_VERSION:-latest}
     environment:
       GARAGE_RPC_SECRET: ${GARAGE_RPC_SECRET:?set GARAGE_RPC_SECRET in .env}
       GARAGE_ADMIN_TOKEN: ${GARAGE_ADMIN_TOKEN:?set GARAGE_ADMIN_TOKEN in .env}
@@ -275,7 +273,7 @@ services:
   #  into a Garage bucket, kept BACKUP_KEEP_DAYS. By hand: docker compose exec backup backup
   # ============================================================
   backup:
-    build: ./backup
+    image: ghcr.io/tribosolutions/librequenda-backup:${LIBREQUENDA_VERSION:-latest}
     environment:
       TZ: Europe/Madrid
       POSTGRES_USER: ${POSTGRES_USER}
