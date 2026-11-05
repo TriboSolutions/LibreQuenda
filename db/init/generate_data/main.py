@@ -2,6 +2,7 @@
 Usage (from LibreQuenda/db/init/generate_data/):
     python main.py                  # dev: small, quick to load
     python main.py --profile prod   # production-sized: every table full (see profiles.py)
+    python main.py --profile zero   # only the superadministrator, nothing more
 
 Outputs:
     ../csv_data/*.csv          — one CSV per table
@@ -28,7 +29,7 @@ from generators import (
     user_home,
     users,
 )
-from sql_writer import generate_sql
+from sql_writer import generate_sql, generate_zero_sql
 
 BASE_DIR = Path(__file__).parent
 CSV_DIR = BASE_DIR.parent / "csv_data"
@@ -65,16 +66,25 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Generate LibreQuenda's seed data")
     parser.add_argument("--profile", choices=profiles.PROFILES, default="dev")
     args = parser.parse_args()
-    seed = profiles.load(args.profile)
+    seed = profiles.load(args.profile) if args.profile != "zero" else None
 
     print("=" * 52)
     print(f"  Generating seed data ({args.profile})")
     print("=" * 52)
 
-    context = _empty_context(seed)
     # the CSVs of the other profile must not linger
     for old in CSV_DIR.glob("*.csv"):
         old.unlink()
+
+    if seed is None:  # zero: no tables, no demo images
+        MEDIA_REFS.parent.mkdir(exist_ok=True)
+        MEDIA_REFS.write_text("")
+        print("\n-- SQL -----------------------------------------")
+        generate_zero_sql(SQL_FILE)
+        print("=" * 52)
+        return
+
+    context = _empty_context(seed)
 
     print("\n-- CSVs ----------------------------------------")
     for table_name, gen_module in PIPELINE:
