@@ -7,6 +7,7 @@ import (
 	_ "time/tzdata" // council timezones without relying on the image
 
 	"librequenda/auth"
+	"librequenda/branding"
 	"librequenda/core/bookings"
 	"librequenda/core/calendar"
 	"librequenda/core/counciladmin"
@@ -50,6 +51,7 @@ func main() {
 	auth.InitializeAuth()
 	var router = router.InitRouter()
 	cronJobs.InitializeCronJobs(dbConexion)
+	branding.SyncZitadel(dbConexion) // Zitadel's emails and sign-in pages named and drawn like the app
 	health.HealthRoutes(dbConexion, router).CreateHealthRoutes()
 	me.MeRoutes(dbConexion, router).RegisterRoutes()
 	tenants.TenantsRoutes(dbConexion, router).RegisterRoutes()

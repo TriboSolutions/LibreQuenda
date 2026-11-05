@@ -79,7 +79,7 @@ Status: **built** · **in progress** (open work) · **idea** (not started).
 |---|---|
 | Superadministrators: create, edit, deactivate and delete councils, invite their administrators, manage superadministrators | built |
 | Tag catalogue in categories, shared by every council | built |
-| The installation's own name and logo (self-hosting) | built |
+| The installation's own name and logo (self-hosting), also in the emails and on Zitadel's sign-in pages and emails | built |
 | Self-hosting with Docker Compose: PostgreSQL with row-level security per council, Zitadel for accounts, Garage for files, Caddy in front | built |
 | Private storage: one bucket per council, images only through presigned links | built |
 | Accessibility (WCAG 2.1 AA and the AAA criteria that apply), with automated checks in CI and an accessibility statement page | built |

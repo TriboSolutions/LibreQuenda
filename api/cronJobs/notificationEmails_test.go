@@ -1,13 +1,16 @@
 package cronJobs
 
 import (
+	"bytes"
 	"database/sql"
+	"librequenda/branding"
 	"librequenda/model"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/angelbarreiros/Penguin/router/helpers"
+	"github.com/google/uuid"
 )
 
 func TestShouldEmailAndUsable(t *testing.T) {
@@ -77,7 +80,7 @@ func TestNotificationEmailTexts(t *testing.T) {
 		model.NotificationTypeBookingCancelled, model.NotificationTypeBookingCancelledByCouncil,
 	} {
 		row.Type = kind
-		var message, err = notificationEmail(row, "Reservas Lalín", now)
+		var message, err = notificationEmail(row, branding.Email{Name: "Reservas Lalín"}, now)
 		if err != nil {
 			t.Fatalf("%s: %v", kind, err)
 		}
@@ -90,13 +93,13 @@ func TestNotificationEmailTexts(t *testing.T) {
 		}
 	}
 	row.Type = model.NotificationTypeBookingCancelledByCouncil
-	var message, _ = notificationEmail(row, "Reservas Lalín", now)
+	var message, _ = notificationEmail(row, branding.Email{Name: "Reservas Lalín"}, now)
 	if !strings.Contains(message.Text, "sorry") || len(message.Inline) != 0 {
 		t.Errorf("council cancellation: %q, %d images", message.Text, len(message.Inline))
 	}
 
 	row.Payload = []byte(`{"reason":"Roof works","closed_from":"2026-11-15T00:00:00+01:00","closed_until":"2026-11-30T23:59:00+01:00"}`)
-	message, _ = notificationEmail(row, "Reservas Lalín", now)
+	message, _ = notificationEmail(row, branding.Email{Name: "Reservas Lalín"}, now)
 	if !strings.Contains(message.Text, "from 15/11/2026 00:00 to 30/11/2026 23:59") || !strings.Contains(message.Text, "Reason: Roof works") {
 		t.Errorf("closure email lacks dates or reason: %q", message.Text)
 	}
@@ -105,7 +108,7 @@ func TestNotificationEmailTexts(t *testing.T) {
 func TestInvitationEmail(t *testing.T) {
 	helpers.GetI18nInstance(helpers.SetDefaultLocale("gl"), helpers.SetDirectory("../i18n"))
 	var row = model.ListPendingInvitationEmailsRow{Email: "nova@example.com", TenantName: "Concello de Lalín", TenantSlug: "lalin"}
-	var message = invitationEmail(row, "Reservas Lalín") // no account yet: Galician, no name
+	var message = invitationEmail(row, branding.Email{Name: "Reservas Lalín"}) // no account yet: Galician, no name
 	if !strings.Contains(message.Subject, "Concello de Lalín") || !strings.Contains(message.Text, "nova@example.com") ||
 		!strings.Contains(message.Text, "/lalin/admin") || !strings.HasPrefix(message.Text, "Ola,") || strings.Contains(message.Text, "email.") ||
 		!strings.Contains(message.Text, "en Reservas Lalín") {
@@ -124,21 +127,21 @@ func TestEmailExplainsOnlyTheFacilityWaysIn(t *testing.T) {
 	row.PreferredLanguage.String, row.PreferredLanguage.Valid = "en", true
 
 	// no way in: nothing to explain, no QR
-	var message, _ = notificationEmail(row, "LibreQuenda", now)
+	var message, _ = notificationEmail(row, branding.Email{Name: "LibreQuenda"}, now)
 	if strings.Contains(message.Text, "check in") || len(message.Inline) != 0 {
 		t.Errorf("no ways in, yet: %q, %d images", message.Text, len(message.Inline))
 	}
 
 	// only the entry code: one way, explained, and no QR
 	row.EntryCode = true
-	message, _ = notificationEmail(row, "LibreQuenda", now)
+	message, _ = notificationEmail(row, branding.Email{Name: "LibreQuenda"}, now)
 	if !strings.Contains(message.Text, "To check in:") || !strings.Contains(message.Text, "Entry code:") || strings.Contains(message.Text, "QR reader") || len(message.Inline) != 0 {
 		t.Errorf("entry code only: %q, %d images", message.Text, len(message.Inline))
 	}
 
 	// a reader and staff too: every way, and the QR for the reader
 	row.HasReader, row.StaffConfirm = true, true
-	message, _ = notificationEmail(row, "LibreQuenda", now)
+	message, _ = notificationEmail(row, branding.Email{Name: "LibreQuenda"}, now)
 	for _, want := range []string{"several ways", "QR reader:", "Entry code:", "Staff:"} {
 		if !strings.Contains(message.Text, want) {
 			t.Errorf("several ways: %q lacks %q", message.Text, want)
@@ -163,7 +166,7 @@ func TestEmailLinksDirectionsAndContacts(t *testing.T) {
 		TenantEmail:       sql.NullString{String: "lalin@lalin.org", Valid: true},
 	}
 	row.PreferredLanguage.String, row.PreferredLanguage.Valid = "en", true
-	var message, err = notificationEmail(row, "LibreQuenda", now)
+	var message, err = notificationEmail(row, branding.Email{Name: "LibreQuenda"}, now)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -184,7 +187,7 @@ func TestEmailLinksDirectionsAndContacts(t *testing.T) {
 
 	// a cancellation still says who to ask, but not how to get there
 	row.Type, row.Status = model.NotificationTypeBookingCancelledByCouncil, model.BookingStatusCancelled
-	message, _ = notificationEmail(row, "LibreQuenda", now)
+	message, _ = notificationEmail(row, branding.Email{Name: "LibreQuenda"}, now)
 	if strings.Contains(message.HTML, "google.com/maps") || !strings.Contains(message.HTML, "mailto:lalin@lalin.org") {
 		t.Errorf("cancellation: %s", message.HTML)
 	}
@@ -200,7 +203,7 @@ func TestJoinedEmailNamesWhoJoined(t *testing.T) {
 		Payload: []byte(`{"name":"Uxía","guest":false}`),
 	}
 	row.PreferredLanguage.String, row.PreferredLanguage.Valid = "en", true
-	var message, err = notificationEmail(row, "LibreQuenda", now)
+	var message, err = notificationEmail(row, branding.Email{Name: "LibreQuenda"}, now)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -208,8 +211,42 @@ func TestJoinedEmailNamesWhoJoined(t *testing.T) {
 		t.Errorf("joined email: %q / %q", message.Subject, message.Text)
 	}
 	row.Payload = []byte(`{}`)
-	message, _ = notificationEmail(row, "LibreQuenda", now)
+	message, _ = notificationEmail(row, branding.Email{Name: "LibreQuenda"}, now)
 	if !strings.Contains(message.Text, "Someone joined your booking") {
 		t.Errorf("without a name: %q", message.Text)
+	}
+}
+
+func TestEmailHeaderShowsTheInstallationLogo(t *testing.T) {
+	helpers.GetI18nInstance(helpers.SetDefaultLocale("gl"), helpers.SetDirectory("../i18n"))
+	var row = model.ListPendingInvitationEmailsRow{Email: "nova@example.com", TenantName: "Concello de Lalín", TenantSlug: "lalin"}
+	var logo = branding.Image{PNG: []byte{1, 2, 3}, Width: 128, Height: 64}
+
+	// its own logo: the mark at 32 px high with the name beside it, sent inside the email
+	var message = invitationEmail(row, branding.Email{Name: "Reservas Lalín", Logo: logo})
+	if len(message.Inline) != 1 || message.Inline[0].CID != "brand-logo" || !bytes.Equal(message.Inline[0].Data, logo.PNG) {
+		t.Fatalf("logo not attached: %+v", message.Inline)
+	}
+	if !strings.Contains(message.HTML, `src="cid:brand-logo" width="64" height="32" alt=""`) || !strings.Contains(message.HTML, ">Reservas Lalín</span>") {
+		t.Errorf("header: %s", message.HTML)
+	}
+
+	// LibreQuenda's lockup carries the name: the image says it, no text beside
+	message = invitationEmail(row, branding.Email{Name: "LibreQuenda", Lockup: true, Logo: logo})
+	if !strings.Contains(message.HTML, `alt="LibreQuenda"`) || strings.Contains(message.HTML, ">LibreQuenda</span>") {
+		t.Errorf("lockup header: %s", message.HTML)
+	}
+
+	// a booking with the reader's QR carries both images
+	var now = time.Date(2026, 11, 2, 10, 0, 0, 0, time.UTC)
+	var booking = model.ListPendingEmailsRow{
+		Type: model.NotificationTypeBookingConfirmed, Status: model.BookingStatusConfirmed,
+		StartsAt: now.Add(48 * time.Hour), EndsAt: now.Add(49 * time.Hour),
+		FacilityName: "Pavillón", TenantName: "Concello de Lalín", Timezone: "Europe/Madrid", Email: "a@example.com",
+		HasReader: true, CheckinToken: uuid.New(),
+	}
+	var withQR, err = notificationEmail(booking, branding.Email{Name: "Reservas Lalín", Logo: logo}, now)
+	if err != nil || len(withQR.Inline) != 2 {
+		t.Errorf("booking with QR and logo: %d images, %v", len(withQR.Inline), err)
 	}
 }

@@ -26,7 +26,7 @@ func SendIssueEmails(ctx context.Context, db *sql.DB) (int, error) {
 		return 0, err
 	}
 	var sent int
-	var appName = branding.Name(ctx, db)
+	var brand = branding.ForEmail(ctx, db)
 	for _, row := range rows {
 		if !row.EmailNotifications {
 			if err = queries.MarkNotificationEmailed(ctx, row.ID); err != nil {
@@ -35,7 +35,7 @@ func SendIssueEmails(ctx context.Context, db *sql.DB) (int, error) {
 			continue
 		}
 		var council, councilErr = mailer.OpenRelay(row.SmtpConfig, row.TenantID)
-		if err = send(council, councilErr, issueEmail(row, appName)); err != nil {
+		if err = send(council, councilErr, issueEmail(row, brand)); err != nil {
 			log.Printf("issue email %s: %v", row.ID, err)
 			continue
 		}
@@ -47,7 +47,8 @@ func SendIssueEmails(ctx context.Context, db *sql.DB) (int, error) {
 	return sent, nil
 }
 
-func issueEmail(row model.ListPendingIssueEmailsRow, appName string) mailer.Message {
+func issueEmail(row model.ListPendingIssueEmailsRow, brand branding.Email) mailer.Message {
+	var appName = brand.Name
 	var i18n = helpers.GetI18nInstance()
 	var language = row.PreferredLanguage.String // "" = the default (gl)
 	var t = func(key string, args ...any) string {
@@ -77,16 +78,19 @@ func issueEmail(row model.ListPendingIssueEmailsRow, appName string) mailer.Mess
 		view.Greeting = t("greeting", name[0])
 	}
 	var html bytes.Buffer
+	brandHeader(&view, brand)
 	_ = emailTemplate.Execute(&html, view) // the template is fixed and checked by the tests
 	var text = []string{view.Greeting, "", view.Intro}
 	if view.Reason != "" {
 		text = append(text, "", view.Reason)
 	}
 	text = append(text, "", view.Manage+": "+view.ManageURL, "", "--", view.Footer)
-	return mailer.Message{
+	var message = mailer.Message{
 		To:      row.Email,
 		Subject: t(kind+".subject", row.FacilityName),
 		Text:    strings.Join(text, "\n"),
 		HTML:    html.String(),
 	}
+	attachLogo(&message, brand)
+	return message
 }

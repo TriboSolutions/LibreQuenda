@@ -100,10 +100,10 @@ func SendNotificationEmails(ctx context.Context, db *sql.DB) (int, error) {
 	}
 	var sent int
 	var now = time.Now()
-	var appName = branding.Name(ctx, db)
+	var brand = branding.ForEmail(ctx, db)
 	for _, row := range rows {
 		if shouldEmail(row, now) {
-			var message, buildErr = notificationEmail(row, appName, now)
+			var message, buildErr = notificationEmail(row, brand, now)
 			if buildErr == nil {
 				var council, councilErr = mailer.OpenRelay(row.SmtpConfig, row.TenantID)
 				buildErr = send(council, councilErr, message)
@@ -172,6 +172,36 @@ type emailView struct {
 	Ways                                                                                       []emailWay
 	Contacts                                                                                   []emailContact
 	HasQR                                                                                      bool // the booking QR, for a reader
+	Brand                                                                                      emailBrand
+}
+
+// emailBrand: the header above the card, the installation's logo (and its name,
+// unless the logo is LibreQuenda's lockup that carries it), shown at 32 px high.
+type emailBrand struct {
+	Name          string
+	HasLogo       bool
+	Lockup        bool
+	Width, Height int
+}
+
+const emailLogoCID = "brand-logo"
+
+// brandHeader puts the installation's logo on top of the email; with no logo
+// (the tests) the header is the name alone.
+func brandHeader(view *emailView, brand branding.Email) {
+	view.Brand = emailBrand{Name: brand.Name, Lockup: brand.Lockup}
+	if len(brand.Logo.PNG) > 0 && brand.Logo.Height > 0 {
+		view.Brand.HasLogo = true
+		view.Brand.Height = 32
+		view.Brand.Width = max(1, brand.Logo.Width*32/brand.Logo.Height)
+	}
+}
+
+// attachLogo adds the logo the header shows, as an image inside the email.
+func attachLogo(message *mailer.Message, brand branding.Email) {
+	if len(brand.Logo.PNG) > 0 {
+		message.Inline = append(message.Inline, mailer.Inline{CID: emailLogoCID, ContentType: "image/png", Filename: "logo.png", Data: brand.Logo.PNG})
+	}
 }
 
 // emailWay: one way to check in and how to use it; the reader's comes with the
@@ -218,6 +248,7 @@ type councilCancellation struct {
 
 var emailTemplate = template.Must(template.New("notification").Parse(`<!doctype html>
 <html><body style="margin:0;padding:24px;background:#f6f9fb;font-family:system-ui,sans-serif;color:#111827;font-size:15px;line-height:22px">
+<div style="max-width:480px;margin:0 auto 16px">{{if .Brand.HasLogo}}<img src="cid:brand-logo" width="{{.Brand.Width}}" height="{{.Brand.Height}}" alt="{{if .Brand.Lockup}}{{.Brand.Name}}{{end}}" style="display:inline-block;vertical-align:middle;border:0;{{if not .Brand.Lockup}}border-radius:6px;{{end}}">{{end}}{{if not (and .Brand.HasLogo .Brand.Lockup)}}<span style="display:inline-block;vertical-align:middle;{{if .Brand.HasLogo}}margin-left:10px;{{end}}font-size:18px;line-height:24px;font-weight:700">{{.Brand.Name}}</span>{{end}}</div>
 <div style="max-width:480px;margin:0 auto;background:#ffffff;border:1px solid #e3e8ed;border-radius:8px;padding:24px">
 <p style="margin:0 0 12px">{{.Greeting}}</p>
 <p style="margin:0 0 16px">{{.Intro}}</p>
@@ -232,8 +263,9 @@ var emailTemplate = template.Must(template.New("notification").Parse(`<!doctype 
 <p style="max-width:480px;margin:16px auto 0;color:#5b6573;font-size:12px;line-height:18px">{{.Footer}}</p>
 </body></html>`))
 
-// appName signs the footer: the installation's own name (branding).
-func notificationEmail(row model.ListPendingEmailsRow, appName string, now time.Time) (mailer.Message, error) {
+// brand heads the email and signs the footer: the installation's own name and logo.
+func notificationEmail(row model.ListPendingEmailsRow, brand branding.Email, now time.Time) (mailer.Message, error) {
+	var appName = brand.Name
 	var i18n = helpers.GetI18nInstance()
 	var language = row.PreferredLanguage.String // "" = the default (gl)
 	var t = func(key string, args ...any) string {
@@ -313,6 +345,7 @@ func notificationEmail(row model.ListPendingEmailsRow, appName string, now time.
 	}
 
 	var html bytes.Buffer
+	brandHeader(&view, brand)
 	if err = emailTemplate.Execute(&html, view); err != nil {
 		return mailer.Message{}, err
 	}
@@ -362,6 +395,7 @@ func notificationEmail(row model.ListPendingEmailsRow, appName string, now time.
 		}
 		message.Inline = []mailer.Inline{{CID: "booking-qr", ContentType: "image/png", Filename: "reserva-qr.png", Data: qr}}
 	}
+	attachLogo(&message, brand)
 	return message, nil
 }
 
@@ -376,10 +410,10 @@ func SendInvitationEmails(ctx context.Context, db *sql.DB) (int, error) {
 		return 0, err
 	}
 	var sent int
-	var appName = branding.Name(ctx, db)
+	var brand = branding.ForEmail(ctx, db)
 	for _, row := range rows {
 		var council, councilErr = mailer.OpenRelay(row.SmtpConfig, row.TenantID)
-		if err = send(council, councilErr, invitationEmail(row, appName)); err != nil {
+		if err = send(council, councilErr, invitationEmail(row, brand)); err != nil {
 			log.Printf("invitation email %s: %v", row.ID, err)
 			continue
 		}
@@ -391,7 +425,8 @@ func SendInvitationEmails(ctx context.Context, db *sql.DB) (int, error) {
 	return sent, nil
 }
 
-func invitationEmail(row model.ListPendingInvitationEmailsRow, appName string) mailer.Message {
+func invitationEmail(row model.ListPendingInvitationEmailsRow, brand branding.Email) mailer.Message {
+	var appName = brand.Name
 	var i18n = helpers.GetI18nInstance()
 	var language = row.PreferredLanguage.String // "" = the default (gl): they may have no account yet
 	var t = func(key string, args ...any) string {
@@ -408,13 +443,16 @@ func invitationEmail(row model.ListPendingInvitationEmailsRow, appName string) m
 		view.Greeting = t("greeting", name[0])
 	}
 	var html bytes.Buffer
+	brandHeader(&view, brand)
 	_ = emailTemplate.Execute(&html, view) // the template is fixed and checked by the tests
-	return mailer.Message{
+	var message = mailer.Message{
 		To:      row.Email,
 		Subject: t("council_admin.subject", row.TenantName),
 		Text:    strings.Join([]string{view.Greeting, "", view.Intro, "", view.Manage + ": " + view.ManageURL, "", "--", view.Footer}, "\n"),
 		HTML:    html.String(),
 	}
+	attachLogo(&message, brand)
+	return message
 }
 
 // joinedName: who joined the person's booking (booking_joined's payload), a first name or "someone".
