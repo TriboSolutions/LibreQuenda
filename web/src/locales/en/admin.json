@@ -933,6 +933,8 @@
     "cancelled": "“{{title}}” was cancelled.",
     "createTitle": "New event",
     "editTitle": "Edit the event",
+    "back": "All events",
+    "notFound": "This event can no longer be changed: it has started or was cancelled.",
     "formHelp": "If there are bookings at that time, cancel them first from Manual booking: an event never takes anyone’s place.",
     "name": "Name",
     "namePlaceholder": "For example: 5-a-side football tournament",

@@ -49,6 +49,7 @@ const pages: { name: string; path: string; signedIn?: boolean }[] = [
   { name: 'council admin, indicators', path: '/lugo/admin?vista=indicadores' },
   { name: 'council admin, bookings', path: '/lugo/admin?vista=reservas' },
   { name: 'council admin, events', path: '/lugo/admin?vista=eventos' },
+  { name: 'new event', path: '/lugo/admin/eventos/novo' },
   { name: 'council admin, residents', path: '/lugo/admin?vista=vecinos' },
   { name: 'facility editor', path: '/lugo/admin/facilities/f1' },
   { name: 'facility editor, check-in', path: '/lugo/admin/facilities/f1?vista=entrada' },
@@ -99,19 +100,19 @@ for (const theme of ['light', 'dark'] as const) {
       await expectAccessible(page, { overlay: true })
     })
 
-    // saving an event with a booking and a closure in the way: the form says which, and links to manual booking
-    test('event dialog, with what is in the way', async ({ page }) => {
+    // saving an event with a booking and a closure in the way: the editor page says which, and links to manual booking
+    test('event editor page, with what is in the way', async ({ page }) => {
       await open(page, '/lugo/admin?vista=eventos', { theme })
-      await page.getByRole('listitem').filter({ hasText: 'Torneo de pádel de outono' }).getByRole('button', { name: 'Editar' }).click()
-      const dialog = page.getByRole('dialog', { name: 'Editar o evento' })
-      await expect(dialog.getByLabel('Nome')).toHaveValue('Torneo de pádel de outono')
-      await dialog.getByRole('button', { name: 'Gardar' }).click()
-      await expect(dialog.getByText('Hai 1 reserva a esa hora:')).toBeVisible()
-      await expect(dialog.getByText(/Lucía Varela/)).toBeVisible()
-      await expect(dialog.getByText('A instalación está pechada durante parte dese tempo:')).toBeVisible()
-      await expect(dialog.getByRole('link', { name: 'Cancelalas en Reserva manual' })).toHaveAttribute('href', '/lugo/admin?vista=reservas&instalacion=f1')
-      await page.waitForTimeout(300)
-      await expectAccessible(page, { overlay: true })
+      await page.getByRole('listitem').filter({ hasText: 'Torneo de pádel de outono' }).getByRole('link', { name: 'Editar' }).click()
+      await expect(page).toHaveURL(/\/lugo\/admin\/eventos\/ev1$/)
+      await expect(page.getByRole('heading', { level: 1, name: 'Editar o evento' })).toBeVisible()
+      await expect(page.getByLabel('Nome')).toHaveValue('Torneo de pádel de outono')
+      await page.getByRole('button', { name: 'Gardar' }).click()
+      await expect(page.getByText('Hai 1 reserva a esa hora:')).toBeVisible()
+      await expect(page.getByText(/Lucía Varela/)).toBeVisible()
+      await expect(page.getByText('A instalación está pechada durante parte dese tempo:')).toBeVisible()
+      await expect(page.getByRole('link', { name: 'Cancelalas en Reserva manual' })).toHaveAttribute('href', '/lugo/admin?vista=reservas&instalacion=f1')
+      await expectAccessible(page)
     })
 
     test('rating dialog, after a public booking', async ({ page }) => {

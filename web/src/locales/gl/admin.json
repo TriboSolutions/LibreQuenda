@@ -933,6 +933,8 @@
     "cancelled": "Cancelouse «{{title}}».",
     "createTitle": "Novo evento",
     "editTitle": "Editar o evento",
+    "back": "Todos os eventos",
+    "notFound": "Este evento xa non se pode cambiar: comezou ou cancelouse.",
     "formHelp": "Se hai reservas a esa hora, cancélaas antes desde Reserva manual: un evento nunca quita a praza a ninguén.",
     "name": "Nome",
     "namePlaceholder": "Por exemplo: Torneo de fútbol 5x5",

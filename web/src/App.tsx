@@ -8,6 +8,7 @@ import { CheckinPrintPage } from '@/pages/CheckinPrintPage'
 import { CouncilPage } from '@/pages/CouncilPage'
 import { EntrancePage } from '@/pages/EntrancePage'
 import { HomePage } from '@/pages/HomePage'
+import { EventEditorPage } from '@/pages/EventEditorPage'
 import { FacilityEditorPage } from '@/pages/FacilityEditorPage'
 import { FacilityPage } from '@/pages/FacilityPage'
 import { InvitePage } from '@/pages/InvitePage'
@@ -36,6 +37,7 @@ function App() {
       <Route path="/:slug/widget/:facility" element={<WidgetPage />} />
       <Route path="/:slug/admin" element={<CouncilAdminPage />} />
       <Route path="/:slug/admin/axustes" element={<CouncilSettingsPage />} />
+      <Route path="/:slug/admin/eventos/:id" element={<EventEditorPage />} />
       <Route path="/:slug/admin/facilities/:id" element={<FacilityEditorPage />} />
       <Route path="/:slug/admin/facilities/:id/imprimir" element={<CheckinPrintPage />} />
       <Route path="/:slug/:facility" element={<FacilityPage />} />
