@@ -1,0 +1,16 @@
+# Daily PostgreSQL backups into Garage (or any S3-compatible storage): see backup.sh.
+# The same PostgreSQL major as db/ (pg_dump must not be older than the server).
+FROM postgres:18-alpine
+
+# security fixes released after the base image was built; mcli: MinIO's S3 client
+RUN apk upgrade --no-cache && apk add --no-cache minio-client
+
+COPY --chmod=755 backup.sh /usr/local/bin/backup
+COPY --chmod=755 restore.sh /usr/local/bin/restore
+COPY --chmod=755 run-daily.sh /usr/local/bin/run-daily
+
+# never the server: only its client tools, as an unprivileged user
+ENV MC_CONFIG_DIR=/tmp/mcli
+USER postgres
+ENTRYPOINT []
+CMD ["run-daily"]
