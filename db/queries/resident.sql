@@ -44,22 +44,32 @@ WHERE
     AND user_id = sqlc.arg('user_id');
 
 -- name: IsTenantResident :one
-SELECT EXISTS (
-    SELECT 1 FROM tenant_resident
-    WHERE tenant_id = sqlc.arg('tenant_id') AND user_id = sqlc.arg('user_id')
-) AS verified;
+-- Verified by the council, or verified by their role: the council's own
+-- administrators, and the superadministrators everywhere, need no request.
+SELECT (
+    EXISTS (SELECT 1 FROM tenant_resident r WHERE r.tenant_id = sqlc.arg('tenant_id') AND r.user_id = sqlc.arg('user_id'))
+    OR EXISTS (SELECT 1 FROM tenant_membership m WHERE m.tenant_id = sqlc.arg('tenant_id') AND m.user_id = sqlc.arg('user_id') AND m.role = 'admin')
+    OR EXISTS (SELECT 1 FROM platform_admin p WHERE p.user_id = sqlc.arg('user_id'))
+)::BOOLEAN AS verified;
 
 -- name: ListResidentCouncilsByUser :many
--- The councils that verified the person, for their profile.
+-- The councils where the person counts as verified, for /me and their profile:
+-- those that verified them, those they administer, and every active council
+-- for a superadministrator (as IsTenantResident), each since the earliest.
 SELECT
     t.slug,
     t.name,
-    r.verified_at
-FROM
-    tenant_resident r
-    JOIN tenant t ON t.id = r.tenant_id
-WHERE
-    r.user_id = sqlc.arg('user_id')
+    MIN(v.since)::TIMESTAMPTZ AS verified_at
+FROM (
+    SELECT r.tenant_id, r.verified_at AS since FROM tenant_resident r WHERE r.user_id = sqlc.arg('user_id')
+    UNION ALL
+    SELECT m.tenant_id, m.created_at FROM tenant_membership m WHERE m.user_id = sqlc.arg('user_id') AND m.role = 'admin'
+    UNION ALL
+    SELECT t2.id, p.created_at FROM platform_admin p CROSS JOIN tenant t2 WHERE p.user_id = sqlc.arg('user_id') AND t2.is_active = TRUE
+) v
+JOIN tenant t ON t.id = v.tenant_id
+GROUP BY
+    t.id, t.slug, t.name
 ORDER BY
     t.name;
 

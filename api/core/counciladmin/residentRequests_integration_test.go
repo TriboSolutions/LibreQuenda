@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"librequenda/auth"
 	"librequenda/core/me"
+	"librequenda/model"
 	"net/http"
 	"os"
 	"testing"
@@ -103,5 +104,24 @@ func TestResidentRequestFlow(t *testing.T) {
 	_ = conn.QueryRowContext(ctx, `SELECT COUNT(*) FROM notification WHERE user_id = $1 AND type = 'resident_verified'`, ana).Scan(&notices)
 	if notices != 1 {
 		t.Fatalf("verified notices: %d", notices)
+	}
+
+	// administrators of the council, and superadministrators, are verified by their role
+	var queries = model.New(conn)
+	if ok, _ := queries.IsTenantResident(ctx, model.IsTenantResidentParams{TenantID: tenant, UserID: admin}); !ok {
+		t.Fatal("the council's administrator is not taken as a resident")
+	}
+	if _, problem = people.RequestResidency(ctx, auth.Session{Subject: "rr-admin"}, "lalin", input); problem == nil || problem.Message != "errors.resident_already_verified_self" {
+		t.Fatalf("administrator's request: %+v", problem)
+	}
+	if ok, _ := queries.IsTenantResident(ctx, model.IsTenantResidentParams{TenantID: tenant, UserID: ana}); ok {
+		t.Fatal("unverified Ana taken as a resident")
+	}
+	if _, err = conn.ExecContext(ctx, `INSERT INTO platform_admin (user_id) VALUES ($1)`, ana); err != nil {
+		t.Fatal(err)
+	}
+	var councils, _ = queries.ListResidentCouncilsByUser(ctx, ana)
+	if ok, _ := queries.IsTenantResident(ctx, model.IsTenantResidentParams{TenantID: tenant, UserID: ana}); !ok || len(councils) != 1 || councils[0].Slug != "lalin" {
+		t.Fatalf("superadministrator not taken as a resident: %+v", councils)
 	}
 }

@@ -968,7 +968,7 @@
   "residents": {
     "tab": "Vecinos",
     "title": "Vecinos verificados",
-    "help": "Personas que el ayuntamiento comprobó que son vecinas. Solo ellas reservan en las instalaciones marcadas como «Solo vecinos verificados». Comprueba la identidad y el empadronamiento antes de verificar a alguien.",
+    "help": "Personas que el ayuntamiento comprobó que son vecinas. Solo ellas reservan en las instalaciones marcadas como «Solo vecinos verificados». Comprueba la identidad y el empadronamiento antes de verificar a alguien. Los administradores del ayuntamiento y los superadministradores ya cuentan como verificados, sin petición.",
     "addLabel": "Correo de la cuenta de la persona",
     "addHelp": "La persona tiene que iniciar sesión una vez con el correo verificado.",
     "add": "Verificar",

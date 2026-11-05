@@ -968,7 +968,7 @@
   "residents": {
     "tab": "Veïns",
     "title": "Veïns verificats",
-    "help": "Persones que l’ajuntament ha comprovat que són veïnes. Només elles reserven a les instal·lacions marcades com a «Només veïns verificats». Comprova la identitat i l’empadronament abans de verificar algú.",
+    "help": "Persones que l’ajuntament ha comprovat que són veïnes. Només elles reserven a les instal·lacions marcades com a «Només veïns verificats». Comprova la identitat i l’empadronament abans de verificar algú. Els administradors de l’ajuntament i els superadministradors ja compten com a verificats, sense petició.",
     "addLabel": "Correu del compte de la persona",
     "addHelp": "La persona ha d’iniciar la sessió una vegada amb el correu verificat.",
     "add": "Verificar",

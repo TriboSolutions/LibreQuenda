@@ -968,7 +968,7 @@
   "residents": {
     "tab": "Residents",
     "title": "Verified residents",
-    "help": "People the council checked live here. Only they book at facilities marked «Verified residents only». Check their identity and census registration before verifying someone.",
+    "help": "People the council checked live here. Only they book at facilities marked «Verified residents only». Check their identity and census registration before verifying someone. The council's administrators and the superadministrators already count as verified, with no request.",
     "addLabel": "Email of the person’s account",
     "addHelp": "The person must have signed in once with that email verified.",
     "add": "Verify",

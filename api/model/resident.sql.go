@@ -173,10 +173,11 @@ func (q *Queries) GetResidentRequestedAt(ctx context.Context, userID uuid.UUID) 
 }
 
 const isTenantResident = `-- name: IsTenantResident :one
-SELECT EXISTS (
-    SELECT 1 FROM tenant_resident
-    WHERE tenant_id = $1 AND user_id = $2
-) AS verified
+SELECT (
+    EXISTS (SELECT 1 FROM tenant_resident r WHERE r.tenant_id = $1 AND r.user_id = $2)
+    OR EXISTS (SELECT 1 FROM tenant_membership m WHERE m.tenant_id = $1 AND m.user_id = $2 AND m.role = 'admin')
+    OR EXISTS (SELECT 1 FROM platform_admin p WHERE p.user_id = $2)
+)::BOOLEAN AS verified
 `
 
 type IsTenantResidentParams struct {
@@ -184,6 +185,8 @@ type IsTenantResidentParams struct {
 	UserID   uuid.UUID `json:"user_id"`
 }
 
+// Verified by the council, or verified by their role: the council's own
+// administrators, and the superadministrators everywhere, need no request.
 func (q *Queries) IsTenantResident(ctx context.Context, arg IsTenantResidentParams) (bool, error) {
 	row := q.db.QueryRowContext(ctx, isTenantResident, arg.TenantID, arg.UserID)
 	var verified bool
@@ -282,12 +285,17 @@ const listResidentCouncilsByUser = `-- name: ListResidentCouncilsByUser :many
 SELECT
     t.slug,
     t.name,
-    r.verified_at
-FROM
-    tenant_resident r
-    JOIN tenant t ON t.id = r.tenant_id
-WHERE
-    r.user_id = $1
+    MIN(v.since)::TIMESTAMPTZ AS verified_at
+FROM (
+    SELECT r.tenant_id, r.verified_at AS since FROM tenant_resident r WHERE r.user_id = $1
+    UNION ALL
+    SELECT m.tenant_id, m.created_at FROM tenant_membership m WHERE m.user_id = $1 AND m.role = 'admin'
+    UNION ALL
+    SELECT t2.id, p.created_at FROM platform_admin p CROSS JOIN tenant t2 WHERE p.user_id = $1 AND t2.is_active = TRUE
+) v
+JOIN tenant t ON t.id = v.tenant_id
+GROUP BY
+    t.id, t.slug, t.name
 ORDER BY
     t.name
 `
@@ -298,7 +306,9 @@ type ListResidentCouncilsByUserRow struct {
 	VerifiedAt time.Time `json:"verified_at"`
 }
 
-// The councils that verified the person, for their profile.
+// The councils where the person counts as verified, for /me and their profile:
+// those that verified them, those they administer, and every active council
+// for a superadministrator (as IsTenantResident), each since the earliest.
 func (q *Queries) ListResidentCouncilsByUser(ctx context.Context, userID uuid.UUID) ([]ListResidentCouncilsByUserRow, error) {
 	rows, err := q.db.QueryContext(ctx, listResidentCouncilsByUser, userID)
 	if err != nil {

@@ -61,7 +61,7 @@ Status: **built** · **in progress** (open work) · **idea** (not started).
 | Feature | Status |
 |---|---|
 | Facilities: create, edit, deactivate (optionally cancelling upcoming bookings with a notice), photo, map pin (address search), tags, capacity, minimum age, usage rules | built |
-| Residents-only facilities: administrators verify people as the council's residents (Veciños tab, by email), and take the verification back (with a confirmation); only they book and join there (bookings, public games, events, invite links), guests cannot | built |
+| Residents-only facilities: administrators verify people as the council's residents (Veciños tab, by email), and take the verification back (with a confirmation); the council's administrators, and superadministrators everywhere, count as verified without a request; only they book and join there (bookings, public games, events, invite links), guests cannot | built |
 | Requests to be verified: they reach the Veciños tab (badge with the pending ones), the administrators' bell and their email («X quere ser veciño»); staff check the DNI and address against their own census, then verify or discard. Either way the request is deleted at once, with its DNI and address, and one nobody decided on is deleted after 15 days | built |
 | Weekly opening hours and closures (cancelling the bookings inside, with an apology and the reason) | built |
 | Ways to check in per facility (Entrada tab) and printable QR and code sheets | built |
