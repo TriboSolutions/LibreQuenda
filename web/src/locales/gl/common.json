@@ -117,6 +117,11 @@
     "setUp": "Configurar o segundo factor",
     "signInAgain": "Iniciar sesión de novo"
   },
+  "newVersion": {
+    "title": "Hai unha nova versión.",
+    "body": "Recarga a páxina para seguir; ata entón non se pode gardar nada.",
+    "reload": "Recargar"
+  },
   "rating": {
     "summary_one": "Valoración de {{average}} sobre 5, de {{count}} persoa",
     "summary_other": "Valoración de {{average}} sobre 5, de {{count}} persoas",

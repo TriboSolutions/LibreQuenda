@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAsync } from '@/hooks/useAsync'
 import { usePageTitle } from '@/hooks/usePageTitle'
+import { useReloadOnNewVersion } from '@/hooks/useNewVersion'
 import { useBranding } from '@/hooks/useBranding'
 import i18n, { languages } from '@/i18n'
 import { api } from '@/lib/api'
@@ -25,6 +26,7 @@ export function WidgetPage() {
   const [params] = useSearchParams()
   const { t } = useTranslation('councils')
   const { branding } = useBranding()
+  useReloadOnNewVersion()
   const [date, setDate] = useState<string | null>(null)
   const day = useAsync(() => api.day(slug, date ?? undefined), `widget:${slug}:${date}`)
   const today = day.data && date === null ? day.data.date : null

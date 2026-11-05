@@ -816,6 +816,43 @@ export type Superadmin = { user_id: string; email: string; full_name: string; fr
 /** Fired when the administration refuses a sign-in without a second factor (REQUIRE_ADMIN_MFA). */
 export const MFA_REQUIRED_EVENT = 'librequenda:mfa-required'
 
+/** Fired once when the API runs a newer build than this page (its X-App-Version differs): the page has to reload. */
+export const NEW_VERSION_EVENT = 'librequenda:new-version'
+
+// The build's version (VITE_APP_VERSION, the API's VERSION in the same deployment);
+// empty in development, where nothing is checked.
+const APP_VERSION: string = import.meta.env.VITE_APP_VERSION ?? ''
+let newerVersion = ''
+
+/** The API's version when it is not this page's, or "" while they match. */
+export function newerApiVersion() {
+  return newerVersion
+}
+
+/**
+ * Every call to the API: the language, and the page's version, which the API
+ * refuses with 409 once it runs another one. Each answer carries the API's
+ * version, so a deployment is noticed on the next call, whichever it is.
+ */
+async function apiFetch(url: string, init: RequestInit = {}) {
+  const headers = new Headers(init.headers)
+  headers.set('Accept-Language', i18n.resolvedLanguage ?? 'gl')
+  if (APP_VERSION) headers.set('X-App-Version', APP_VERSION)
+  const res = await fetch(url, { ...init, headers })
+  const apiVersion = res.headers.get('X-App-Version')
+  if (APP_VERSION && apiVersion && apiVersion !== APP_VERSION && !newerVersion) {
+    newerVersion = apiVersion
+    window.dispatchEvent(new Event(NEW_VERSION_EVENT))
+  }
+  return res
+}
+
+/** Asks the API only for its version, for screens that may go long without a call. */
+export async function checkApiVersion() {
+  if (!APP_VERSION) return
+  await apiFetch('/api/health/api', { method: 'HEAD' }).catch(() => undefined) // offline: the next check
+}
+
 export class ApiError extends Error {
   status: number
 
@@ -836,11 +873,11 @@ export function onTokenExpired(renew: (() => Promise<string | null>) | null) {
 }
 
 async function request<T>(path: string, { token, method = 'GET', body }: RequestOptions = {}, renewed = false): Promise<T> {
-  const headers: Record<string, string> = { 'Accept-Language': i18n.resolvedLanguage ?? 'gl' }
+  const headers: Record<string, string> = {}
   if (token) headers.Authorization = `Bearer ${token}`
   if (body !== undefined) headers['Content-Type'] = 'application/json'
 
-  const res = await fetch(`/api${path}`, {
+  const res = await apiFetch(`/api${path}`, {
     method,
     headers,
     body: body === undefined ? undefined : JSON.stringify(body),
@@ -909,8 +946,8 @@ function auditParams(filters: AuditFilters) {
 async function downloadAudit(token: string, path: string, filters: AuditFilters) {
   const params = auditParams(filters)
   params.set('format', 'csv')
-  const res = await fetch(`/api${path}?${params}`, {
-    headers: { Authorization: `Bearer ${token}`, 'Accept-Language': i18n.resolvedLanguage ?? 'gl' },
+  const res = await apiFetch(`/api${path}?${params}`, {
+    headers: { Authorization: `Bearer ${token}` },
   })
   if (!res.ok) throw new ApiError(res.status, `HTTP ${res.status}`)
   const url = URL.createObjectURL(await res.blob())
@@ -926,8 +963,8 @@ async function exportIndicators(token: string, slug: string, query: IndicatorsQu
   const params = indicatorsParams(query)
   params.set('kind', kind)
   if (excel) params.set('excel', '1')
-  const res = await fetch(`/api/tenants/${encodeURIComponent(slug)}/admin/indicators/export?${params}`, {
-    headers: { Authorization: `Bearer ${token}`, 'Accept-Language': i18n.resolvedLanguage ?? 'gl' },
+  const res = await apiFetch(`/api/tenants/${encodeURIComponent(slug)}/admin/indicators/export?${params}`, {
+    headers: { Authorization: `Bearer ${token}` },
   })
   if (!res.ok) {
     const data = await res.json().catch(() => ({}))
@@ -943,8 +980,8 @@ async function exportIndicators(token: string, slug: string, query: IndicatorsQu
 
 /** GET …/admin/export: the council's full data as a ZIP, fetched with the token and saved; `personal` adds the residents' personal data. */
 async function exportCouncilData(token: string, slug: string, personal: boolean) {
-  const res = await fetch(`/api/tenants/${encodeURIComponent(slug)}/admin/export${personal ? '?personal=1' : ''}`, {
-    headers: { Authorization: `Bearer ${token}`, 'Accept-Language': i18n.resolvedLanguage ?? 'gl' },
+  const res = await apiFetch(`/api/tenants/${encodeURIComponent(slug)}/admin/export${personal ? '?personal=1' : ''}`, {
+    headers: { Authorization: `Bearer ${token}` },
   })
   if (!res.ok) {
     if (res.status === 429) throw new ApiError(429, i18n.t('common:rateLimited'))
@@ -961,8 +998,8 @@ async function exportCouncilData(token: string, slug: string, personal: boolean)
 
 /** GET /me/export: the user's data as a file (RXPD / GDPR), fetched with the token and saved. */
 async function exportMyData(token: string, format: 'json' | 'csv') {
-  const res = await fetch(`/api/me/export?format=${format}`, {
-    headers: { Authorization: `Bearer ${token}`, 'Accept-Language': i18n.resolvedLanguage ?? 'gl' },
+  const res = await apiFetch(`/api/me/export?format=${format}`, {
+    headers: { Authorization: `Bearer ${token}` },
   })
   if (!res.ok) {
     if (res.status === 429) throw new ApiError(429, i18n.t('common:rateLimited'))
@@ -984,9 +1021,9 @@ async function uploadImage(token: string, folder: MediaFolder, file: File, owner
   if (owner && 'council' in owner) body.append('council', owner.council)
   if (owner && 'facility' in owner) body.append('facility', owner.facility)
   body.append('file', file)
-  const res = await fetch('/api/media', {
+  const res = await apiFetch('/api/media', {
     method: 'POST',
-    headers: { Authorization: `Bearer ${token}`, 'Accept-Language': i18n.resolvedLanguage ?? 'gl' },
+    headers: { Authorization: `Bearer ${token}` },
     body,
   })
   if (!res.ok) {

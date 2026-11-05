@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, type Page, test } from '@playwright/test'
 import QRCode from 'qrcode'
-import { mockApp, ME_UNVERIFIED, type MockOptions } from './mocks'
+import { defaultBranding, mockApp, ME_UNVERIFIED, type MockOptions } from './mocks'
 
 // Every automatable WCAG 2.1 A and AA rule, plus axe's AAA rules (7:1 contrast and the like).
 const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag2aaa', 'best-practice']
@@ -25,6 +25,12 @@ async function expectAccessible(page: Page, { overlay = false } = {}) {
     nodes: v.nodes.map((n) => `${n.target.join(' ')}: ${n.failureSummary?.split('\n').slice(1, 3).join(' ')}`),
   }))
   expect(report, JSON.stringify(report, null, 2)).toEqual([])
+}
+
+// The API after a deployment: its answers carry another version than the page's (built as «e2e»).
+// The general mock answers everything else; this route, added after it, wins.
+async function newerApi(page: Page) {
+  await page.route('**/api/branding', (route) => route.fulfill({ json: defaultBranding, headers: { 'X-App-Version': 'newer' } }))
 }
 
 async function open(page: Page, path: string, options?: MockOptions) {
@@ -674,6 +680,30 @@ test.describe('keyboard', () => {
     await expect(notice.getByRole('button', { name: 'Iniciar sesión de novo' })).toBeVisible()
     await page.waitForTimeout(300)
     await expectAccessible(page)
+  })
+
+  test('after a deployment the page asks to be reloaded', async ({ page }) => {
+    await mockApp(page)
+    const sent = page.waitForRequest((r) => r.url().endsWith('/api/branding') && r.headers()['x-app-version'] === 'e2e')
+    await newerApi(page)
+    await page.goto('/lugo')
+    await sent
+    const notice = page.getByRole('alert').filter({ hasText: 'Hai unha nova versión.' })
+    await expect(notice).toBeVisible()
+    await expect(notice.getByRole('button', { name: 'Recargar' })).toBeVisible()
+    await page.waitForTimeout(300)
+    await expectAccessible(page)
+  })
+
+  test('the widget reloads by itself after a deployment, once', async ({ page }) => {
+    await mockApp(page, { signedIn: false })
+    await newerApi(page)
+    let loads = 0
+    page.on('load', () => loads++)
+    await page.goto('/lugo/widget')
+    await expect.poll(() => loads).toBe(2)
+    await page.waitForTimeout(1000)
+    expect(loads).toBe(2) // still served the old build: no loop
   })
 
   test('the activity log filters, pages and names erased accounts', async ({ page }) => {

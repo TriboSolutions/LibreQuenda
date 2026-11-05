@@ -117,6 +117,11 @@
     "setUp": "Configura el segon factor",
     "signInAgain": "Torna a iniciar la sessió"
   },
+  "newVersion": {
+    "title": "Hi ha una versió nova.",
+    "body": "Torna a carregar la pàgina per continuar; fins aleshores no es pot desar res.",
+    "reload": "Torna a carregar"
+  },
   "rating": {
     "summary_one": "Valoració de {{average}} sobre 5, d’{{count}} persona",
     "summary_other": "Valoració de {{average}} sobre 5, de {{count}} persones",
