@@ -19,8 +19,8 @@ export function BrandName({ className }: { className?: string }) {
 }
 
 /**
- * The top bar's logo: LibreQuenda's own lockup (mark, name and "Reserva de
- * instalacións deportivas", docs/brand), the same image Zitadel's sign-in pages
+ * The top bar's logo: LibreQuenda's own lockup (mark and name, docs/brand/svg),
+ * the same image Zitadel's sign-in pages
  * show, light or dark with the theme; a narrow phone has room for the mark only.
  * The installation's own logo and name, when it has them. Decorative: the link
  * around it carries the name.
@@ -37,7 +37,7 @@ export function BrandLockup() {
   }
   return (
     <>
-      <Mark ticks className="size-8 sm:hidden" />
+      <Mark className="size-8 sm:hidden" />
       <img src={logo} alt="" className="hidden h-9 w-auto sm:block dark:sm:hidden" />
       <img src={logoDark} alt="" className="hidden h-9 w-auto dark:sm:block" />
     </>

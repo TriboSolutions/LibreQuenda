@@ -29,7 +29,7 @@ import gal.tribo.librequenda.R
 import gal.tribo.librequenda.ui.theme.Lq
 
 /**
- * LibreQuenda's lockup (mark, name and "Reserva de instalacións deportivas"),
+ * LibreQuenda's lockup (mark and name, docs/brand/svg/logo-horizontal-*),
  * the same image the web's top bar and Zitadel's sign-in pages show, light or dark.
  * Decorative: whatever wraps it carries the name.
  */

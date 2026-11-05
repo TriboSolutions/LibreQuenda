@@ -21,7 +21,7 @@ import (
 )
 
 // LibreQuenda's own images, for an installation with no logo of its own: the
-// lockup (mark, name and tagline) and the mark alone, the same as zitadel/brand.
+// lockup (mark and name) and the mark alone, the same as zitadel/brand and docs/brand/png.
 var (
 	//go:embed librequenda-logo.png
 	defaultLockup []byte

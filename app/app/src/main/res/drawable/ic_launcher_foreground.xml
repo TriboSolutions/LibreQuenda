@@ -1,22 +1,21 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- LibreQuenda mark (docs/brand/librequenda-icona-app.svg): a clock face crossed by a band.
-     The 200-unit mark is scaled into the adaptive icon's 66dp safe zone. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="108dp"
-    android:height="108dp"
-    android:viewportWidth="108"
-    android:viewportHeight="108">
-    <group android:translateX="21" android:translateY="21" android:scaleX="0.33" android:scaleY="0.33">
-        <path android:fillColor="#FFFFFF" android:pathData="M20,100a80,80 0,1 0,160 0a80,80 0,1 0,-160 0z" />
-        <group>
-            <clip-path android:pathData="M20,100a80,80 0,1 0,160 0a80,80 0,1 0,-160 0z" />
-            <group android:rotation="45" android:pivotX="100" android:pivotY="100">
-                <path android:fillColor="#0098D4" android:pathData="M-60,77h320v46h-320z" />
-            </group>
-        </group>
-        <path android:strokeColor="#0B2545" android:strokeWidth="7" android:strokeLineCap="round"
-            android:pathData="M100,34v12M154,100h12M100,154v12M34,100h12" />
-        <path android:strokeColor="#FFFFFF" android:strokeWidth="16"
-            android:pathData="M20,100a80,80 0,1 0,160 0a80,80 0,1 0,-160 0z" />
+    android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+  <!-- 120-unit mark scaled to fit the 66dp safe zone -->
+  <group android:translateX="54" android:translateY="54" android:scaleX="0.6" android:scaleY="0.6">
+   <group android:translateX="-60" android:translateY="-60">
+    <path android:pathData="M67.51,12.59 A48,48 0 0,1 104.81,77.20" android:strokeColor="@color/lq_white" android:strokeWidth="7.5" android:strokeLineCap="round"/>
+    <path android:pathData="M97.30,90.21 A48,48 0 0,1 22.70,90.21" android:strokeColor="@color/lq_navy" android:strokeWidth="7.5" android:strokeLineCap="round"/>
+    <path android:pathData="M15.19,77.20 A48,48 0 0,1 52.49,12.59" android:strokeColor="@color/lq_navy" android:strokeWidth="7.5" android:strokeLineCap="round"/>
+    <path android:pathData="M25,60 a35,35 0 1,0 70,0 a35,35 0 1,0 -70,0" android:fillColor="@color/lq_white"/>
+    <group>
+      <clip-path android:pathData="M25,60 a35,35 0 1,0 70,0 a35,35 0 1,0 -70,0"/>
+      <group android:translateX="60" android:translateY="61" android:scaleX="1.1" android:scaleY="1.1" android:rotation="-8">
+        <group android:rotation="0"><path android:pathData="M0 0 C 0 -16, 13 -27, 25 -21 C 35 -15, 31 -2, 21 -3 C 15 -4, 14 -11, 19 -13" android:strokeColor="@color/lq_navy" android:strokeWidth="5.5" android:strokeLineCap="round" android:strokeLineJoin="round"/></group>
+        <group android:rotation="120"><path android:pathData="M0 0 C 0 -16, 13 -27, 25 -21 C 35 -15, 31 -2, 21 -3 C 15 -4, 14 -11, 19 -13" android:strokeColor="@color/lq_navy" android:strokeWidth="5.5" android:strokeLineCap="round" android:strokeLineJoin="round"/></group>
+        <group android:rotation="240"><path android:pathData="M0 0 C 0 -16, 13 -27, 25 -21 C 35 -15, 31 -2, 21 -3 C 15 -4, 14 -11, 19 -13" android:strokeColor="@color/lq_navy" android:strokeWidth="5.5" android:strokeLineCap="round" android:strokeLineJoin="round"/></group>
+      </group>
     </group>
+    <path android:pathData="M25,60 a35,35 0 1,0 70,0 a35,35 0 1,0 -70,0" android:strokeColor="@color/lq_navy" android:strokeWidth="4.5"/>
+   </group>
+  </group>
 </vector>

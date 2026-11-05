@@ -43,9 +43,8 @@
   --now: #111827;
 
   /* brand (docs/brand): logo colours, not for UI text */
-  --brand-ink: #0b2545;
-  --brand-blue: #0098d4;
-  --brand-ring: #0b2545;
+  --brand-ink: #0b2544;
+  --brand-blue: #0096d1;
 
   /* status pills: pale tint with the dark of the same hue */
   --pill-positive-bg: #dcfce7;
@@ -84,7 +83,6 @@
   /* the logo on dark: white "libre", lighter "quenda", white ring (simbolo-blanco) */
   --brand-ink: #ffffff;
   --brand-blue: #33b4eb;
-  --brand-ring: #ffffff;
   --secondary: #17181a;
   --secondary-foreground: #f3f4f6;
   --muted: #212226;
@@ -152,7 +150,6 @@
 
   --color-brand-ink: var(--brand-ink);
   --color-brand-blue: var(--brand-blue);
-  --color-brand-ring: var(--brand-ring);
 
   --color-pill-positive-bg: var(--pill-positive-bg);
   --color-pill-positive-ink: var(--pill-positive-ink);
