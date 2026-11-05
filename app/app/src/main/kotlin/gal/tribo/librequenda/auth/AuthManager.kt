@@ -129,7 +129,8 @@ class AuthManager(context: Context) {
     companion object {
         private const val KEY_STATE = "state"
         private val renewing = Mutex() // one renewal at a time in the process (app and background check)
-        val REDIRECT_URI: Uri = Uri.parse("gal.tribo.librequenda:/oauth2redirect")
+        // the package: a council's own app (install.sh) has its own, listed in the server's ANDROID_APP_IDS
+        val REDIRECT_URI: Uri = Uri.parse("${BuildConfig.APPLICATION_ID}:/oauth2redirect")
 
         // The development stack serves Zitadel over plain HTTP (http://auth.localhost);
         // only debug builds accept it, release builds require HTTPS.

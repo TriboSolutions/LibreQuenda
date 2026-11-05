@@ -91,7 +91,7 @@ Scope: bases §1.1 (minimum) + §1.2 (technical). See [architecture plan](docs/s
 - [x] Booking window: bookings per person and week, and next week's turns opening all at once at a fixed weekday and time instead of the rolling window
 - [x] Booking limits across facilities: a council-wide cap per person, and one council at a time per account (platform setting)
 - [ ] Booking window, later if wanted: a cap per sport across the council's facilities
-- [ ] «For you» as the full signed-in feed of the README proposal (search on its own page, invitations, quiet hours, new facilities)
+- [ ] «For you» as the full signed-in feed of the proposal in docs/specs/feed.md (search on its own page, invitations, quiet hours, new facilities)
 
 ## Weather (30 Oct)
 

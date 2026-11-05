@@ -1,0 +1,21 @@
+# Builds a council's own Android app (install.sh app): JDK 17, the Android SDK and
+# ImageMagick for the launcher icons. Only Docker is needed on the machine that runs it.
+FROM eclipse-temurin:17-jdk
+
+ARG CMDLINE_TOOLS=13114758
+ENV ANDROID_HOME=/opt/android-sdk
+ENV PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends unzip imagemagick \
+ && rm -rf /var/lib/apt/lists/* \
+ && mkdir -p $ANDROID_HOME/cmdline-tools \
+ && curl -fsSL -o /tmp/tools.zip "https://dl.google.com/android/repository/commandlinetools-linux-${CMDLINE_TOOLS}_latest.zip" \
+ && unzip -q /tmp/tools.zip -d $ANDROID_HOME/cmdline-tools \
+ && mv $ANDROID_HOME/cmdline-tools/cmdline-tools $ANDROID_HOME/cmdline-tools/latest \
+ && rm /tmp/tools.zip \
+ && yes | sdkmanager --licenses >/dev/null \
+ && sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools" >/dev/null
+
+COPY --chmod=755 build.sh icons.sh /usr/local/bin/
+ENTRYPOINT ["build.sh"]

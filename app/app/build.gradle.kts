@@ -6,8 +6,12 @@ plugins {
 android {
   namespace = "gal.tribo.librequenda"
   compileSdk = 36
+  // A council's own app (install.sh): its package, name and launcher icon. The redirect
+  // scheme is the package, so the server must list it in ANDROID_APP_IDS (zitadel/setup.sh).
+  val appId = providers.gradleProperty("applicationId").orNull ?: "gal.tribo.librequenda"
+  require(appId.matches(Regex("[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+"))) { "Invalid applicationId" }
   defaultConfig {
-    applicationId = "gal.tribo.librequenda"
+    applicationId = appId
     minSdk = 26
     targetSdk = 36
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -19,8 +23,13 @@ android {
       .orElse("http://localhost:8080/api").get().trimEnd('/')
     require(apiUrl.matches(Regex("https?://[^\\s\\\"\\\\]+"))) { "Invalid API URL" }
     buildConfigField("String", "API_BASE_URL", "\"$apiUrl\"")
-    // AppAuth's redirect activity: Zitadel sends the sign-in back to gal.tribo.librequenda:/oauth2redirect
-    manifestPlaceholders["appAuthRedirectScheme"] = "gal.tribo.librequenda"
+    // AppAuth's redirect activity: Zitadel sends the sign-in back to <applicationId>:/oauth2redirect
+    manifestPlaceholders["appAuthRedirectScheme"] = appId
+  }
+
+  // -Pbrand=<dir>: Android resources (app_name, launcher icons) over the main ones
+  providers.gradleProperty("brand").orNull?.let { brand ->
+    sourceSets.getByName("release").res.srcDir(file(brand))
   }
 
   // the release key, only when CI has it (secrets): never in the repository

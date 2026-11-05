@@ -234,6 +234,8 @@ services:
       ZITADEL_REFRESH_DAYS: ${ZITADEL_REFRESH_DAYS:-90}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      # councils' own builds of the Android app (install.sh): their applicationIds, comma-separated
+      ANDROID_APP_IDS: ${ANDROID_APP_IDS:-}
       # true: revoke the admin token once the setup succeeds; later starts keep the configuration
       ZITADEL_SETUP_REVOKE_TOKEN: ${ZITADEL_SETUP_REVOKE_TOKEN:-false}
     volumes:
