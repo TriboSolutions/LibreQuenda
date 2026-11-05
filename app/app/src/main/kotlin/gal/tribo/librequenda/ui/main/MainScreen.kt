@@ -143,6 +143,7 @@ fun MainScreen(
     onMarkRead: () -> Unit = {},
     opening: String? = null, // from a tapped notification
     onOpened: () -> Unit = {},
+    onTour: () -> Unit = {},
 ) {
     var tab by rememberSaveable { mutableStateOf(Tab.Home) }
     var notificationsOpen by rememberSaveable { mutableStateOf(false) } // survives the language change (the activity is recreated)
@@ -234,6 +235,7 @@ fun MainScreen(
             onClose = { menuOpen = false },
             onProfile = { profileOpen = true },
             onPreferences = { preferencesOpen = true },
+            onTour = onTour,
             branding = branding,
             onLegal = { legalOpen = it },
             onSignIn = onSignIn,
@@ -396,6 +398,7 @@ private fun MenuPage(
     onClose: () -> Unit,
     onProfile: () -> Unit,
     onPreferences: () -> Unit,
+    onTour: () -> Unit,
     branding: Branding,
     onLegal: (String) -> Unit,
     onSignIn: () -> Unit,
@@ -461,6 +464,9 @@ private fun MenuPage(
                     }
                     // the menu stays under the preferences: back returns to it
                     MenuRow(R.drawable.ic_sliders, stringResource(R.string.preferences), stringResource(R.string.menu_preferences_sub), onClick = onPreferences)
+                }
+                MenuGroup(stringResource(R.string.tour_group)) {
+                    MenuRow(R.drawable.ic_compass, stringResource(R.string.tour_title), stringResource(R.string.tour_sub)) { pick(onTour) }
                 }
                 // each installation is its own (self-hosted): its contact comes from SUPPORT_EMAIL and SUPPORT_PHONE
                 if (branding.hasSupport) {

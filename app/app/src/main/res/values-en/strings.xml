@@ -144,4 +144,25 @@
     <string name="notif_resident_requested">%5$s wants to be a resident of %4$s.</string>
     <string name="notif_resident_verified">%4$s verified you as a resident.</string>
     <string name="notif_resident_rejected">%4$s could not verify you as a resident. Call the council if you think this is a mistake.</string>
+
+    <!-- the first-run tour -->
+    <string name="tour_skip">Skip</string>
+    <string name="tour_next">Next</string>
+    <string name="tour_start">Get started</string>
+    <string name="tour_position">Step %1$d of %2$d</string>
+    <string name="tour_group">Help</string>
+    <string name="tour_title">See the tour</string>
+    <string name="tour_sub">What you can do in the app</string>
+    <string name="tour_find_title">Find where to play</string>
+    <string name="tour_find_body">Search courts, sports halls and pools by sport, day and time, in the list or on the map, nearest first.</string>
+    <string name="tour_book_title">Book your turn</string>
+    <string name="tour_book_body">Pick a free turn, read the facility’s rules and confirm. You can invite whoever is playing with you.</string>
+    <string name="tour_games_title">Join games</string>
+    <string name="tour_games_body">Make your booking public so more people can join, or join the open games near you.</string>
+    <string name="tour_flash_title">Book on the spot</string>
+    <string name="tour_flash_body">Already there? The bolt in the middle books a free turn right now and lets you in.</string>
+    <string name="tour_enter_title">Get in without keys</string>
+    <string name="tour_enter_body">Check in with the booking’s QR at the reader, the code, the door’s QR or NFC tag, or the staff.</string>
+    <string name="tour_bookings_title">Always up to date</string>
+    <string name="tour_bookings_body">Your bookings show what’s next and your history. We remind you of each one and, once it ends, you can rate the facility.</string>
 </resources>

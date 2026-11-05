@@ -147,4 +147,25 @@
     <string name="notif_resident_requested">%5$s quiere ser vecino de %4$s.</string>
     <string name="notif_resident_verified">%4$s te ha verificado como vecino.</string>
     <string name="notif_resident_rejected">%4$s no ha podido verificarte como vecino. Llama al ayuntamiento si crees que es un error.</string>
+
+    <!-- the first-run tour -->
+    <string name="tour_skip">Omitir</string>
+    <string name="tour_next">Siguiente</string>
+    <string name="tour_start">Empezar</string>
+    <string name="tour_position">Paso %1$d de %2$d</string>
+    <string name="tour_group">Ayuda</string>
+    <string name="tour_title">Ver el tutorial</string>
+    <string name="tour_sub">Lo que puedes hacer en la app</string>
+    <string name="tour_find_title">Encuentra dónde jugar</string>
+    <string name="tour_find_body">Busca pistas, pabellones y piscinas por deporte, día y hora, en la lista o en el mapa, con las más cercanas primero.</string>
+    <string name="tour_book_title">Reserva tu turno</string>
+    <string name="tour_book_body">Elige un turno libre, lee las normas de la instalación y confirma. Puedes invitar a quien vaya a jugar contigo.</string>
+    <string name="tour_games_title">Únete a partidas</string>
+    <string name="tour_games_body">Haz pública tu reserva para que se sume más gente, o únete a las partidas abiertas cerca de ti.</string>
+    <string name="tour_flash_title">Reserva al momento</string>
+    <string name="tour_flash_body">¿Ya estás allí? El rayo del centro reserva un turno libre ahora mismo y te deja entrar.</string>
+    <string name="tour_enter_title">Entra sin llaves</string>
+    <string name="tour_enter_body">Registra la entrada con el QR de la reserva en el lector, con el código, con el QR o la etiqueta NFC de la puerta, o con el personal.</string>
+    <string name="tour_bookings_title">Todo al día</string>
+    <string name="tour_bookings_body">En tus reservas tienes las próximas y el historial. Te recordamos cada una y, al terminar, puedes valorar la instalación.</string>
 </resources>

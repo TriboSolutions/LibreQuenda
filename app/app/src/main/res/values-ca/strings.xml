@@ -147,4 +147,25 @@
     <string name="notif_resident_requested">%5$s vol ser veí de %4$s.</string>
     <string name="notif_resident_verified">%4$s t’ha verificat com a veí.</string>
     <string name="notif_resident_rejected">%4$s no t’ha pogut verificar com a veí. Truca a l’ajuntament si creus que és un error.</string>
+
+    <!-- the first-run tour -->
+    <string name="tour_skip">Omet</string>
+    <string name="tour_next">Següent</string>
+    <string name="tour_start">Comença</string>
+    <string name="tour_position">Pas %1$d de %2$d</string>
+    <string name="tour_group">Ajuda</string>
+    <string name="tour_title">Mira el tutorial</string>
+    <string name="tour_sub">El que pots fer a l’app</string>
+    <string name="tour_find_title">Troba on jugar</string>
+    <string name="tour_find_body">Cerca pistes, pavellons i piscines per esport, dia i hora, a la llista o al mapa, amb les més properes primer.</string>
+    <string name="tour_book_title">Reserva el teu torn</string>
+    <string name="tour_book_body">Tria un torn lliure, llegeix les normes de la instal·lació i confirma. Pots convidar qui jugui amb tu.</string>
+    <string name="tour_games_title">Uneix-te a partides</string>
+    <string name="tour_games_body">Fes pública la teva reserva perquè s’hi afegeixi més gent, o uneix-te a les partides obertes a prop teu.</string>
+    <string name="tour_flash_title">Reserva a l’instant</string>
+    <string name="tour_flash_body">Ja hi ets? El llamp del mig reserva un torn lliure ara mateix i et deixa entrar.</string>
+    <string name="tour_enter_title">Entra sense claus</string>
+    <string name="tour_enter_body">Registra l’entrada amb el QR de la reserva al lector, amb el codi, amb el QR o l’etiqueta NFC de la porta, o amb el personal.</string>
+    <string name="tour_bookings_title">Tot al dia</string>
+    <string name="tour_bookings_body">A les teves reserves tens les properes i l’historial. Te’n recordem cadascuna i, en acabar, pots valorar la instal·lació.</string>
 </resources>
