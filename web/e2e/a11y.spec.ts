@@ -72,6 +72,7 @@ const pages: { name: string; path: string; signedIn?: boolean }[] = [
   { name: 'check-in at the door, entry code', path: '/lugo/padel-1/entrada' },
   { name: 'check-in at the door, signed out', path: '/lugo/padel-1/entrada', signedIn: false },
   { name: 'platform admin', path: '/admin' },
+  { name: 'platform settings', path: '/admin/axustes' },
   { name: 'entrance reader', path: '/lector' },
   { name: 'accessibility statement', path: '/accesibilidade', signedIn: false },
   { name: 'terms of use', path: '/condicions', signedIn: false },
@@ -815,7 +816,8 @@ test.describe('keyboard', () => {
     const rules = page.getByRole('region', { name: 'Ventá de reserva' })
     await expect(rules.getByRole('spinbutton', { name: 'Reservas activas por persoa en todo o concello' })).toHaveValue('4')
     await open(page, '/admin')
-    await page.getByRole('tab', { name: 'Personalizar a aplicación' }).click()
+    await page.getByRole('link', { name: 'Axustes da plataforma' }).click()
+    await expect(page).toHaveURL(/\/admin\/axustes$/)
     const one = page.getByRole('switch', { name: 'Un concello de cada vez por conta' })
     await expect(one).toBeChecked()
     const saved = page.waitForRequest((r) => r.method() === 'PUT' && r.url().endsWith('/admin/booking-policy'))

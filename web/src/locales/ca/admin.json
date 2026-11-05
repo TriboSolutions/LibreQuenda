@@ -913,6 +913,7 @@
   },
   "bookingPolicy": {
     "title": "Normes de reserva de la plataforma",
+    "help": "El que val per a tots els ajuntaments alhora.",
     "oneCouncil": "Un ajuntament cada vegada per compte",
     "oneCouncilHelp": "Amb reserves pròpies properes en un concello, una persona no pot reservar en un altre fins que acabin. Unir-se a la partida d'una altra persona no compta: només es comprova que no coincideixi amb les seves hores. Cap concello no veu les reserves d'un altre.",
     "saved": "Desat."
@@ -987,5 +988,10 @@
     "page": "Pàgina {{page}} de {{pages}}",
     "previous": "Anterior",
     "next": "Següent"
+  },
+  "settings": "Configuració de la plataforma",
+  "platformSettings": {
+    "title": "Configuració de la plataforma",
+    "back": "Torna"
   }
 }

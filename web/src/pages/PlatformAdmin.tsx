@@ -1,8 +1,8 @@
+import { Settings } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import { Link } from 'react-router'
 import { AuditLogPanel } from '@/components/admin/AuditLogPanel'
-import { BookingPolicyPanel } from '@/components/admin/BookingPolicyPanel'
 import { BrandingPanel } from '@/components/admin/BrandingPanel'
 import { CouncilsPanel } from '@/components/admin/CouncilsPanel'
 import { SuperadminsPanel } from '@/components/admin/SuperadminsPanel'
@@ -18,7 +18,7 @@ import { usePageTitle } from '@/hooks/usePageTitle'
 import { api } from '@/lib/api'
 import { SiteFooter } from '@/components/SiteFooter'
 
-/** /admin: the superadministrator's area (councils, superadministrators, the facility tag catalogue and the app's name and logo). */
+/** /admin: the superadministrator's area (councils, superadministrators, the facility tag catalogue, the app's name and logo, and the activity log); the gear opens the platform's settings. */
 export function PlatformAdmin() {
   const { t } = useTranslation(['admin', 'common'])
   const auth = useAuth()
@@ -53,13 +53,22 @@ export function PlatformAdmin() {
   } else {
     body = (
       <Tabs defaultValue="councils" className="mt-6 gap-6">
-        <TabsList>
-          <TabsTrigger value="councils">{t('admin:tabs.councils')}</TabsTrigger>
-          <TabsTrigger value="superadmins">{t('admin:tabs.superadmins')}</TabsTrigger>
-          <TabsTrigger value="tags">{t('admin:tabs.tags')}</TabsTrigger>
-          <TabsTrigger value="branding">{t('admin:tabs.branding')}</TabsTrigger>
-          <TabsTrigger value="audit">{t('admin:tabs.audit')}</TabsTrigger>
-        </TabsList>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          {/* the tabs wrap onto a second row rather than hide behind a scroll bar */}
+          <TabsList className="min-w-0 flex-wrap justify-start group-data-[orientation=horizontal]/tabs:h-auto *:h-10">
+            <TabsTrigger value="councils">{t('admin:tabs.councils')}</TabsTrigger>
+            <TabsTrigger value="superadmins">{t('admin:tabs.superadmins')}</TabsTrigger>
+            <TabsTrigger value="tags">{t('admin:tabs.tags')}</TabsTrigger>
+            <TabsTrigger value="branding">{t('admin:tabs.branding')}</TabsTrigger>
+            <TabsTrigger value="audit">{t('admin:tabs.audit')}</TabsTrigger>
+          </TabsList>
+          {/* the platform's own settings, like the gear of a council's administration */}
+          <Button asChild variant="outline" size="icon">
+            <Link to="/admin/axustes" aria-label={t('admin:settings')} title={t('admin:settings')}>
+              <Settings />
+            </Link>
+          </Button>
+        </div>
         <TabsContent value="councils">
           <CouncilsPanel />
         </TabsContent>
@@ -71,7 +80,6 @@ export function PlatformAdmin() {
         </TabsContent>
         <TabsContent value="branding">
           <BrandingPanel />
-          <BookingPolicyPanel />
         </TabsContent>
         <TabsContent value="audit">
           <PlatformAudit />

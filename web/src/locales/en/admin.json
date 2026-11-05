@@ -913,6 +913,7 @@
   },
   "bookingPolicy": {
     "title": "Platform booking rules",
+    "help": "What applies to every council at once.",
     "oneCouncil": "One council at a time per account",
     "oneCouncilHelp": "With upcoming bookings of their own in one council, a person cannot book in another until they end. Joining someone else's game does not count: it is only checked against their own times. No council sees another's bookings.",
     "saved": "Saved."
@@ -987,5 +988,10 @@
     "page": "Page {{page}} of {{pages}}",
     "previous": "Previous",
     "next": "Next"
+  },
+  "settings": "Platform settings",
+  "platformSettings": {
+    "title": "Platform settings",
+    "back": "Back"
   }
 }
