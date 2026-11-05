@@ -3,6 +3,7 @@ import { LegalPage } from '@/pages/LegalPage'
 import { AccessibilityPage } from '@/pages/AccessibilityPage'
 import { CouncilAdminPage } from '@/pages/CouncilAdminPage'
 import { CouncilSettingsPage } from '@/pages/CouncilSettingsPage'
+import { PlatformSettingsPage } from '@/pages/PlatformSettingsPage'
 import { WidgetPage } from '@/pages/WidgetPage'
 import { CheckinPrintPage } from '@/pages/CheckinPrintPage'
 import { CouncilPage } from '@/pages/CouncilPage'
@@ -24,6 +25,7 @@ function App() {
       <Route path="/" element={<HomePage />} />
       <Route path="/callback" element={<SigningIn />} />
       <Route path="/admin" element={<PlatformAdmin />} />
+      <Route path="/admin/axustes" element={<PlatformSettingsPage />} />
       <Route path="/perfil" element={<ProfilePage />} />
       <Route path="/lector" element={<ReaderPage />} />
       <Route path="/reservas" element={<MyBookingsPage />} />

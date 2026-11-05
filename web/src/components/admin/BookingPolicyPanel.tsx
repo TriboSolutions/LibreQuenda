@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
+import { SettingsRow } from '@/components/SettingsRow'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
@@ -31,32 +32,31 @@ export function BookingPolicyPanel() {
   }
 
   return (
-    <section aria-labelledby="booking-policy-title" className="mt-6 grid max-w-[760px] gap-4 rounded-lg border bg-card p-5">
-      <h2 id="booking-policy-title" className="text-lg font-semibold">
-        {t('bookingPolicy.title')}
-      </h2>
-      {!policy.data ? (
-        <Skeleton className="h-10 w-full" />
-      ) : (
-        <div className="flex items-start gap-3">
-          <Switch
-            id="one-council"
-            checked={policy.data.one_council_per_account}
-            disabled={busy}
-            aria-describedby="one-council-help"
-            onCheckedChange={(on) => void change(on)}
-          />
-          <div className="grid gap-1">
-            <Label htmlFor="one-council">{t('bookingPolicy.oneCouncil')}</Label>
-            <p id="one-council-help" className="text-sm text-muted-foreground">
-              {t('bookingPolicy.oneCouncilHelp')}
-            </p>
+    <SettingsRow id="booking-policy-title" title={t('bookingPolicy.title')} description={t('bookingPolicy.help')}>
+      <div className="grid content-start gap-4 rounded-lg border bg-card p-5">
+        {!policy.data ? (
+          <Skeleton className="h-10 w-full" />
+        ) : (
+          <div className="flex items-start gap-3">
+            <Switch
+              id="one-council"
+              checked={policy.data.one_council_per_account}
+              disabled={busy}
+              aria-describedby="one-council-help"
+              onCheckedChange={(on) => void change(on)}
+            />
+            <div className="grid gap-1">
+              <Label htmlFor="one-council">{t('bookingPolicy.oneCouncil')}</Label>
+              <p id="one-council-help" className="text-sm text-muted-foreground">
+                {t('bookingPolicy.oneCouncilHelp')}
+              </p>
+            </div>
           </div>
-        </div>
-      )}
-      <p role="status" className="text-sm text-muted-foreground empty:hidden">
-        {status}
-      </p>
-    </section>
+        )}
+        <p role="status" className="text-sm text-muted-foreground empty:hidden">
+          {status}
+        </p>
+      </div>
+    </SettingsRow>
   )
 }

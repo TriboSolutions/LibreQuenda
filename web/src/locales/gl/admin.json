@@ -913,6 +913,7 @@
   },
   "bookingPolicy": {
     "title": "Normas de reserva da plataforma",
+    "help": "O que vale para todos os concellos á vez.",
     "oneCouncil": "Un concello de cada vez por conta",
     "oneCouncilHelp": "Con reservas propias próximas nun concello, unha persoa non pode reservar noutro ata que rematen. Unirse á partida doutra persoa non conta: só se comproba que non coincida coas súas horas. Ningún concello ve as reservas doutro.",
     "saved": "Gardado."
@@ -987,5 +988,10 @@
     "page": "Páxina {{page}} de {{pages}}",
     "previous": "Anterior",
     "next": "Seguinte"
+  },
+  "settings": "Axustes da plataforma",
+  "platformSettings": {
+    "title": "Axustes da plataforma",
+    "back": "Volver"
   }
 }
