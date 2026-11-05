@@ -86,6 +86,7 @@ export type FacilityCard = {
   longitude: number | null
   free_today: number // turns still free today
   council: Tenant
+  residents_only?: boolean // only the council's verified residents book or join there (also its events)
   joinable?: JoinableKind[] // upcoming, with spots left: residents' public bookings, the council's events
   distance_km?: number | null // with a position: how far, by the API (which also sorts by it)
 }
@@ -539,6 +540,9 @@ export type NotificationType =
   | 'issue_solved' // a problem the person reported was fixed (reason: the council's note)
   | 'issue_rejected'
   | 'rating_requested' // a booking ended: rate the facility and, if it was public, the others
+  | 'resident_requested' // to the council's administrators: someone asks to be verified
+  | 'resident_verified' // the council verified the person as its resident
+  | 'resident_rejected' // …or could not, from its census
 
 export type AppNotification = {
   id: string
@@ -673,6 +677,8 @@ export type Me = {
   pending_invitations?: { tenant_name: string; tenant_slug: string }[]
   // councils that verified this person as their resident: they book at their residents-only facilities
   resident_of?: { tenant_name: string; tenant_slug: string; verified_at: string }[]
+  // councils the person asked to verify them, still undecided
+  resident_requests?: { tenant_name: string; tenant_slug: string; requested_at: string }[]
 }
 
 /** Someone a council verified as its resident (its Veciños tab). */
@@ -681,6 +687,21 @@ export type Resident = { user_id: string; email: string; full_name: string; veri
 export type ResidentsPage = { residents: Resident[]; total: number; page: number; page_size: number }
 
 export type ResidentSort = 'name' | 'recent'
+
+/** What the council needs to look the person up in its census; deleted once it decides, or after 15 days. */
+export type ResidentRequestInput = { dni: string; full_name: string; postal_code: string; street: string }
+
+/** A pending request to be verified, for the council's administrators (Veciños tab), the oldest first. */
+export type ResidentRequest = ResidentRequestInput & {
+  id: string
+  user_id: string
+  email: string // the account's
+  account_name: string // the account's, "" when not set
+  created_at: string
+  expires_at: string // deleted then if nobody decided
+}
+
+export type ResidentRequestsPage = { requests: ResidentRequest[]; total: number; page: number; page_size: number }
 
 /** The sign-in account (kept by Zitadel), edited from /perfil. */
 export type Account = {
@@ -1083,6 +1104,11 @@ export const api = {
     verifyEmail: (token: string, code: string) => request<void>('/me/account/email/verify', { token, method: 'POST', body: { code } }),
   },
   myBookings: (token: string) => request<MyBookings>('/me/bookings', { token }),
+  // asking the council to verify the person as its resident (residents-only facilities), or withdrawing it
+  requestResidency: (token: string, slug: string, input: ResidentRequestInput) =>
+    request<{ requested_at: string }>(`/tenants/${encodeURIComponent(slug)}/resident-request`, { token, method: 'POST', body: input }),
+  withdrawResidency: (token: string, slug: string) =>
+    request<void>(`/tenants/${encodeURIComponent(slug)}/resident-request`, { token, method: 'DELETE' }),
   reportIssue: (token: string, input: IssueReport) => request<{ id: string }>('/me/issues', { token, method: 'POST', body: input }),
   // near: where the person is (the home page's «near me»), in the body; checked, never stored
   recommendations: (token: string, near?: { latitude: number; longitude: number } | null) =>
@@ -1241,6 +1267,15 @@ export const api = {
       request<void>(`/tenants/${encodeURIComponent(slug)}/admin/residents`, { token, method: 'POST', body: { email } }),
     removeResident: (token: string, slug: string, userId: string) =>
       request<void>(`/tenants/${encodeURIComponent(slug)}/admin/residents/${userId}`, { token, method: 'DELETE' }),
+    residentRequests: (token: string, slug: string, page = 1) =>
+      request<ResidentRequestsPage>(`/tenants/${encodeURIComponent(slug)}/admin/resident-requests${page > 1 ? `?page=${page}` : ''}`, { token }),
+    residentRequestCount: (token: string, slug: string) =>
+      request<{ pending: number }>(`/tenants/${encodeURIComponent(slug)}/admin/resident-requests/count`, { token }),
+    // either way the request, with its DNI and address, is deleted and the person told
+    verifyResidentRequest: (token: string, slug: string, id: string) =>
+      request<void>(`/tenants/${encodeURIComponent(slug)}/admin/resident-requests/${id}/verify`, { token, method: 'POST' }),
+    discardResidentRequest: (token: string, slug: string, id: string) =>
+      request<void>(`/tenants/${encodeURIComponent(slug)}/admin/resident-requests/${id}`, { token, method: 'DELETE' }),
     newIssueCount: (token: string, slug: string) => request<{ new: number }>(`/tenants/${encodeURIComponent(slug)}/admin/issues/count`, { token }),
     changeIssue: (token: string, slug: string, id: string, input: { status: IssueStatus; staff_note: string }) =>
       request<CouncilIssue>(`/tenants/${encodeURIComponent(slug)}/admin/issues/${id}`, { token, method: 'PUT', body: input }),

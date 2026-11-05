@@ -387,6 +387,7 @@ SELECT
     f.image_ref,
     f.latitude,
     f.longitude,
+    f.residents_only,
     t.slug AS tenant_slug,
     t.name AS tenant_name
 FROM
@@ -420,6 +421,7 @@ type ListUpcomingEventsRow struct {
 	ImageRef          sql.NullString  `json:"image_ref"`
 	Latitude          sql.NullFloat64 `json:"latitude"`
 	Longitude         sql.NullFloat64 `json:"longitude"`
+	ResidentsOnly     bool            `json:"residents_only"`
 	TenantSlug        string          `json:"tenant_slug"`
 	TenantName        string          `json:"tenant_name"`
 }
@@ -450,6 +452,7 @@ func (q *Queries) ListUpcomingEvents(ctx context.Context) ([]ListUpcomingEventsR
 			&i.ImageRef,
 			&i.Latitude,
 			&i.Longitude,
+			&i.ResidentsOnly,
 			&i.TenantSlug,
 			&i.TenantName,
 		); err != nil {

@@ -193,7 +193,7 @@ func (s *tenantsService) today(ctx context.Context) []todayFacility {
 			facilities = append(facilities, todayFacility{
 				card: FacilityCardDto{
 					Id: f.Id, Slug: f.Slug, Name: f.Name, Sport: f.Sport, Tags: f.Tags, ImageUrl: f.ImageUrl,
-					Address: f.Address, Latitude: f.Latitude, Longitude: f.Longitude, FreeToday: countFree(f.Slots), Council: day.Tenant, Joinable: []string{},
+					Address: f.Address, Latitude: f.Latitude, Longitude: f.Longitude, FreeToday: countFree(f.Slots), Council: day.Tenant, ResidentsOnly: f.ResidentsOnly, Joinable: []string{},
 				},
 				slots: f.Slots,
 				loc:   loc,

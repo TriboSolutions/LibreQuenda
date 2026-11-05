@@ -40,6 +40,7 @@ data class DayFacility(
     val freeSlots: List<Instant>,
     val publicGames: List<PublicGame>, // with spots left
     val distanceKm: Double? = null, // from where the phone is, worked out by the API
+    val residentsOnly: Boolean = false, // only the council's verified residents book or join
 )
 
 /** Someone's public booking at a facility that day: join it to fill a spot. */
@@ -110,6 +111,7 @@ private fun JSONObject.toDayFacility(): DayFacility {
             tags = List(tags?.length() ?: 0) { tags!!.getString(it) }.toSet(),
             councilSlug = council.getString("slug"),
             councilName = council.optString("name"),
+            residentsOnly = f.optBoolean("residents_only"),
             // the turns still free: what the search offers to book
             freeSlots = List(slots?.length() ?: 0) { slots!!.getJSONObject(it) }
                 .filter { it.optString("status") == "free" }

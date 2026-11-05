@@ -80,6 +80,10 @@ func (s *counciladminService) AddResident(ctx context.Context, tenantId uuid.UUI
 	if !added {
 		return user.ID, &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.resident_already_verified"}
 	}
+	// a request they had sent has done its job: its identity data goes
+	if err = queries.DeleteResidentRequestOfUser(ctx, model.DeleteResidentRequestOfUserParams{TenantID: tenantId, UserID: user.ID}); err != nil {
+		return user.ID, failed("errors.resident_save_failed")
+	}
 	return user.ID, nil
 }
 

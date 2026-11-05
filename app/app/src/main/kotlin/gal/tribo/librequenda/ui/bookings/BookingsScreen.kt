@@ -430,12 +430,18 @@ private fun UpcomingRow(b: Booking, onOpen: () -> Unit) {
     }
 }
 
-/** «In progress», «Inside», «Invited by …», when they apply (public shows in its switch). */
+/**
+ * «In progress», «Inside», «Invited by …», when they apply (public shows in its switch);
+ * «Residents only» on an event or a public game at such a facility.
+ */
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 private fun Tags(b: Booking, modifier: Modifier = Modifier) {
     val live = b.inProgress() && !b.checkedIn
-    if (!live && !b.checkedIn && b.owner) return
-    Row(modifier, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+    val residentsOnly = b.facility.residentsOnly && (b.isEvent || b.isPublic || b.kind == "public")
+    if (!live && !b.checkedIn && b.owner && !residentsOnly) return
+    // a row that wraps when they do not all fit
+    androidx.compose.foundation.layout.FlowRow(modifier, horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         if (live) Pill(stringResource(R.string.in_progress), Lq.colors.primary, Lq.colors.primaryForeground)
         if (b.checkedIn) Pill(stringResource(R.string.status_checked_in), Lq.colors.pillPositiveBg, Lq.colors.pillPositiveInk)
         if (!b.owner) Pill(
@@ -446,6 +452,7 @@ private fun Tags(b: Booking, modifier: Modifier = Modifier) {
             },
             Lq.colors.pillNeutralBg, Lq.colors.pillNeutralInk,
         )
+        if (residentsOnly) gal.tribo.librequenda.ui.components.ResidentsOnlyPill()
     }
 }
 
@@ -535,6 +542,7 @@ private fun BookingContent(
                     Text(booking.facilityName, style = if (booking.isEvent) MaterialTheme.typography.titleMedium else MaterialTheme.typography.headlineMedium, color = Lq.colors.foreground)
                     Text("${bookingDay(booking.startsAt)} · ${time(booking.startsAt)}–${time(booking.endsAt)}", style = MaterialTheme.typography.bodyLarge, color = Lq.colors.foreground)
                     Text(booking.councilName, style = MaterialTheme.typography.bodyMedium, color = Lq.colors.mutedForeground)
+                    if (f.residentsOnly) gal.tribo.librequenda.ui.components.ResidentsOnlyPill(Modifier.padding(top = 4.dp))
                 }
             }
             if (error != null) item { Box(Modifier.padding(start = 16.dp, end = 16.dp, bottom = 12.dp)) { Notice(error, error = true) } }

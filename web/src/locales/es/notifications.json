@@ -19,7 +19,10 @@
     "booking_joined": "{{name}} se ha unido a tu reserva en {{facility}}, {{day}} a las {{time}}.",
     "issue_reported": "Nueva incidencia en {{facility}}.",
     "rating_requested": "¿Qué tal {{facility}}? Valórala de 1 a 5 estrellas.",
-    "rating_requested_public": "¿Qué tal {{facility}}? Valórala, y también a quien jugó contigo."
+    "rating_requested_public": "¿Qué tal {{facility}}? Valórala, y también a quien jugó contigo.",
+    "resident_requested": "{{name}} quiere ser vecino de {{council}}.",
+    "resident_verified": "{{council}} te verificó como vecino: ya puedes reservar en sus instalaciones solo para vecinos.",
+    "resident_rejected": "{{council}} no pudo verificarte como vecino. Llama al ayuntamiento si crees que es un error."
   },
   "reason": "Motivo: {{reason}}",
   "councilNote": "Nota del ayuntamiento: {{reason}}",

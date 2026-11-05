@@ -213,7 +213,16 @@
     "resident_already_verified": "Aquesta persona ja està verificada en aquest ajuntament.",
     "resident_not_found": "Aquesta persona no està verificada en aquest ajuntament.",
     "resident_save_failed": "No s’ha pogut desar la verificació.",
-    "residents_load_failed": "No s’han pogut carregar els veïns verificats."
+    "residents_load_failed": "No s’han pogut carregar els veïns verificats.",
+    "invalid_dni": "El DNI o NIE no és vàlid: vuit xifres i la lletra (o X, Y, Z al principi).",
+    "invalid_postal_code": "El codi postal no és vàlid: cinc xifres.",
+    "resident_request_invalid": "Escriu el nom complet i el carrer on vius.",
+    "resident_request_pending": "Ja tens una petició pendent en aquest ajuntament.",
+    "resident_request_not_found": "Aquesta petició ja no existeix: algú ja ha decidit o ha caducat.",
+    "resident_already_verified_self": "L’ajuntament ja t’ha verificat com a veí.",
+    "resident_request_failed": "No s’ha pogut enviar la petició.",
+    "resident_requests_load_failed": "No s’han pogut carregar les peticions.",
+    "resident_request_weekly": "Només pots enviar una petició de veí a la setmana. En podràs enviar una altra a partir del {{0}}."
   },
   "email": {
     "greeting": "Hola {{0}},",
@@ -288,6 +297,23 @@
       "intro": "Han avisat d’un problema a {{0}} ({{1}}). Revisa la incidència a l’administració de l’ajuntament.",
       "manage": "Veure incidències",
       "footer": "Reps aquest correu perquè administres aquest ajuntament a {{0}}."
-    }
+    },
+    "resident_requested": {
+      "subject": "{{1}} vol ser veí de {{0}}",
+      "intro": "{{1}} ha demanat que l’ajuntament el verifiqui com a veí de {{0}}. Comprova les seves dades al padró i decideix a la pestanya Veïns.",
+      "manage": "Veure peticions"
+    },
+    "resident_verified": {
+      "subject": "Ja ets veí verificat de {{0}}",
+      "intro": "{{0}} t’ha verificat com a veí. Ja pots reservar i unir-te a les seves instal·lacions només per a veïns.",
+      "manage": "Veure les instal·lacions"
+    },
+    "resident_rejected": {
+      "subject": "La teva petició per ser veí de {{0}}",
+      "intro": "{{0}} no t’ha pogut verificar com a veí amb el seu padró. Si creus que és un error, truca a l’ajuntament.",
+      "manage": "Veure l’ajuntament",
+      "phone": "Telèfon de l’ajuntament: {{0}}"
+    },
+    "resident_footer": "Reps aquest correu perquè has demanat ser veí d’un ajuntament a {{0}}. Les dades de la petició ja s’han esborrat."
   }
 }

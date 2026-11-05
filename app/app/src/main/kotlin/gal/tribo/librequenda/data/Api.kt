@@ -132,7 +132,11 @@ data class Me(
     val showRecommendations: Boolean,
     val rating: RatingSummary? = null, // what others gave them after public bookings; null until someone did
     val residentOf: Set<String> = emptySet(), // slugs of the councils that verified them as their resident
+    val residentRequests: List<ResidentRequest> = emptyList(), // asked to be verified, not decided yet
 ) {
+    /** Their pending request to [councilSlug], if they sent one. */
+    fun residentRequest(councilSlug: String): ResidentRequest? = residentRequests.firstOrNull { it.tenantSlug == councilSlug }
+
     val initials: String
         get() = (fullName.ifBlank { email }).split(Regex("\\s+")).filter { it.isNotBlank() }
             .take(2).joinToString("") { it.first().uppercase() }
@@ -157,6 +161,15 @@ internal fun JSONObject.toMe() = Me(
     showRecommendations = optBoolean("show_recommendations"),
     rating = ratingSummary("rating"),
     residentOf = optJSONArray("resident_of")?.let { a -> List(a.length()) { a.getJSONObject(it).optString("tenant_slug") }.toSet() } ?: emptySet(),
+    residentRequests = optJSONArray("resident_requests")?.let { a ->
+        List(a.length()) { a.getJSONObject(it) }.map { r ->
+            ResidentRequest(
+                tenantSlug = r.optString("tenant_slug"),
+                tenantName = r.optString("tenant_name"),
+                requestedAt = r.optString("requested_at").takeIf { it.isNotBlank() }?.let { runCatching { java.time.OffsetDateTime.parse(it).toInstant() }.getOrNull() },
+            )
+        }
+    }.orEmpty(),
 )
 
 /** The installation's own name and logo (GET /api/branding), set by a superadministrator; empty = LibreQuenda's. */
@@ -195,6 +208,7 @@ data class AppNotification(
     val createdAt: java.time.Instant? = null, // when the notice came
     val bookingId: String = "", // "" for notices about no booking
     val isPublic: Boolean = false, // rating_requested: the others can be rated too
+    val tenantSlug: String = "", // resident_*: which council
 )
 
 private fun JSONObject.instant(key: String): java.time.Instant? =
@@ -222,6 +236,7 @@ suspend fun fetchNotifications(accessToken: String): Notifications {
                 createdAt = n.instant("created_at"),
                 bookingId = n.optString("booking_id"),
                 isPublic = n.optBoolean("is_public"),
+                tenantSlug = n.optString("tenant_slug"),
             )
         },
     )
@@ -239,6 +254,7 @@ data class FacilityCard(
     val councilSlug: String,
     val councilName: String,
     val distanceKm: Double? = null, // from where the phone is, worked out by the API
+    val residentsOnly: Boolean = false, // only the council's verified residents book or join (its events and public games too)
 )
 
 private fun org.json.JSONObject.toFacilityCard(): FacilityCard {
@@ -254,6 +270,7 @@ private fun org.json.JSONObject.toFacilityCard(): FacilityCard {
         councilSlug = council.getString("slug"),
         councilName = council.getString("name"),
         distanceKm = if (isNull("distance_km") || !has("distance_km")) null else optDouble("distance_km"),
+        residentsOnly = optBoolean("residents_only"),
     )
 }
 

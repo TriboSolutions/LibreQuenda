@@ -220,7 +220,7 @@ private fun PublicSection(home: HomeState, onOpen: (FacilityCard, Instant?) -> U
     Carousel {
         items(games, key = { it.second.id }) { (f, game) ->
             val card = home.facilities.firstOrNull { it.id == f.id } ?: FacilityCard(
-                f.id, f.slug, f.name, f.imageUrl, f.latitude, f.longitude, f.freeSlots.size, f.councilSlug, f.councilName, f.distanceKm,
+                f.id, f.slug, f.name, f.imageUrl, f.latitude, f.longitude, f.freeSlots.size, f.councilSlug, f.councilName, f.distanceKm, f.residentsOnly,
             )
             val spots = pluralStringResource(R.plurals.spots_left, game.spotsLeft, game.spotsLeft)
             // the council's event says what it is
@@ -395,6 +395,7 @@ private fun FacilityCarouselCard(f: FacilityCard, here: GeoPoint?, badge: String
             Modifier.align(Alignment.BottomStart).padding(horizontal = 14.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
+            if (f.residentsOnly) gal.tribo.librequenda.ui.components.ResidentsOnlyPill(Modifier.padding(bottom = 4.dp))
             Text(
                 title ?: f.name,
                 color = Color.White,

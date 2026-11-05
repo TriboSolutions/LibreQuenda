@@ -213,7 +213,16 @@
     "resident_already_verified": "Esa persoa xa está verificada neste concello.",
     "resident_not_found": "Esa persoa non está verificada neste concello.",
     "resident_save_failed": "Non se puido gardar a verificación.",
-    "residents_load_failed": "Non se puideron cargar os veciños verificados."
+    "residents_load_failed": "Non se puideron cargar os veciños verificados.",
+    "invalid_dni": "O DNI ou NIE non é válido: oito cifras e a letra (ou X, Y, Z ao comezo).",
+    "invalid_postal_code": "O código postal non é válido: cinco cifras.",
+    "resident_request_invalid": "Escribe o nome completo e a rúa onde vives.",
+    "resident_request_pending": "Xa tes unha petición pendente neste concello.",
+    "resident_request_not_found": "Esa petición xa non existe: alguén decidiu xa ou caducou.",
+    "resident_already_verified_self": "O concello xa te verificou como veciño.",
+    "resident_request_failed": "Non se puido enviar a petición.",
+    "resident_requests_load_failed": "Non se puideron cargar as peticións.",
+    "resident_request_weekly": "Só podes enviar unha petición de veciño á semana. Poderás enviar outra a partir do {{0}}."
   },
   "email": {
     "greeting": "Ola {{0}},",
@@ -288,6 +297,23 @@
       "intro": "Avisaron dun problema en {{0}} ({{1}}). Revisa a incidencia na administración do concello.",
       "manage": "Ver incidencias",
       "footer": "Recibes este correo porque administras este concello en {{0}}."
-    }
+    },
+    "resident_requested": {
+      "subject": "{{1}} quere ser veciño de {{0}}",
+      "intro": "{{1}} pediu que o concello o verifique como veciño de {{0}}. Comproba os seus datos no padrón e decide na lapela Veciños.",
+      "manage": "Ver peticións"
+    },
+    "resident_verified": {
+      "subject": "Xa es veciño verificado de {{0}}",
+      "intro": "{{0}} verificoute como veciño. Xa podes reservar e unirte nas súas instalacións só para veciños.",
+      "manage": "Ver as instalacións"
+    },
+    "resident_rejected": {
+      "subject": "A túa petición para ser veciño de {{0}}",
+      "intro": "{{0}} non puido verificarte como veciño co seu padrón. Se cres que é un erro, chama ao concello.",
+      "manage": "Ver o concello",
+      "phone": "Teléfono do concello: {{0}}"
+    },
+    "resident_footer": "Recibes este correo porque pediches ser veciño dun concello en {{0}}. Os datos da petición xa se borraron."
   }
 }

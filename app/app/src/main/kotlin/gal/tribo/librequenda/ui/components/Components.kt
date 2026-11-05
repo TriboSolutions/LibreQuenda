@@ -83,6 +83,11 @@ fun Pill(text: String, background: Color, ink: Color, modifier: Modifier = Modif
     )
 }
 
+/** «Residents only»: a facility (and its events and public games) only the council's verified residents book or join. */
+@Composable
+fun ResidentsOnlyPill(modifier: Modifier = Modifier) =
+    Pill(androidx.compose.ui.res.stringResource(R.string.residents_only_badge), Lq.colors.pillAccentBg, Lq.colors.pillAccentInk, modifier)
+
 /** The person's initials in a pale circle, as in the web's account menu. */
 @Composable
 fun InitialsAvatar(initials: String, modifier: Modifier = Modifier, size: Dp = 32.dp) {

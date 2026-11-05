@@ -213,7 +213,16 @@
     "resident_already_verified": "That person is already verified in this council.",
     "resident_not_found": "That person is not verified in this council.",
     "resident_save_failed": "The verification could not be saved.",
-    "residents_load_failed": "The verified residents could not be loaded."
+    "residents_load_failed": "The verified residents could not be loaded.",
+    "invalid_dni": "The DNI or NIE is not valid: eight digits and the letter (or X, Y, Z first).",
+    "invalid_postal_code": "The postal code is not valid: five digits.",
+    "resident_request_invalid": "Write your full name and the street where you live.",
+    "resident_request_pending": "You already have a pending request with this council.",
+    "resident_request_not_found": "That request is gone: someone already decided, or it expired.",
+    "resident_already_verified_self": "The council has already verified you as a resident.",
+    "resident_request_failed": "The request could not be sent.",
+    "resident_requests_load_failed": "The requests could not be loaded.",
+    "resident_request_weekly": "You can send one resident request a week. You can send another from {{0}}."
   },
   "email": {
     "greeting": "Hello {{0}},",
@@ -288,6 +297,23 @@
       "intro": "A problem was reported at {{0}} ({{1}}). Review it in the council administration.",
       "manage": "View issues",
       "footer": "You receive this email because you administer this council on {{0}}."
-    }
+    },
+    "resident_requested": {
+      "subject": "{{1}} wants to be a resident of {{0}}",
+      "intro": "{{1}} asked the council to verify them as a resident of {{0}}. Check their details against the census and decide in the Residents tab.",
+      "manage": "See requests"
+    },
+    "resident_verified": {
+      "subject": "You are now a verified resident of {{0}}",
+      "intro": "{{0}} verified you as a resident. You can now book and join at its residents-only facilities.",
+      "manage": "See the facilities"
+    },
+    "resident_rejected": {
+      "subject": "Your request to be a resident of {{0}}",
+      "intro": "{{0}} could not verify you as a resident from its census. If you think this is a mistake, phone the council.",
+      "manage": "See the council",
+      "phone": "Council phone: {{0}}"
+    },
+    "resident_footer": "You get this email because you asked a council to verify you as a resident on {{0}}. The request's details have been deleted."
   }
 }

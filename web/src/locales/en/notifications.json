@@ -19,7 +19,10 @@
     "booking_joined": "{{name}} joined your booking at {{facility}}, {{day}} at {{time}}.",
     "issue_reported": "New issue at {{facility}}.",
     "rating_requested": "How was {{facility}}? Rate it with 1 to 5 stars.",
-    "rating_requested_public": "How was {{facility}}? Rate it, and the people who played with you."
+    "rating_requested_public": "How was {{facility}}? Rate it, and the people who played with you.",
+    "resident_requested": "{{name}} wants to be a resident of {{council}}.",
+    "resident_verified": "{{council}} verified you as a resident: you can now book its residents-only facilities.",
+    "resident_rejected": "{{council}} could not verify you as a resident. Phone the council if you think this is a mistake."
   },
   "reason": "Reason: {{reason}}",
   "councilNote": "Note from the council: {{reason}}",

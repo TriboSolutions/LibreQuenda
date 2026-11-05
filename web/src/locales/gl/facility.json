@@ -145,5 +145,29 @@
   "residentsOnly": "Só para veciños verificados de {{council}}.",
   "residentsOnlyShort": "Só para veciños verificados polo concello.",
   "residentsOnlySignIn": "Esta instalación é só para veciños de {{council}} verificados polo concello. Inicia sesión para reservar.",
-  "residentsOnlyNotVerified": "Esta instalación é só para veciños de {{council}} verificados polo concello, e a túa conta non o está. Pide no concello que a verifiquen."
+  "residentsOnlyNotVerified": "Esta instalación é só para veciños de {{council}} verificados polo concello, e a túa conta non o está. Pide no concello que a verifiquen.",
+  "residentRequest": {
+    "badge": "Instalación só para veciños",
+    "ask": "Pedir ser veciño",
+    "see": "Ver a petición",
+    "signIn": "Iniciar sesión",
+    "pendingShort": "Esta instalación é só para veciños de {{council}}. A túa petición está pendente: o concello revisaraa.",
+    "title": "Pedir ser veciño de {{council}}",
+    "lead": "Para reservar aquí o concello ten que verificar que vives en {{council}}, mirándoo no seu padrón. Podes chamar ou enviarlle unha petición.",
+    "callTitle": "Chamar ao concello",
+    "callEmail": "Escribe a {{email}} ou achégate ás oficinas.",
+    "callOffice": "Achégate ás oficinas do concello.",
+    "formTitle": "Ou envía unha petición",
+    "dni": "DNI ou NIE",
+    "dniHelp": "Oito cifras e a letra, sen espazos.",
+    "fullName": "Nome e apelidos",
+    "postalCode": "Código postal",
+    "street": "Rúa e número onde vives",
+    "privacy": "O concello só usa estes datos para comprobar o empadroamento. Bórranse en canto decide, e como moito aos 15 días.",
+    "send": "Enviar a petición",
+    "sent": "Petición enviada. Avisarémoste cando o concello decida.",
+    "pending": "Petición enviada o {{date}}, pendente de revisión.",
+    "withdraw": "Retirar a petición",
+    "close": "Pechar"
+  }
 }

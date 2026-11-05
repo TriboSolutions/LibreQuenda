@@ -44,6 +44,9 @@ export function CouncilAdminPage() {
   // the badge on the Maintenance tab: reports nobody has looked at yet
   const newIssues = useAsync(allowed ? () => api.council.newIssueCount(token, slug) : null, `issue-count:${slug}:${allowed}`)
   const newIssueCount = newIssues.data?.new ?? 0
+  // the badge on the Residents tab: people asking to be verified
+  const residentRequests = useAsync(allowed ? () => api.council.residentRequestCount(token, slug) : null, `resident-request-count:${slug}:${allowed}`)
+  const residentRequestCount = residentRequests.data?.pending ?? 0
   const [searchParams, setSearchParams] = useSearchParams()
   const vista = searchParams.get('vista')
   const view =
@@ -196,7 +199,17 @@ export function CouncilAdminPage() {
             <TabsTrigger value="facilities">{t('admin:facilities.title')}</TabsTrigger>
             <TabsTrigger value="bookings">{t('admin:staff.tab')}</TabsTrigger>
             <TabsTrigger value="events">{t('admin:events.tab')}</TabsTrigger>
-            <TabsTrigger value="residents">{t('admin:residents.tab')}</TabsTrigger>
+            <TabsTrigger value="residents">
+              {t('admin:residents.tab')}
+              {residentRequestCount > 0 && (
+                <>
+                  <span aria-hidden="true" className="num ml-1.5 rounded-full bg-destructive px-1.5 text-xs leading-5 font-semibold text-background">
+                    {residentRequestCount}
+                  </span>
+                  <span className="sr-only">{t('admin:residents.requests.count', { count: residentRequestCount })}</span>
+                </>
+              )}
+            </TabsTrigger>
             <TabsTrigger value="indicators">{t('admin:indicators.title')}</TabsTrigger>
             <TabsTrigger value="issues">
               {t('admin:issues.tab')}
@@ -227,7 +240,7 @@ export function CouncilAdminPage() {
           <EventsPanel slug={slug} facilities={list} />
         </TabsContent>
         <TabsContent value="residents">
-          <ResidentsPanel slug={slug} />
+          <ResidentsPanel slug={slug} onRequestsChanged={residentRequests.reload} />
         </TabsContent>
         <TabsContent value="issues">
           <IssuesPanel slug={slug} facilities={list} onChanged={newIssues.reload} />
