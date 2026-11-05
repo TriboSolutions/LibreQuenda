@@ -933,6 +933,8 @@
     "cancelled": "S’ha cancel·lat «{{title}}».",
     "createTitle": "Nou esdeveniment",
     "editTitle": "Edita l’esdeveniment",
+    "back": "Tots els esdeveniments",
+    "notFound": "Aquest esdeveniment ja no es pot canviar: ha començat o s’ha cancel·lat.",
     "formHelp": "Si hi ha reserves a aquella hora, cancel·la-les abans des de Reserva manual: un esdeveniment no treu mai la plaça a ningú.",
     "name": "Nom",
     "namePlaceholder": "Per exemple: Torneig de futbol 5x5",
