@@ -1,6 +1,7 @@
 package gal.tribo.librequenda.ui.home
 
 import gal.tribo.librequenda.ui.search.FacilitySearch
+import gal.tribo.librequenda.ui.search.MapToggle
 
 import android.Manifest
 import gal.tribo.librequenda.ui.components.Pill
@@ -44,6 +45,10 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -107,14 +112,21 @@ fun HomeScreen(
 ) {
     LocationRequest(onLocation)
     if (!session.signedIn) {
-        FacilitySearch(
-            filters = browse,
-            onFilters = onBrowse,
-            councils = home.facilities.map { it.councilSlug to it.councilName }.distinct(),
-            location = home.location,
-            onSlot = onBrowseFacility,
-            modifier = modifier.padding(top = 16.dp),
-        )
+        var showMap by rememberSaveable { mutableStateOf(false) }
+        Column(modifier.fillMaxSize()) {
+            // the map (or back to the list), top right over the search
+            Row(Modifier.fillMaxWidth().padding(end = 4.dp), horizontalArrangement = Arrangement.End) {
+                MapToggle(showMap, { showMap = !showMap })
+            }
+            FacilitySearch(
+                filters = browse,
+                onFilters = onBrowse,
+                councils = home.facilities.map { it.councilSlug to it.councilName }.distinct(),
+                location = home.location,
+                onSlot = onBrowseFacility,
+                showMap = showMap,
+            )
+        }
         return
     }
     val onOpen: (FacilityCard, Instant?) -> Unit = onFacility

@@ -82,6 +82,9 @@
     <string name="apply">Aplicar</string>
     <string name="clear_filters">Limpiar</string>
     <string name="facilities_title">Instalaciones</string>
+    <string name="show_map">Ver en el mapa</string>
+    <string name="show_list">Ver lista</string>
+    <string name="map_label">Mapa de las instalaciones</string>
     <string name="quick_join">Únete</string>
     <string name="day">Día</string>
     <string name="time_of_day">Hora</string>

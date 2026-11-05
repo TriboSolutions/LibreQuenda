@@ -2,6 +2,7 @@ package gal.tribo.librequenda.ui.search
 
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import gal.tribo.librequenda.data.PublicGame
 import gal.tribo.librequenda.data.joinPublicGame
 import gal.tribo.librequenda.ui.components.GhostButton
@@ -140,6 +141,7 @@ fun SearchPage(
     onSlot: (DayFacility, Instant?) -> Unit, // a turn, or null for the facility itself
 ) {
     BackHandler(enabled = open, onBack = onBack)
+    var showMap by rememberSaveable { mutableStateOf(false) }
     AnimatedVisibility(
         visible = open,
         enter = slideInHorizontally(tween(260)) { it },
@@ -152,7 +154,7 @@ fun SearchPage(
                 .clickable(interactionSource = null, indication = null) {} // taps stay on the page
                 .statusBarsPadding()
         ) {
-            // bar: back, the title in the middle
+            // bar: back, the title in the middle, the map (or back to the list) on the right
             Box(Modifier.fillMaxWidth().height(56.dp)) {
                 IconButton(onClick = onBack, modifier = Modifier.align(Alignment.CenterStart).padding(start = 4.dp)) {
                     Icon(painterResource(R.drawable.ic_arrow_left), contentDescription = stringResource(R.string.back), tint = Lq.colors.foreground)
@@ -163,8 +165,9 @@ fun SearchPage(
                     color = Lq.colors.foreground,
                     modifier = Modifier.align(Alignment.Center).semantics { heading() },
                 )
+                MapToggle(showMap, { showMap = !showMap }, Modifier.align(Alignment.CenterEnd).padding(end = 4.dp))
             }
-            FacilitySearch(filters, onFilters, councils, location, onSlot)
+            FacilitySearch(filters, onFilters, councils, location, onSlot, showMap = showMap)
         }
     }
 }
@@ -181,6 +184,7 @@ fun FacilitySearch(
     location: GeoPoint?,
     onSlot: (DayFacility, Instant?) -> Unit, // a turn, or null for the facility itself
     modifier: Modifier = Modifier,
+    showMap: Boolean = false, // the results on a map instead of the list
 ) {
     var results by remember { mutableStateOf<List<DayFacility>?>(null) }
     var total by remember { mutableIntStateOf(0) }
@@ -216,7 +220,10 @@ fun FacilitySearch(
             loadingMore = false
         }
     }
+    // the map shows every facility found, not just the first page: the rest come one after another
+    LaunchedEffect(showMap, nextPage) { if (showMap) loadMore() }
     val shown = results
+    var picked by remember { mutableStateOf<String?>(null) } // a pin tapped on the map: its facility, in a sheet
 
     Column(modifier.fillMaxSize()) {
         SearchBox(filters.query) { onFilters(filters.copy(query = it)) }
@@ -228,6 +235,14 @@ fun FacilitySearch(
             failed -> Text(stringResource(R.string.search_load_error), color = Lq.colors.destructive, modifier = Modifier.padding(16.dp))
             shown == null -> LinearProgressIndicator(Modifier.fillMaxWidth().padding(16.dp))
             shown.isEmpty() -> Text(stringResource(R.string.search_no_results), color = Lq.colors.mutedForeground, modifier = Modifier.padding(16.dp))
+            showMap -> FacilityMap(
+                facilities = shown,
+                selected = picked,
+                me = location,
+                label = stringResource(R.string.map_label),
+                onPick = { picked = it.id },
+                modifier = Modifier.fillMaxSize(),
+            )
             else -> LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 40.dp)) {
                 item {
                     Text(
@@ -248,7 +263,27 @@ fun FacilitySearch(
         }
     }
 
+    shown?.firstOrNull { it.id == picked }?.takeIf { showMap }?.let { f ->
+        PickedSheet(f, filters, onDismiss = { picked = null }, onSlot = { slot -> picked = null; onSlot(f, slot) })
+    }
     if (sheet) FiltersSheet(filters, catalogue, councilList, onApply = { onFilters(it); sheet = false }, onDismiss = { sheet = false })
+}
+
+/** «View on map» or, with the map shown, «View list»: top right of the search. */
+@Composable
+fun MapToggle(showMap: Boolean, onToggle: () -> Unit, modifier: Modifier = Modifier) {
+    GhostButton(stringResource(if (showMap) R.string.show_list else R.string.show_map), onToggle, modifier)
+}
+
+/** A pin tapped on the map: its facility as in the list (photo, where, free turns), in a sheet from the bottom. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun PickedSheet(f: DayFacility, filters: SearchFilters, onDismiss: () -> Unit, onSlot: (Instant?) -> Unit) {
+    ModalBottomSheet(onDismissRequest = onDismiss, containerColor = Lq.colors.card, dragHandle = null) {
+        Column(Modifier.fillMaxWidth().navigationBarsPadding()) {
+            ResultRow(f, filters, onOpen = { onSlot(null) }, onSlot = { onSlot(it) }, onGame = { onSlot(it.startsAt) }, divider = false)
+        }
+    }
 }
 
 /** The filters as the API takes them: «from now» is the time now, in the councils' zone. */
@@ -413,7 +448,7 @@ private fun Chip(label: String, icon: Int? = null, onClick: () -> Unit) {
 
 /** A result: the photo edge to edge with the name on it, where it is, then its free turns as chips. */
 @Composable
-private fun ResultRow(f: DayFacility, filters: SearchFilters, onOpen: () -> Unit, onSlot: (Instant) -> Unit, onGame: (PublicGame) -> Unit) {
+private fun ResultRow(f: DayFacility, filters: SearchFilters, onOpen: () -> Unit, onSlot: (Instant) -> Unit, onGame: (PublicGame) -> Unit, divider: Boolean = true) {
     val locale = LocalConfiguration.current.locales[0]
     // the API already left only the turns (or games) the filters ask for
     val slots = f.freeSlots
@@ -474,7 +509,7 @@ private fun ResultRow(f: DayFacility, filters: SearchFilters, onOpen: () -> Unit
                 }
             }
         }
-        HorizontalDivider(color = Lq.colors.border)
+        if (divider) HorizontalDivider(color = Lq.colors.border)
     }
 }
 
