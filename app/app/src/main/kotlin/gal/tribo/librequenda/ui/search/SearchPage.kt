@@ -24,6 +24,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -77,6 +80,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
@@ -167,7 +171,8 @@ fun SearchPage(
                 )
                 MapToggle(showMap, { showMap = !showMap }, Modifier.align(Alignment.CenterEnd).padding(end = 4.dp))
             }
-            FacilitySearch(filters, onFilters, councils, location, onSlot, showMap = showMap)
+            FacilitySearch(filters, onFilters, councils, location, onSlot, showMap = showMap,
+                mapBottomInset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding())
         }
     }
 }
@@ -185,6 +190,7 @@ fun FacilitySearch(
     onSlot: (DayFacility, Instant?) -> Unit, // a turn, or null for the facility itself
     modifier: Modifier = Modifier,
     showMap: Boolean = false, // the results on a map instead of the list
+    mapBottomInset: Dp = 0.dp, // the page runs under the gesture bar: the map's credit stays above it
 ) {
     var results by remember { mutableStateOf<List<DayFacility>?>(null) }
     var total by remember { mutableIntStateOf(0) }
@@ -242,6 +248,7 @@ fun FacilitySearch(
                 label = stringResource(R.string.map_label),
                 onPick = { picked = it.id },
                 modifier = Modifier.fillMaxSize(),
+                bottomInset = mapBottomInset,
             )
             else -> LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 40.dp)) {
                 item {

@@ -5,7 +5,19 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.Typeface
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -78,6 +90,7 @@ fun FacilityMap(
     label: String, // what the map is, for screen readers
     onPick: (DayFacility) -> Unit,
     modifier: Modifier = Modifier,
+    bottomInset: Dp = 0.dp, // what covers the map's foot (the gesture bar), to keep the credit above it
 ) {
     val context = LocalContext.current
     val density = LocalDensity.current.density
@@ -119,7 +132,9 @@ fun FacilityMap(
     // the style, the layers and the taps, once
     LaunchedEffect(mapView) {
         mapView.getMapAsync { m ->
-            m.uiSettings.isLogoEnabled = false // the attribution («i») stays: OpenStreetMap asks for it
+            // MapLibre's own «i» opens an empty dialog: the credit OpenStreetMap asks for is drawn below instead
+            m.uiSettings.isLogoEnabled = false
+            m.uiSettings.isAttributionEnabled = false
             m.uiSettings.isRotateGesturesEnabled = false
             m.uiSettings.isTiltGesturesEnabled = false
             m.cameraPosition = CameraPosition.Builder().target(DEFAULT_CENTER).zoom(7.0).build()
@@ -198,7 +213,22 @@ fun FacilityMap(
         source.setGeoJson(FeatureCollection.fromFeatures(listOfNotNull(me?.let { Feature.fromGeometry(Point.fromLngLat(it.longitude, it.latitude)) })))
     }
 
-    AndroidView(factory = { mapView }, modifier = modifier.semantics { contentDescription = label })
+    Box(modifier) {
+        AndroidView(factory = { mapView }, modifier = Modifier.fillMaxSize().semantics { contentDescription = label })
+        // OpenStreetMap's credit, always in sight (their tile policy); it leads to their copyright page
+        val uriHandler = LocalUriHandler.current
+        Text(
+            "© OpenStreetMap",
+            style = MaterialTheme.typography.labelSmall,
+            color = Color(0xFF1F2937),
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(bottom = bottomInset)
+                .background(Color.White.copy(alpha = 0.8f), RoundedCornerShape(topStart = 6.dp))
+                .clickable { uriHandler.openUri("https://www.openstreetmap.org/copyright") }
+                .padding(horizontal = 6.dp, vertical = 3.dp),
+        )
+    }
 }
 
 /** A bubble for [count] pins close together: the brand's blue, a white ring, the count. */
