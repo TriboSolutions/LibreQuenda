@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- the page background, as DarkLqColors.background -->
+    <color name="lq_page">#0E0F10</color>
+</resources>

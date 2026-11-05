@@ -14,6 +14,7 @@ The residents' app, native Kotlin / Jetpack Compose, on the same API as the web:
   personal QR for the readers.
 - **Notices** without push: reminders as local alarms, the rest checked in the background,
   and right after each booking ends, so the request to rate it comes on time.
+- A first-run tour (after signing in or «Explore without an account»), skippable, and again from the menu.
 - Profile, preferences, the app's language (gl, es, ca, en), support and legal texts.
 
 Texts shared with the web are generated from its locales: after changing

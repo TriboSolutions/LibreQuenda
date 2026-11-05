@@ -2,4 +2,6 @@
 <resources>
     <!-- docs/brand: the blue of the mark, for the notification icon's accent -->
     <color name="brand_blue">@color/lq_blue</color>
+    <!-- the page background, as LightLqColors.background (values-night: DarkLqColors) -->
+    <color name="lq_page">#F6F9FB</color>
 </resources>

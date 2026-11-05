@@ -47,6 +47,7 @@ data class SessionState(
     val busy: Boolean = false, // opening the sign-in page or exchanging the code
     val error: AuthError? = null,
     val welcomeSeen: Boolean = false, // "Explore without an account" was chosen once
+    val tourSeen: Boolean = false, // the first-launch tour was finished or skipped
     val accountDeleted: Boolean = false, // just now, from the profile
 )
 
@@ -55,7 +56,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application), Pr
     private val prefs = application.getSharedPreferences("app", Context.MODE_PRIVATE)
 
     private val sessionState = MutableStateFlow(
-        SessionState(signedIn = auth.isSignedIn, welcomeSeen = prefs.getBoolean(KEY_WELCOME_SEEN, false))
+        SessionState(signedIn = auth.isSignedIn, welcomeSeen = prefs.getBoolean(KEY_WELCOME_SEEN, false),
+            tourSeen = prefs.getBoolean(KEY_TOUR_SEEN, false))
     )
     val session = sessionState.asStateFlow()
 
@@ -164,6 +166,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application), Pr
         sessionState.update { it.copy(welcomeSeen = true, error = null) }
     }
 
+    fun finishTour() {
+        prefs.edit { putBoolean(KEY_TOUR_SEEN, true) }
+        sessionState.update { it.copy(tourSeen = true) }
+    }
+
     /** Signs out here; the returned intent, if any, ends the session at Zitadel. */
     fun signOut(): Intent? {
         val endSession = auth.signOut()
@@ -256,6 +263,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application), Pr
     private companion object {
         const val TAG = "LibreQuenda"
         const val KEY_WELCOME_SEEN = "welcome_seen"
+        const val KEY_TOUR_SEEN = "tour_seen"
         val RESIDENT_DECISIONS = setOf("resident_verified", "resident_rejected")
     }
 }
