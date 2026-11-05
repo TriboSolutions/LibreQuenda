@@ -49,7 +49,7 @@ INSERT INTO facility (
     custom_rules, max_advance_hours, min_advance_minutes, min_cancel_hours, max_active_bookings_per_user,
     max_bookings_per_day, max_turns_in_a_row, max_bookings_per_week, weekly_opening, opens_weekday, opens_minute,
     no_show_penalty, no_show_limit, no_show_window_days, no_show_block_days,
-    min_age, usage_rules_text
+    min_age, residents_only, usage_rules_text
 ) VALUES (
     sqlc.arg('tenant_id'), sqlc.arg('slug'), sqlc.arg('name'), sqlc.narg('description'),
     sqlc.narg('address'), sqlc.narg('latitude'), sqlc.narg('longitude'), sqlc.narg('capacity'),
@@ -58,7 +58,7 @@ INSERT INTO facility (
     sqlc.arg('max_active_bookings_per_user'), sqlc.arg('max_bookings_per_day'), sqlc.arg('max_turns_in_a_row'),
     sqlc.arg('max_bookings_per_week'), sqlc.arg('weekly_opening'), sqlc.arg('opens_weekday'), sqlc.arg('opens_minute'),
     sqlc.arg('no_show_penalty'), sqlc.arg('no_show_limit'), sqlc.arg('no_show_window_days'), sqlc.arg('no_show_block_days'),
-    sqlc.narg('min_age'), sqlc.narg('usage_rules_text')
+    sqlc.narg('min_age'), sqlc.arg('residents_only'), sqlc.narg('usage_rules_text')
 )
 RETURNING
     id;
@@ -81,6 +81,7 @@ SET
     is_active                    = sqlc.arg('is_active'),
     slot_minutes                 = sqlc.arg('slot_minutes'),
     min_age                      = sqlc.narg('min_age'),
+    residents_only               = sqlc.arg('residents_only'),
     usage_rules_text             = sqlc.narg('usage_rules_text')
 WHERE
     id = sqlc.arg('id')

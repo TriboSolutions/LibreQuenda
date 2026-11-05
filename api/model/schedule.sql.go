@@ -36,6 +36,7 @@ SELECT
     f.no_show_block_days,
     f.capacity,
     f.min_age,
+    f.residents_only,
     t.timezone
 FROM
     facility f
@@ -67,6 +68,7 @@ type GetFacilityForBookingRow struct {
 	NoShowBlockDays          int32         `json:"no_show_block_days"`
 	Capacity                 sql.NullInt32 `json:"capacity"`
 	MinAge                   sql.NullInt32 `json:"min_age"`
+	ResidentsOnly            bool          `json:"residents_only"`
 	Timezone                 string        `json:"timezone"`
 }
 
@@ -94,6 +96,7 @@ func (q *Queries) GetFacilityForBooking(ctx context.Context, id uuid.UUID) (GetF
 		&i.NoShowBlockDays,
 		&i.Capacity,
 		&i.MinAge,
+		&i.ResidentsOnly,
 		&i.Timezone,
 	)
 	return i, err
@@ -132,6 +135,7 @@ SELECT
     opens_minute,
     capacity,
     min_age,
+    residents_only,
     usage_rules_text
 FROM
     facility
@@ -170,6 +174,7 @@ type ListActiveFacilitiesByTenantRow struct {
 	OpensMinute              int32           `json:"opens_minute"`
 	Capacity                 sql.NullInt32   `json:"capacity"`
 	MinAge                   sql.NullInt32   `json:"min_age"`
+	ResidentsOnly            bool            `json:"residents_only"`
 	UsageRulesText           sql.NullString  `json:"usage_rules_text"`
 }
 
@@ -210,6 +215,7 @@ func (q *Queries) ListActiveFacilitiesByTenant(ctx context.Context, tenantID uui
 			&i.OpensMinute,
 			&i.Capacity,
 			&i.MinAge,
+			&i.ResidentsOnly,
 			&i.UsageRulesText,
 		); err != nil {
 			return nil, err

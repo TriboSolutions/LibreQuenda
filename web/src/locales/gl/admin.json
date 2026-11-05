@@ -195,7 +195,9 @@
     "tabCheckin": "Entrada",
     "tabBooking": "Reserva",
     "showWeather": "Amosar previsión meteorolóxica",
-    "showWeatherHelp": "Amosa o tempo de MeteoGalicia na páxina da instalación e ao reservar. Require o código INE do concello. É independente das etiquetas."
+    "showWeatherHelp": "Amosa o tempo de MeteoGalicia na páxina da instalación e ao reservar. Require o código INE do concello. É independente das etiquetas.",
+    "residentsOnly": "Só veciños verificados",
+    "residentsOnlyHelp": "Só reservan e se unen a reservas aquí as persoas que o concello verificou como veciñas (lapela Veciños). Non admite convidados sen conta. O persoal pode reservar por calquera desde a lapela Reservas."
   },
   "readers": {
     "title": "Lectores QR da entrada",
@@ -807,7 +809,8 @@
       "account": "Contas",
       "other": "Outros",
       "booking_policy": "Normas de reserva da plataforma",
-      "issue": "Incidencias"
+      "issue": "Incidencias",
+      "resident": "Veciños verificados"
     },
     "actions": {
       "facility.created": "Creou unha instalación",
@@ -854,7 +857,9 @@
       "booking_policy.changed": "Cambiou as normas de reserva da plataforma",
       "issue.changed": "Cambiou o estado dunha incidencia",
       "event.created": "Creou un evento",
-      "event.updated": "Cambiou un evento"
+      "event.updated": "Cambiou un evento",
+      "resident.verified": "Verificou un veciño",
+      "resident.unverified": "Retirou a verificación dun veciño"
     },
     "anyDate": "Calquera data",
     "clearDates": "Limpar datas"
@@ -950,5 +955,31 @@
     "cancelNotice_one": "Avisaremos a {{count}} persoa apuntada, co motivo se o indicas.",
     "cancelNotice_other": "Avisaremos ás {{count}} persoas apuntadas, co motivo se o indicas.",
     "confirmCancel": "Cancelar o evento"
+  },
+  "residents": {
+    "tab": "Veciños",
+    "title": "Veciños verificados",
+    "help": "Persoas que o concello comprobou que son veciñas. Só elas reservan nas instalacións marcadas como «Só veciños verificados». Comproba a identidade e o empadroamento antes de verificar a alguén.",
+    "addLabel": "Correo da conta da persoa",
+    "addHelp": "A persoa ten que iniciar sesión unha vez co correo verificado.",
+    "add": "Verificar",
+    "added": "{{email}} xa está verificada como veciña.",
+    "removed": "Retirouse a verificación de {{name}}. As súas reservas seguen en pé.",
+    "remove": "Retirar",
+    "search": "Buscar por nome ou correo",
+    "searchAction": "Buscar",
+    "sort": "Ordenar por",
+    "sortName": "Nome",
+    "sortRecent": "Verificación máis recente",
+    "count_one": "{{count}} veciño verificado",
+    "count_other": "{{count}} veciños verificados",
+    "empty": "Aínda non hai ninguén verificado.",
+    "noMatch": "Ninguén coincide coa busca.",
+    "verifiedBy": "Verificado o {{date}} por {{name}}",
+    "verifiedOn": "Verificado o {{date}}",
+    "pages": "Páxinas",
+    "page": "Páxina {{page}} de {{pages}}",
+    "previous": "Anterior",
+    "next": "Seguinte"
   }
 }

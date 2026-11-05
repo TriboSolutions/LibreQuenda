@@ -344,6 +344,7 @@ func (data *councilExport) tables(media map[string]string) []exportTable {
 			{"no_show_window_days", "integer", "Days the no-shows are counted over"},
 			{"no_show_block_days", "integer", "Days booking stays blocked"},
 			{"min_age", "integer", "Minimum age; empty = none"},
+			{"residents_only", "boolean", "Whether only the council's verified residents book or join here"},
 			{"usage_rules_text", "string", "Usage rules residents accept when booking"},
 			{"created_at", "datetime", "Created"},
 			{"updated_at", "datetime", "Last changed"},
@@ -362,7 +363,7 @@ func (data *councilExport) tables(media map[string]string) []exportTable {
 			strconv.Itoa(int(f.MaxTurnsInARow)), strconv.Itoa(int(f.MaxBookingsPerWeek)), strconv.FormatBool(f.WeeklyOpening),
 			strconv.Itoa(int(f.OpensWeekday)), strconv.Itoa(int(f.OpensMinute)), strconv.FormatBool(f.NoShowPenalty), strconv.Itoa(int(f.NoShowLimit)),
 			strconv.Itoa(int(f.NoShowWindowDays)), strconv.Itoa(int(f.NoShowBlockDays)),
-			exportNullInt(f.MinAge), exportNullString(f.UsageRulesText), exportTime(f.CreatedAt), exportTime(f.UpdatedAt),
+			exportNullInt(f.MinAge), strconv.FormatBool(f.ResidentsOnly), exportNullString(f.UsageRulesText), exportTime(f.CreatedAt), exportTime(f.UpdatedAt),
 		})
 	}
 
@@ -529,7 +530,7 @@ func (data *councilExport) tables(media map[string]string) []exportTable {
 	}
 	var people = exportTable{
 		name:        "people",
-		description: "Residents who booked at the council or joined one of its bookings. Personal data: handle it under the GDPR.",
+		description: "Residents who booked at the council, joined one of its bookings, reported a problem or were verified as its residents. Personal data: handle it under the GDPR.",
 		fields: []exportField{
 			{"id", "string", "Account id (UUID), the person_id of the other tables"},
 			{"full_name", "string", "Full name"},
@@ -539,13 +540,14 @@ func (data *councilExport) tables(media map[string]string) []exportTable {
 			{"birth_date", "date", "Birth date, for the facilities' minimum age"},
 			{"preferred_language", "string", "Language of the emails: gl, es, en or ca"},
 			{"created_at", "datetime", "Account created"},
+			{"resident_verified_at", "datetime", "When the council verified them as its resident; empty = not verified"},
 		},
 		rows: make([][]string, 0, len(data.people)),
 	}
 	for _, p := range data.people {
 		people.rows = append(people.rows, []string{
 			p.ID.String(), exportNullString(p.FullName), p.Email, strconv.FormatBool(p.EmailVerified), exportNullString(p.Phone),
-			exportNullDate(p.BirthDate), exportNullString(p.PreferredLanguage), exportTime(p.CreatedAt),
+			exportNullDate(p.BirthDate), exportNullString(p.PreferredLanguage), exportTime(p.CreatedAt), exportNullTime(p.ResidentVerifiedAt),
 		})
 	}
 	return append(tables, people)

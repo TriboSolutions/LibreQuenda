@@ -19,6 +19,7 @@ import { useNow } from '@/hooks/useNow'
 import { useAsync } from '@/hooks/useAsync'
 import { useForecast } from '@/hooks/useForecast'
 import { useLogin } from '@/hooks/useLogin'
+import { useMe } from '@/hooks/useMe'
 import { api, ApiError, type Facility, type PublicTurn, type Slot } from '@/lib/api'
 import { directionsUrl } from '@/lib/maps'
 import { addDays, formatBookingDay, formatTime, localDate } from '@/lib/time'
@@ -37,6 +38,7 @@ export function FacilityPage() {
   const { t } = useTranslation(['facility', 'bookings', 'common'])
   const auth = useAuth()
   const { login } = useLogin()
+  const { me } = useMe()
 
   const [searchParams] = useSearchParams()
   const linked = searchParams.get('dia') ?? ''
@@ -162,6 +164,14 @@ export function FacilityPage() {
               </div>
             </div>
             {forecast && <WeatherStrip forecast={forecast} />}
+            {/* residents only: say so before anyone picks a turn the API would refuse */}
+            {f.residents_only && !me?.resident_of?.some((r) => r.tenant_slug === slug) && (
+              <Alert className="border-0 bg-pill-neutral-bg text-pill-neutral-ink">
+                <AlertDescription className="text-pill-neutral-ink">
+                  {auth.isAuthenticated ? t('facility:residentsOnlyNotVerified', { council: data.tenant.name }) : t('facility:residentsOnlySignIn', { council: data.tenant.name })}
+                </AlertDescription>
+              </Alert>
+            )}
             <div aria-live="polite">
               {notice && (
                 <Alert className="border-0 bg-pill-positive-bg text-pill-positive-ink">
@@ -297,6 +307,7 @@ export function FacilityPage() {
               {f.max_bookings_per_week > 0 && <li>{t('facility:rulePerWeek', { count: f.max_bookings_per_week })}</li>}
               {f.council_max_active_bookings > 0 && <li>{t('facility:ruleCouncilActive', { count: f.council_max_active_bookings })}</li>}
               {f.min_age !== null && <li className="font-medium">{t('facility:minAge', { count: f.min_age })}</li>}
+              {f.residents_only && <li className="font-medium">{t('facility:residentsOnly', { council: data.tenant.name })}</li>}
             </ul>
           </section>
 

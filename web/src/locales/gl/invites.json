@@ -82,7 +82,8 @@
     "seeMyBookings": "Ver as miñas reservas",
     "facilityPage": "Ver a instalación",
     "error": "Non se puido unir á reserva.",
-    "or": "ou"
+    "or": "ou",
+    "residentsOnlyHint": "Esta instalación é só para veciños de {{council}} verificados polo concello: únete coa túa conta verificada."
   },
   "people": {
     "label": "Quen vén",

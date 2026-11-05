@@ -37,6 +37,10 @@ func (s *meService) Export(ctx context.Context, session auth.Session) (*ExportRe
 	if isSuperadmin, err = queries.IsPlatformAdmin(ctx, userId); err != nil {
 		return nil, failed
 	}
+	var residentOf []model.ListResidentCouncilsByUserRow
+	if residentOf, err = queries.ListResidentCouncilsByUser(ctx, userId); err != nil {
+		return nil, failed
+	}
 	var bookings []model.ExportBookingsByUserRow
 	if bookings, err = queries.ExportBookingsByUser(ctx, owner); err != nil {
 		return nil, failed
@@ -71,6 +75,7 @@ func (s *meService) Export(ctx context.Context, session auth.Session) (*ExportRe
 		Account:        mapExportAccount(user),
 		IsSuperadmin:   isSuperadmin,
 		Roles:          mapRoles(roles),
+		ResidentOf:     mapResidentOf(residentOf),
 		Bookings:       mapExportBookings(bookings),
 		Participations: mapExportParticipations(participations),
 		Notifications:  mapExportNotifications(notifications),

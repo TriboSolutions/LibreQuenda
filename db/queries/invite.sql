@@ -68,6 +68,7 @@ SELECT
     b.kind,
     COALESCE(b.event_capacity, f.capacity) AS capacity, -- an event's own, if set
     f.min_age,
+    f.residents_only,
     t.timezone,
     t.id AS tenant_id,
     f.name AS facility_name -- for the owner's notice
@@ -232,6 +233,7 @@ SELECT
     b.kind,
     COALESCE(b.event_capacity, f.capacity) AS capacity, -- an event's own, if set
     f.min_age,
+    f.residents_only,
     t.timezone,
     t.id AS tenant_id,
     f.name AS facility_name -- for the owner's notice
@@ -289,6 +291,8 @@ WHERE
     AND t.is_active = TRUE
     AND (b.user_id IS NULL OR b.user_id <> sqlc.arg('user_id'))
     AND NOT EXISTS (SELECT 1 FROM booking_participant p WHERE p.booking_id = b.id AND p.user_id = sqlc.arg('user_id'))
+    -- residents only: offered to the council's verified residents alone
+    AND (NOT f.residents_only OR EXISTS (SELECT 1 FROM tenant_resident r WHERE r.tenant_id = t.id AND r.user_id = sqlc.arg('user_id')))
     AND (SELECT COUNT(*) FROM booking_participant p WHERE p.booking_id = b.id)
         < COALESCE(b.event_capacity, f.capacity) - CASE WHEN b.kind = 'event' THEN 0 ELSE 1 END
 ORDER BY

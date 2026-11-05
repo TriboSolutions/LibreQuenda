@@ -264,7 +264,7 @@ func (q *Queries) ExportClosures(ctx context.Context, tenantID uuid.UUID) ([]Clo
 
 const exportFacilities = `-- name: ExportFacilities :many
 SELECT
-    facility.id, facility.tenant_id, facility.slug, facility.name, facility.description, facility.address, facility.latitude, facility.longitude, facility.capacity, facility.accessibility_info, facility.contact_phone, facility.contact_email, facility.show_weather, facility.image_ref, facility.is_active, facility.slot_minutes, facility.custom_rules, facility.max_advance_hours, facility.min_advance_minutes, facility.min_cancel_hours, facility.max_active_bookings_per_user, facility.max_bookings_per_day, facility.max_turns_in_a_row, facility.max_bookings_per_week, facility.weekly_opening, facility.opens_weekday, facility.opens_minute, facility.no_show_penalty, facility.no_show_limit, facility.no_show_window_days, facility.no_show_block_days, facility.min_age, facility.usage_rules_text, facility.created_at, facility.updated_at,
+    facility.id, facility.tenant_id, facility.slug, facility.name, facility.description, facility.address, facility.latitude, facility.longitude, facility.capacity, facility.accessibility_info, facility.contact_phone, facility.contact_email, facility.show_weather, facility.image_ref, facility.is_active, facility.slot_minutes, facility.custom_rules, facility.max_advance_hours, facility.min_advance_minutes, facility.min_cancel_hours, facility.max_active_bookings_per_user, facility.max_bookings_per_day, facility.max_turns_in_a_row, facility.max_bookings_per_week, facility.weekly_opening, facility.opens_weekday, facility.opens_minute, facility.no_show_penalty, facility.no_show_limit, facility.no_show_window_days, facility.no_show_block_days, facility.min_age, facility.residents_only, facility.usage_rules_text, facility.created_at, facility.updated_at,
     facility_sport(facility.id)::TEXT AS sport,
     ARRAY(
         SELECT tg.slug FROM facility_tag ft JOIN tag tg ON tg.id = ft.tag_id
@@ -326,6 +326,7 @@ func (q *Queries) ExportFacilities(ctx context.Context, tenantID uuid.UUID) ([]E
 			&i.Facility.NoShowWindowDays,
 			&i.Facility.NoShowBlockDays,
 			&i.Facility.MinAge,
+			&i.Facility.ResidentsOnly,
 			&i.Facility.UsageRulesText,
 			&i.Facility.CreatedAt,
 			&i.Facility.UpdatedAt,
@@ -401,9 +402,11 @@ SELECT
     u.phone,
     u.birth_date,
     u.preferred_language,
-    u.created_at
+    u.created_at,
+    r.verified_at AS resident_verified_at
 FROM
     app_user u
+    LEFT JOIN tenant_resident r ON r.user_id = u.id AND r.tenant_id = $1
 WHERE
     u.id IN (
         SELECT b.user_id
@@ -421,24 +424,29 @@ WHERE
         FROM facility_issue i
         JOIN facility f ON f.id = i.facility_id
         WHERE f.tenant_id = $1
+        UNION
+        SELECT tr.user_id
+        FROM tenant_resident tr
+        WHERE tr.tenant_id = $1
     )
 ORDER BY
     u.id ASC
 `
 
 type ExportPeopleRow struct {
-	ID                uuid.UUID      `json:"id"`
-	FullName          sql.NullString `json:"full_name"`
-	Email             string         `json:"email"`
-	EmailVerified     bool           `json:"email_verified"`
-	Phone             sql.NullString `json:"phone"`
-	BirthDate         sql.NullTime   `json:"birth_date"`
-	PreferredLanguage sql.NullString `json:"preferred_language"`
-	CreatedAt         time.Time      `json:"created_at"`
+	ID                 uuid.UUID      `json:"id"`
+	FullName           sql.NullString `json:"full_name"`
+	Email              string         `json:"email"`
+	EmailVerified      bool           `json:"email_verified"`
+	Phone              sql.NullString `json:"phone"`
+	BirthDate          sql.NullTime   `json:"birth_date"`
+	PreferredLanguage  sql.NullString `json:"preferred_language"`
+	CreatedAt          time.Time      `json:"created_at"`
+	ResidentVerifiedAt sql.NullTime   `json:"resident_verified_at"`
 }
 
 // Everyone who booked at the council, joined one of its bookings or reported
-// a problem at one of its facilities (?personal=1).
+// a problem at one of its facilities, or whom it verified as its resident (?personal=1).
 func (q *Queries) ExportPeople(ctx context.Context, tenantID uuid.UUID) ([]ExportPeopleRow, error) {
 	rows, err := q.db.QueryContext(ctx, exportPeople, tenantID)
 	if err != nil {
@@ -457,6 +465,7 @@ func (q *Queries) ExportPeople(ctx context.Context, tenantID uuid.UUID) ([]Expor
 			&i.BirthDate,
 			&i.PreferredLanguage,
 			&i.CreatedAt,
+			&i.ResidentVerifiedAt,
 		); err != nil {
 			return nil, err
 		}

@@ -1,8 +1,11 @@
 package bookings
 
 import (
+	"context"
 	"testing"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 func TestAgeOn(t *testing.T) {
@@ -26,5 +29,12 @@ func TestAgeOn(t *testing.T) {
 				t.Errorf("AgeOn() = %d, want %d", got, c.want)
 			}
 		})
+	}
+}
+
+// A facility open to everyone never asks who is a resident (no database read).
+func TestCheckResidentOpenFacility(t *testing.T) {
+	if err := CheckResident(context.Background(), nil, uuid.New(), uuid.New(), false); err != nil {
+		t.Errorf("open facility: got %+v", err)
 	}
 }

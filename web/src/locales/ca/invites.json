@@ -82,7 +82,8 @@
     "seeMyBookings": "Mostra les meves reserves",
     "facilityPage": "Mostra la instal·lació",
     "error": "No s’ha pogut unir a la reserva.",
-    "or": "o"
+    "or": "o",
+    "residentsOnlyHint": "Aquesta instal·lació és només per a veïns de {{council}} verificats per l’ajuntament: uneix-t’hi amb el teu compte verificat."
   },
   "people": {
     "label": "Qui ve",

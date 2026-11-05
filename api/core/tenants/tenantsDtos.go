@@ -111,7 +111,8 @@ type FacilityDayDto struct {
 	CouncilMaxActive  int32           `json:"council_max_active_bookings"` // per person across the council's facilities; 0 = no limit
 	// instead of max_advance_hours: next week's turns open all at once; null with a rolling window
 	WeeklyOpening *WeeklyOpeningDto `json:"weekly_opening"`
-	MinAge        *int32            `json:"min_age"` // age control: null = none
+	MinAge        *int32            `json:"min_age"`        // age control: null = none
+	ResidentsOnly bool              `json:"residents_only"` // only the council's verified residents book or join
 	UsageRules    string            `json:"usage_rules"`
 	Windows       []WindowDto       `json:"windows"`
 	Closures      []ClosureDto      `json:"closures"`

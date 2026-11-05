@@ -637,6 +637,7 @@ private fun BookingContent(
                         if (f.slotMinutes > 0) Bullet(pluralStringResource(R.plurals.rule_slot, f.slotMinutes, f.slotMinutes))
                         Bullet(pluralStringResource(R.plurals.rule_cancel, f.minCancelHours, f.minCancelHours))
                         f.minAge?.let { Bullet(stringResource(R.string.min_age, it)) }
+                        if (f.residentsOnly) Bullet(stringResource(R.string.residents_only_short))
                         booking.cancelUntil?.let { if (booking.owner) Bullet(stringResource(R.string.cancel_until, "${bookingDayInline(it)} ${time(it)}")) }
                     }
                     if (f.accessibilityInfo.isNotBlank()) DetailBlock(R.drawable.ic_accessibility, stringResource(R.string.accessibility)) {

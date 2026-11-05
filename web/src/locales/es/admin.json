@@ -195,7 +195,9 @@
     "tabCheckin": "Entrada",
     "tabBooking": "Reserva",
     "showWeather": "Mostrar previsión meteorológica",
-    "showWeatherHelp": "Muestra el tiempo de MeteoGalicia en la página de la instalación y al reservar. Requiere el código INE del ayuntamiento. Es independiente de las etiquetas."
+    "showWeatherHelp": "Muestra el tiempo de MeteoGalicia en la página de la instalación y al reservar. Requiere el código INE del ayuntamiento. Es independiente de las etiquetas.",
+    "residentsOnly": "Solo vecinos verificados",
+    "residentsOnlyHelp": "Solo reservan y se unen a reservas aquí las personas que el ayuntamiento verificó como vecinas (pestaña Vecinos). No admite invitados sin cuenta. El personal puede reservar por cualquiera desde la pestaña Reservas."
   },
   "readers": {
     "title": "Lectores QR de la entrada",
@@ -807,7 +809,8 @@
       "account": "Cuentas",
       "other": "Otros",
       "booking_policy": "Normas de reserva de la plataforma",
-      "issue": "Incidencias"
+      "issue": "Incidencias",
+      "resident": "Vecinos verificados"
     },
     "actions": {
       "facility.created": "Creó una instalación",
@@ -854,7 +857,9 @@
       "booking_policy.changed": "Cambió las normas de reserva de la plataforma",
       "issue.changed": "Cambió el estado de una incidencia",
       "event.created": "Creó un evento",
-      "event.updated": "Cambió un evento"
+      "event.updated": "Cambió un evento",
+      "resident.verified": "Verificó a un vecino",
+      "resident.unverified": "Retiró la verificación de un vecino"
     },
     "anyDate": "Cualquier fecha",
     "clearDates": "Limpiar fechas"
@@ -950,5 +955,31 @@
     "cancelNotice_one": "Avisaremos a {{count}} persona apuntada, con el motivo si lo indicas.",
     "cancelNotice_other": "Avisaremos a las {{count}} personas apuntadas, con el motivo si lo indicas.",
     "confirmCancel": "Cancelar el evento"
+  },
+  "residents": {
+    "tab": "Vecinos",
+    "title": "Vecinos verificados",
+    "help": "Personas que el ayuntamiento comprobó que son vecinas. Solo ellas reservan en las instalaciones marcadas como «Solo vecinos verificados». Comprueba la identidad y el empadronamiento antes de verificar a alguien.",
+    "addLabel": "Correo de la cuenta de la persona",
+    "addHelp": "La persona tiene que iniciar sesión una vez con el correo verificado.",
+    "add": "Verificar",
+    "added": "{{email}} ya está verificada como vecina.",
+    "removed": "Se retiró la verificación de {{name}}. Sus reservas siguen en pie.",
+    "remove": "Retirar",
+    "search": "Buscar por nombre o correo",
+    "searchAction": "Buscar",
+    "sort": "Ordenar por",
+    "sortName": "Nombre",
+    "sortRecent": "Verificación más reciente",
+    "count_one": "{{count}} vecino verificado",
+    "count_other": "{{count}} vecinos verificados",
+    "empty": "Todavía no hay nadie verificado.",
+    "noMatch": "Nadie coincide con la búsqueda.",
+    "verifiedBy": "Verificado el {{date}} por {{name}}",
+    "verifiedOn": "Verificado el {{date}}",
+    "pages": "Páginas",
+    "page": "Página {{page}} de {{pages}}",
+    "previous": "Anterior",
+    "next": "Siguiente"
   }
 }

@@ -541,6 +541,7 @@ type Facility struct {
 	NoShowWindowDays         int32           `json:"no_show_window_days"`
 	NoShowBlockDays          int32           `json:"no_show_block_days"`
 	MinAge                   sql.NullInt32   `json:"min_age"`
+	ResidentsOnly            bool            `json:"residents_only"`
 	UsageRulesText           sql.NullString  `json:"usage_rules_text"`
 	CreatedAt                time.Time       `json:"created_at"`
 	UpdatedAt                time.Time       `json:"updated_at"`
@@ -692,6 +693,13 @@ type TenantMembership struct {
 	TenantID  uuid.UUID  `json:"tenant_id"`
 	Role      TenantRole `json:"role"`
 	CreatedAt time.Time  `json:"created_at"`
+}
+
+type TenantResident struct {
+	TenantID   uuid.UUID     `json:"tenant_id"`
+	UserID     uuid.UUID     `json:"user_id"`
+	VerifiedBy uuid.NullUUID `json:"verified_by"`
+	VerifiedAt time.Time     `json:"verified_at"`
 }
 
 type TenantSmtp struct {

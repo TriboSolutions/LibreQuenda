@@ -31,6 +31,7 @@ SELECT
     opens_minute,
     capacity,
     min_age,
+    residents_only,
     usage_rules_text
 FROM
     facility
@@ -106,6 +107,7 @@ SELECT
     f.no_show_block_days,
     f.capacity,
     f.min_age,
+    f.residents_only,
     t.timezone
 FROM
     facility f

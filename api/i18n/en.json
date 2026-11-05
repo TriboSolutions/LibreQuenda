@@ -206,7 +206,14 @@
     "event_capacity_below_joined": "{{0}} people have already joined: the capacity cannot be lower.",
     "event_facility_fixed": "An event cannot move to another facility. Cancel it and create a new one.",
     "event_failed": "Could not save the event. Try again.",
-    "events_load_failed": "Could not load the events."
+    "events_load_failed": "Could not load the events.",
+    "residents_only": "This facility is only for residents verified by the council. Ask the council to verify your account.",
+    "guest_residents_only": "This facility is only for residents verified by the council: to join, sign in with a verified account.",
+    "resident_user_not_found": "There is no account with that email verified. The person must sign in once first.",
+    "resident_already_verified": "That person is already verified in this council.",
+    "resident_not_found": "That person is not verified in this council.",
+    "resident_save_failed": "The verification could not be saved.",
+    "residents_load_failed": "The verified residents could not be loaded."
   },
   "email": {
     "greeting": "Hello {{0}},",

@@ -52,6 +52,7 @@ export type Facility = {
   weekly_opening: { weekday: number; at: string } | null // instead of max_advance_hours: next week opens then (ISO weekday, "20:00")
   capacity: number // people per booking, owner included; 0 without a limit
   min_age: number | null // age control: null = none
+  residents_only: boolean // only the council's verified residents book or join (Me.resident_of)
   usage_rules: string
   windows: { opens_at: string; closes_at: string }[]
   closures: { starts_at: string; ends_at: string; reason: string }[]
@@ -209,6 +210,7 @@ export type FacilityInput = {
   is_active: boolean
   slot_minutes: number
   min_age: number | null // age control: null = none, else 1 to 80
+  residents_only: boolean // only the council's verified residents (its Veciños tab) book or join
   usage_rules: string
 }
 
@@ -513,6 +515,7 @@ export type FacilityDetails = {
   slot_minutes: number
   min_cancel_hours: number
   min_age: number | null // age control: null = none
+  residents_only: boolean // only the council's verified residents join: no guests
   usage_rules: string
 }
 
@@ -662,7 +665,16 @@ export type Me = {
   rating?: RatingSummary | null // what others gave them after public bookings; null until someone did
   // council roles waiting for this person: granted once the email is verified
   pending_invitations?: { tenant_name: string; tenant_slug: string }[]
+  // councils that verified this person as their resident: they book at their residents-only facilities
+  resident_of?: { tenant_name: string; tenant_slug: string; verified_at: string }[]
 }
+
+/** Someone a council verified as its resident (its Veciños tab). */
+export type Resident = { user_id: string; email: string; full_name: string; verified_at: string; verified_by: string }
+
+export type ResidentsPage = { residents: Resident[]; total: number; page: number; page_size: number }
+
+export type ResidentSort = 'name' | 'recent'
 
 /** The sign-in account (kept by Zitadel), edited from /perfil. */
 export type Account = {
@@ -1174,6 +1186,17 @@ export const api = {
       if (filter.status) query.set('status', filter.status)
       return request<{ issues: CouncilIssue[] }>(`/tenants/${encodeURIComponent(slug)}/admin/issues${query.size ? `?${query}` : ''}`, { token })
     },
+    residents: (token: string, slug: string, filter: { q?: string; sort?: ResidentSort; page?: number } = {}) => {
+      const query = new URLSearchParams()
+      if (filter.q) query.set('q', filter.q)
+      if (filter.sort) query.set('sort', filter.sort)
+      if (filter.page && filter.page > 1) query.set('page', String(filter.page))
+      return request<ResidentsPage>(`/tenants/${encodeURIComponent(slug)}/admin/residents${query.size ? `?${query}` : ''}`, { token })
+    },
+    addResident: (token: string, slug: string, email: string) =>
+      request<void>(`/tenants/${encodeURIComponent(slug)}/admin/residents`, { token, method: 'POST', body: { email } }),
+    removeResident: (token: string, slug: string, userId: string) =>
+      request<void>(`/tenants/${encodeURIComponent(slug)}/admin/residents/${userId}`, { token, method: 'DELETE' }),
     newIssueCount: (token: string, slug: string) => request<{ new: number }>(`/tenants/${encodeURIComponent(slug)}/admin/issues/count`, { token }),
     changeIssue: (token: string, slug: string, id: string, input: { status: IssueStatus; staff_note: string }) =>
       request<CouncilIssue>(`/tenants/${encodeURIComponent(slug)}/admin/issues/${id}`, { token, method: 'PUT', body: input }),

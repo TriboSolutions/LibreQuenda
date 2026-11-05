@@ -19,6 +19,7 @@ type ExportResponse struct {
 	Account        ExportAccount         `json:"account"`
 	IsSuperadmin   bool                  `json:"is_superadmin"`
 	Roles          []TenantRoleDto       `json:"roles"`
+	ResidentOf     []ResidentOfDto       `json:"resident_of"` // councils that verified the user as their resident
 	Bookings       []ExportBooking       `json:"bookings"`
 	Participations []ExportParticipation `json:"participations"` // bookings of someone else the user joined
 	Notifications  []ExportNotification  `json:"notifications"`

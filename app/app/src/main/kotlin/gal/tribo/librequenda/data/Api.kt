@@ -131,6 +131,7 @@ data class Me(
     val emailReminders: Boolean,
     val showRecommendations: Boolean,
     val rating: RatingSummary? = null, // what others gave them after public bookings; null until someone did
+    val residentOf: Set<String> = emptySet(), // slugs of the councils that verified them as their resident
 ) {
     val initials: String
         get() = (fullName.ifBlank { email }).split(Regex("\\s+")).filter { it.isNotBlank() }
@@ -155,6 +156,7 @@ internal fun JSONObject.toMe() = Me(
     emailReminders = optBoolean("email_reminders"),
     showRecommendations = optBoolean("show_recommendations"),
     rating = ratingSummary("rating"),
+    residentOf = optJSONArray("resident_of")?.let { a -> List(a.length()) { a.getJSONObject(it).optString("tenant_slug") }.toSet() } ?: emptySet(),
 )
 
 /** The installation's own name and logo (GET /api/branding), set by a superadministrator; empty = LibreQuenda's. */

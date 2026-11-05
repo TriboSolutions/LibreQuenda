@@ -156,5 +156,11 @@
   "rating": {
     "title": "La teva valoració",
     "help": "El que t’han donat, d’1 a 5 estrelles, les persones amb qui has jugat reserves públiques. Ningú no veu qui ha donat cada una."
+  },
+  "resident": {
+    "title": "Veí verificat",
+    "help": "Els ajuntaments que han comprovat que hi ets veí. Algunes instal·lacions són només per als seus veïns verificats.",
+    "none": "Cap ajuntament ha verificat el teu compte. Si una instal·lació és només per a veïns, demana a l’ajuntament que et verifiquin amb el correu d’aquest compte.",
+    "since": "Verificat des del {{date}}"
   }
 }
