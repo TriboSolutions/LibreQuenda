@@ -39,6 +39,8 @@ installation's Zitadel, with the «LibreQuenda MCP» application that `zitadel-s
 | `book_turn` | yes | Book a free turn, once they accepted the facility's usage rules |
 | `cancel_booking` | yes | Cancel one of their bookings, before its deadline |
 | `join_public_booking` | yes | Join a public booking or an event with spots left |
+| `analytics_views` | admin | The read-only analytics views and their columns |
+| `analytics_query` | admin | One read-only `SELECT` on them, for the councils they run (see [analytics.md](analytics.md)) |
 
 Bookings made through an agent are like any other: confirmation email, reminders, and
 they show on the web and in the app.

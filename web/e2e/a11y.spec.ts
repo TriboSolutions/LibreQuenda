@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, type Page, test } from '@playwright/test'
 import QRCode from 'qrcode'
-import { defaultBranding, mockApp, ME_COUNCIL_ADMIN, ME_UNVERIFIED, staffBooking, staffDay, type MockOptions } from './mocks'
+import { defaultBranding, mockApp, ME_COUNCIL_ADMIN, ME_SUPERADMIN_ONLY, ME_UNVERIFIED, staffBooking, staffDay, type MockOptions } from './mocks'
 
 // Every automatable WCAG 2.1 A and AA rule, plus axe's AAA rules (7:1 contrast and the like).
 const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag2aaa', 'best-practice']
@@ -1098,6 +1098,98 @@ test.describe('keyboard', () => {
     await page.getByRole('menuitemradio', { name: '4 ou máis' }).click()
     await asked
     await expect(page.getByRole('button', { name: /^4 ou máis\s*, Valoración/ })).toBeVisible()
+    await page.mouse.move(0, 0)
+    await expectAccessible(page)
+  })
+
+  test('a superadministrator sets the data assistant’s model; the key is never shown back', async ({ page }) => {
+    let saved: unknown = null
+    await open(page, '/admin/axustes')
+    await page.route('**/api/admin/ai-settings', async (route) => {
+      if (route.request().method() === 'PUT') saved = route.request().postDataJSON()
+      await route.fulfill({ json: { enabled: saved !== null, provider: 'openai', base_url: 'http://ollama:11434/v1', model: 'qwen3', has_key: true, updated_at: null } })
+    })
+    await page.reload()
+    const panel = page.getByRole('region', { name: 'Asistente de datos (IA)' })
+    await expect(panel.getByLabel('Enderezo da API')).toHaveValue('http://ollama:11434/v1')
+    await expect(panel.getByLabel('Chave da API')).toHaveValue('') // never sent back
+    await expect(panel.getByLabel('Chave da API')).toHaveAttribute('placeholder', '••••••••••••••••') // a key is saved
+    await panel.getByRole('switch', { name: 'Activado' }).click()
+    await page.mouse.move(0, 0)
+    await expectAccessible(page)
+    await panel.getByRole('button', { name: 'Gardar' }).click()
+    await expect(panel.getByText('Gardouse o modelo.')).toBeVisible()
+    expect(saved).toEqual({ enabled: true, provider: 'openai', base_url: 'http://ollama:11434/v1', model: 'qwen3', api_key: '' })
+  })
+
+  test('the data bubble shows only while the assistant is on, and opens the council’s data page', async ({ page }) => {
+    await open(page, '/lugo/admin')
+    await expect(page.getByRole('link', { name: 'Fala cos datos' })).toHaveCount(0) // off
+    await page.route('**/api/me', (route) => route.fulfill({ json: { ...ME_COUNCIL_ADMIN, analytics_enabled: true } }))
+    await page.reload()
+    await page.getByRole('link', { name: 'Fala cos datos' }).click()
+    await expect(page).toHaveURL(/\/datos\?concello=lugo$/)
+    await expect(page.getByRole('heading', { level: 1, name: 'Fala cos datos' })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Fala cos datos' })).toHaveCount(0) // not on its own page
+  })
+
+  test('a superadministrator talks to the data only inside a council', async ({ page }) => {
+    await open(page, '/')
+    await page.route('**/api/me', (route) => route.fulfill({ json: { ...ME_SUPERADMIN_ONLY, analytics_enabled: true } }))
+    await page.route('**/api/admin/tenants', (route) => route.fulfill({ json: { tenants: [{ slug: 'lugo', name: 'Concello de Lugo' }, { slug: 'lalin', name: 'Concello de Lalín' }] } }))
+    await page.reload()
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Fala cos datos' })).toHaveCount(0) // about no council
+    await page.goto('/lugo/admin')
+    await page.getByRole('link', { name: 'Fala cos datos' }).click()
+    await expect(page).toHaveURL(/\/datos\?concello=lugo$/)
+    await expect(page.getByRole('combobox', { name: 'Datos de' })).toHaveText('Concello de Lugo')
+  })
+
+  test('a council talks to its data, and sees each answer with the queries it ran', async ({ page }) => {
+    await open(page, '/datos')
+    await page.route('**/api/me', (route) => route.fulfill({ json: { ...ME_COUNCIL_ADMIN, analytics_enabled: true } }))
+    await page.reload()
+    let asked: unknown = null
+    await page.route('**/api/tenants/lugo/admin/analytics/ask', async (route) => {
+      asked = route.request().postDataJSON()
+      await route.fulfill({
+        json: {
+          answer: 'Pista de pádel 1 tivo **12 cancelacións** en outubro. <b>non é HTML</b> [ligazón](https://example.com) ![imaxe](https://example.com/x.png)',
+          steps: [{ sql: "SELECT count(*) FROM booking WHERE status = 'cancelled'", result: { columns: ['count'], rows: [[12]], truncated: false } }],
+          charts: [
+            {
+              kind: 'bar',
+              title: 'Cancelacións por mes',
+              x: 'x',
+              series: [{ key: 's0', label: 'Cancelacións' }],
+              rows: [
+                { x: 'setembro', s0: 7 },
+                { x: 'outubro', s0: 12 },
+              ],
+              sql: 'SELECT …',
+            },
+            { kind: 'heatmap', title: 'Reservas por día e hora', x: 'x', y: 'y', series: [{ key: 's0', label: 'Reservas' }], rows: [{ x: '18', y: 'luns', s0: 4 }], sql: 'SELECT …' },
+          ],
+        },
+      })
+    })
+    await page.getByLabel('A túa pregunta').fill('Cantas cancelacións houbo en outubro?')
+    await page.getByRole('button', { name: 'Preguntar' }).click()
+    const conversation = page.getByRole('list', { name: 'Fala cos datos' })
+    await expect(conversation.locator('strong', { hasText: '12 cancelacións' })).toBeVisible() // Markdown
+    await expect(conversation.getByText('<b>non é HTML</b>', { exact: false })).toBeVisible() // never HTML
+    await expect(conversation.getByText('ligazón')).toBeVisible() // a link's text, not the link
+    await expect(conversation.getByRole('link')).toHaveCount(0)
+    await expect(conversation.getByRole('img', { name: /ligazón|imaxe/ })).toHaveCount(0)
+    // the charts it drew, each with its table
+    const chart = conversation.getByRole('figure', { name: 'Cancelacións por mes' })
+    await expect(chart.locator('.recharts-bar-rectangle')).toHaveCount(2)
+    await chart.getByText('Ver os datos en táboa').click()
+    await expect(chart.getByRole('row', { name: 'outubro 12' })).toBeVisible()
+    await expect(conversation.getByRole('figure', { name: 'Reservas por día e hora' })).toBeVisible()
+    expect(asked).toEqual({ question: 'Cantas cancelacións houbo en outubro?' })
+    await expect(conversation.getByText('SELECT', { exact: false })).toHaveCount(0) // the SQL is not shown
     await page.mouse.move(0, 0)
     await expectAccessible(page)
   })

@@ -844,6 +844,8 @@
     "actions": {
       "facility.created": "Ha creat una instal·lació",
       "facility.duplicated": "Ha duplicat una instal·lació",
+      "platform.ai_settings_changed": "Ha canviat el model de l’assistent de dades",
+      "analytics.asked": "Ha preguntat a les dades",
       "facility.updated": "Ha editat una instal·lació",
       "facility.deleted": "Ha eliminat una instal·lació",
       "facility.schedule_changed": "Ha canviat l’horari",
@@ -1052,5 +1054,40 @@
   "platformSettings": {
     "title": "Configuració de la plataforma",
     "back": "Torna"
+  },
+  "analytics": {
+    "title": "Parla amb les dades",
+    "help": "Un assistent d’IA consulta les dades de {{scope}} (només lectura, sense dades personals) i respon, amb gràfics si els hi demanes.",
+    "question": "La teva pregunta",
+    "placeholder": "P. ex.: quina instal·lació va tenir més cancel·lacions el mes passat? Quines hores es reserven més els dissabtes?",
+    "ask": "Pregunta",
+    "thinking": "Consultant les dades…",
+    "bubble": "Parla amb les dades",
+    "scope": "Dades de",
+    "back": "Torna",
+    "empty": "Pregunta el que vulguis saber: reserves, ocupació, cancel·lacions, incidències…",
+    "you": "Tu",
+    "assistant": "Assistent",
+    "clear": "Nova conversa",
+    "off": "L’assistent de dades no està activat o no tens permís per fer-lo servir."
+  },
+  "aiSettings": {
+    "title": "Assistent de dades (IA)",
+    "help": "El model de llenguatge que respon les preguntes sobre les dades, als indicadors dels ajuntaments i a l’analítica de la plataforma.",
+    "enabled": "Activat",
+    "enabledHelp": "Apagat, ningú no pot preguntar a les dades.",
+    "provider": "Tipus d’API",
+    "providerOpenai": "Compatible amb OpenAI (OpenAI, Mistral, Groq, Ollama, vLLM…)",
+    "providerAnthropic": "Anthropic",
+    "baseUrl": "Adreça de l’API",
+    "baseUrlHelp": "Per exemple https://api.openai.com/v1, o un servidor propi com http://ollama:11434/v1.",
+    "model": "Model",
+    "apiKey": "Clau de l’API",
+    "apiKeyKept": "N’hi ha una de desada: escriu-ne una altra només per canviar-la.",
+    "apiKeyHelp": "Es desa xifrada i no es torna a mostrar. Un model local pot no necessitar-la.",
+    "privacy": "Els resultats de les consultes (agregats, sense noms, correus ni textos lliures) s’envien a aquest model. Amb un proveïdor extern surten de la instal·lació; un model propi els hi manté.",
+    "save": "Desa",
+    "saving": "Desant…",
+    "saved": "S’ha desat el model."
   }
 }

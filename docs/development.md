@@ -38,4 +38,4 @@ web/       React web app
 - [Running a server](self-hosting.md), [check-in at the entrance](check-in.md), [activity log](audit-log.md), [proposal: a personal home](specs/feed.md)
 
 - [Contest bases (v3, Galician)](https://www.agasol.gal/wp-content/uploads/2026/10/Bases_I_Certame_GOBTEC_2026_GL_v3.pdf), published by AGASOL
-- API spec: [`docs/openapi/openapi.yaml`](openapi/openapi.yaml) (OpenAPI 3.1); agents: [MCP server](mcp.md)
+- API spec: [`docs/openapi/openapi.yaml`](openapi/openapi.yaml) (OpenAPI 3.1); agents: [MCP server](mcp.md); [asking the data](analytics.md)

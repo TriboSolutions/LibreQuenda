@@ -269,6 +269,8 @@ const me: Me = {
 export const ME_UNVERIFIED: Me = { ...me, email_verified: false }
 // an administrator of Lugo who is not a superadministrator
 export const ME_COUNCIL_ADMIN: Me = { ...me, is_superadmin: false }
+/** A superadministrator who runs no council of their own. */
+export const ME_SUPERADMIN_ONLY: Me = { ...me, roles: [] }
 
 const account: Account = {
   given_name: 'Ana',

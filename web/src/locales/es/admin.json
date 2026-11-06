@@ -844,6 +844,8 @@
     "actions": {
       "facility.created": "Creó una instalación",
       "facility.duplicated": "Duplicó una instalación",
+      "platform.ai_settings_changed": "Cambió el modelo del asistente de datos",
+      "analytics.asked": "Preguntó a los datos",
       "facility.updated": "Editó una instalación",
       "facility.deleted": "Eliminó una instalación",
       "facility.schedule_changed": "Cambió el horario",
@@ -1052,5 +1054,40 @@
   "platformSettings": {
     "title": "Ajustes de la plataforma",
     "back": "Volver"
+  },
+  "analytics": {
+    "title": "Habla con los datos",
+    "help": "Un asistente de IA consulta los datos de {{scope}} (solo lectura, sin datos personales) y responde, con gráficas si se las pides.",
+    "question": "Tu pregunta",
+    "placeholder": "Ej.: ¿qué instalación tuvo más cancelaciones el mes pasado? ¿Qué horas se reservan más los sábados?",
+    "ask": "Preguntar",
+    "thinking": "Consultando los datos…",
+    "bubble": "Habla con los datos",
+    "scope": "Datos de",
+    "back": "Volver",
+    "empty": "Pregunta lo que quieras saber: reservas, ocupación, cancelaciones, incidencias…",
+    "you": "Tú",
+    "assistant": "Asistente",
+    "clear": "Nueva conversación",
+    "off": "El asistente de datos no está activado o no tienes permiso para usarlo."
+  },
+  "aiSettings": {
+    "title": "Asistente de datos (IA)",
+    "help": "El modelo de lenguaje que responde las preguntas sobre los datos, en los indicadores de los ayuntamientos y en la analítica de la plataforma.",
+    "enabled": "Activado",
+    "enabledHelp": "Apagado, nadie puede preguntar a los datos.",
+    "provider": "Tipo de API",
+    "providerOpenai": "Compatible con OpenAI (OpenAI, Mistral, Groq, Ollama, vLLM…)",
+    "providerAnthropic": "Anthropic",
+    "baseUrl": "Dirección de la API",
+    "baseUrlHelp": "Por ejemplo https://api.openai.com/v1, o un servidor propio como http://ollama:11434/v1.",
+    "model": "Modelo",
+    "apiKey": "Clave de la API",
+    "apiKeyKept": "Hay una guardada: escribe otra solo para cambiarla.",
+    "apiKeyHelp": "Se guarda cifrada y no se vuelve a mostrar. Un modelo local puede no necesitarla.",
+    "privacy": "Los resultados de las consultas (agregados, sin nombres, correos ni textos libres) se envían a este modelo. Con un proveedor externo salen de la instalación; un modelo propio los mantiene en ella.",
+    "save": "Guardar",
+    "saving": "Guardando…",
+    "saved": "Se guardó el modelo."
   }
 }

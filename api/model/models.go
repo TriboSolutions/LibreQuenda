@@ -416,6 +416,16 @@ func (ns NullTenantRole) Value() (driver.Value, error) {
 	return string(ns.TenantRole), nil
 }
 
+type AiSetting struct {
+	ID        bool      `json:"id"`
+	Enabled   bool      `json:"enabled"`
+	Provider  string    `json:"provider"`
+	BaseUrl   string    `json:"base_url"`
+	Model     string    `json:"model"`
+	ApiKey    []byte    `json:"api_key"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
 type AppSetting struct {
 	ID                   bool           `json:"id"`
 	AppName              sql.NullString `json:"app_name"`

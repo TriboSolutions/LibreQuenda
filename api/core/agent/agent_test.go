@@ -39,7 +39,7 @@ func TestTools(t *testing.T) {
 		}
 	}
 	slices.Sort(names)
-	var want = []string{"book_turn", "cancel_booking", "facility_details", "join_public_booking", "list_councils", "list_events", "my_bookings", "search_facilities", "sign_in", "sign_out"}
+	var want = []string{"analytics_query", "analytics_views", "book_turn", "cancel_booking", "facility_details", "join_public_booking", "list_councils", "list_events", "my_bookings", "search_facilities", "sign_in", "sign_out"}
 	if !slices.Equal(names, want) {
 		t.Fatalf("tools = %v, want %v", names, want)
 	}
@@ -60,6 +60,7 @@ func TestRefusals(t *testing.T) {
 		{"cancel_booking", map[string]any{"booking_id": "nope"}, "not a booking"},
 		{"join_public_booking", map[string]any{"booking_id": "0192f5a0-1c2d-7e3f-8a9b-0c1d2e3f4a5b"}, "not signed in"},
 		{"search_facilities", map[string]any{"from": "9am"}, "not valid"},
+		{"analytics_query", map[string]any{"sql": "SELECT 1"}, "not signed in"},
 		{"sign_in", map[string]any{}, "session"}, // in memory there is no Mcp-Session-Id to keep a sign-in for
 	}
 	for _, c := range cases {

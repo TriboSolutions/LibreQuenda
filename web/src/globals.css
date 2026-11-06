@@ -65,6 +65,14 @@
   --chart-confirmed: #0a6fb0;
   --chart-cancelled: #c3ccd5;
   --chart-previous: #5b6573; /* the compared period: muted ink, dashed or beside */
+
+  /* the data assistant's charts: one hue per series, told apart by colour-blind people too */
+  --chart-s0: #0a6fb0;
+  --chart-s1: #c25400;
+  --chart-s2: #00845f;
+  --chart-s3: #7b4fc9;
+  --chart-s4: #b8860b;
+  --chart-s5: #c0457f;
 }
 
 /* Dark: true neutral greys (no navy or slate), elevation by lightness alone,
@@ -117,6 +125,13 @@
   --chart-confirmed: #5fb0e6;
   --chart-cancelled: #4a5058;
   --chart-previous: #a9aeb6;
+
+  --chart-s0: #5fb0e6;
+  --chart-s1: #f0954a;
+  --chart-s2: #3cc39a;
+  --chart-s3: #b39af0;
+  --chart-s4: #e3c25a;
+  --chart-s5: #ee8fbb;
 }
 
 @theme inline {

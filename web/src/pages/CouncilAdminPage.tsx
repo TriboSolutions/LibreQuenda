@@ -252,7 +252,7 @@ export function CouncilAdminPage() {
         <TabsContent value="audit">
           <AuditLogPanel load={(filters) => api.council.audit(token, slug, filters)} download={(filters) => api.council.downloadAudit(token, slug, filters)} />
         </TabsContent>
-        <TabsContent value="indicators">
+        <TabsContent value="indicators" className="grid gap-6">
           <Suspense fallback={<Skeleton className="h-96 w-full" />}>
             <IndicatorsPanel slug={slug} facilities={list} />
           </Suspense>

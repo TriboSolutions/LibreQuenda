@@ -29,6 +29,8 @@ The stack refuses to start while a required value is missing. Everything goes th
 
 PostgreSQL is not published on the host: use `docker compose exec db psql -U librequenda`.
 
+Besides the app's own user, the database has a read-only one, `librequenda_analytics` (password `ANALYTICS_DB_PASSWORD`), that can only read the analytics views: the councils' data assistant runs its queries as it once a superadministrator sets a language model in the platform settings. See [analytics.md](analytics.md).
+
 The first Zitadel admin (`ZITADEL_ADMIN_*`), Zitadel's email settings and the `ZITADEL_MASTERKEY` are only applied on the very first start; the masterkey can never be changed afterwards, so back it up. Data lives in Docker volumes (`postgres_data`, `garage_data`, …).
 
 **LibreQuenda starts empty.** The superadministrator (`SUPERADMIN_EMAIL`, by default the Zitadel admin) signs in and opens `/admin` to create councils, invite each council's administrator by email address and manage other superadministrators. The invited person gets an email at once; the role is granted when they sign in with that email verified (sign-in asks for the emailed code), with a notice in the bell.

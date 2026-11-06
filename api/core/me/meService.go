@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"librequenda/auth"
+	"librequenda/core/analytics"
 	"librequenda/model"
 	"librequenda/shared"
 	"librequenda/storage"
@@ -136,6 +137,7 @@ func (s *meService) SyncCurrentUser(ctx context.Context, session auth.Session) (
 		}
 	}
 	response.ResidentRequests = mapResidentRequests(requests)
+	response.AnalyticsEnabled = (isSuperadmin || len(response.Roles) > 0) && analytics.Enabled(ctx, s.db)
 	response.PendingInvitations = make([]PendingInvitationDto, 0, len(pending))
 	for _, p := range pending {
 		response.PendingInvitations = append(response.PendingInvitations, PendingInvitationDto{TenantName: p.TenantName, TenantSlug: p.TenantSlug})

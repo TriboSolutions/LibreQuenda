@@ -7,6 +7,9 @@ import (
 
 var DB_USER = os.Getenv("DB_USER") // librequenda_app, never the owner
 var DB_PASSWORD = os.Getenv("DB_PASSWORD")
+
+// ANALYTICS_DB_PASSWORD: the read-only analytics user's (librequenda_analytics); "" turns the analytics queries off.
+var ANALYTICS_DB_PASSWORD = os.Getenv("ANALYTICS_DB_PASSWORD")
 var POSTGRES_DB = os.Getenv("POSTGRES_DB")
 var POSTGRES_PORT = os.Getenv("POSTGRES_PORT")
 var VERSION = os.Getenv("VERSION")

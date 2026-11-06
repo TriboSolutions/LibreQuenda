@@ -18,6 +18,8 @@ const instructions = `LibreQuenda books municipal sports facilities (Galician co
 
 To book: search_facilities (or list_councils first) finds facilities with their free turns and public games for a day; facility_details gives one facility's turns, its usage rules and conditions. Before booking, show the person the usage rules and the cancellation deadline and get their agreement. Booking, cancelling, joining and my_bookings need the person signed in: call sign_in, show them the link and the code it returns, wait until they say they approved, then call sign_in again (or the tool you need). Nobody's password or tokens ever pass through you.
 
+Council administrators can also analyse their data: analytics_views lists the read-only views, analytics_query runs one SELECT on them (their councils only).
+
 Every rule of the web applies (booking window, per-person limits, residents-only facilities, minimum age, overlapping bookings); when one refuses, tell the person why in their own words.`
 
 func newServer(db *sql.DB) *mcp.Server {
@@ -33,6 +35,8 @@ func newServer(db *sql.DB) *mcp.Server {
 	mcp.AddTool(server, &mcp.Tool{Name: "my_bookings", Description: "The signed-in person's upcoming bookings, their own and the ones they joined.", Annotations: readOnly}, a.myBookings)
 	mcp.AddTool(server, &mcp.Tool{Name: "book_turn", Description: "Books a free turn for the signed-in person, after they accepted the facility's usage rules. They get the confirmation by email and see it on the web and the app.", Annotations: &mcp.ToolAnnotations{OpenWorldHint: new(false)}}, a.book)
 	mcp.AddTool(server, &mcp.Tool{Name: "cancel_booking", Description: "Cancels one of the signed-in person's own bookings, while its cancellation deadline allows. Whoever joined it is told.", Annotations: &mcp.ToolAnnotations{DestructiveHint: new(true), OpenWorldHint: new(false)}}, a.cancel)
+	mcp.AddTool(server, &mcp.Tool{Name: "analytics_views", Description: "For council administrators (signed in): the read-only analytics views (bookings, occupancy, cancellations, check-ins, ratings, issues… without personal data or free text) and their columns, to write analytics_query SQL.", Annotations: readOnly}, a.analyticsViews)
+	mcp.AddTool(server, &mcp.Tool{Name: "analytics_query", Description: "For council administrators (signed in): runs one read-only SELECT on the analytics views, limited to the councils they run, and returns its columns and rows (at most 500). Aggregate: counts, rates and averages by facility, day, hour…", Annotations: readOnly}, a.analyticsQuery)
 	mcp.AddTool(server, &mcp.Tool{Name: "join_public_booking", Description: "Joins someone's public booking or a council event that has spots left, for the signed-in person.", Annotations: &mcp.ToolAnnotations{OpenWorldHint: new(false)}}, a.join)
 	return server
 }

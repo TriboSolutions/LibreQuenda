@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"librequenda/audit"
 	"librequenda/auth"
+	"librequenda/core/analytics"
 	"librequenda/core/me"
 	"librequenda/model"
 	"librequenda/shared"
@@ -457,4 +458,42 @@ func (h *platformHandler) SaveBookingPolicy(w http.ResponseWriter, r *http.Reque
 		audit.Changed(r.Context(), "one council per account", before.OneCouncilPerAccount, response.OneCouncilPerAccount)
 	}
 	send(w, r, response, err)
+}
+
+// GetAISettings: the analytics assistant's language model, without its key.
+func (h *platformHandler) GetAISettings(w http.ResponseWriter, r *http.Request) {
+	if _, ok := h.superadmin(w, r); !ok {
+		return
+	}
+	var settings, err = analytics.GetSettings(r.Context(), h.db)
+	if err != nil {
+		helpers.SendI18NErrorResponse(w, r, http.StatusInternalServerError, "errors.ai_settings_failed")
+		return
+	}
+	helpers.SendSuccessResponse(w, settings)
+}
+
+// SaveAISettings: the model (an empty api_key keeps the saved one).
+func (h *platformHandler) SaveAISettings(w http.ResponseWriter, r *http.Request) {
+	if _, ok := h.superadmin(w, r); !ok {
+		return
+	}
+	var input analytics.SettingsInput
+	if !decode(w, r, &input) {
+		return
+	}
+	if key := input.Validate(); key != "" {
+		helpers.SendI18NErrorResponse(w, r, http.StatusUnprocessableEntity, key)
+		return
+	}
+	if err := analytics.SaveSettings(r.Context(), h.db, input); err != nil {
+		helpers.SendI18NErrorResponse(w, r, http.StatusInternalServerError, "errors.ai_settings_failed")
+		return
+	}
+	var settings, err = analytics.GetSettings(r.Context(), h.db)
+	if err != nil {
+		helpers.SendI18NErrorResponse(w, r, http.StatusInternalServerError, "errors.ai_settings_failed")
+		return
+	}
+	helpers.SendSuccessResponse(w, settings)
 }

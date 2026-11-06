@@ -55,6 +55,8 @@ func (r *counciladminRoutes) RegisterRoutes() {
 		{Path: "/tenants/{slug}/admin/bookings", Method: http.MethodPost, Handler: h.CreateStaffBooking},
 		{Path: "/tenants/{slug}/admin/bookings/{bookingId}/cancel", Method: http.MethodPost, Handler: h.CancelStaffBooking},
 		{Path: "/tenants/{slug}/admin/bookings/{bookingId}/participants", Method: http.MethodPost, Handler: h.AddEventParticipant},
+		// the analytics assistant: a question about this council's data
+		{Path: "/tenants/{slug}/admin/analytics/ask", Method: http.MethodPost, Handler: h.AskAnalytics},
 		{Path: "/tenants/{slug}/admin/bookings/{bookingId}/checkin", Method: http.MethodPost, Handler: h.StaffCheckIn},
 		{Path: "/tenants/{slug}/admin/bookings/{bookingId}/checkin", Method: http.MethodDelete, Handler: h.UndoStaffCheckIn},
 		{Path: "/tenants/{slug}/admin/events", Method: http.MethodGet, Handler: h.ListEvents},

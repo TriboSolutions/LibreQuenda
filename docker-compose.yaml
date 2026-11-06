@@ -17,6 +17,7 @@ services:
       DB_SEED: "false" # never demo data in production
       ZITADEL_DB_PASSWORD: ${ZITADEL_DB_PASSWORD:?set ZITADEL_DB_PASSWORD in .env}
       APP_DB_PASSWORD: ${APP_DB_PASSWORD:?set APP_DB_PASSWORD in .env}
+      ANALYTICS_DB_PASSWORD: ${ANALYTICS_DB_PASSWORD:?set ANALYTICS_DB_PASSWORD in .env} # the read-only analytics user (db/init/08_analytics_role.sh)
 
       TZ: Europe/Madrid
     healthcheck:
@@ -35,6 +36,7 @@ services:
       # not the owner: row-level security applies to this role (db/init/04_app_role.sh)
       DB_USER: librequenda_app
       DB_PASSWORD: ${APP_DB_PASSWORD:?set APP_DB_PASSWORD in .env}
+      ANALYTICS_DB_PASSWORD: ${ANALYTICS_DB_PASSWORD:?set ANALYTICS_DB_PASSWORD in .env} # the analytics assistant's queries, read-only
       POSTGRES_DB: ${POSTGRES_DB}
       VERSION: ${APP_VERSION}
 
