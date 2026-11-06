@@ -1122,11 +1122,14 @@ test.describe('keyboard', () => {
     expect(saved).toEqual({ enabled: true, provider: 'openai', base_url: 'http://ollama:11434/v1', model: 'qwen3', api_key: '' })
   })
 
-  test('the data bubble shows only while the assistant is on, and opens the council’s data page', async ({ page }) => {
-    await open(page, '/lugo/admin')
+  test('the data bubble shows only in the indicators while the assistant is on, and opens the council’s data page', async ({ page }) => {
+    await open(page, '/lugo/admin?vista=indicadores')
     await expect(page.getByRole('link', { name: 'Fala cos datos' })).toHaveCount(0) // off
     await page.route('**/api/me', (route) => route.fulfill({ json: { ...ME_COUNCIL_ADMIN, analytics_enabled: true } }))
-    await page.reload()
+    await page.goto('/lugo/admin')
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Fala cos datos' })).toHaveCount(0) // another tab
+    await page.goto('/lugo/admin?vista=indicadores')
     await page.getByRole('link', { name: 'Fala cos datos' }).click()
     await expect(page).toHaveURL(/\/datos\?concello=lugo$/)
     await expect(page.getByRole('heading', { level: 1, name: 'Fala cos datos' })).toBeVisible()
@@ -1140,9 +1143,11 @@ test.describe('keyboard', () => {
     await page.reload()
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
     await expect(page.getByRole('link', { name: 'Fala cos datos' })).toHaveCount(0) // about no council
-    await page.goto('/lugo/admin')
+    await page.goto('/lugo/admin?vista=indicadores')
     await page.getByRole('link', { name: 'Fala cos datos' }).click()
     await expect(page).toHaveURL(/\/datos\?concello=lugo$/)
+    await expect(page.getByRole('combobox', { name: 'Datos de' })).toHaveText('Concello de Lugo')
+    await page.reload() // straight onto the page: the councils load once the person is known
     await expect(page.getByRole('combobox', { name: 'Datos de' })).toHaveText('Concello de Lugo')
   })
 

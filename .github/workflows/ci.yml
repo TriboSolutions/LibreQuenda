@@ -354,3 +354,15 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=${{ matrix.image }}
+
+  # What main's protection requires of the images: one check that always reports.
+  # The matrix above is skipped on a pull request that does not touch the images,
+  # and a skipped matrix never reports its per-image names.
+  images-done:
+    name: Images
+    needs: [images]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: The images were built and scanned, or were not needed
+        run: test "${{ needs.images.result }}" = success -o "${{ needs.images.result }}" = skipped
