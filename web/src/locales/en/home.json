@@ -81,5 +81,10 @@
     "title": "Type of booking",
     "public": "Public bookings",
     "event": "Events"
+  },
+  "rating": {
+    "title": "Rating",
+    "any": "Any",
+    "atLeast": "{{stars}} or more"
   }
 }

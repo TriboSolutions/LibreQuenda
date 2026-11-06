@@ -3,6 +3,7 @@ package tenants
 import (
 	"math"
 	"net/http"
+	"net/url"
 	"sort"
 	"strconv"
 
@@ -23,7 +24,11 @@ const MaxRadiusKm = 500
 
 // nearFromQuery reads ?lat=&lon=: nil when absent; ok false when given but not valid.
 func nearFromQuery(r *http.Request) (*Near, bool) {
-	var q = r.URL.Query()
+	return NearFromValues(r.URL.Query())
+}
+
+// NearFromValues: lat, lon and radius_km from any set of values, with the same checks.
+func NearFromValues(q url.Values) (*Near, bool) {
 	var latText, lonText = q.Get("lat"), q.Get("lon")
 	if latText == "" && lonText == "" {
 		return nil, q.Get("radius_km") == "" // a radius needs a position

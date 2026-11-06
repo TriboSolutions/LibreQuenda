@@ -41,6 +41,7 @@ data class DayFacility(
     val publicGames: List<PublicGame>, // with spots left
     val distanceKm: Double? = null, // from where the phone is, worked out by the API
     val residentsOnly: Boolean = false, // only the council's verified residents book or join
+    val rating: RatingSummary? = null, // residents' stars after their bookings; null until someone rated
 )
 
 /** Someone's public booking at a facility that day: join it to fill a spot. */
@@ -69,6 +70,7 @@ data class DayQuery(
     val from: String? = null, // HH:MM, the council's time
     val until: String? = null,
     val public: Boolean = false,
+    val minRating: Double? = null, // residents' average at least this; the API leaves out who nobody rated
 )
 
 /**
@@ -88,6 +90,7 @@ suspend fun fetchFacilitiesDay(query: DayQuery, page: Int = 1): Page<DayFacility
         query.from?.let { add("from=$it") }
         query.until?.let { add("until=$it") }
         if (query.public) add("public=true")
+        query.minRating?.let { add("min_rating=$it") }
     }
     val json = Api.getJson(Api.baseUrl + "/facilities/day?" + params.joinToString("&"))
     return json.page("facilities") { f -> f.toDayFacility() }
@@ -112,6 +115,7 @@ private fun JSONObject.toDayFacility(): DayFacility {
             councilSlug = council.getString("slug"),
             councilName = council.optString("name"),
             residentsOnly = f.optBoolean("residents_only"),
+            rating = f.ratingSummary("rating"),
             // the turns still free: what the search offers to book
             freeSlots = List(slots?.length() ?: 0) { slots!!.getJSONObject(it) }
                 .filter { it.optString("status") == "free" }

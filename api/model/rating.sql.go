@@ -374,6 +374,48 @@ func (q *Queries) InsertUserRating(ctx context.Context, arg InsertUserRatingPara
 	return err
 }
 
+const listFacilityRatingSummaries = `-- name: ListFacilityRatingSummaries :many
+SELECT
+    facility_id,
+    AVG(stars)::FLOAT8 AS average,
+    COUNT(*) AS count
+FROM
+    facility_rating
+GROUP BY
+    facility_id
+`
+
+type ListFacilityRatingSummariesRow struct {
+	FacilityID uuid.UUID `json:"facility_id"`
+	Average    float64   `json:"average"`
+	Count      int64     `json:"count"`
+}
+
+// Every rated facility's average and how many rated it, for the lists and their
+// ?min_rating= filter (one query for the whole list, never who rated).
+func (q *Queries) ListFacilityRatingSummaries(ctx context.Context) ([]ListFacilityRatingSummariesRow, error) {
+	rows, err := q.db.QueryContext(ctx, listFacilityRatingSummaries)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListFacilityRatingSummariesRow
+	for rows.Next() {
+		var i ListFacilityRatingSummariesRow
+		if err := rows.Scan(&i.FacilityID, &i.Average, &i.Count); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listPeopleToRate = `-- name: ListPeopleToRate :many
 SELECT
     x.user_id,

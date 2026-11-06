@@ -48,6 +48,10 @@ docker compose pull && docker compose up -d --wait   # update LibreQuenda
 bash install.sh app                                  # build your app again (e.g. after an update)
 ```
 
+## Booking from an AI agent
+
+Each installation also serves an [MCP](https://modelcontextprotocol.io) server at `https://<your domain>/api/mcp`: add it as a connector in Claude, ChatGPT, Cursor or any MCP client, and the agent can find facilities and free turns, and book, cancel or join public games for you. You sign in on your installation's own page with a code; the agent never sees your password. See [docs/mcp.md](docs/mcp.md).
+
 Everything else (configuration options, backups and restoring them, sign-in settings, installing by hand) is in [docs/self-hosting.md](docs/self-hosting.md). For development, see [docs/development.md](docs/development.md).
 
 ## License

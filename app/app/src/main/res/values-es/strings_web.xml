@@ -108,6 +108,9 @@
     <string name="resident_of_none">Ningún ayuntamiento ha verificado tu cuenta. Si una instalación es solo para vecinos, pide en el ayuntamiento que te verifiquen con el correo de esta cuenta.</string>
     <string name="resident_of_since">Verificado desde el %1$s</string>
     <string name="image_wrong_type">Solo imágenes JPG, PNG o WebP.</string>
+    <string name="rating_filter">Valoración</string>
+    <string name="rating_any">Cualquiera</string>
+    <string name="rating_at_least">%1$s o más</string>
     <string name="invite_people">Quién viene</string>
     <string name="invite_you">Tú</string>
     <string name="invite_owner">quien reservó</string>

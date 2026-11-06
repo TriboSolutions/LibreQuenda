@@ -48,3 +48,9 @@ func eligibilityFromRequest(r *http.Request, db *sql.DB) eligibility {
 	}
 	return eligibilityOf(r.Context(), db, claims.Subject)
 }
+
+// ForResident narrows the filters for whoever the token's subject is (Zitadel's
+// "sub"), as the public lists do for someone signed in.
+func (f *Filters) ForResident(ctx context.Context, db *sql.DB, subject string) {
+	f.Eligible = eligibilityOf(ctx, db, subject)
+}

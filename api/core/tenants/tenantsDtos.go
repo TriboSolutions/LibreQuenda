@@ -34,7 +34,8 @@ type FacilityCardDto struct {
 	// what can be joined there, upcoming and with spots left: "public" bookings, "event"s
 	Joinable []string `json:"joinable"`
 	// with ?lat=&lon=: from there, in km (0.1); null without a pin or a position
-	DistanceKm *float64 `json:"distance_km"`
+	DistanceKm *float64        `json:"distance_km"`
+	Rating     *rating.Summary `json:"rating"` // residents' stars after their bookings; null until someone rated
 }
 
 type FacilitiesResponse struct {
@@ -47,8 +48,9 @@ type FacilitiesResponse struct {
 // council and how far it is, for the search across every council.
 type FacilityAnyDayDto struct {
 	FacilityDayDto
-	Council    TenantDto `json:"council"`
-	DistanceKm *float64  `json:"distance_km"`
+	Council    TenantDto       `json:"council"`
+	DistanceKm *float64        `json:"distance_km"`
+	Rating     *rating.Summary `json:"rating"` // residents' stars after their bookings; null until someone rated
 }
 
 // FacilitiesDayResponse: GET /facilities/day, every council's facilities for one day.

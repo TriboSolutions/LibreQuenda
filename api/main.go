@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"librequenda/core/agent"
 	"os"
 	_ "time/tzdata" // council timezones without relying on the image
 
@@ -54,6 +55,7 @@ func main() {
 	branding.SyncZitadel(dbConexion) // Zitadel's emails and sign-in pages named and drawn like the app
 	health.HealthRoutes(dbConexion, router).CreateHealthRoutes()
 	me.MeRoutes(dbConexion, router).RegisterRoutes()
+	agent.AgentRoutes(dbConexion, router).RegisterRoutes() // /api/mcp: agents look up, sign in and book
 	tenants.TenantsRoutes(dbConexion, router).RegisterRoutes()
 	bookings.BookingsRoutes(dbConexion, router).RegisterRoutes()
 	invites.InvitesRoutes(dbConexion, router).RegisterRoutes()

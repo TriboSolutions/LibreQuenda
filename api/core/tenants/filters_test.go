@@ -1,7 +1,9 @@
 package tenants
 
 import (
+	"librequenda/core/rating"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 	"time"
 
@@ -99,5 +101,29 @@ func TestJoinable(t *testing.T) {
 	}
 	if !any.joinable([]string{"public"}) || any.joinable([]string{}) {
 		t.Error("?booking=public,event keeps either")
+	}
+}
+
+func TestMinRating(t *testing.T) {
+	for _, c := range []struct {
+		query string
+		ok    bool
+		want  float64
+	}{
+		{"min_rating=4", true, 4}, {"min_rating=4.5", true, 4.5}, {"min_rating=1", true, 1}, {"min_rating=5", true, 5},
+		{"min_rating=0", false, 0}, {"min_rating=5.1", false, 0}, {"min_rating=NaN", false, 0}, {"min_rating=muy", false, 0},
+	} {
+		var values, _ = url.ParseQuery(c.query)
+		var f, ok = FiltersFromValues(values, false)
+		if ok != c.ok || (ok && f.MinRating != c.want) {
+			t.Errorf("%s: ok %v min %v, want %v %v", c.query, ok, f.MinRating, c.ok, c.want)
+		}
+	}
+	var four = Filters{MinRating: 4}
+	if !four.rated(&rating.Summary{Average: 4.0, Count: 3}) || four.rated(&rating.Summary{Average: 3.9, Count: 30}) || four.rated(nil) {
+		t.Error("min_rating=4: 4.0 passes, 3.9 and a facility nobody rated do not")
+	}
+	if !(Filters{}).rated(nil) {
+		t.Error("without min_rating every facility passes")
 	}
 }
