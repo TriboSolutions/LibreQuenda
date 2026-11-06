@@ -8,13 +8,12 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Skeleton } from '@/components/ui/skeleton'
-import type { AnalyticsAnswer, AnalyticsStep } from '@/lib/api'
+import type { AnalyticsAnswer } from '@/lib/api'
 
 // the charts library loads only when an answer brings a chart
 const AnswerChart = lazy(() => import('@/components/admin/AnswerChart').then((m) => ({ default: m.AnswerChart })))
 
 const MAX_QUESTION = 1000
-const SHOWN_ROWS = 50
 
 type Props = {
   ask: (question: string) => Promise<AnalyticsAnswer>
@@ -24,8 +23,9 @@ type Exchange = { question: string; answer?: AnalyticsAnswer; error?: string }
 
 /**
  * «Talk to the data»: questions in the person's words, one after another; a language
- * model writes SQL on the read-only analytics views and answers each. Every query it
- * ran shows under its answer with what it returned, so each figure can be checked.
+ * model writes SQL on the read-only analytics views and answers each, with charts when
+ * they help (each with its table). The SQL it ran is not shown (it reads like a
+ * debugging tool): the API logs it, per person.
  * Answers are Markdown (bold, lists, tables…), never HTML, and without links or images:
  * the model reads data people wrote, so nothing it writes may send the reader, or the
  * data, anywhere (an image URL would be fetched on its own). Each question
@@ -120,7 +120,6 @@ export function AnalyticsAssistant({ ask }: Props) {
 }
 
 function Answer({ answer }: { answer: AnalyticsAnswer }) {
-  const { t } = useTranslation('admin')
   return (
     <>
       {(answer.charts ?? []).map((chart, i) => (
@@ -133,16 +132,6 @@ function Answer({ answer }: { answer: AnalyticsAnswer }) {
           {answer.answer}
         </ReactMarkdown>
       </div>
-      {answer.steps.length > 0 && (
-        <details className="rounded-md border p-3">
-          <summary className="cursor-pointer text-sm font-medium">{t('analytics.queries', { count: answer.steps.length })}</summary>
-          <ol className="mt-3 grid gap-4">
-            {answer.steps.map((step, i) => (
-              <StepResult key={i} step={step} />
-            ))}
-          </ol>
-        </details>
-      )}
     </>
   )
 }
@@ -173,50 +162,4 @@ const MARKDOWN: Components = {
     </th>
   ),
   td: ({ children }) => <td className="num border-t py-1 pr-4">{children}</td>,
-}
-
-function StepResult({ step }: { step: AnalyticsStep }) {
-  const { t } = useTranslation('admin')
-  const result = step.result
-  return (
-    <li className="grid min-w-0 gap-2">
-      <pre className="overflow-x-auto rounded-md bg-muted p-2 text-xs">
-        <code>{step.sql}</code>
-      </pre>
-      {step.error && <p className="text-sm text-destructive">{step.error}</p>}
-      {result && (
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-xs text-muted-foreground">
-                {result.columns.map((c) => (
-                  <th key={c} scope="col" className="py-1 pr-4 font-normal">
-                    {c}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {result.rows.slice(0, SHOWN_ROWS).map((row, r) => (
-                <tr key={r} className="border-t">
-                  {row.map((value, c) => (
-                    <td key={c} className="num py-1 pr-4">
-                      {value === null ? '—' : String(value)}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {(result.rows.length > SHOWN_ROWS || result.truncated) && (
-            <p className="mt-1 text-xs text-muted-foreground">
-              {t('analytics.moreRows', {
-                shown: Math.min(SHOWN_ROWS, result.rows.length),
-              })}
-            </p>
-          )}
-        </div>
-      )}
-    </li>
-  )
 }

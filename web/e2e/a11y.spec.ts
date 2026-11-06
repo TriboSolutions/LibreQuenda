@@ -1189,8 +1189,7 @@ test.describe('keyboard', () => {
     await expect(chart.getByRole('row', { name: 'outubro 12' })).toBeVisible()
     await expect(conversation.getByRole('figure', { name: 'Reservas por día e hora' })).toBeVisible()
     expect(asked).toEqual({ question: 'Cantas cancelacións houbo en outubro?' })
-    await conversation.getByText('1 consulta').click()
-    await expect(conversation.getByRole('row', { name: '12', exact: true })).toBeVisible()
+    await expect(conversation.getByText('SELECT', { exact: false })).toHaveCount(0) // the SQL is not shown
     await page.mouse.move(0, 0)
     await expectAccessible(page)
   })

@@ -7,8 +7,8 @@ a superadministrator, who sets the model, asks inside one council, never about a
 them at once. While it is switched on, council administrators
 see a «Fala cos datos» bubble in the bottom right corner of every page, which opens the
 conversation (`/datos`; from a council's administration, on that council's data). A language model writes SQL,
-LibreQuenda runs it read-only and the model answers, in Markdown and, when a chart is asked for or helps, with charts (bars, stacked or horizontal bars, lines, pies, heatmaps: the model picks the kind and the SQL of its data, and the chart shows what that SQL returned, never numbers the model wrote); every query it ran shows under
-the answer with what it returned, so each figure can be checked.
+LibreQuenda runs it read-only and the model answers, in Markdown and, when a chart is asked for or helps, with charts (bars, stacked or horizontal bars, lines, pies, heatmaps: the model picks the kind and the SQL of its data, and the chart shows what that SQL returned, never numbers the model wrote). The SQL is not shown to the person (each chart
+has its table); the API logs every query, per person.
 
 Agents do the same through the MCP server (`analytics_views`, `analytics_query`), for
 the councils the signed-in person runs: see [mcp.md](mcp.md).
