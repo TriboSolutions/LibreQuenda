@@ -135,6 +135,29 @@ for (const theme of ['light', 'dark'] as const) {
       await expectAccessible(page, { overlay: true })
     })
 
+    // who is in an event: name, email, stars, resident or not; staff take people out and sign them up
+    test('the people in an event', async ({ page }) => {
+      await open(page, '/lugo/admin?vista=eventos', { theme })
+      let removed = ''
+      await page.route('**/api/tenants/lugo/admin/events/ev1/people/*', async (route) => {
+        removed = `${route.request().method()} ${new URL(route.request().url()).pathname}`
+        await route.fulfill({ status: 204 })
+      })
+      await page.getByRole('listitem').filter({ hasText: 'Torneo de pádel de outono' }).getByRole('button', { name: 'Persoas (2)' }).click()
+      const dialog = page.getByRole('dialog', { name: 'Persoas apuntadas a «Torneo de pádel de outono»' })
+      await expect(dialog.getByText('Lucía Varela Pazos')).toBeVisible()
+      await expect(dialog.getByRole('link', { name: 'lucia.varela@example.com' })).toBeVisible()
+      await expect(dialog.getByText('Veciño', { exact: true })).toBeVisible()
+      await expect(dialog.getByText('Sen conta · 12 anos')).toBeVisible()
+      await expect(dialog.getByRole('button', { name: 'Apuntar a alguén' })).toBeVisible()
+      await page.waitForTimeout(300)
+      await expectAccessible(page, { overlay: true })
+      await dialog.getByRole('button', { name: 'Sacar a Lucía Varela Pazos' }).click()
+      await expect(dialog.getByText(/Avisarémolo na app e por correo/)).toBeVisible()
+      await dialog.getByRole('button', { name: 'Sacar', exact: true }).click()
+      await expect.poll(() => removed).toBe('DELETE /api/tenants/lugo/admin/events/ev1/people/pp1')
+    })
+
     // saving an event with a booking and a closure in the way: the editor page says which, and links to manual booking
     test('event editor page, with what is in the way', async ({ page }) => {
       await open(page, '/lugo/admin?vista=eventos', { theme })

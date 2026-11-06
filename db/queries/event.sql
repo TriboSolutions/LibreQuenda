@@ -197,3 +197,50 @@ ORDER BY
     b.starts_at,
     b.id
 LIMIT 50;
+
+-- name: ListEventPeople :many
+-- Who is in one of the council's events, for its staff: name, email, the stars
+-- others gave them, and whether this council verified them as residents; or a
+-- guest's name and age.
+SELECT
+    p.id,
+    p.user_id,
+    COALESCE(u.full_name, '')::TEXT AS full_name,
+    COALESCE(u.email, '')::TEXT AS email,
+    COALESCE(p.guest_name, '')::TEXT AS guest_name,
+    p.guest_age,
+    p.joined_at,
+    (SELECT COALESCE(AVG(r.stars), 0) FROM user_rating r WHERE p.user_id IS NOT NULL AND r.rated_id = p.user_id)::FLOAT8 AS rating_average,
+    (SELECT COUNT(*) FROM user_rating r WHERE p.user_id IS NOT NULL AND r.rated_id = p.user_id) AS rating_count,
+    EXISTS (SELECT 1 FROM tenant_resident tr WHERE tr.user_id = p.user_id AND tr.tenant_id = sqlc.arg('tenant_id'))::BOOLEAN AS is_resident
+FROM
+    booking_participant p
+    JOIN booking  b ON b.id = p.booking_id
+    JOIN facility f ON f.id = b.facility_id
+    LEFT JOIN app_user u ON u.id = p.user_id
+WHERE
+    p.booking_id = sqlc.arg('booking_id')
+    AND f.tenant_id = sqlc.arg('tenant_id')
+    AND b.kind = 'event'
+ORDER BY
+    p.joined_at,
+    p.id;
+
+-- name: RemoveEventParticipant :one
+-- Staff take someone out of one of the council's events that has not ended;
+-- answers who it was (user_id NULL for a guest), to keep them out and tell them.
+WITH removed AS (
+    DELETE FROM booking_participant p
+    USING booking b, facility f
+    WHERE
+        p.id = sqlc.arg('id')
+        AND p.booking_id = sqlc.arg('booking_id')
+        AND b.id = p.booking_id
+        AND f.id = b.facility_id
+        AND f.tenant_id = sqlc.arg('tenant_id')
+        AND b.kind = 'event'
+        AND b.status = 'confirmed'
+        AND b.ends_at > NOW()
+    RETURNING p.user_id
+)
+SELECT user_id FROM removed;

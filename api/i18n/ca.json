@@ -289,7 +289,9 @@
     },
     "participant_removed": {
       "subject": "Ja no ets a la reserva a {{0}} del {{1}} a les {{2}}",
-      "intro": "{{5}} t’ha tret de la seva reserva pública a {{0}} ({{1}}) el {{2}}, de {{3}} a {{4}}. Ja no t’hi pots tornar a unir, però sí buscar una altra partida o reservar un torn lliure."
+      "intro": "{{5}} t’ha tret de la seva reserva pública a {{0}} ({{1}}) el {{2}}, de {{3}} a {{4}}. Ja no t’hi pots tornar a unir, però sí buscar una altra partida o reservar un torn lliure.",
+      "subject_event": "Has sortit de l’esdeveniment «{{0}}» del {{1}} a les {{2}}",
+      "intro_event": "{{1}} t’ha tret de l’esdeveniment «{{5}}» a {{0}} el {{2}}, de {{3}} a {{4}}. Ja no t’hi pots tornar a apuntar, però sí a altres esdeveniments o reservar un torn lliure."
     },
     "reason": "Motiu: {{0}}",
     "council_admin": {

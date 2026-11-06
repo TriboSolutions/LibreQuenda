@@ -14,6 +14,7 @@ export function noticeKey(n: AppNotification): string {
     if (n.title) return 'type.event_cancelled'
     if (n.by_staff) return 'type.booking_cancelled_by_staff'
   }
+  if (n.type === 'participant_removed' && n.title) return 'type.participant_removed_event' // the council, from one of its events
   if (n.type === 'rating_requested' && n.is_public) return 'type.rating_requested_public'
   return `type.${n.type}`
 }

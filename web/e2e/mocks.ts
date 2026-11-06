@@ -677,6 +677,14 @@ const councilEvents = {
   ],
 }
 
+// who is in the first event: a resident with stars, and a guest
+const eventPeople = {
+  people: [
+    { id: 'pp1', has_account: true, name: 'Lucía Varela Pazos', email: 'lucia.varela@example.com', age: null, rating: { average: 4.5, count: 6 }, is_resident: true, joined_at: at(-20) },
+    { id: 'pp2', has_account: false, name: 'Brais', email: '', age: 12, rating: null, is_resident: false, joined_at: at(-10) },
+  ],
+}
+
 // what is in the way of a new event: one resident's booking and a closure
 export const eventInTheWay = {
   bookings: [{ id: 'b9', starts_at: at(26), ends_at: at(27), holder: 'Lucía Varela', is_event: false }],
@@ -709,6 +717,7 @@ const routes: [RegExp, () => unknown][] = [
   [/^\/tenants\/[^/]+\/admin\/facilities\/[^/]+\/checkin$/, () => checkinSettings],
   [/^\/tenants\/[^/]+\/admin\/booking-rules$/, () => councilRules],
   [/^\/tenants\/[^/]+\/admin\/events$/, () => councilEvents],
+  [/^\/tenants\/[^/]+\/admin\/events\/[^/]+\/people$/, () => eventPeople],
   [/^\/tenants\/[^/]+\/admin\/issues\/count$/, () => ({ new: 1 })],
   [/^\/tenants\/[^/]+\/admin\/issues/, () => councilIssues],
   [/^\/admin\/booking-policy$/, () => ({ one_council_per_account: true })],

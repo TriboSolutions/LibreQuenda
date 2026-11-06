@@ -29,7 +29,8 @@
     "resident_requested": "{{name}} quere ser veciño de {{council}}.",
     "resident_verified": "{{council}} verificoute como veciño: xa podes reservar nas súas instalacións só para veciños.",
     "resident_rejected": "{{council}} non puido verificarte como veciño. Chama ao concello se cres que é un erro.",
-    "resident_revoked": "{{council}} retirou a túa verificación como veciño: cancelouse o que tiñas reservado nas súas instalacións só para veciños."
+    "resident_revoked": "{{council}} retirou a túa verificación como veciño: cancelouse o que tiñas reservado nas súas instalacións só para veciños.",
+    "participant_removed_event": "{{council}} sacoute do evento «{{title}}» en {{facility}}, {{day}} ás {{time}}. Xa non podes volver apuntarte a el."
   },
   "reason": "Motivo: {{reason}}",
   "councilNote": "Nota do concello: {{reason}}",

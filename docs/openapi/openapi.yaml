@@ -3859,6 +3859,81 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
         '500':
           $ref: '#/components/responses/InternalError'
+  /tenants/{slug}/admin/events/{bookingId}/people:
+    get:
+      operationId: adminListEventPeople
+      tags:
+      - Council admin
+      summary: Who is in an event
+      description: |-
+        Each person signed up: an account's name and surnames, email, the stars others gave them and whether this council verified them as its resident; or a guest's name and age. In the order they joined.
+
+        Council administration: the signed-in user must be an administrator of this council, or a superadministrator, signed in with a second factor (when REQUIRE_ADMIN_MFA is on).
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/TenantSlug'
+      - $ref: '#/components/parameters/AdminBookingId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventPeople'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /tenants/{slug}/admin/events/{bookingId}/people/{participantId}:
+    delete:
+      operationId: adminRemoveEventParticipant
+      tags:
+      - Council admin
+      summary: Take someone out of an event
+      description: |-
+        Until the event ends. Someone with an account cannot sign up for it again and is told (in the app and by email: participant_removed, with the event's title) which event, where and when. Audited.
+
+        Council administration: the signed-in user must be an administrator of this council, or a superadministrator, signed in with a second factor (when REQUIRE_ADMIN_MFA is on).
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/TenantSlug'
+      - $ref: '#/components/parameters/AdminBookingId'
+      - name: participantId
+        in: path
+        required: true
+        description: The person's id in the event (EventPerson.id).
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '204':
+          description: Taken out.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
   /tenants/{slug}/admin/indicators:
     get:
       operationId: adminGetIndicators
@@ -5197,6 +5272,55 @@ components:
       - page_size
       - total
       - has_more
+    EventPeople:
+      type: object
+      properties:
+        people:
+          type: array
+          items:
+            $ref: '#/components/schemas/EventPerson'
+      required:
+      - people
+    EventPerson:
+      type: object
+      description: Someone in one of the council's events, as its staff see them.
+      properties:
+        id:
+          type: string
+          format: uuid
+        has_account:
+          type: boolean
+        name:
+          type: string
+          description: The account's name and surnames, or the guest's name.
+        email:
+          type: string
+          description: Empty for a guest.
+        age:
+          type:
+          - integer
+          - 'null'
+          description: A guest's age; null for an account.
+        rating:
+          oneOf:
+          - $ref: '#/components/schemas/RatingSummary'
+          - type: 'null'
+          description: The stars others gave them after public bookings; null until someone did.
+        is_resident:
+          type: boolean
+          description: This council verified them as its resident.
+        joined_at:
+          type: string
+          format: date-time
+      required:
+      - id
+      - has_account
+      - name
+      - email
+      - age
+      - rating
+      - is_resident
+      - joined_at
     RatingSummary:
       type: object
       description: The average stars and how many gave them; never who.

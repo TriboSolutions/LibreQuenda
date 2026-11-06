@@ -543,7 +543,7 @@ function DetailsDialog({ slug, token, booking, zone, facilityName, reader, onClo
 }
 
 /** Inside an event's dialog: sign someone up, with their account or by their name and age. */
-function AddToEvent({ slug, token, bookingId, onAdded }: { slug: string; token: string; bookingId: string; onAdded: (name: string) => void }) {
+export function AddToEvent({ slug, token, bookingId, onAdded }: { slug: string; token: string; bookingId: string; onAdded: (name: string) => void }) {
   const { t } = useTranslation('admin')
   const [open, setOpen] = useState(false)
   const [kind, setKind] = useState<'account' | 'name'>('name')

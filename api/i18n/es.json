@@ -289,7 +289,9 @@
     },
     "participant_removed": {
       "subject": "Ya no estás en la reserva en {{0}} del {{1}} a las {{2}}",
-      "intro": "{{5}} te sacó de su reserva pública en {{0}} ({{1}}) el {{2}}, de {{3}} a {{4}}. Ya no puedes volver a unirte a ella, pero sí buscar otra partida o reservar un turno libre."
+      "intro": "{{5}} te sacó de su reserva pública en {{0}} ({{1}}) el {{2}}, de {{3}} a {{4}}. Ya no puedes volver a unirte a ella, pero sí buscar otra partida o reservar un turno libre.",
+      "subject_event": "Has salido del evento «{{0}}» del {{1}} a las {{2}}",
+      "intro_event": "{{1}} te sacó del evento «{{5}}» en {{0}} el {{2}}, de {{3}} a {{4}}. Ya no puedes volver a apuntarte a él, pero sí a otros eventos o reservar un turno libre."
     },
     "reason": "Motivo: {{0}}",
     "council_admin": {

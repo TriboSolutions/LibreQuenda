@@ -339,6 +339,18 @@ export type CouncilEvent = {
   timezone: string // the council's: the form shows and takes the times in it
 }
 
+/** Someone in one of the council's events, as its staff see them. */
+export type EventPerson = {
+  id: string
+  has_account: boolean
+  name: string // the account's name and surnames, or the guest's name
+  email: string // '' for a guest
+  age: number | null // a guest's
+  rating: RatingSummary | null
+  is_resident: boolean // this council verified them as its resident
+  joined_at: string
+}
+
 export type EventInput = {
   facility_id: string
   starts_at: string // local date-time in the council's time zone: "2026-11-15T10:00"
@@ -1269,6 +1281,10 @@ export const api = {
       request<void>(`/tenants/${encodeURIComponent(slug)}/admin/bookings/${bookingId}/participants`, { token, method: 'POST', body: input }),
     staffCancel: (token: string, slug: string, bookingId: string, reason: string) =>
       request<void>(`/tenants/${encodeURIComponent(slug)}/admin/bookings/${bookingId}/cancel`, { token, method: 'POST', body: { reason } }),
+    eventPeople: (token: string, slug: string, eventId: string) =>
+      request<{ people: EventPerson[] }>(`/tenants/${encodeURIComponent(slug)}/admin/events/${eventId}/people`, { token }),
+    removeEventParticipant: (token: string, slug: string, eventId: string, participantId: string) =>
+      request<void>(`/tenants/${encodeURIComponent(slug)}/admin/events/${eventId}/people/${participantId}`, { token, method: 'DELETE' }),
     events: (token: string, slug: string) => request<{ timezone: string; events: CouncilEvent[] }>(`/tenants/${encodeURIComponent(slug)}/admin/events`, { token }),
     // except: the event being moved, which is not in its own way
     previewEvent: (token: string, slug: string, input: EventInput, except?: string) =>

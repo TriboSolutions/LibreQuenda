@@ -262,6 +262,8 @@ type councilCancellation struct {
 // pick it (NotificationBell, Notifier.describe); "" is the type's own.
 func cancellationVariant(kind model.NotificationType, why councilCancellation) string {
 	switch {
+	case kind == model.NotificationTypeParticipantRemoved && why.Title != "":
+		return "removed_event" // the council took them out of one of its events
 	case kind == model.NotificationTypeParticipantRemoved:
 		return "removed"
 	case kind == model.NotificationTypeBookingCancelled && why.Cause == notice.CauseOwner:
@@ -343,6 +345,9 @@ func notificationEmail(row model.ListPendingEmailsRow, brand branding.Email, now
 				name = t("someone")
 			}
 			view.Intro = t(kind+".intro", row.FacilityName, row.TenantName, date, start, end, name)
+		case "removed_event":
+			view.Intro = t(kind+".intro_event", row.FacilityName, row.TenantName, date, start, end, why.Title)
+			subject = t(kind+".subject_event", why.Title, date, start)
 		case "closure":
 			const stamp = "02/01/2006 15:04"
 			view.Intro = t(kind+".intro_closure", row.FacilityName, row.TenantName, date, start, end,

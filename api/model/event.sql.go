@@ -258,6 +258,87 @@ func (q *Queries) ListClosuresInTheWay(ctx context.Context, arg ListClosuresInTh
 	return items, nil
 }
 
+const listEventPeople = `-- name: ListEventPeople :many
+SELECT
+    p.id,
+    p.user_id,
+    COALESCE(u.full_name, '')::TEXT AS full_name,
+    COALESCE(u.email, '')::TEXT AS email,
+    COALESCE(p.guest_name, '')::TEXT AS guest_name,
+    p.guest_age,
+    p.joined_at,
+    (SELECT COALESCE(AVG(r.stars), 0) FROM user_rating r WHERE p.user_id IS NOT NULL AND r.rated_id = p.user_id)::FLOAT8 AS rating_average,
+    (SELECT COUNT(*) FROM user_rating r WHERE p.user_id IS NOT NULL AND r.rated_id = p.user_id) AS rating_count,
+    EXISTS (SELECT 1 FROM tenant_resident tr WHERE tr.user_id = p.user_id AND tr.tenant_id = $1)::BOOLEAN AS is_resident
+FROM
+    booking_participant p
+    JOIN booking  b ON b.id = p.booking_id
+    JOIN facility f ON f.id = b.facility_id
+    LEFT JOIN app_user u ON u.id = p.user_id
+WHERE
+    p.booking_id = $2
+    AND f.tenant_id = $1
+    AND b.kind = 'event'
+ORDER BY
+    p.joined_at,
+    p.id
+`
+
+type ListEventPeopleParams struct {
+	TenantID  uuid.UUID `json:"tenant_id"`
+	BookingID uuid.UUID `json:"booking_id"`
+}
+
+type ListEventPeopleRow struct {
+	ID            uuid.UUID     `json:"id"`
+	UserID        uuid.NullUUID `json:"user_id"`
+	FullName      string        `json:"full_name"`
+	Email         string        `json:"email"`
+	GuestName     string        `json:"guest_name"`
+	GuestAge      sql.NullInt16 `json:"guest_age"`
+	JoinedAt      time.Time     `json:"joined_at"`
+	RatingAverage float64       `json:"rating_average"`
+	RatingCount   int64         `json:"rating_count"`
+	IsResident    bool          `json:"is_resident"`
+}
+
+// Who is in one of the council's events, for its staff: name, email, the stars
+// others gave them, and whether this council verified them as residents; or a
+// guest's name and age.
+func (q *Queries) ListEventPeople(ctx context.Context, arg ListEventPeopleParams) ([]ListEventPeopleRow, error) {
+	rows, err := q.db.QueryContext(ctx, listEventPeople, arg.TenantID, arg.BookingID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListEventPeopleRow
+	for rows.Next() {
+		var i ListEventPeopleRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.FullName,
+			&i.Email,
+			&i.GuestName,
+			&i.GuestAge,
+			&i.JoinedAt,
+			&i.RatingAverage,
+			&i.RatingCount,
+			&i.IsResident,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listEventsByTenant = `-- name: ListEventsByTenant :many
 SELECT
     b.id,
@@ -521,6 +602,39 @@ func (q *Queries) LockEvent(ctx context.Context, arg LockEventParams) (LockEvent
 		&i.ParticipantCount,
 	)
 	return i, err
+}
+
+const removeEventParticipant = `-- name: RemoveEventParticipant :one
+WITH removed AS (
+    DELETE FROM booking_participant p
+    USING booking b, facility f
+    WHERE
+        p.id = $1
+        AND p.booking_id = $2
+        AND b.id = p.booking_id
+        AND f.id = b.facility_id
+        AND f.tenant_id = $3
+        AND b.kind = 'event'
+        AND b.status = 'confirmed'
+        AND b.ends_at > NOW()
+    RETURNING p.user_id
+)
+SELECT user_id FROM removed
+`
+
+type RemoveEventParticipantParams struct {
+	ID        uuid.UUID `json:"id"`
+	BookingID uuid.UUID `json:"booking_id"`
+	TenantID  uuid.UUID `json:"tenant_id"`
+}
+
+// Staff take someone out of one of the council's events that has not ended;
+// answers who it was (user_id NULL for a guest), to keep them out and tell them.
+func (q *Queries) RemoveEventParticipant(ctx context.Context, arg RemoveEventParticipantParams) (uuid.NullUUID, error) {
+	row := q.db.QueryRowContext(ctx, removeEventParticipant, arg.ID, arg.BookingID, arg.TenantID)
+	var user_id uuid.NullUUID
+	err := row.Scan(&user_id)
+	return user_id, err
 }
 
 const updateEvent = `-- name: UpdateEvent :execrows

@@ -289,7 +289,9 @@
     },
     "participant_removed": {
       "subject": "Saíches da reserva en {{0}} do {{1}} ás {{2}}",
-      "intro": "{{5}} sacoute da súa reserva pública en {{0}} ({{1}}) o {{2}}, de {{3}} a {{4}}. Xa non podes volver unirte a ela, pero si buscar outra partida ou reservar un turno libre."
+      "intro": "{{5}} sacoute da súa reserva pública en {{0}} ({{1}}) o {{2}}, de {{3}} a {{4}}. Xa non podes volver unirte a ela, pero si buscar outra partida ou reservar un turno libre.",
+      "subject_event": "Saíches do evento «{{0}}» do {{1}} ás {{2}}",
+      "intro_event": "{{1}} sacoute do evento «{{5}}» en {{0}} o {{2}}, de {{3}} a {{4}}. Xa non podes volver apuntarte a el, pero si a outros eventos ou reservar un turno libre."
     },
     "reason": "Motivo: {{0}}",
     "council_admin": {
