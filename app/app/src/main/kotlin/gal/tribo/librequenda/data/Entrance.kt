@@ -45,8 +45,8 @@ suspend fun preciseLocation(context: Context): Position {
     return Position(f.latitude, f.longitude, f.accuracy)
 }
 
-/** What the entrance answered: «checked_in», «booked», or why not («too_far»…). */
-data class EntranceResult(val result: String, val canBook: Boolean = false, val bookingId: String? = null) {
+/** What the entrance answered: «checked_in», «booked», or why not («too_far»…); for «not_booked», [reason] says why no turn was booked («slot_booked»…). */
+data class EntranceResult(val result: String, val canBook: Boolean = false, val bookingId: String? = null, val reason: String? = null) {
     val granted get() = result in setOf("checked_in", "already_checked_in", "booked")
 }
 
@@ -65,7 +65,10 @@ suspend fun checkInAtEntrance(
     qrToken?.let { body.put("qr_token", it) }
     nfcToken?.let { body.put("nfc_token", it) }
     val json = Api.postJson(Api.baseUrl + "/tenants/$councilSlug/facilities/$facilitySlug/entrance", body, token)
-    return EntranceResult(json.optString("result"), json.optBoolean("can_book"), json.optString("booking_id").takeIf { it.isNotBlank() })
+    return EntranceResult(
+        json.optString("result"), json.optBoolean("can_book"),
+        json.optString("booking_id").takeIf { it.isNotBlank() }, json.optString("reason").takeIf { it.isNotBlank() },
+    )
 }
 
 /** A facility's door, as its printed QR or NFC tag gives it: /<council>/<facility>/entrada?c=<token> (QR) or ?n=<token> (NFC). */
