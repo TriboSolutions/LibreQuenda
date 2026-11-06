@@ -1144,6 +1144,8 @@ test.describe('keyboard', () => {
     await page.getByRole('link', { name: 'Fala cos datos' }).click()
     await expect(page).toHaveURL(/\/datos\?concello=lugo$/)
     await expect(page.getByRole('combobox', { name: 'Datos de' })).toHaveText('Concello de Lugo')
+    await page.reload() // straight onto the page: the councils load once the person is known
+    await expect(page.getByRole('combobox', { name: 'Datos de' })).toHaveText('Concello de Lugo')
   })
 
   test('a council talks to its data, and sees each answer with the queries it ran', async ({ page }) => {

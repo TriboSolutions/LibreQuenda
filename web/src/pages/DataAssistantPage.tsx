@@ -32,7 +32,9 @@ export function DataAssistantPage() {
   const token = auth.user?.access_token ?? ''
 
   // whose data: one council, of those they run (any one for a superadministrator)
-  const every = useAsync(me?.is_superadmin && me.analytics_enabled ? () => api.admin.councils(token) : null, 'admin:councils')
+  // the key says whether it can load yet: after a reload the person (me) arrives later
+  const listsEvery = Boolean(me?.is_superadmin && me.analytics_enabled && token)
+  const every = useAsync(listsEvery ? () => api.admin.councils(token) : null, `data-councils:${listsEvery}`)
   const councils = me?.is_superadmin
     ? (every.data?.tenants ?? []).map((c) => ({ tenant_slug: c.slug, tenant_name: c.name }))
     : (me?.roles.filter((r) => r.role === 'admin') ?? [])
@@ -42,7 +44,7 @@ export function DataAssistantPage() {
   const options = councils.map((c) => ({ value: c.tenant_slug, label: c.tenant_name }))
 
   let body
-  if (auth.isLoading || (auth.isAuthenticated && (loading || !me || (me.is_superadmin && me.analytics_enabled && !every.data && !every.error)))) {
+  if (auth.isLoading || (auth.isAuthenticated && (loading || !me || (listsEvery && !every.data && !every.error)))) {
     body = <Skeleton className="mt-6 h-40 w-full" />
   } else if (!auth.isAuthenticated) {
     body = (
