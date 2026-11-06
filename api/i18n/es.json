@@ -211,6 +211,7 @@
     "event_failed": "No fue posible guardar el evento. Inténtalo de nuevo.",
     "events_load_failed": "No fue posible cargar los eventos.",
     "residents_only": "Esta instalación es solo para vecinos verificados por el ayuntamiento. Pide en el ayuntamiento que verifiquen tu cuenta.",
+    "staff_residents_only": "Esta cuenta no es vecina verificada del ayuntamiento y la instalación es solo para vecinos. Verifícala en la pestaña Vecinos si lo es.",
     "guest_residents_only": "Esta instalación es solo para vecinos verificados por el ayuntamiento: para unirte, inicia sesión con una cuenta verificada.",
     "resident_user_not_found": "No hay ninguna cuenta con ese correo verificado. La persona tiene que iniciar sesión una vez antes.",
     "resident_already_verified": "Esa persona ya está verificada en este ayuntamiento.",

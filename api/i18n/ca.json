@@ -211,6 +211,7 @@
     "event_failed": "No s’ha pogut desar l’esdeveniment. Torna-ho a provar.",
     "events_load_failed": "No s’han pogut carregar els esdeveniments.",
     "residents_only": "Aquesta instal·lació és només per a veïns verificats per l’ajuntament. Demana a l’ajuntament que verifiquin el teu compte.",
+    "staff_residents_only": "Aquest compte no és veí verificat de l’ajuntament i la instal·lació és només per a veïns. Verifica’l a la pestanya Veïns si ho és.",
     "guest_residents_only": "Aquesta instal·lació és només per a veïns verificats per l’ajuntament: per unir-t’hi, inicia la sessió amb un compte verificat.",
     "resident_user_not_found": "No hi ha cap compte amb aquest correu verificat. La persona ha d’iniciar la sessió una vegada abans.",
     "resident_already_verified": "Aquesta persona ja està verificada en aquest ajuntament.",

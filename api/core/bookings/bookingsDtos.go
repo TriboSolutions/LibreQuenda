@@ -312,16 +312,21 @@ func mapBooking(row model.ListBookingsByUserRow, now time.Time) BookingDto {
 
 // checkinWays: how the owner can check in at the facility, in the order the dialog shows them.
 func checkinWays(row model.ListBookingsByUserRow) []string {
+	return waysIn(row.EntryCode, row.PrintedQr, row.Nfc, row.HasReader, row.StaffConfirm)
+}
+
+// waysIn: the facility's ways in that are on, in the order every dialog shows them.
+func waysIn(entryCode, printedQr, nfc, reader, staff bool) []string {
 	var ways = []string{}
 	for _, way := range []struct {
 		on     bool
 		method model.CheckinMethod
 	}{
-		{row.EntryCode, model.CheckinMethodEntryCode},
-		{row.PrintedQr, model.CheckinMethodPrintedQr},
-		{row.Nfc, model.CheckinMethodNfc},
-		{row.HasReader, model.CheckinMethodReader},
-		{row.StaffConfirm, model.CheckinMethodStaff},
+		{entryCode, model.CheckinMethodEntryCode},
+		{printedQr, model.CheckinMethodPrintedQr},
+		{nfc, model.CheckinMethodNfc},
+		{reader, model.CheckinMethodReader},
+		{staff, model.CheckinMethodStaff},
 	} {
 		if way.on {
 			ways = append(ways, string(way.method))

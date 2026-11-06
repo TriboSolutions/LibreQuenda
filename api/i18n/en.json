@@ -211,6 +211,7 @@
     "event_failed": "Could not save the event. Try again.",
     "events_load_failed": "Could not load the events.",
     "residents_only": "This facility is only for residents verified by the council. Ask the council to verify your account.",
+    "staff_residents_only": "This account is not a verified resident of the council, and the facility is for residents only. Verify it in the Residents tab if it is one.",
     "guest_residents_only": "This facility is only for residents verified by the council: to join, sign in with a verified account.",
     "resident_user_not_found": "There is no account with that email verified. The person must sign in once first.",
     "resident_already_verified": "That person is already verified in this council.",

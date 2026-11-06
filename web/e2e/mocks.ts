@@ -512,6 +512,8 @@ const staffDay: StaffDay = {
   timezone: TZ,
   facility_id: 'f1',
   min_age: 16,
+  checkin_ways: ['entry_code', 'reader', 'staff'],
+  residents_only: false,
   slot_minutes: 60,
   slots: [
     { starts_at: at(0), ends_at: at(1), status: 'booked', booking_id: 'sb3' },

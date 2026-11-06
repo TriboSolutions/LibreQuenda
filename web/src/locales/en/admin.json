@@ -480,6 +480,17 @@
     "viewWeek": "Week",
     "openDay": "Show {{date}}",
     "minAge": "Minimum age {{age}}: check it for people without an account.",
+    "residentsOnly": "Verified residents only: an account must be one; for someone without an account, check it yourself.",
+    "waysTitle": "To check in:",
+    "ways": {
+      "entry_code": "The entry code, from their booking on the web or the app.",
+      "printed_qr": "The QR printed on the door, scanned from their booking.",
+      "nfc": "The NFC tag on the door, holding the phone to it.",
+      "reader": "The booking's QR at the entrance reader (print it or let them take a photo).",
+      "staff": "Staff mark the entry in the calendar."
+    },
+    "waysNone": "This facility has no way to check in switched on.",
+    "waysNoneWithoutAccount": "Without an account, only the QR reader or the staff can check them in, and this facility has neither: their entry will not be recorded.",
     "closedDay": "The facility has no slots on this day.",
     "caption": "Slots and bookings on {{date}}",
     "colContact": "Contact",

@@ -75,6 +75,7 @@ export function StaffBookingsPanel({ slug, facilities, facilityId, onFacilityCha
   const shownDate = calendar.data?.date ?? date
   const step = view === 'week' ? 7 : 1
   const minAge = calendar.data?.days[0]?.min_age
+  const residentsOnly = calendar.data?.days[0]?.residents_only === true
 
   return (
     <section aria-labelledby="staff-title" className="grid gap-4">
@@ -130,6 +131,7 @@ export function StaffBookingsPanel({ slug, facilities, facilityId, onFacilityCha
       </div>
 
       {minAge && <p className="text-muted-foreground">{t('staff.minAge', { age: minAge })}</p>}
+      {residentsOnly && <p className="text-muted-foreground">{t('staff.residentsOnly')}</p>}
 
       {calendar.error && !calendar.data ? (
         <Alert variant="destructive">
@@ -169,6 +171,7 @@ export function StaffBookingsPanel({ slug, facilities, facilityId, onFacilityCha
           booking={details.booking}
           zone={details.day.timezone}
           facilityName={facility.name}
+          reader={details.day.checkin_ways.includes('reader')}
           onClose={() => setDetails(null)}
           onChanged={calendar.reload}
           onCancel={() => {
@@ -393,13 +396,14 @@ type DetailsProps = {
   booking: StaffBooking
   zone: string
   facilityName: string
+  reader: boolean // the facility has a QR reader: only then is the booking's QR any use
   onClose: () => void
   onCancel: () => void
   onChanged: () => void
 }
 
 /** One booking, opened from the calendar: who holds it, how to reach them, and what staff can do. */
-function DetailsDialog({ slug, token, booking, zone, facilityName, onClose, onCancel, onChanged }: DetailsProps) {
+function DetailsDialog({ slug, token, booking, zone, facilityName, reader, onClose, onCancel, onChanged }: DetailsProps) {
   const { t } = useTranslation('admin')
   const labels = { title: t('staff.ticketTitle'), hint: t('staff.ticketHint') }
   const [b, setB] = useState(booking)
@@ -492,7 +496,7 @@ function DetailsDialog({ slug, token, booking, zone, facilityName, onClose, onCa
           </div>
         </div>
         <DialogFooter>
-          {b.checkin_code && (
+          {b.checkin_code && reader && (
             <Button variant="outline" onClick={() => void printTicket(b, zone, facilityName, labels)}>
               <Printer />
               {t('staff.printQr')}
@@ -546,6 +550,9 @@ function BookDialog({ slug, token, facilityName, day, slot, onClose, onBooked }:
   const [error, setError] = useState<string | null>(null)
   const [booked, setBooked] = useState<StaffBooking | null>(null)
   const when = t('staff.when', { facility: facilityName, date: formatLongDate(day.date), start: formatTime(slot.starts_at, zone), end: formatTime(slot.ends_at, zone) })
+  const reader = day.checkin_ways.includes('reader')
+  // someone without an account has no app: only the reader (with the printed QR) and the staff let them in
+  const ways = booked?.has_account ? day.checkin_ways : day.checkin_ways.filter((way) => way === 'reader' || way === 'staff')
 
   const submit = async (event: FormEvent) => {
     event.preventDefault()
@@ -580,14 +587,27 @@ function BookDialog({ slug, token, facilityName, day, slot, onClose, onBooked }:
         {booked ? (
           <div className="grid gap-4">
             <p>{booked.has_account ? t('staff.bookedAccount', { name: booked.name }) : t('staff.bookedName', { name: booked.name })}</p>
-            {booked.checkin_code && (
+            {/* how they get in: the facility's ways; without an account, only the reader's QR (printed) and the staff work */}
+            {ways.length > 0 ? (
+              <div className="grid gap-1">
+                <p className="font-medium">{t('staff.waysTitle')}</p>
+                <ul className="grid list-disc gap-1 pl-5">
+                  {ways.map((way) => (
+                    <li key={way}>{t(`staff.ways.${way}`)}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : (
+              <p className="text-muted-foreground">{t(booked.has_account ? 'staff.waysNone' : 'staff.waysNoneWithoutAccount')}</p>
+            )}
+            {booked.checkin_code && reader && (
               <>
                 <QrImage code={booked.checkin_code} alt={t('staff.qrAlt', { name: booked.name })} className="max-w-48" />
                 <p className="text-muted-foreground">{t('staff.qrHint')}</p>
               </>
             )}
             <DialogFooter>
-              {booked.checkin_code && (
+              {booked.checkin_code && reader && (
                 <Button variant="outline" onClick={() => void printTicket(booked, zone, facilityName, { title: t('staff.ticketTitle'), hint: t('staff.ticketHint') })}>
                   <Printer />
                   {t('staff.printQr')}

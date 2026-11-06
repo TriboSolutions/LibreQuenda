@@ -480,6 +480,17 @@
     "viewWeek": "Semana",
     "openDay": "Ver el {{date}}",
     "minAge": "Edad mínima {{age}}: compruébala a quien no tenga cuenta.",
+    "residentsOnly": "Solo para vecinos verificados: una cuenta tiene que serlo; a quien no tenga cuenta, compruébalo tú.",
+    "waysTitle": "Para registrar la entrada:",
+    "ways": {
+      "entry_code": "El código de entrada, desde su reserva en la web o en la app.",
+      "printed_qr": "El QR impreso en la puerta, escaneándolo desde su reserva.",
+      "nfc": "La etiqueta NFC de la puerta, acercándole el móvil.",
+      "reader": "El QR de la reserva en el lector de la entrada (imprímelo o que le saque una foto).",
+      "staff": "El personal le marca la entrada en el calendario."
+    },
+    "waysNone": "Esta instalación no tiene ninguna forma de registrar la entrada activada.",
+    "waysNoneWithoutAccount": "Sin cuenta solo se puede registrar la entrada con el lector QR o con el personal, y esta instalación no tiene ninguno de los dos: su entrada no quedará registrada.",
     "closedDay": "La instalación no tiene turnos este día.",
     "caption": "Turnos y reservas del {{date}}",
     "colContact": "Contacto",

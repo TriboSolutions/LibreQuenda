@@ -299,6 +299,8 @@ export type StaffDay = {
   slots: StaffSlot[]
   bookings: StaffBooking[]
   staff_checkin: boolean // staff can mark the entry (the facility's Check-in tab)
+  checkin_ways: CheckinMethod[] // how the person gets in; the booking's QR is only any use with 'reader'
+  residents_only: boolean // an account must be a verified resident; a name, staff check
 }
 
 /** The council's own activity, joined like a public booking: any start and end, not the turns. */

@@ -62,6 +62,10 @@ type StaffDayDto struct {
 	Slots        []StaffSlotDto    `json:"slots"`
 	Bookings     []StaffBookingDto `json:"bookings"`      // confirmed, by start
 	StaffCheckin bool              `json:"staff_checkin"` // staff can mark the entry (Entrada tab)
+	// how the person gets in (entry_code, printed_qr, nfc, reader, staff): the booked dialog
+	// explains these, and offers the booking's QR only with a reader
+	CheckinWays   []string `json:"checkin_ways"`
+	ResidentsOnly bool     `json:"residents_only"` // only the council's verified residents: an account must be one; a name, staff check
 }
 
 type StaffSlotDto struct {

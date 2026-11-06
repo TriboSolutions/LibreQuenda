@@ -226,7 +226,8 @@ func checkEligible(ctx context.Context, queries *model.Queries, userId uuid.UUID
 }
 
 // CheckResident: at a residents_only facility, the person is one of the
-// council's verified residents (tenant_resident). Staff booking for someone skip it.
+// council's verified residents (tenant_resident). Staff booking for an account check it
+// too; for a name without an account, staff check it themselves.
 func CheckResident(ctx context.Context, queries *model.Queries, userId uuid.UUID, tenantId uuid.UUID, residentsOnly bool) *shared.ErrorResponse {
 	if !residentsOnly {
 		return nil

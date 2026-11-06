@@ -39,10 +39,11 @@ func (s *bookingsService) StaffDay(ctx context.Context, tenantId uuid.UUID, faci
 	if slotsErr != nil {
 		return nil, slotsErr
 	}
-	var staffCheckin, err = queries.GetFacilityStaffConfirm(ctx, facility.ID)
+	var ways, err = queries.GetFacilityCheckinWays(ctx, facility.ID)
 	if err != nil {
 		return nil, failed
 	}
+	var staffCheckin = ways.StaffConfirm
 	var rows []model.ListFacilityBookingsForStaffRow
 	rows, err = queries.ListFacilityBookingsForStaff(ctx, model.ListFacilityBookingsForStaffParams{
 		FacilityID: facility.ID, TenantID: tenantId, RangeStart: day, RangeEnd: dayEnd,
@@ -56,13 +57,15 @@ func (s *bookingsService) StaffDay(ctx context.Context, tenantId uuid.UUID, faci
 	}
 
 	var dto = &StaffDayDto{
-		Date:         day.Format(time.DateOnly),
-		Timezone:     facility.Timezone,
-		FacilityId:   facility.ID.String(),
-		SlotMinutes:  facility.SlotMinutes,
-		Slots:        staffSlots(slots, bookings),
-		Bookings:     bookings,
-		StaffCheckin: staffCheckin,
+		Date:          day.Format(time.DateOnly),
+		Timezone:      facility.Timezone,
+		FacilityId:    facility.ID.String(),
+		SlotMinutes:   facility.SlotMinutes,
+		Slots:         staffSlots(slots, bookings),
+		Bookings:      bookings,
+		StaffCheckin:  staffCheckin,
+		CheckinWays:   waysIn(ways.EntryCode, ways.PrintedQr, ways.Nfc, ways.HasReader, ways.StaffConfirm),
+		ResidentsOnly: facility.ResidentsOnly,
 	}
 	if facility.MinAge.Valid {
 		dto.MinAge = &facility.MinAge.Int32
@@ -106,6 +109,14 @@ func (s *bookingsService) StaffBook(ctx context.Context, tenantId uuid.UUID, sta
 		}
 		if err != nil {
 			return nil, failed
+		}
+		// residents only: an account must be a verified resident, as when they book themselves
+		// (a name without an account is the staff's to check, like the age)
+		if residentErr := CheckResident(ctx, queries, user.ID, facility.TenantID, facility.ResidentsOnly); residentErr != nil {
+			if residentErr.Code == http.StatusForbidden {
+				return nil, &shared.ErrorResponse{Code: http.StatusForbidden, Message: "errors.staff_residents_only"}
+			}
+			return nil, residentErr
 		}
 		params.UserID = uuid.NullUUID{UUID: user.ID, Valid: true}
 		holder = StaffBookingDto{HasAccount: true, Name: user.FullName.String, Email: user.Email}

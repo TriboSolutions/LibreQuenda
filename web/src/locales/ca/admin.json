@@ -480,6 +480,17 @@
     "viewWeek": "Setmana",
     "openDay": "Mostra el {{date}}",
     "minAge": "Edat mínima {{age}}: comprova-la a qui no tingui compte.",
+    "residentsOnly": "Només per a veïns verificats: un compte ho ha de ser; qui no tingui compte, comprova-ho tu.",
+    "waysTitle": "Per registrar l’entrada:",
+    "ways": {
+      "entry_code": "El codi d’entrada, des de la seva reserva al web o a l’app.",
+      "printed_qr": "El QR imprès a la porta, escanejant-lo des de la seva reserva.",
+      "nfc": "L’etiqueta NFC de la porta, apropant-hi el mòbil.",
+      "reader": "El QR de la reserva al lector de l’entrada (imprimeix-lo o que li faci una foto).",
+      "staff": "El personal li marca l’entrada al calendari."
+    },
+    "waysNone": "Aquesta instal·lació no té cap manera de registrar l’entrada activada.",
+    "waysNoneWithoutAccount": "Sense compte només es pot registrar l’entrada amb el lector QR o amb el personal, i aquesta instal·lació no té cap dels dos: la seva entrada no quedarà registrada.",
     "closedDay": "La instal·lació no té torns aquest dia.",
     "caption": "Torns i reserves del {{date}}",
     "colContact": "Contacte",

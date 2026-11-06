@@ -122,3 +122,18 @@ SET
 WHERE
     holder_name IS NOT NULL
     AND ends_at < NOW() - INTERVAL '30 days';
+
+-- name: GetFacilityCheckinWays :one
+-- How someone gets in at the facility, as residents are told it (ListBookingsByUser):
+-- the staff's booking dialog offers the booking's QR only where a reader takes it.
+SELECT
+    (EXISTS (SELECT 1 FROM checkin_device d WHERE d.facility_id = f.id) AND COALESCE(c.qr_reader, TRUE))::BOOLEAN AS has_reader,
+    (COALESCE(c.printed_qr, FALSE) AND f.latitude IS NOT NULL)::BOOLEAN AS printed_qr,
+    (COALESCE(c.entry_code, FALSE) AND f.latitude IS NOT NULL)::BOOLEAN AS entry_code,
+    (COALESCE(c.nfc, FALSE) AND f.latitude IS NOT NULL)::BOOLEAN AS nfc,
+    COALESCE(c.staff_confirm, FALSE)::BOOLEAN AS staff_confirm
+FROM
+    facility f
+    LEFT JOIN facility_checkin c ON c.facility_id = f.id
+WHERE
+    f.id = sqlc.arg('facility_id');

@@ -1033,6 +1033,22 @@ test.describe('keyboard', () => {
     await expect(page.getByRole('dialog')).toBeHidden()
   })
 
+  test('a manual booking says how to get in at that facility, and the QR only for a reader', async ({ page }) => {
+    await open(page, '/lugo/admin?vista=reservas')
+    await page.route('**/api/tenants/lugo/admin/bookings', (route) =>
+      route.fulfill({ json: { id: 'new', starts_at: new Date().toISOString(), ends_at: new Date().toISOString(), has_account: false, name: 'Xan', checkin_code: 'lq1:5c1d3b8e-3f6a-4b0e-9d6e-2a7c1f0b9e41' } }),
+    )
+    await page.getByRole('button', { name: /^Reservar: .*, libre$/ }).first().click()
+    await page.getByLabel('Nome', { exact: true }).fill('Xan')
+    await page.getByLabel('Expliqueille as normas de uso da instalación').check()
+    await page.getByRole('dialog').getByRole('button', { name: 'Reservar', exact: true }).click()
+    const dialog = page.getByRole('dialog', { name: 'Reservado' })
+    // the facility takes the entry code, a reader and the staff; without an account, the code is no use
+    await expect(dialog.getByRole('listitem')).toHaveText([/lector da entrada/, /persoal/])
+    await expect(dialog.getByRole('img', { name: 'QR de entrada de Xan' })).toBeVisible()
+    await expect(dialog.getByRole('button', { name: 'Imprimir QR' })).toBeVisible()
+  })
+
   test('a council administrator reaches its administration from the account menu on any page', async ({ page }) => {
     await open(page, '/') // the home page is about no council
     await page.route('**/api/me', (route) => route.fulfill({ json: ME_COUNCIL_ADMIN }))

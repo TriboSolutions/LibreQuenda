@@ -196,6 +196,43 @@ func (q *Queries) GetBookingForCouncil(ctx context.Context, arg GetBookingForCou
 	return i, err
 }
 
+const getFacilityCheckinWays = `-- name: GetFacilityCheckinWays :one
+SELECT
+    (EXISTS (SELECT 1 FROM checkin_device d WHERE d.facility_id = f.id) AND COALESCE(c.qr_reader, TRUE))::BOOLEAN AS has_reader,
+    (COALESCE(c.printed_qr, FALSE) AND f.latitude IS NOT NULL)::BOOLEAN AS printed_qr,
+    (COALESCE(c.entry_code, FALSE) AND f.latitude IS NOT NULL)::BOOLEAN AS entry_code,
+    (COALESCE(c.nfc, FALSE) AND f.latitude IS NOT NULL)::BOOLEAN AS nfc,
+    COALESCE(c.staff_confirm, FALSE)::BOOLEAN AS staff_confirm
+FROM
+    facility f
+    LEFT JOIN facility_checkin c ON c.facility_id = f.id
+WHERE
+    f.id = $1
+`
+
+type GetFacilityCheckinWaysRow struct {
+	HasReader    bool `json:"has_reader"`
+	PrintedQr    bool `json:"printed_qr"`
+	EntryCode    bool `json:"entry_code"`
+	Nfc          bool `json:"nfc"`
+	StaffConfirm bool `json:"staff_confirm"`
+}
+
+// How someone gets in at the facility, as residents are told it (ListBookingsByUser):
+// the staff's booking dialog offers the booking's QR only where a reader takes it.
+func (q *Queries) GetFacilityCheckinWays(ctx context.Context, facilityID uuid.UUID) (GetFacilityCheckinWaysRow, error) {
+	row := q.db.QueryRowContext(ctx, getFacilityCheckinWays, facilityID)
+	var i GetFacilityCheckinWaysRow
+	err := row.Scan(
+		&i.HasReader,
+		&i.PrintedQr,
+		&i.EntryCode,
+		&i.Nfc,
+		&i.StaffConfirm,
+	)
+	return i, err
+}
+
 const getUserByEmailForStaff = `-- name: GetUserByEmailForStaff :one
 
 SELECT
