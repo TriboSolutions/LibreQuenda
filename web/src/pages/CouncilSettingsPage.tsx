@@ -220,7 +220,7 @@ export function CouncilSettingsPage() {
 
   return (
     <div className="min-h-screen">
-      <TopBar tenantSlug={slug} tenantName={heading?.name} />
+      <TopBar />
       <main id="main" tabIndex={-1} className="mx-auto max-w-[1152px] px-4 pt-8 pb-16 sm:px-6">
         <p>
           {/* back to where they came from, like the browser's back; straight from a link, to the council's administration */}

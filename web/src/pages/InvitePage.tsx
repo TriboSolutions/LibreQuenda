@@ -43,7 +43,7 @@ export function InvitePage() {
 
   return (
     <div className="min-h-screen">
-      <TopBar tenantSlug={invite.data?.tenant_slug ?? null} tenantName={invite.data?.tenant_name} />
+      <TopBar />
       <main id="main" tabIndex={-1} className="mx-auto max-w-[1152px] px-4 pt-8 pb-16 sm:px-6">
         <h1 className="text-[28px] leading-9 font-bold tracking-[-0.02em] sm:text-[32px] sm:leading-10">
           {invite.data?.owner_name ? t('invites:page.invitedBy', { name: invite.data.owner_name }) : t('invites:page.title')}

@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, type Page, test } from '@playwright/test'
 import QRCode from 'qrcode'
-import { defaultBranding, mockApp, ME_UNVERIFIED, type MockOptions } from './mocks'
+import { defaultBranding, mockApp, ME_COUNCIL_ADMIN, ME_UNVERIFIED, type MockOptions } from './mocks'
 
 // Every automatable WCAG 2.1 A and AA rule, plus axe's AAA rules (7:1 contrast and the like).
 const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag2aaa', 'best-practice']
@@ -1031,6 +1031,15 @@ test.describe('keyboard', () => {
     await expect(page.getByRole('dialog')).toContainText('deixa de funcionar')
     await page.getByRole('button', { name: 'Manter este código' }).click()
     await expect(page.getByRole('dialog')).toBeHidden()
+  })
+
+  test('a council administrator reaches its administration from the account menu on any page', async ({ page }) => {
+    await open(page, '/') // the home page is about no council
+    await page.route('**/api/me', (route) => route.fulfill({ json: ME_COUNCIL_ADMIN }))
+    await page.reload()
+    await page.getByRole('button', { name: /Ana Pérez/ }).click()
+    await page.getByRole('menuitem', { name: 'Administrar Concello de Lugo' }).click()
+    await expect(page).toHaveURL(/\/lugo\/admin$/)
   })
 
   test('2.1.2 the account menu opens and closes from the keyboard', async ({ page }) => {

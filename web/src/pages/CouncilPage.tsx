@@ -130,7 +130,7 @@ export function CouncilPage() {
   if (day.error instanceof ApiError && day.error.status === 404) {
     return (
       <div className="min-h-screen">
-        <TopBar tenantSlug={null} />
+        <TopBar />
         <main id="main" tabIndex={-1} className="mx-auto max-w-[1152px] px-4 pt-8 pb-16 sm:px-6">
           <h1 className="text-[28px] leading-9 font-bold tracking-[-0.02em] sm:text-[32px] sm:leading-10">{t('councils:notFound.title')}</h1>
           <p className="mt-1 max-w-[62ch] text-base text-muted-foreground">{t('councils:notFound.body', { slug: tenantSlug })}</p>
@@ -145,7 +145,7 @@ export function CouncilPage() {
 
   return (
     <div className="min-h-screen">
-      <TopBar tenantSlug={tenantSlug} tenantName={day.data?.tenant.name} />
+      <TopBar />
 
       <main id="main" tabIndex={-1} className="mx-auto max-w-[1152px] px-4 pt-8 pb-16 sm:px-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">

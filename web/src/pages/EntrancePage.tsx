@@ -201,7 +201,7 @@ export function EntrancePage() {
 
   return (
     <div className="min-h-screen">
-      <TopBar tenantSlug={slug} tenantName={entrance.data?.tenant_name} />
+      <TopBar />
       <main id="main" tabIndex={-1} className="mx-auto max-w-[760px] px-4 pt-8 pb-16 sm:px-6">
         <p className="text-muted-foreground">
           <Link to={`/${slug}/${facilitySlug}`} className="underline underline-offset-4">

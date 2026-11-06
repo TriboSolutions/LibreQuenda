@@ -267,6 +267,8 @@ const me: Me = {
 
 /** The same person before confirming their email: booking and joining with the account point to the profile. */
 export const ME_UNVERIFIED: Me = { ...me, email_verified: false }
+// an administrator of Lugo who is not a superadministrator
+export const ME_COUNCIL_ADMIN: Me = { ...me, is_superadmin: false }
 
 const account: Account = {
   given_name: 'Ana',

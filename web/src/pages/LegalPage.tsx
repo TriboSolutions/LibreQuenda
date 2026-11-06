@@ -21,7 +21,7 @@ export function LegalPage({ which }: { which: 'terms' | 'privacy' }) {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <TopBar tenantSlug={null} />
+      <TopBar />
       <main id="main" tabIndex={-1} className="mx-auto w-full max-w-[1152px] flex-1 px-4 pt-8 pb-16 sm:px-6">
         <h1 className="text-[28px] leading-9 font-bold tracking-[-0.02em] sm:text-[32px] sm:leading-10">{t(`${which}.title`)}</h1>
         <p className="mt-2 text-sm text-muted-foreground">{t('updated')}</p>

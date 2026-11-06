@@ -22,14 +22,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useBranding } from '@/hooks/useBranding'
-import { useCouncilAdmin } from '@/hooks/useCouncilAdmin'
 import { useLogin } from '@/hooks/useLogin'
 import { useMe } from '@/hooks/useMe'
-
-type Props = {
-  tenantSlug: string | null // the council the page is about (its name is in the page title); null when none
-  tenantName?: string // its name, for the link to its administration; the slug until it loads
-}
 
 function initials(name: string) {
   return name
@@ -40,12 +34,13 @@ function initials(name: string) {
     .join('')
 }
 
-export function TopBar({ tenantSlug, tenantName }: Props) {
+export function TopBar() {
   const { t } = useTranslation(['common', 'admin', 'profile', 'invites'])
   const auth = useAuth()
   const { me } = useMe()
   const { branding } = useBranding()
-  const managesCouncil = useCouncilAdmin(tenantSlug)
+  // every council they administer, in the API's order
+  const administered = (me?.roles ?? []).filter((role) => role.role === 'admin')
   const navigate = useNavigate()
   const { login, register } = useLogin()
   const profile = auth.user?.profile
@@ -106,13 +101,14 @@ export function TopBar({ tenantSlug, tenantName }: Props) {
                   <UserRound />
                   {t('profile:menuLink')}
                 </DropdownMenuItem>
-                {/* a superadministrator reaches every council from the platform administration */}
-                {tenantSlug && managesCouncil && !me?.is_superadmin && (
-                  <DropdownMenuItem onSelect={() => navigate(`/${tenantSlug}/admin`)}>
-                    <Building2 />
-                    {t('admin:councilMenuLink', { council: tenantName ?? tenantSlug })}
-                  </DropdownMenuItem>
-                )}
+                {/* every council they administer, from any page; a superadministrator reaches them all from the platform administration */}
+                {!me?.is_superadmin &&
+                  administered.map((council) => (
+                    <DropdownMenuItem key={council.tenant_slug} onSelect={() => navigate(`/${council.tenant_slug}/admin`)}>
+                      <Building2 />
+                      {t('admin:councilMenuLink', { council: council.tenant_name })}
+                    </DropdownMenuItem>
+                  ))}
                 {me?.is_superadmin && (
                   <DropdownMenuItem onSelect={() => navigate('/admin')}>
                     <ShieldCheck />

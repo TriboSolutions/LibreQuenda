@@ -74,7 +74,7 @@ export function ProfilePage() {
 
   return (
     <div className="min-h-screen">
-      <TopBar tenantSlug={null} />
+      <TopBar />
       <main id="main" tabIndex={-1} className="mx-auto max-w-[1152px] px-4 pt-8 pb-16 sm:px-6">
         <h1 className="mb-6 text-[28px] leading-9 font-bold tracking-[-0.02em] sm:text-[32px] sm:leading-10">{t('profile:title')}</h1>
         {body}

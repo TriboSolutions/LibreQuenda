@@ -121,7 +121,7 @@ export function HomePage() {
     <div className="min-h-screen">
       {/* on a desktop, the header and the page fill exactly one screen: the list scrolls inside, the page only to reach the footer */}
       <div className="flex min-h-svh flex-col lg:h-svh">
-        <TopBar tenantSlug={null} />
+        <TopBar />
 
         <main id="main" tabIndex={-1} className="mx-auto flex w-full max-w-[1440px] flex-1 flex-col px-4 pt-6 pb-6 sm:px-6 lg:min-h-0">
           <h1 className="text-[28px] leading-9 font-bold tracking-[-0.02em] sm:text-[32px] sm:leading-10">{t('councils:title')}</h1>

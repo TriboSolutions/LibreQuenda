@@ -81,7 +81,7 @@ export function FacilityEditorPage() {
   if (!creating && !existing.data) {
     return (
       <div className="min-h-screen">
-        <TopBar tenantSlug={slug} tenantName={tenant.data?.name} />
+        <TopBar />
         <main id="main" tabIndex={-1} className="mx-auto max-w-[1152px] px-4 pt-8 sm:px-6">
           {existing.error ? <p className="text-destructive">{existing.error.message}</p> : <Skeleton className="h-40 w-full" />}
           {!allowed && !auth.isLoading && (
@@ -505,7 +505,7 @@ function Editor({ slug, facility, council, token }: { slug: string; facility: Ad
 
   return (
     <div className="min-h-screen">
-      <TopBar tenantSlug={slug} tenantName={council?.name} />
+      <TopBar />
       <main id="main" tabIndex={-1} className="mx-auto max-w-[1152px] px-4 pt-8 pb-16 sm:px-6">
         <Link to={`/${slug}/admin`} className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground">
           <ArrowLeft className="size-4" aria-hidden="true" />

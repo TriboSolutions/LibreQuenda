@@ -263,7 +263,7 @@ export function CouncilAdminPage() {
 
   return (
     <div className="min-h-screen">
-      <TopBar tenantSlug={slug} tenantName={council?.name} />
+      <TopBar />
       <main id="main" tabIndex={-1} className="mx-auto max-w-[1152px] px-4 pt-8 pb-16 sm:px-6">
         <CouncilHeading section={t('admin:councilAdmin.title')} council={council} otherCouncils={false} />
         <p className="mt-1 text-base text-muted-foreground">{t('admin:councilAdmin.subtitle')}</p>

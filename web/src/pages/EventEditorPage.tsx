@@ -71,7 +71,7 @@ export function EventEditorPage() {
 
   return (
     <div className="min-h-screen">
-      <TopBar tenantSlug={slug} tenantName={tenant.data?.name} />
+      <TopBar />
       <main
         id="main"
         tabIndex={-1}

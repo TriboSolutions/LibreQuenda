@@ -100,7 +100,7 @@ export function FacilityPage() {
 
   const shell = (children: React.ReactNode) => (
     <div className="min-h-screen">
-      <TopBar tenantSlug={slug} tenantName={page.data?.tenant.name} />
+      <TopBar />
       <main id="main" tabIndex={-1} className="mx-auto max-w-[1152px] px-4 pt-6 pb-16 sm:px-6">
         <Link to={`/${slug}`} className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground">
           <ArrowLeft className="size-4" aria-hidden="true" />
