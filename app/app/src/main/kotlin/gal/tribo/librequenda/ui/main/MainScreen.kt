@@ -156,6 +156,7 @@ fun MainScreen(
     var rated by remember { mutableStateOf(false) } // just rated: the celebration, as after checking in
     var facilityOpen by remember { mutableStateOf<FacilityTarget?>(null) } // a facility, maybe with a turn chosen
     var confirming by remember { mutableStateOf<Checkout?>(null) } // the booking (or joining) to confirm
+    var taken by remember { mutableStateOf<String?>(null) } // the turn chosen went to someone else: the facility says so, reloaded
     var historyOpen by rememberSaveable { mutableStateOf(false) } // survives the language change (the activity is recreated)
     var searchOpen by rememberSaveable { mutableStateOf(false) }
     var searchFilters by remember { mutableStateOf(SearchFilters()) }
@@ -253,9 +254,12 @@ fun MainScreen(
             // the facility, with that turn chosen; signed out, booking there asks to sign in
             onSlot = { f, slot -> facilityOpen = FacilityTarget(f.councilSlug, f.slug, searchFilters.day, slot) },
         )
-        FacilityPage(facilityOpen, signedIn = session.signedIn, me = session.me, actions = actions, onSignIn = onSignIn, onBack = { facilityOpen = null }, onCheckout = { confirming = it },
-            token = { runCatching { actions.authed { it } }.getOrNull() })
-        ConfirmBookingPage(confirming, actions, onBack = { confirming = null }, onBooked = { id ->
+        FacilityPage(facilityOpen, signedIn = session.signedIn, me = session.me, actions = actions, onSignIn = onSignIn, onBack = { facilityOpen = null; taken = null }, onCheckout = { confirming = it; taken = null },
+            token = { runCatching { actions.authed { it } }.getOrNull() }, taken = taken)
+        ConfirmBookingPage(confirming, actions, onBack = { confirming = null }, onTaken = { message ->
+            // the turn went to someone else: back to the facility, reloaded, saying so
+            confirming = null; taken = message
+        }, onBooked = { id ->
             // booked: on to it, the way back to the bookings
             confirming = null; facilityOpen = null; searchOpen = false
             tab = Tab.Bookings

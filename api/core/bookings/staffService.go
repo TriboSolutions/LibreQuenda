@@ -216,6 +216,10 @@ func (s *bookingsService) insertStaffBooking(ctx context.Context, params model.C
 		}
 	}
 
+	// the facility's bookings one after another, after the person's lock
+	if err = queries.LockFacilityBookings(ctx, params.FacilityID); err != nil {
+		return model.Booking{}, nil, err
+	}
 	var booking model.Booking
 	if booking, err = queries.CreateStaffBooking(ctx, params); err != nil {
 		return model.Booking{}, nil, err

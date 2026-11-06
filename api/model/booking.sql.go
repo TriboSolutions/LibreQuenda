@@ -832,6 +832,20 @@ func (q *Queries) ListUserNoShows(ctx context.Context, arg ListUserNoShowsParams
 	return items, nil
 }
 
+const lockFacilityBookings = `-- name: LockFacilityBookings :exec
+SELECT pg_advisory_xact_lock(hashtextextended('facility:' || $1::UUID::TEXT, 0))
+`
+
+// Inside a transaction, just before writing a booking's time: bookings of one
+// facility are written one after another. The exclusion constraint alone keeps
+// them from overlapping, but two at once can deadlock on it (40P01) instead of the
+// second hearing it is taken; queued, the second gets the conflict at once.
+// Always taken after the people's locks (LockUserBookings), never before.
+func (q *Queries) LockFacilityBookings(ctx context.Context, facilityID uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, lockFacilityBookings, facilityID)
+	return err
+}
+
 const lockOwnedBooking = `-- name: LockOwnedBooking :one
 SELECT
     b.id,

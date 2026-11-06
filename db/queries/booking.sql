@@ -150,6 +150,14 @@ WHERE
 -- so two requests at once cannot both pass the overlap check.
 SELECT pg_advisory_xact_lock(hashtextextended(sqlc.arg('user_id')::UUID::TEXT, 0));
 
+-- name: LockFacilityBookings :exec
+-- Inside a transaction, just before writing a booking's time: bookings of one
+-- facility are written one after another. The exclusion constraint alone keeps
+-- them from overlapping, but two at once can deadlock on it (40P01) instead of the
+-- second hearing it is taken; queued, the second gets the conflict at once.
+-- Always taken after the people's locks (LockUserBookings), never before.
+SELECT pg_advisory_xact_lock(hashtextextended('facility:' || sqlc.arg('facility_id')::UUID::TEXT, 0));
+
 -- name: UserHasOverlappingBooking :one
 -- A person is in one place at a time: their own confirmed bookings and the
 -- ones they joined through an invite, in any facility and any council.

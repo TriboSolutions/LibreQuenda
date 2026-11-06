@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.annotation.DrawableRes
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
@@ -61,6 +62,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import gal.tribo.librequenda.R
 import gal.tribo.librequenda.data.MAX_PUBLIC_DESCRIPTION
+import gal.tribo.librequenda.data.Api
 import gal.tribo.librequenda.data.FacilityDay
 import gal.tribo.librequenda.data.PublicTurn
 import gal.tribo.librequenda.data.Slot
@@ -130,6 +132,7 @@ fun FacilityPage(
     onBack: () -> Unit,
     onCheckout: (Checkout) -> Unit, // book a free turn, or join a public booking: both confirm first
     token: suspend () -> String? = { null }, // signed in, the day also says who joined each public booking
+    taken: String? = null, // the turn chosen went to someone else meanwhile: said on top, and the day reloaded
 ) {
     var last by remember { mutableStateOf<FacilityTarget?>(null) }
     if (target != null) last = target
@@ -144,9 +147,19 @@ fun FacilityPage(
         var failed by remember(t) { mutableStateOf(false) }
         var picking by remember { mutableStateOf(false) }
         val now = Instant.now()
-        LaunchedEffect(t, date) {
+        // the day as it is now: on opening, on coming back to the app, every 30 seconds while
+        // it is on screen, and when a turn chosen went to someone else, so a taken turn shows taken
+        val lifecycle = androidx.lifecycle.compose.LocalLifecycleOwner.current.lifecycle
+        LaunchedEffect(taken) { if (taken != null) selected = null } // it is not theirs to book any more
+        LaunchedEffect(t, date, taken) {
             failed = false
-            try { day = fetchFacilityDay(t.councilSlug, t.facilitySlug, date, if (signedIn) token() else null) } catch (c: CancellationException) { throw c } catch (_: Exception) { failed = true }
+            lifecycle.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
+                while (true) {
+                    try { day = fetchFacilityDay(t.councilSlug, t.facilitySlug, date, if (signedIn) token() else null); failed = false }
+                    catch (c: CancellationException) { throw c } catch (_: Exception) { failed = day == null } // a failed refresh keeps what it had
+                    kotlinx.coroutines.delay(30_000)
+                }
+            }
         }
         val d = day
         val residentOf = me?.residentOf.orEmpty() // their residents-only facilities take them
@@ -169,6 +182,8 @@ fun FacilityPage(
                                 Text(d.description, style = MaterialTheme.typography.bodyMedium, color = Lq.colors.foreground)
                             }
                         }
+                        // the turn they chose went to someone else meanwhile: said here, over the turns as they are now
+                        if (taken != null) Box(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) { gal.tribo.librequenda.ui.components.Notice(taken, error = true) }
                         // the day and its free turns
                         Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                             Text(stringResource(R.string.book_title), style = MaterialTheme.typography.titleLarge, color = Lq.colors.foreground, modifier = Modifier.weight(1f))
@@ -352,7 +367,7 @@ private fun ParticipantsPage(turn: PublicTurn?, onBack: () -> Unit) {
  * Done, it says so with an Android notification and goes on to the booking.
  */
 @Composable
-fun ConfirmBookingPage(choice: Checkout?, actions: ProfileActions, onBack: () -> Unit, onBooked: (String) -> Unit) {
+fun ConfirmBookingPage(choice: Checkout?, actions: ProfileActions, onBack: () -> Unit, onBooked: (String) -> Unit, onTaken: (String) -> Unit = {}) {
     var last by remember { mutableStateOf<Checkout?>(null) }
     if (choice != null) last = choice
     Pushed(open = choice != null, onBack = onBack) {
@@ -450,7 +465,12 @@ fun ConfirmBookingPage(choice: Checkout?, actions: ProfileActions, onBack: () ->
                                     open = Notifier.openBooking(id), action = seeBooking,
                                 )
                                 done = id
-                            } catch (c: CancellationException) { throw c } catch (e: Exception) { error = e.userMessage(texts) }
+                            } catch (c: CancellationException) { throw c } catch (e: Exception) {
+                                val message = e.userMessage(texts)
+                                // someone else got the turn (or the last spot) first: back to the facility, as it is now
+                                if (e is Api.HttpException && e.status == 409 && stillThere(checkout) == false) onTaken(message)
+                                else error = message
+                            }
                             busy = false
                         }
                     },
@@ -561,3 +581,15 @@ private fun PublicPersonRow(person: gal.tribo.librequenda.data.PublicPerson, org
         else Text(stringResource(R.string.rating_none), style = MaterialTheme.typography.bodySmall, color = Lq.colors.mutedForeground)
     }
 }
+
+/**
+ * After a 409: whether the turn chosen is still free (or the public booking still has
+ * a spot), read again; null when that cannot be read. A 409 can also be the person's
+ * own (another booking then, a limit): only a turn really gone sends them back.
+ */
+private suspend fun stillThere(checkout: Checkout): Boolean? = try {
+    val day = fetchFacilityDay(checkout.day.councilSlug, checkout.day.slug, checkout.startsAt.atZone(ZONE).toLocalDate())
+    val turn = checkout.turn
+    if (turn != null) day.publicTurns.any { it.id == turn.id && it.spotsLeft > 0 }
+    else day.slots.any { it.startsAt == checkout.startsAt && it.free }
+} catch (c: CancellationException) { throw c } catch (_: Exception) { null }

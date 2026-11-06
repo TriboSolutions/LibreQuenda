@@ -240,6 +240,10 @@ func (s *bookingsService) CreateEvent(ctx context.Context, tenantId uuid.UUID, s
 	}
 	defer tx.Rollback()
 	var queries = model.New(tx)
+	// the facility's bookings one after another: what is in the way stays so until this is written
+	if err = queries.LockFacilityBookings(ctx, facility.ID); err != nil {
+		return nil, failed
+	}
 	var found *InTheWayDto
 	if found, err = inTheWay(ctx, queries, facility.ID, input.StartsAt, input.EndsAt, uuid.NullUUID{}); err != nil {
 		return nil, failed
@@ -311,6 +315,9 @@ func (s *bookingsService) UpdateEvent(ctx context.Context, tenantId uuid.UUID, e
 	}
 	var moved = !input.StartsAt.Equal(event.StartsAt) || !input.EndsAt.Equal(event.EndsAt)
 	if moved {
+		if err = queries.LockFacilityBookings(ctx, event.FacilityID); err != nil {
+			return nil, failed
+		}
 		var found *InTheWayDto
 		if found, err = inTheWay(ctx, queries, event.FacilityID, input.StartsAt, input.EndsAt, uuid.NullUUID{UUID: eventId, Valid: true}); err != nil {
 			return nil, failed

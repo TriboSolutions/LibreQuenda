@@ -192,6 +192,10 @@ func (s *bookingsService) insertBooking(ctx context.Context, userId uuid.UUID, f
 		return model.Booking{}, limitErr, nil
 	}
 
+	// the facility's bookings one after another, after the person's lock
+	if err = queries.LockFacilityBookings(ctx, facilityId); err != nil {
+		return model.Booking{}, nil, err
+	}
 	var booking model.Booking
 	booking, err = queries.CreateBooking(ctx, model.CreateBookingParams{FacilityID: facilityId, UserID: user, StartsAt: slot.Start, EndsAt: slot.End})
 	if err != nil {
@@ -479,7 +483,7 @@ func (s *bookingsService) ChangeBooking(ctx context.Context, userId uuid.UUID, b
 
 	var booking model.Booking
 	var conflict *shared.ErrorResponse
-	booking, conflict, err = s.moveBooking(ctx, userId, bookingId, slot)
+	booking, conflict, err = s.moveBooking(ctx, userId, bookingId, facility.ID, slot)
 	if conflict != nil {
 		return nil, conflict
 	}
@@ -524,7 +528,7 @@ func changeable(status model.BookingStatus, startsAt time.Time, minCancelHours i
 // moveBooking changes the time unless the owner, or someone who joined with an
 // account, is already somewhere else then. Locks: the booking row first (as a
 // join does), then the people, so a join and a change cannot cross.
-func (s *bookingsService) moveBooking(ctx context.Context, userId uuid.UUID, bookingId uuid.UUID, slot *schedule.Slot) (model.Booking, *shared.ErrorResponse, error) {
+func (s *bookingsService) moveBooking(ctx context.Context, userId uuid.UUID, bookingId uuid.UUID, facilityId uuid.UUID, slot *schedule.Slot) (model.Booking, *shared.ErrorResponse, error) {
 	var tx, err = s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return model.Booking{}, nil, err
@@ -574,6 +578,10 @@ func (s *bookingsService) moveBooking(ctx context.Context, userId uuid.UUID, boo
 		return model.Booking{}, &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.participant_overlaps"}, nil
 	}
 
+	// the facility's bookings one after another, after the people's locks
+	if err = queries.LockFacilityBookings(ctx, facilityId); err != nil {
+		return model.Booking{}, nil, err
+	}
 	var booking model.Booking
 	booking, err = queries.ChangeBookingTime(ctx, model.ChangeBookingTimeParams{ID: bookingId, UserID: owner, StartsAt: slot.Start, EndsAt: slot.End})
 	if err != nil {
