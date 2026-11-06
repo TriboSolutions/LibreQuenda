@@ -6,6 +6,17 @@ Residents look up facilities, book, change or cancel their bookings, invite othe
 
 LibreQuenda is Tribo Solutions' proposal for the [I Certame GOBTEC de Software Libre](https://www.agasol.gal/i-certame-gobtec/) (AGASOL, 2026).
 
+## Screenshots
+
+| | |
+|---|---|
+| ![Every council's facilities, on a list and a map, with suggestions from the resident's own bookings](docs/screenshots/web-home.png) | ![A facility's page: its free turns by day, the council's events and public bookings to join, and where it is](docs/screenshots/web-facility.png) |
+| **Find a facility**: every council's, on a list and a map, and suggestions from your own bookings | **Book a turn**: free turns by day, events and public bookings to join |
+| ![My bookings: who is coming, inviting, making it public, checking in, and the history to rate](docs/screenshots/web-bookings.png) | ![A council's administration: facilities, manual bookings, events, residents, indicators, issues and the activity log](docs/screenshots/web-admin.png) |
+| **Your bookings**: who is coming, invite or open it to others, check in at the door | **Run the council**: facilities, manual bookings, events, residents, live indicators |
+
+The screenshots show demo data.
+
 ## Requirements
 
 - A Linux server with [Docker](https://docs.docker.com/engine/install/) (Compose v2) and `curl`, with 2 GB of RAM (the whole stack uses about 400 MB idle) and some disk for the database, images and backups.
