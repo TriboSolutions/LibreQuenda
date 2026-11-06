@@ -8,7 +8,7 @@
 #    - SELECT on the analytics views only: no right on any table;
 #    - every transaction read-only, with a time limit;
 #    - no set_config(), so a query cannot widen the councils it sees
-#      (analytics.tenants / analytics.superadmin, set by the API with SET LOCAL).
+#      (analytics.tenants, set by the API with SET LOCAL).
 # ============================================================
 set -e
 : "${ANALYTICS_DB_PASSWORD:?set ANALYTICS_DB_PASSWORD in .env}"

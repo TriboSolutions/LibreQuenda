@@ -12,9 +12,10 @@ import (
 
 // The agent itself writes the SQL here (no language model of the installation's):
 // the same read-only user, views and limits as the indicators' assistant, for the
-// councils the signed-in person administers, or all of them for a superadministrator.
+// councils the signed-in person administers (never all of them: superadministrators manage
+// the platform, they do not analyse its data).
 
-var errNotAdmin = errors.New("only council administrators and superadministrators look at the analytics, and only for the councils they run")
+var errNotAdmin = errors.New("only council administrators look at the analytics, and only for the councils they run")
 
 // scope: what the signed-in person may analyse.
 func (a *agent) scope(ctx context.Context, req *mcp.CallToolRequest) (analytics.Scope, error) {
@@ -23,9 +24,6 @@ func (a *agent) scope(ctx context.Context, req *mcp.CallToolRequest) (analytics.
 		return analytics.Scope{}, err
 	}
 	var queries = model.New(a.db)
-	if super, superErr := queries.IsPlatformAdmin(ctx, userId); superErr == nil && super {
-		return analytics.Scope{Everything: true}, nil
-	}
 	var roles, rolesErr = queries.GetUserTenantRoles(ctx, userId)
 	if rolesErr != nil {
 		return analytics.Scope{}, errors.New("your councils could not be read")

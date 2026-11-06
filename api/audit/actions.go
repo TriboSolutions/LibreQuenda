@@ -66,7 +66,6 @@ var actions = map[string]action{
 	"DELETE /admin/tags/{id}":                       {code: "tag.deleted", target: "tag", param: "id"},
 	"PUT /admin/branding":                           {code: "branding.changed"},
 	"PUT /admin/ai-settings":                        {code: "platform.ai_settings_changed"},
-	"POST /admin/analytics/ask":                     {code: "analytics.asked"},
 	"PUT /admin/booking-policy":                     {code: "booking_policy.changed"},
 	"GET /admin/audit":                              {code: ""},
 

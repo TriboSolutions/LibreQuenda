@@ -14,12 +14,10 @@ import { useMe } from '@/hooks/useMe'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { api } from '@/lib/api'
 
-const ALL = '*' // every council: superadministrators only
-
 /**
- * /datos: «talk to the data», for superadministrators (every council, or one) and
- * councils' administrators (the councils they run). ?concello=<slug> picks the
- * council; the bubble links here from any page while the assistant is on.
+ * /datos: «talk to the data», only by council, for its administrators (one of the
+ * councils they run: ?concello=<slug>). The bubble links here from any page while
+ * the assistant is on.
  */
 export function DataAssistantPage() {
   const { t } = useTranslation(['admin', 'common'])
@@ -32,12 +30,12 @@ export function DataAssistantPage() {
   usePageTitle(t('admin:analytics.title'))
   const token = auth.user?.access_token ?? ''
 
-  // whose data: every council (superadministrators) and each council they run
+  // whose data: one of the councils they run (superadministrators manage the platform, they do not analyse it)
   const councils = me?.roles.filter((r) => r.role === 'admin') ?? []
   const wanted = params.get('concello')
-  const scope = wanted && councils.some((c) => c.tenant_slug === wanted) ? wanted : me?.is_superadmin ? ALL : (councils[0]?.tenant_slug ?? ALL)
-  const scopeName = scope === ALL ? t('admin:analytics.everyCouncil') : (councils.find((c) => c.tenant_slug === scope)?.tenant_name ?? scope)
-  const options = [...(me?.is_superadmin ? [{ value: ALL, label: t('admin:analytics.everyCouncil') }] : []), ...councils.map((c) => ({ value: c.tenant_slug, label: c.tenant_name }))]
+  const scope = wanted && councils.some((c) => c.tenant_slug === wanted) ? wanted : (councils[0]?.tenant_slug ?? '')
+  const scopeName = councils.find((c) => c.tenant_slug === scope)?.tenant_name ?? scope
+  const options = councils.map((c) => ({ value: c.tenant_slug, label: c.tenant_name }))
 
   let body
   if (auth.isLoading || (auth.isAuthenticated && (loading || !me))) {
@@ -51,7 +49,7 @@ export function DataAssistantPage() {
         </div>
       </div>
     )
-  } else if (!me?.analytics_enabled) {
+  } else if (!me?.analytics_enabled || !scope) {
     body = <p className="mt-6 max-w-[760px] text-muted-foreground">{t('admin:analytics.off')}</p>
   } else {
     body = (
@@ -63,9 +61,12 @@ export function DataAssistantPage() {
             <Select
               value={scope}
               onValueChange={(value) =>
-                setParams(value === ALL ? {} : { concello: value }, {
-                  replace: true,
-                })
+                setParams(
+                  { concello: value },
+                  {
+                    replace: true,
+                  },
+                )
               }
             >
               <SelectTrigger id="assistant-scope" className="w-full sm:w-80">
@@ -82,7 +83,7 @@ export function DataAssistantPage() {
           </div>
         )}
         {/* a new council, a new conversation */}
-        <AnalyticsAssistant key={scope} ask={(question) => (scope === ALL ? api.admin.askAnalytics(token, question) : api.council.askAnalytics(token, scope, question))} />
+        <AnalyticsAssistant key={scope} ask={(question) => api.council.askAnalytics(token, scope, question)} />
       </div>
     )
   }

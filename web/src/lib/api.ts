@@ -1349,7 +1349,6 @@ export const api = {
     // the analytics assistant: its language model (the key is never sent back), and questions about every council
     aiSettings: (token: string) => request<AISettings>('/admin/ai-settings', { token }),
     saveAISettings: (token: string, input: AISettingsInput) => request<AISettings>('/admin/ai-settings', { token, method: 'PUT', body: input }),
-    askAnalytics: (token: string, question: string) => request<AnalyticsAnswer>('/admin/analytics/ask', { token, method: 'POST', body: { question } }),
     bookingPolicy: (token: string) => request<BookingPolicy>('/admin/booking-policy', { token }),
     saveBookingPolicy: (token: string, policy: BookingPolicy) => request<BookingPolicy>('/admin/booking-policy', { token, method: 'PUT', body: policy }),
     councils: (token: string) => request<{ tenants: CouncilSummary[] }>('/admin/tenants', { token }),

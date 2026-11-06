@@ -1065,7 +1065,6 @@
     "queries_one": "{{count}} query",
     "queries_other": "{{count}} queries",
     "moreRows": "The first {{shown}} rows are shown.",
-    "everyCouncil": "every council",
     "bubble": "Talk to the data",
     "scope": "Data of",
     "back": "Back",

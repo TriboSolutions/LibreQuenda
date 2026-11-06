@@ -61,11 +61,11 @@ func TestIntegration(t *testing.T) {
 		}
 		return result.Rows[0][0].(int64), nil
 	}
-	// each council sees its own; a superadministrator, everything
+	// each council sees its own; two councils, both
 	for _, c := range []struct {
 		scope Scope
 		want  int64
-	}{{Scope{Councils: []uuid.UUID{lalin}}, 3}, {Scope{Councils: []uuid.UUID{cambre}}, 1}, {Scope{Everything: true}, 4}} {
+	}{{Scope{Councils: []uuid.UUID{lalin}}, 3}, {Scope{Councils: []uuid.UUID{cambre}}, 1}, {Scope{Councils: []uuid.UUID{lalin, cambre}}, 4}} {
 		if got, err := count(c.scope, "SELECT count(*) FROM booking"); err != nil || got != c.want {
 			t.Errorf("%+v: %d bookings (%v), want %d", c.scope, got, err, c.want)
 		}
@@ -89,7 +89,7 @@ func TestIntegration(t *testing.T) {
 			t.Errorf("ran: %s", query)
 		}
 	}
-	if result, err := Run(ctx, Scope{Everything: true}, "SELECT generate_series(1, 600)"); err != nil || len(result.Rows) != MaxRows || !result.Truncated {
+	if result, err := Run(ctx, Scope{Councils: []uuid.UUID{lalin}}, "SELECT generate_series(1, 600)"); err != nil || len(result.Rows) != MaxRows || !result.Truncated {
 		t.Errorf("600 rows: %v, %d rows, truncated %v", err, len(result.Rows), result != nil && result.Truncated)
 	}
 

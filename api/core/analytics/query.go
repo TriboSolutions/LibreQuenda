@@ -21,13 +21,13 @@ import (
 	"github.com/google/uuid"
 )
 
-// Scope: which councils a query sees. Everyone: a superadministrator.
+// Scope: which councils a query sees: the ones the person administers (analytics are
+// only by council; superadministrators manage the platform, they do not analyse it).
 type Scope struct {
-	Everything bool
-	Councils   []uuid.UUID
+	Councils []uuid.UUID
 }
 
-func (s Scope) empty() bool { return !s.Everything && len(s.Councils) == 0 }
+func (s Scope) empty() bool { return len(s.Councils) == 0 }
 
 // Result: what a query answered, at most MaxRows rows.
 type Result struct {
@@ -126,15 +126,11 @@ func Run(ctx context.Context, scope Scope, query string) (*Result, error) {
 		fmt.Sprintf("SET LOCAL statement_timeout = '%dms'", queryTimeout.Milliseconds()),
 		"SET LOCAL search_path = analytics",
 	}
-	if scope.Everything {
-		settings = append(settings, "SET LOCAL analytics.superadmin = 'on'")
-	} else {
-		var ids = make([]string, len(scope.Councils))
-		for i, id := range scope.Councils {
-			ids[i] = id.String() // uuid.UUID's text: hex and dashes only
-		}
-		settings = append(settings, "SET LOCAL analytics.tenants = '{"+strings.Join(ids, ",")+"}'")
+	var ids = make([]string, len(scope.Councils))
+	for i, id := range scope.Councils {
+		ids[i] = id.String() // uuid.UUID's text: hex and dashes only
 	}
+	settings = append(settings, "SET LOCAL analytics.tenants = '{"+strings.Join(ids, ",")+"}'")
 	for _, statement := range settings {
 		if _, err = tx.ExecContext(ctx, statement); err != nil {
 			return nil, fmt.Errorf("the database did not answer: %w", err)

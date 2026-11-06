@@ -21,7 +21,7 @@ type MeResponse struct {
 	FullName      string          `json:"full_name"`
 	IsSuperadmin  bool            `json:"is_superadmin"`
 	Roles         []TenantRoleDto `json:"roles"`
-	// the data assistant is on and this person can use it (a superadministrator or a council's administrator)
+	// the data assistant is on and this person can use it (a council's administrator)
 	AnalyticsEnabled bool `json:"analytics_enabled"`
 
 	// profile kept by LibreQuenda; name and email belong to Zitadel

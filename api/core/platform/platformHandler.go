@@ -497,21 +497,3 @@ func (h *platformHandler) SaveAISettings(w http.ResponseWriter, r *http.Request)
 	}
 	helpers.SendSuccessResponse(w, settings)
 }
-
-// AskAnalytics: a superadministrator's question, about every council.
-func (h *platformHandler) AskAnalytics(w http.ResponseWriter, r *http.Request) {
-	var userId, ok = h.superadmin(w, r)
-	if !ok {
-		return
-	}
-	var input analytics.AskInput
-	if !decode(w, r, &input) {
-		return
-	}
-	var answer, err = analytics.Answering(r.Context(), h.db, analytics.Scope{Everything: true}, "every council on the installation", userId, input.Question)
-	if err != nil {
-		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
-		return
-	}
-	helpers.SendSuccessResponse(w, answer)
-}

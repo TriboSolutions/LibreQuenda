@@ -1,8 +1,10 @@
 # Asking the data (analytics assistant)
 
-Council administrators ask questions about their council's data in their own words,
-and superadministrators about every council: «which facility had the most cancellations
-last month?», «which hours are booked most on Saturdays?». While it is switched on, they
+Council administrators ask questions about their council's data in their own words:
+«which facility had the most cancellations
+last month?», «which hours are booked most on Saturdays?». Analytics are only by council:
+superadministrators manage the platform (they set the model), they do not analyse its
+data. While it is switched on, council administrators
 see a «Fala cos datos» bubble in the bottom right corner of every page, which opens the
 conversation (`/datos`; from a council's administration, on that council's data). A language model writes SQL,
 LibreQuenda runs it read-only and the model answers; every query it ran shows under
@@ -41,7 +43,7 @@ The guarantees are PostgreSQL's, not a check of the SQL the model writes:
 - **Each council sees only its rows**: the API names the councils with `SET LOCAL`, the
   views filter by them, and the read-only user cannot change them (`set_config` is
   revoked from it). A council's administrator never sees another council's data,
-  whatever the SQL says; a superadministrator sees every council.
+  whatever the SQL says. Nothing that belongs to no council is in the views.
 - **One statement**: the SQL runs wrapped as a subquery (no second statement can follow),
   with at most 500 rows and an 8-second limit, on a connection that is closed afterwards.
 - **Recorded**: every question is in the activity log, and every query the assistant

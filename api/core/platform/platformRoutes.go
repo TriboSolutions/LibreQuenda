@@ -55,7 +55,6 @@ func (r *platformRoutes) RegisterRoutes() {
 		// the analytics assistant: its language model, and questions about every council
 		{Path: "/admin/ai-settings", Method: http.MethodGet, Handler: h.GetAISettings},
 		{Path: "/admin/ai-settings", Method: http.MethodPut, Handler: h.SaveAISettings},
-		{Path: "/admin/analytics/ask", Method: http.MethodPost, Handler: h.AskAnalytics},
 		{Path: "/admin/audit", Method: http.MethodGet, Handler: h.GetAudit},
 		{Path: "/admin/booking-policy", Method: http.MethodGet, Handler: h.GetBookingPolicy},
 		{Path: "/admin/booking-policy", Method: http.MethodPut, Handler: h.SaveBookingPolicy},

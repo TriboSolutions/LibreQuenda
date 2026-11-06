@@ -9,8 +9,8 @@ const HIDDEN = ['/datos', '/callback', '/lector', '/:slug/widget', '/:slug/widge
 
 /**
  * «Talk to the data», floating in the bottom right corner on every page for the
- * people who can use the assistant (superadministrators and councils' administrators)
- * while a superadministrator has it switched on. In a council's administration it
+ * councils' administrators (the analytics are only by council) while a superadministrator
+ * has the assistant switched on. In a council's administration it
  * opens on that council's data.
  */
 export function DataBubble() {

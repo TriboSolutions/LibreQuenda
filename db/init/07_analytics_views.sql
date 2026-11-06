@@ -1,7 +1,8 @@
 -- ============================================================
 --  ANALYTICS VIEWS: what the read-only analytics user (08_analytics_role.sh)
---  can query, for the councils' and the superadministrators' questions about
---  their data (the assistant in the indicators, and the MCP's analytics tools).
+--  can query, for the councils' administrators' questions about their council's
+--  data (the data assistant, and the MCP's analytics tools). Only by council:
+--  superadministrators manage the platform, they do not analyse its data.
 --
 --  One view per table, in the analytics schema, without:
 --    - personal data: names, emails, phones, DNI, addresses, birth dates (only
@@ -13,8 +14,8 @@
 --  People are their ids only, for counting and grouping.
 --
 --  Which councils a query sees is the transaction's analytics.tenants (an array
---  of council ids) or analytics.superadmin = 'on' (a superadministrator), set by the
---  API with SET LOCAL. The analytics user cannot change them: set_config() is
+--  of council ids), set by the API with SET LOCAL; nothing that belongs to no
+--  council is here. The analytics user cannot change them: set_config() is
 --  revoked from it, and the API runs one SELECT at a time. PostgreSQL has no
 --  row-level security on views: each view filters with analytics.sees(), and is
 --  a security barrier so no function sees rows before that filter.
@@ -28,14 +29,7 @@ COMMENT ON SCHEMA analytics IS 'Read-only views for analytics: no personal data,
 -- whether the current transaction may see this council's rows
 CREATE FUNCTION analytics.sees(council UUID) RETURNS BOOLEAN
 LANGUAGE sql STABLE AS $$
-    SELECT COALESCE(current_setting('analytics.superadmin', TRUE), '') = 'on'
-        OR council = ANY (COALESCE(NULLIF(current_setting('analytics.tenants', TRUE), ''), '{}')::UUID[])
-$$;
-
--- whether it sees everything (a superadministrator): for what belongs to no council
-CREATE FUNCTION analytics.sees_all() RETURNS BOOLEAN
-LANGUAGE sql STABLE AS $$
-    SELECT COALESCE(current_setting('analytics.superadmin', TRUE), '') = 'on'
+    SELECT council = ANY (COALESCE(NULLIF(current_setting('analytics.tenants', TRUE), ''), '{}')::UUID[])
 $$;
 
 -- --- councils and their facilities ------------------------------------------
@@ -158,7 +152,7 @@ FROM public.notification n
 LEFT JOIN public.booking b ON b.id = n.booking_id
 LEFT JOIN public.facility_issue i ON i.id = n.issue_id
 LEFT JOIN public.facility f ON f.id = COALESCE(b.facility_id, i.facility_id)
-WHERE (f.id IS NOT NULL AND analytics.sees(f.tenant_id)) OR analytics.sees_all();
+WHERE f.id IS NOT NULL AND analytics.sees(f.tenant_id);
 COMMENT ON VIEW analytics.notification IS 'Notices people got (bell, app and email): their type and when they were read or emailed';
 
 -- --- people (ids only) -------------------------------------------------------------
@@ -167,8 +161,7 @@ CREATE VIEW analytics.app_user WITH (security_barrier = TRUE) AS
 SELECT u.id, u.email_verified, EXTRACT(YEAR FROM u.birth_date)::INT AS birth_year, u.preferred_language,
        u.email_reminders, u.email_notifications, u.show_recommendations, u.created_at
 FROM public.app_user u
-WHERE analytics.sees_all()
-   OR EXISTS (SELECT 1 FROM public.booking b JOIN public.facility f ON f.id = b.facility_id WHERE b.user_id = u.id AND analytics.sees(f.tenant_id))
+WHERE EXISTS (SELECT 1 FROM public.booking b JOIN public.facility f ON f.id = b.facility_id WHERE b.user_id = u.id AND analytics.sees(f.tenant_id))
    OR EXISTS (SELECT 1 FROM public.booking_participant p JOIN public.booking b ON b.id = p.booking_id JOIN public.facility f ON f.id = b.facility_id WHERE p.user_id = u.id AND analytics.sees(f.tenant_id))
    OR EXISTS (SELECT 1 FROM public.tenant_resident r WHERE r.user_id = u.id AND analytics.sees(r.tenant_id))
    OR EXISTS (SELECT 1 FROM public.tenant_membership m WHERE m.user_id = u.id AND analytics.sees(m.tenant_id));
@@ -190,20 +183,13 @@ CREATE VIEW analytics.tenant_invitation WITH (security_barrier = TRUE) AS
 SELECT id, tenant_id, role, invited_by, created_at, accepted_at FROM public.tenant_invitation WHERE analytics.sees(tenant_id);
 COMMENT ON VIEW analytics.tenant_invitation IS 'Invitations to administer a council';
 
-CREATE VIEW analytics.platform_admin WITH (security_barrier = TRUE) AS
-SELECT user_id, created_at FROM public.platform_admin WHERE analytics.sees_all();
-COMMENT ON VIEW analytics.platform_admin IS 'Superadministrators (only for a superadministrator)';
-
 -- --- the installation --------------------------------------------------------------
 
 CREATE VIEW analytics.audit_log WITH (security_barrier = TRUE) AS
 SELECT id, at, actor_id, actor_role, tenant_id, action, target_type, target_id, target_user_id
 FROM public.audit_log
-WHERE (tenant_id IS NOT NULL AND analytics.sees(tenant_id)) OR analytics.sees_all();
+WHERE tenant_id IS NOT NULL AND analytics.sees(tenant_id);
 COMMENT ON VIEW analytics.audit_log IS 'Administrative changes: who (actor_id, actor_role), what (action, e.g. facility.updated) and on what';
 
-CREATE VIEW analytics.app_settings WITH (security_barrier = TRUE) AS
-SELECT one_council_per_account, updated_at FROM public.app_settings WHERE analytics.sees_all();
-COMMENT ON VIEW analytics.app_settings IS 'Installation-wide settings (only for a superadministrator)';
-
--- Not here at all: tenant_smtp (relay settings and password) and user_qr_token (personal QR tokens).
+-- Not here at all: tenant_smtp (relay settings and password), user_qr_token (personal QR
+-- tokens), and what belongs to no council (platform_admin, app_settings, ai_settings).

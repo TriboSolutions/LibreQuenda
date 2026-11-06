@@ -2625,64 +2625,13 @@ paths:
           $ref: '#/components/responses/InternalError'
         '422':
           $ref: '#/components/responses/UnprocessableEntity'
-  /admin/analytics/ask:
-    post:
-      operationId: askAnalyticsPlatform
-      tags:
-      - Platform
-      summary: Ask the data of every council
-      description: Superadministrators only. Audited. A language model writes read-only SQL on the analytics views (db/init/07_analytics_views.sql), run as the read-only analytics user, and answers. 409 when the assistant is off or unset.
-      security:
-      - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                question:
-                  type: string
-                  minLength: 1
-                  maxLength: 1000
-              required:
-              - question
-      responses:
-        '200':
-          description: The answer, and every query it ran with what it returned.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AnalyticsAnswer'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '409':
-          $ref: '#/components/responses/Conflict'
-        '429':
-          $ref: '#/components/responses/TooManyRequests'
-        '500':
-          $ref: '#/components/responses/InternalError'
-        '422':
-          $ref: '#/components/responses/UnprocessableEntity'
-        '502':
-          $ref: '#/components/responses/BadGateway'
-        '503':
-          description: The read-only analytics user is not set up (ANALYTICS_DB_PASSWORD).
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
   /tenants/{slug}/admin/analytics/ask:
     post:
       operationId: askAnalyticsCouncil
       tags:
       - Council admin
       summary: Ask the data of this council
-      description: The council's administrators (and superadministrators). Audited. As /admin/analytics/ask, limited to this council's rows by the database.
+      description: "The council's administrators only (not superadministrators: analytics are only by council). Audited. A language model writes read-only SQL on the analytics views (no personal data or free text), limited to this council's rows by the database, and answers; every query it ran comes with its result. 409 while no model is set."
       security:
       - bearerAuth: []
       parameters:
@@ -6282,7 +6231,7 @@ components:
           type: boolean
         analytics_enabled:
           type: boolean
-          description: The data assistant is switched on and this person can use it (a superadministrator or a council's administrator).
+          description: The data assistant is switched on and this person can use it (a council's administrator).
         roles:
           type: array
           items:

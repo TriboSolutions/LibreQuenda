@@ -689,6 +689,11 @@ func (h *counciladminHandler) AskAnalytics(w http.ResponseWriter, r *http.Reques
 	if !ok {
 		return
 	}
+	// its own administrators only: a superadministrator manages the platform, it does not analyse a council's data
+	if admin, err := model.New(h.db).IsTenantAdmin(r.Context(), model.IsTenantAdminParams{UserID: userId, TenantID: tenantId}); err != nil || !admin {
+		helpers.SendI18NErrorResponse(w, r, http.StatusForbidden, "errors.forbidden")
+		return
+	}
 	var input analytics.AskInput
 	if !decode(w, r, &input) {
 		return
