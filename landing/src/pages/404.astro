@@ -1,0 +1,19 @@
+---
+import { ArrowLeft } from "@lucide/astro";
+import Base from "../layouts/Base.astro";
+import { DICT } from "../i18n";
+
+const t = DICT.gl.notFound;
+---
+
+<Base lang="gl" title={`${t.title} · LibreQuenda`} description={t.text}>
+  <section class="grid min-h-[70dvh] place-items-center px-4 pt-24 text-center">
+    <div>
+      <p class="rise num text-8xl font-semibold tracking-tight text-brand-blue">404</p>
+      <p class="rise mt-4 text-lg text-muted-foreground" style="--d:100ms">{t.text}</p>
+      <a href="/" class="rise group mt-8 inline-flex h-11 items-center gap-2 rounded-md bg-primary px-5 font-medium text-primary-foreground" style="--d:200ms">
+        <ArrowLeft class="size-4 transition-transform group-hover:-translate-x-1" /> {t.back}
+      </a>
+    </div>
+  </section>
+</Base>

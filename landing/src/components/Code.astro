@@ -1,0 +1,42 @@
+---
+import { Copy, Check } from "@lucide/astro";
+interface Props {
+  code: string;
+  class?: string;
+  t: { copy: string; copied: string };
+}
+const { code, class: cls, t } = Astro.props;
+---
+
+<div data-code class:list={["group relative rounded-xl bg-code-bg text-code-fg ring-1 ring-white/5", cls]}>
+  <pre class="overflow-x-auto p-5 pr-14 text-[13px] leading-relaxed"><code>{code.split("\n").map((l) => (
+    <span class="block"><span class="select-none text-[#5fb0e6]">$ </span>{l}</span>
+  ))}</code></pre>
+  <button
+    type="button"
+    data-copy={code}
+    data-label={t.copy}
+    data-done-label={t.copied}
+    class="absolute right-3 top-3 grid size-8 place-items-center rounded-md bg-white/5 text-white/70 hover:bg-white/10 hover:text-white transition-colors"
+    aria-label={t.copy}
+  >
+    <Copy class="size-4 [[data-done]_&]:hidden" />
+    <Check class="hidden size-4 text-[#74d6a0] [[data-done]_&]:block" />
+  </button>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>("[data-copy]").forEach((b) =>
+    b.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(b.dataset.copy ?? "");
+        b.setAttribute("data-done", "");
+        b.setAttribute("aria-label", b.dataset.doneLabel ?? "");
+        setTimeout(() => {
+          b.removeAttribute("data-done");
+          b.setAttribute("aria-label", b.dataset.label ?? "");
+        }, 1600);
+      } catch {}
+    }),
+  );
+</script>
