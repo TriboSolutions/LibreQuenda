@@ -3,6 +3,7 @@ package storage
 import (
 	"librequenda/shared"
 	"net/url"
+	"strings"
 	"testing"
 
 	"github.com/google/uuid"
@@ -29,6 +30,11 @@ func TestValidRef(t *testing.T) {
 		"/users/01a1e2.png":                                     false,
 		"https://evil.example/x.png":                            false,
 		"0192F5A0-1C2D-7E3F-8A9B-0C1D2E3F4A5B/facilities/a.jpg": false, // one spelling per council
+		council + "/facilities/pista-de-padel-1.jpg":            true,  // a seed image
+		"users/" + strings.Repeat("a", 81) + ".jpg":             false, // longer than any name the API gives
+		"users/01a1e2.gif":                                      false, // not an image type it takes
+		"users/01A1E2.jpg":                                      false,
+		"users/01a1e2":                                          false,
 	}
 	for ref, want := range cases {
 		if got := ValidRef(ref); got != want {

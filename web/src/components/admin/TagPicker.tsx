@@ -12,6 +12,9 @@ import type { TagCategory } from '@/lib/api'
 type Props = { value: string[]; onChange: (tags: string[]) => void }
 
 // "Bádminton" is found typing "badminton", and "PÁDEL" typing "padel"
+// as the API takes (counciladminDtos.go): more tags on one facility are refused
+const MAX_TAGS = 40
+
 const fold = (text: string) => text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase()
 
 /**
@@ -51,7 +54,11 @@ function CategoryPicker({ category, value, onChange }: Props & { category: TagCa
   const id = `f-tags-${category.id}`
   const picked = category.tags.filter((tag) => value.includes(tag.slug))
   const shown = query.trim() ? category.tags.filter((tag) => fold(tag.name).includes(fold(query.trim()))) : category.tags
-  const toggle = (slug: string, on: boolean) => onChange(on ? [...value, slug] : value.filter((x) => x !== slug))
+  const full = value.length >= MAX_TAGS // the facility's, in every category
+  const toggle = (slug: string, on: boolean) => {
+    if (on && full) return
+    onChange(on ? [...value, slug] : value.filter((x) => x !== slug))
+  }
 
   const onSearchKey = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'ArrowDown') {
@@ -111,13 +118,18 @@ function CategoryPicker({ category, value, onChange }: Props & { category: TagCa
                 return (
                   <li key={tag.slug}>
                     <label htmlFor={box} className="flex cursor-pointer items-center gap-3 rounded-sm px-2 py-2 text-sm hover:bg-accent hover:text-accent-foreground">
-                      <Checkbox id={box} checked={value.includes(tag.slug)} onCheckedChange={(on) => toggle(tag.slug, on === true)} />
+                      <Checkbox id={box} checked={value.includes(tag.slug)} disabled={full && !value.includes(tag.slug)} onCheckedChange={(on) => toggle(tag.slug, on === true)} />
                       {tag.name}
                     </label>
                   </li>
                 )
               })}
             </ul>
+          )}
+          {full && (
+            <p role="status" className="px-2 text-xs text-muted-foreground">
+              {t('editor.tagsMax', { count: MAX_TAGS })}
+            </p>
           )}
           {picked.length > 0 && (
             <Button

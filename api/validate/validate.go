@@ -46,3 +46,12 @@ var postalCodePattern = regexp.MustCompile(`^(0[1-9]|[1-4][0-9]|5[0-2])[0-9]{3}$
 func PostalCode(code string) bool {
 	return postalCodePattern.MatchString(code)
 }
+
+var phonePattern = regexp.MustCompile(`^\+?[0-9 ()-]+$`)
+
+// Phone: a phone number as people write it ("+34 986 000 000", "(986) 00-00-00"):
+// digits, spaces, brackets and dashes, an optional leading +, from 6 characters
+// up to max (its column's size), so it always fits.
+func Phone(phone string, max int) bool {
+	return len(phone) >= 6 && len(phone) <= max && phonePattern.MatchString(phone) // ASCII only: bytes are characters
+}

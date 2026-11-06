@@ -52,7 +52,7 @@ func (h *bookingsHandler) GetMyBookings(w http.ResponseWriter, r *http.Request) 
 
 func (h *bookingsHandler) CreateBooking(w http.ResponseWriter, r *http.Request) {
 	var body CreateBookingDto
-	if decodeErr := json.NewDecoder(r.Body).Decode(&body); decodeErr != nil {
+	if decodeErr := json.NewDecoder(shared.JSONBody(w, r)).Decode(&body); decodeErr != nil {
 		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_request_body")
 		return
 	}
@@ -87,7 +87,7 @@ func (h *bookingsHandler) ChangeBooking(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	var body ChangeBookingDto
-	if decodeErr := json.NewDecoder(r.Body).Decode(&body); decodeErr != nil {
+	if decodeErr := json.NewDecoder(shared.JSONBody(w, r)).Decode(&body); decodeErr != nil {
 		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_request_body")
 		return
 	}

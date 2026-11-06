@@ -11,6 +11,7 @@ import (
 	"librequenda/validate"
 	"net/http"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/google/uuid"
 )
@@ -20,6 +21,9 @@ func likePattern(q string) string {
 	return strings.NewReplacer(`\`, `\\`, `%`, `\%`, `_`, `\_`).Replace(q)
 }
 
+// maxResidentSearch: the longest search in the Veciños tab, as the facilities search.
+const maxResidentSearch = 100
+
 // ListResidents: the council's verified residents, narrowed by name or email,
 // sorted by name or by the latest verification, page 1 first.
 func (s *counciladminService) ListResidents(ctx context.Context, tenantId uuid.UUID, q string, sort string, page int) (*ResidentsResponse, *shared.ErrorResponse) {
@@ -27,7 +31,7 @@ func (s *counciladminService) ListResidents(ctx context.Context, tenantId uuid.U
 	if sort == "" {
 		sort = "name"
 	}
-	if !residentSorts[sort] || page < 1 || len(q) > 255 {
+	if !residentSorts[sort] || page < 1 || page > shared.MaxPage || utf8.RuneCountInString(q) > maxResidentSearch {
 		return nil, &shared.ErrorResponse{Code: http.StatusBadRequest, Message: "errors.invalid_query_params"}
 	}
 	var rows, err = model.New(s.db).ListTenantResidents(ctx, model.ListTenantResidentsParams{

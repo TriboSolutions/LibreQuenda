@@ -34,6 +34,9 @@ func (in *SmtpInput) validate() string {
 	if utf8.RuneCountInString(in.Username) > 255 {
 		return "errors.invalid_smtp_username"
 	}
+	if utf8.RuneCountInString(in.Password) > 255 {
+		return "errors.invalid_smtp_password"
+	}
 	if _, err := mail.ParseAddress(in.From); err != nil || utf8.RuneCountInString(in.From) > 255 {
 		return "errors.invalid_smtp_from"
 	}

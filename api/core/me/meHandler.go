@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"librequenda/auth"
 	"librequenda/core/checkin"
+	"librequenda/shared"
 	"net/http"
 	"sync"
 
@@ -52,7 +53,7 @@ func (h *meHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var input ProfileInput
-	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+	if err := json.NewDecoder(shared.JSONBody(w, r)).Decode(&input); err != nil {
 		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_request_body")
 		return
 	}
@@ -71,7 +72,7 @@ func (h *meHandler) UpdatePreferences(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var input PreferencesInput
-	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+	if err := json.NewDecoder(shared.JSONBody(w, r)).Decode(&input); err != nil {
 		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_request_body")
 		return
 	}
@@ -93,7 +94,7 @@ func (h *meHandler) SetShowRecommendations(w http.ResponseWriter, r *http.Reques
 	var input struct {
 		Show bool `json:"show"`
 	}
-	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+	if err := json.NewDecoder(shared.JSONBody(w, r)).Decode(&input); err != nil {
 		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_request_body")
 		return
 	}

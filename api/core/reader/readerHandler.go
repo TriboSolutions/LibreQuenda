@@ -64,7 +64,7 @@ func (h *readerHandler) CheckIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var body CheckinInput
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+	if err := json.NewDecoder(shared.JSONBody(w, r)).Decode(&body); err != nil {
 		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_request_body")
 		return
 	}

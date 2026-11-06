@@ -617,7 +617,7 @@ function BookDialog({ slug, token, facilityName, day, slot, onClose, onBooked }:
             {kind === 'account' ? (
               <div className="grid gap-1.5">
                 <Label htmlFor="staff-email">{t('staff.email')}</Label>
-                <Input id="staff-email" type="email" autoComplete="off" required value={email} onChange={(e) => setEmail(e.target.value)} aria-describedby="staff-email-help" />
+                <Input id="staff-email" type="email" autoComplete="off" required maxLength={255} value={email} onChange={(e) => setEmail(e.target.value)} aria-describedby="staff-email-help" />
                 <p id="staff-email-help" className="text-xs text-muted-foreground">
                   {t('staff.emailHelp')}
                 </p>

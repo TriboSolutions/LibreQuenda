@@ -146,7 +146,7 @@ func (h *tenantsHandler) Recommendations(w http.ResponseWriter, r *http.Request)
 	// POST may carry where the person is (the home page's «near me»), in the body so it stays out of the logs
 	var position Position
 	if r.Method == http.MethodPost {
-		if decodeErr := json.NewDecoder(r.Body).Decode(&position); decodeErr != nil {
+		if decodeErr := json.NewDecoder(shared.JSONBody(w, r)).Decode(&position); decodeErr != nil || !position.valid() {
 			helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_request_body")
 			return
 		}

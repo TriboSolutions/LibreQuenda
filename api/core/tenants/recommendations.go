@@ -76,6 +76,14 @@ type Position struct {
 	Longitude *float64 `json:"longitude"`
 }
 
+// valid: both or neither, and on the globe (as nearFromQuery checks ?lat=&lon=).
+func (p Position) valid() bool {
+	if p.Latitude == nil || p.Longitude == nil {
+		return p.Latitude == nil && p.Longitude == nil
+	}
+	return *p.Latitude >= -90 && *p.Latitude <= 90 && *p.Longitude >= -180 && *p.Longitude <= 180
+}
+
 type RecommendationsResponse struct {
 	Recommendations []RecommendationDto `json:"recommendations"`
 }

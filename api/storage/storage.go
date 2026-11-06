@@ -16,6 +16,7 @@ import (
 	"io"
 	"librequenda/shared"
 	"net/url"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -284,19 +285,20 @@ func CouncilRef(council uuid.UUID, folder string, name string) string {
 	return council.String() + "/" + folder + "/" + name
 }
 
+// fileName: what an upload is called (a UUIDv7 and the image's extension) or a seed
+// image (a slug): lower case, short, and one of the image types the API takes.
+var fileName = regexp.MustCompile(`^[a-z0-9][a-z0-9-]{0,79}\.(jpg|png|webp)$`)
+
 // ValidRef reports whether a reference has the shape this API creates:
 // "<council id>/<council folder>/<name>" or "<platform folder>/<name>".
 func ValidRef(ref string) bool {
-	if strings.Contains(ref, "..") || strings.Contains(ref, "\\") {
-		return false
-	}
 	var parts = strings.Split(ref, "/")
 	switch len(parts) {
 	case 2:
-		return PlatformFolders[parts[0]] && parts[1] != ""
+		return PlatformFolders[parts[0]] && fileName.MatchString(parts[1])
 	case 3:
 		var id, err = uuid.Parse(parts[0])
-		return err == nil && id.String() == parts[0] && CouncilFolders[parts[1]] && parts[2] != ""
+		return err == nil && id.String() == parts[0] && CouncilFolders[parts[1]] && fileName.MatchString(parts[2])
 	}
 	return false
 }

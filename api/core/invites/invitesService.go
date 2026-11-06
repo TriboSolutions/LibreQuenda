@@ -154,7 +154,7 @@ func (s *invitesService) SetPublic(ctx context.Context, ownerId uuid.UUID, booki
 	if description != nil {
 		text = sql.NullString{String: strings.TrimSpace(*description), Valid: true}
 		if utf8.RuneCountInString(text.String) > 1000 {
-			return &shared.ErrorResponse{Code: http.StatusBadRequest, Message: "errors.invalid_request_body"}
+			return &shared.ErrorResponse{Code: http.StatusUnprocessableEntity, Message: "errors.invalid_text_length"}
 		}
 	}
 

@@ -9,6 +9,7 @@ import (
 	"librequenda/model"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -55,9 +56,15 @@ type Filters struct {
 	Before   sql.NullTime
 }
 
+// actionPattern: an action code (facility.updated) or its prefix, as long as the column takes.
+var actionPattern = regexp.MustCompile(`^[a-z_.]{1,64}$`)
+
 // ParseFilters reads ?action=&actor=&from=YYYY-MM-DD&to=YYYY-MM-DD&before=RFC3339; dates in loc.
 func ParseFilters(q url.Values, loc *time.Location) Filters {
-	var f = Filters{Action: q.Get("action")}
+	var f = Filters{}
+	if action := q.Get("action"); actionPattern.MatchString(action) { // a code or a prefix; like the dates, anything else is no filter
+		f.Action = action
+	}
 	if id, err := uuid.Parse(q.Get("actor")); err == nil {
 		f.ActorID = uuid.NullUUID{UUID: id, Valid: true}
 	}

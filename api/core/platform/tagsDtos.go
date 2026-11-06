@@ -24,6 +24,9 @@ type TagCatalogueResponse struct {
 	Categories []TagCategoryDto `json:"categories"` // in their order
 }
 
+// maxTagCategoryPosition: far more categories than a catalogue has, so the order stays small numbers.
+const maxTagCategoryPosition = 1000
+
 type TagCategoryInput struct {
 	Name     string `json:"name"`
 	Position *int32 `json:"position"` // update only: nil keeps it
@@ -33,6 +36,9 @@ func (in *TagCategoryInput) validate() string {
 	in.Name = strings.Join(strings.Fields(in.Name), " ")
 	if in.Name == "" || len([]rune(in.Name)) > 60 {
 		return "errors.invalid_tag_category_name"
+	}
+	if in.Position != nil && (*in.Position < 0 || *in.Position > maxTagCategoryPosition) {
+		return "errors.invalid_tag_category_position"
 	}
 	return ""
 }

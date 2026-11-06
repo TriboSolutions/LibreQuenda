@@ -27,3 +27,16 @@ func TestPostalCode(t *testing.T) {
 		}
 	}
 }
+
+func TestPhone(t *testing.T) {
+	for _, ok := range []string{"986000000", "+34 986 000 000", "(986) 00-00-00", "+" + "12345678901234567890123456789"} {
+		if !Phone(ok, 30) {
+			t.Errorf("Phone(%q, 30) = false, want true", ok)
+		}
+	}
+	for _, bad := range []string{"", "12345", "986 000 000 ext. 2", "+" + "123456789012345678901234567890", "teléfono", "986/000/000"} {
+		if Phone(bad, 30) {
+			t.Errorf("Phone(%q, 30) = true, want false", bad)
+		}
+	}
+}

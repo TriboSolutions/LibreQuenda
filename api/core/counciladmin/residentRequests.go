@@ -47,7 +47,7 @@ type ResidentRequestCount struct {
 }
 
 func (s *counciladminService) ListResidentRequests(ctx context.Context, tenantId uuid.UUID, page int) (*ResidentRequestsResponse, *shared.ErrorResponse) {
-	if page < 1 {
+	if page < 1 || page > shared.MaxPage {
 		return nil, &shared.ErrorResponse{Code: http.StatusBadRequest, Message: "errors.invalid_query_params"}
 	}
 	var rows, err = model.New(s.db).ListResidentRequests(ctx, model.ListResidentRequestsParams{

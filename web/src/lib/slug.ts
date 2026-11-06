@@ -8,4 +8,5 @@ export function slugify(name: string) {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 64)
+    .replace(/-+$/, '') // cut at 64, it must not end in a dash
 }

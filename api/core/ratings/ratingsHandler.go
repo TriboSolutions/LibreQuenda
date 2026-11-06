@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"librequenda/auth"
 	"librequenda/core/me"
+	"librequenda/shared"
 	"net/http"
 	"sync"
 
@@ -61,7 +62,7 @@ func (h *ratingsHandler) Rate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var input RateInput
-	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+	if err := json.NewDecoder(shared.JSONBody(w, r)).Decode(&input); err != nil {
 		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_request_body")
 		return
 	}

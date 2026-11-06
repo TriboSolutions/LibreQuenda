@@ -195,6 +195,7 @@ export function SmtpSettings({ slug, token }: Props) {
                 <Input
                   id="smtp-password"
                   type="password"
+                  maxLength={255}
                   value={form.password}
                   onChange={set('password')}
                   placeholder={data.has_password ? t('admin:smtp.passwordKept') : ''}

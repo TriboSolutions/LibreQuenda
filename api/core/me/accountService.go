@@ -56,9 +56,16 @@ func (s *meService) SetName(ctx context.Context, userId string, input NameInput)
 	return nil
 }
 
+// MaxPasswordBytes: Zitadel hashes passwords with bcrypt, which reads 72 bytes and
+// ignores the rest; a longer one is refused rather than cut without a word.
+const MaxPasswordBytes = 72
+
 func (s *meService) SetPassword(ctx context.Context, userId string, input PasswordInput) *shared.ErrorResponse {
-	if input.CurrentPassword == "" {
+	if input.CurrentPassword == "" || len(input.CurrentPassword) > MaxPasswordBytes {
 		return &shared.ErrorResponse{Code: http.StatusUnprocessableEntity, Message: "errors.current_password_wrong"}
+	}
+	if len(input.NewPassword) > MaxPasswordBytes {
+		return &shared.ErrorResponse{Code: http.StatusUnprocessableEntity, Message: "errors.password_too_long"}
 	}
 	var rules, err = zitadel.GetPasswordRules(ctx)
 	if err != nil {

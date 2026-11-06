@@ -72,7 +72,7 @@ export function CouncilFields({ form, set, logo, setLogo, creating, councilSlug,
           <Label htmlFor="council-email">
             {t('form.contactEmail')} <span className="font-normal text-muted-foreground">({t('form.optional')})</span>
           </Label>
-          <Input id="council-email" type="email" value={form.contact_email} onChange={(e) => set('contact_email', e.target.value)} />
+          <Input id="council-email" type="email" maxLength={255} value={form.contact_email} onChange={(e) => set('contact_email', e.target.value)} />
         </div>
         <div className="grid gap-2">
           <Label htmlFor="council-phone">
@@ -107,6 +107,7 @@ export function CouncilFields({ form, set, logo, setLogo, creating, councilSlug,
           <Input
             id="council-admin"
             type="email"
+            maxLength={255}
             required
             value={form.admin_email}
             aria-describedby="council-admin-help"

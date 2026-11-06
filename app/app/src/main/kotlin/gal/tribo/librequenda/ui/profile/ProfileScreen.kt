@@ -147,6 +147,9 @@ fun ProfileScreen(
 
 // --- personal data ---------------------------------------------------------------
 
+/** As the API takes them (MaxPasswordBytes): Zitadel's bcrypt reads no more. */
+private const val MAX_PASSWORD = 72
+
 private val IMAGE_TYPES = setOf("image/jpeg", "image/png", "image/webp")
 private const val MAX_IMAGE = 5 * 1024 * 1024
 
@@ -379,7 +382,7 @@ private fun EmailCard(account: Account, actions: ProfileActions, onVerified: () 
             LqTextField(
                 label = stringResource(R.string.code),
                 value = code,
-                onValueChange = { code = it },
+                onValueChange = { if (it.length <= 32) code = it },
                 help = stringResource(R.string.code_help, sentTo ?: account.email),
             )
             PrimaryButton(
@@ -391,7 +394,7 @@ private fun EmailCard(account: Account, actions: ProfileActions, onVerified: () 
             GhostButton(stringResource(R.string.resend), { scope.launch { card.run(sentText) { actions.authed { AccountApi.resendEmailCode(it) } } } }, enabled = !card.busy)
         }
         if (editing) {
-            LqTextField(stringResource(R.string.new_email), newEmail, { newEmail = it }, help = stringResource(R.string.new_email_help), keyboardType = KeyboardType.Email)
+            LqTextField(stringResource(R.string.new_email), newEmail, { if (it.length <= 255) newEmail = it }, help = stringResource(R.string.new_email_help), keyboardType = KeyboardType.Email)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 SecondaryButton(
                     stringResource(R.string.send_code),
@@ -434,8 +437,8 @@ private fun PasswordCard(account: Account, actions: ProfileActions) {
     val saved = stringResource(R.string.password_saved)
 
     SettingsCard(stringResource(R.string.password)) {
-        LqTextField(stringResource(R.string.current_password), current, { current = it }, password = true)
-        LqTextField(stringResource(R.string.new_password), next, { next = it }, password = true)
+        LqTextField(stringResource(R.string.current_password), current, { if (it.length <= MAX_PASSWORD) current = it }, password = true)
+        LqTextField(stringResource(R.string.new_password), next, { if (it.length <= MAX_PASSWORD) next = it }, password = true)
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             checks.forEach { (ok, label) ->
                 Text(
@@ -446,7 +449,7 @@ private fun PasswordCard(account: Account, actions: ProfileActions) {
             }
         }
         LqTextField(
-            stringResource(R.string.repeat_password), repeat, { repeat = it }, password = true,
+            stringResource(R.string.repeat_password), repeat, { if (it.length <= MAX_PASSWORD) repeat = it }, password = true,
             error = if (mismatch) stringResource(R.string.mismatch) else null,
         )
         Notice(card.notice, false); Notice(card.error, true)

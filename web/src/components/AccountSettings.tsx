@@ -209,6 +209,7 @@ function EmailCard({ token, account, onChanged }: { token: string; account: Acco
             <Input
               id="acc-code"
               required
+              maxLength={32}
               autoComplete="one-time-code"
               value={code}
               onChange={(e) => setCode(e.target.value)}
@@ -229,7 +230,7 @@ function EmailCard({ token, account, onChanged }: { token: string; account: Acco
       {editing ? (
         <form onSubmit={change} className="grid gap-2">
           <Label htmlFor="acc-new-email">{t('accountSettings.newEmail')}</Label>
-          <Input id="acc-new-email" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <Input id="acc-new-email" type="email" required maxLength={255} autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
           <p className="text-sm text-muted-foreground">{t('accountSettings.newEmailHelp')}</p>
           <div className="flex flex-wrap gap-2">
             <Button type="submit" variant="outline" disabled={busy}>
@@ -284,12 +285,12 @@ function PasswordCard({ token, account }: { token: string; account: Account }) {
       <form onSubmit={save} className="grid gap-4">
         <div className="grid gap-2 sm:w-1/2 sm:pr-2">
           <Label htmlFor="acc-current">{t('accountSettings.currentPassword')}</Label>
-          <Input id="acc-current" type="password" required autoComplete="current-password" value={current} onChange={(e) => setCurrent(e.target.value)} />
+          <Input id="acc-current" type="password" required maxLength={72} autoComplete="current-password" value={current} onChange={(e) => setCurrent(e.target.value)} />
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="grid content-start gap-2">
             <Label htmlFor="acc-next">{t('accountSettings.newPassword')}</Label>
-            <Input id="acc-next" type="password" required autoComplete="new-password" aria-describedby="acc-rules" value={next} onChange={(e) => setNext(e.target.value)} />
+            <Input id="acc-next" type="password" required maxLength={72} autoComplete="new-password" aria-describedby="acc-rules" value={next} onChange={(e) => setNext(e.target.value)} />
             <ul id="acc-rules" className="grid gap-0.5 text-sm">
               {checks.map((check) => (
                 <li key={check.label} className={`flex items-center gap-1.5 ${check.ok ? 'text-pill-positive-ink' : 'text-muted-foreground'}`}>
@@ -304,6 +305,7 @@ function PasswordCard({ token, account }: { token: string; account: Account }) {
             <Input
               id="acc-repeat"
               type="password"
+              maxLength={72}
               required
               autoComplete="new-password"
               aria-invalid={mismatch}

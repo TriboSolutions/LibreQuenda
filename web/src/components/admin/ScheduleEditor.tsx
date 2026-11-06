@@ -13,6 +13,9 @@ const WEEK = [1, 2, 3, 4, 5, 6, 7]
 type Props = { value: WeeklyWindow[] } & ({ saving: boolean; onSave: (windows: WeeklyWindow[]) => void; onChange?: never } | { onChange: (windows: WeeklyWindow[]) => void; saving?: never; onSave?: never })
 
 /** The weekly opening hours: any number of windows per day (morning and afternoon, for example). */
+// maxWindowsPerDay in the API (counciladminDtos.go): more opening windows in one day are refused
+const MAX_WINDOWS = 6
+
 export function ScheduleEditor({ value, saving, onSave, onChange }: Props) {
   const { t } = useTranslation(['admin', 'common', 'facility'])
   const [draft, setDraft] = useState<WeeklyWindow[]>(value)
@@ -22,6 +25,7 @@ export function ScheduleEditor({ value, saving, onSave, onChange }: Props) {
   const byDay = (day: number) => windows.map((w, index) => ({ ...w, index })).filter((w) => w.weekday === day)
   const update = (index: number, field: 'opens_at' | 'closes_at', time: string) =>
     setWindows((list) => list.map((w, i) => (i === index ? { ...w, [field]: time } : w)))
+  // as the API takes: up to MAX_WINDOWS a day
   const remove = (index: number) => setWindows((list) => list.filter((_, i) => i !== index))
   const add = (day: number) => setWindows((list) => [...list, { weekday: day, opens_at: '09:00', closes_at: '21:00' }])
   const copyMonday = () =>
@@ -62,12 +66,14 @@ export function ScheduleEditor({ value, saving, onSave, onChange }: Props) {
                     </Button>
                   </div>
                 ))}
-                <div>
-                  <Button type="button" variant="ghost" size="sm" onClick={() => add(day)}>
-                    <Plus />
-                    {t('admin:editor.addWindow')}
-                  </Button>
-                </div>
+                {dayWindows.length < MAX_WINDOWS && (
+                  <div>
+                    <Button type="button" variant="ghost" size="sm" onClick={() => add(day)}>
+                      <Plus />
+                      {t('admin:editor.addWindow')}
+                    </Button>
+                  </div>
+                )}
               </div>
             </li>
           )

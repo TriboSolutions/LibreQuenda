@@ -7,9 +7,9 @@ import (
 	"librequenda/model"
 	"librequenda/shared"
 	"librequenda/storage"
+	"librequenda/validate"
 	"librequenda/zitadel"
 	"net/http"
-	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -143,7 +143,6 @@ func (s *meService) SyncCurrentUser(ctx context.Context, session auth.Session) (
 	return response, nil
 }
 
-var phonePattern = regexp.MustCompile(`^\+?[0-9 ()-]{6,30}$`)
 var languages = map[string]bool{"": true, "gl": true, "es": true, "en": true, "ca": true}
 
 // validateProfile returns the parsed date of birth, or the i18n key of the first invalid field.
@@ -154,7 +153,7 @@ func validateProfile(in *ProfileInput, today time.Time) (time.Time, string) {
 	switch {
 	case err != nil || !birth.Before(today) || birth.Before(today.AddDate(-120, 0, 0)):
 		return birth, "errors.invalid_birth_date"
-	case in.Phone != "" && !phonePattern.MatchString(in.Phone):
+	case in.Phone != "" && !validate.Phone(in.Phone, 30): // its column is VARCHAR(30)
 		return birth, "errors.invalid_phone_format"
 	case in.AvatarRef != "" && !storage.Owned(in.AvatarRef, uuid.Nil, "users"):
 		return birth, "errors.invalid_image"

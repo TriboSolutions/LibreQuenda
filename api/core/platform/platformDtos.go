@@ -52,7 +52,7 @@ func (in *TenantInput) validate(creating bool) string {
 		return "errors.invalid_timezone"
 	case in.ContactEmail != "" && !validEmail(in.ContactEmail):
 		return "errors.invalid_email"
-	case len(in.ContactPhone) > 50:
+	case in.ContactPhone != "" && !validate.Phone(in.ContactPhone, 50):
 		return "errors.invalid_phone"
 	case in.MunicipalityCode != "" && !validMunicipalityCode(in.MunicipalityCode):
 		return "errors.invalid_municipality_code"

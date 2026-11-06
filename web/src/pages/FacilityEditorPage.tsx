@@ -252,6 +252,7 @@ function Editor({ slug, facility, council, token }: { slug: string; facility: Ad
                   id="f-capacity"
                   type="number"
                   min={1}
+                  max={100000}
                   value={form.capacity ?? ''}
                   onChange={(e) => set('capacity', e.target.value === '' ? null : Number(e.target.value))}
                   className="num"

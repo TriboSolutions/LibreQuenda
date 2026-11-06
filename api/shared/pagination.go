@@ -10,6 +10,10 @@ import (
 // DefaultPageSize: a list's page when the client asks for none, and the most it may ask for.
 const DefaultPageSize uint = 100
 
+// MaxPage: the last page a list may ask for. Far beyond any list here, and it keeps
+// the offset (page × size) within the database's INT, which would otherwise overflow.
+const MaxPage = 10000
+
 // Page: ?page= (from 1) and ?pageSize= (1..100, 100 by default), as Penguin reads
 // them. Penguin ignores bad values; here they are an error, so a client hears
 // about its mistake instead of getting another page.
@@ -17,7 +21,7 @@ func Page(r *http.Request) (helpers.PaginationParams, *ErrorResponse) {
 	var q = r.URL.Query()
 	for _, key := range []string{"page", "pageSize"} {
 		if text := q.Get(key); text != "" {
-			if value, err := strconv.ParseUint(text, 10, 31); err != nil || value < 1 || (key == "pageSize" && value > uint64(DefaultPageSize)) {
+			if value, err := strconv.ParseUint(text, 10, 31); err != nil || value < 1 || (key == "page" && value > MaxPage) || (key == "pageSize" && value > uint64(DefaultPageSize)) {
 				return helpers.PaginationParams{}, &ErrorResponse{Code: http.StatusBadRequest, Message: "errors.invalid_query_params"}
 			}
 		}

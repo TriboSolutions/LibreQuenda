@@ -207,6 +207,7 @@
     "tagsNone": "None",
     "tagsSearch": "Search {{category}}",
     "tagsNoMatch": "No tag matches.",
+    "tagsMax": "At most {{count}} tags per facility.",
     "tagsClear": "Clear all",
     "tabDetails": "Details",
     "tabCheckin": "Check-in",

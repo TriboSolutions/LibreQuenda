@@ -113,7 +113,7 @@ func facilityId(w http.ResponseWriter, r *http.Request) (uuid.UUID, bool) {
 }
 
 func decode(w http.ResponseWriter, r *http.Request, into any) bool {
-	if err := json.NewDecoder(r.Body).Decode(into); err != nil {
+	if err := json.NewDecoder(shared.JSONBody(w, r)).Decode(into); err != nil {
 		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_request_body")
 		return false
 	}

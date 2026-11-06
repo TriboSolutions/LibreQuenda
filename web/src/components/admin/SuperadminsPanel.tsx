@@ -104,7 +104,7 @@ export function SuperadminsPanel() {
       <form onSubmit={(e) => void add(e)} className="mt-4 grid gap-2 border-t pt-4">
         <Label htmlFor="superadmin-email">{t('admin:superadmins.addLabel')}</Label>
         <div className="flex gap-2">
-          <Input id="superadmin-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+          <Input id="superadmin-email" type="email" required maxLength={255} value={email} onChange={(e) => setEmail(e.target.value)} />
           <Button type="submit" variant="outline" disabled={busy}>
             {t('admin:superadmins.add')}
           </Button>

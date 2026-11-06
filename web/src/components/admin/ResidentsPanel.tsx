@@ -141,7 +141,7 @@ export function ResidentsPanel({ slug, onRequestsChanged }: { slug: string; onRe
       <form onSubmit={(e) => void add(e)} className="grid max-w-[560px] gap-2 border-t pt-4">
         <Label htmlFor="resident-email">{t('residents.addLabel')}</Label>
         <div className="flex gap-2">
-          <Input id="resident-email" type="email" required autoComplete="off" value={email} onChange={(e) => setEmail(e.target.value)} aria-describedby="resident-email-help" />
+          <Input id="resident-email" type="email" required maxLength={255} autoComplete="off" value={email} onChange={(e) => setEmail(e.target.value)} aria-describedby="resident-email-help" />
           <Button type="submit" disabled={busy}>
             {t('residents.add')}
           </Button>
@@ -168,7 +168,7 @@ export function ResidentsPanel({ slug, onRequestsChanged }: { slug: string; onRe
         <form onSubmit={find} role="search" className="grid min-w-0 max-w-full gap-1.5">
           <Label htmlFor="residents-search">{t('residents.search')}</Label>
           <div className="flex gap-2">
-            <Input id="residents-search" type="search" className="w-64 max-w-full" value={search} onChange={(e) => setSearch(e.target.value)} />
+            <Input id="residents-search" type="search" maxLength={100} className="w-64 max-w-full" value={search} onChange={(e) => setSearch(e.target.value)} />
             <Button type="submit" variant="outline" size="icon" aria-label={t('residents.searchAction')} title={t('residents.searchAction')}>
               <Search />
             </Button>

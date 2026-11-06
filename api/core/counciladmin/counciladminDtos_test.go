@@ -19,6 +19,7 @@ func TestScheduleParse(t *testing.T) {
 		{"closes before opening", []WindowInput{{5, "20:00", "09:00"}}, "errors.invalid_schedule"},
 		{"bad time", []WindowInput{{6, "9", "10:00"}}, "errors.invalid_schedule"},
 		{"bad weekday", []WindowInput{{8, "09:00", "10:00"}}, "errors.invalid_schedule"},
+		{"more than a full week", make([]WindowInput, 7*maxWindowsPerDay+1), "errors.invalid_schedule"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {

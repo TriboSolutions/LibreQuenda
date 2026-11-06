@@ -42,6 +42,10 @@ type RateInput struct {
 	People        []PersonStarsInput `json:"people"`
 }
 
+// maxRatedPeople: a bound on the list before reading it, beyond any public booking's
+// players (events rate no people); who played is checked afterwards.
+const maxRatedPeople = 1000
+
 type PersonStarsInput struct {
 	UserId uuid.UUID `json:"user_id"`
 	Stars  int16     `json:"stars"`
@@ -54,6 +58,9 @@ func (in *RateInput) Validate() string {
 		return "errors.rating_facility_required"
 	}
 	if in.FacilityStars < 0 || in.FacilityStars > 5 {
+		return "errors.invalid_rating"
+	}
+	if len(in.People) > maxRatedPeople {
 		return "errors.invalid_rating"
 	}
 	var seen = map[uuid.UUID]bool{}

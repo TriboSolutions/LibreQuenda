@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"librequenda/auth"
 	"librequenda/core/me"
+	"librequenda/shared"
 	"net/http"
 	"sync"
 
@@ -159,7 +160,7 @@ func (h *invitesHandler) JoinAsGuest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var body GuestJoinDto
-	if decodeErr := json.NewDecoder(r.Body).Decode(&body); decodeErr != nil {
+	if decodeErr := json.NewDecoder(shared.JSONBody(w, r)).Decode(&body); decodeErr != nil {
 		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_request_body")
 		return
 	}
@@ -205,7 +206,7 @@ func (h *invitesHandler) SetPublic(w http.ResponseWriter, r *http.Request) {
 		Public      bool    `json:"public"`
 		Description *string `json:"public_description"`
 	}
-	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+	if err := json.NewDecoder(shared.JSONBody(w, r)).Decode(&input); err != nil {
 		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_request_body")
 		return
 	}

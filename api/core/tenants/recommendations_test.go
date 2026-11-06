@@ -101,3 +101,22 @@ func TestPublicBookings(t *testing.T) {
 		t.Errorf("no history, no position: got %+v", got)
 	}
 }
+
+func TestPositionValid(t *testing.T) {
+	var lat, lon, far = 43.0, -8.5, 200.0
+	var cases = []struct {
+		position Position
+		want     bool
+	}{
+		{Position{}, true},
+		{Position{Latitude: &lat, Longitude: &lon}, true},
+		{Position{Latitude: &lat}, false},
+		{Position{Latitude: &far, Longitude: &lon}, false},
+		{Position{Latitude: &lat, Longitude: &far}, false},
+	}
+	for _, c := range cases {
+		if got := c.position.valid(); got != c.want {
+			t.Errorf("%+v: valid = %v, want %v", c.position, got, c.want)
+		}
+	}
+}

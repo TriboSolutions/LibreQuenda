@@ -4,7 +4,7 @@ import (
 	"librequenda/core/checkin"
 	"librequenda/model"
 	"librequenda/schedule"
-	"net/mail"
+	"librequenda/validate"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -36,7 +36,7 @@ func (d *StaffBookingInput) validate() string {
 	case (d.Email == "") == (d.Name == ""):
 		return "errors.staff_booking_holder" // an account or a name, exactly one
 	case d.Email != "":
-		if _, err := mail.ParseAddress(d.Email); err != nil {
+		if !validate.Email(strings.ToLower(d.Email)) { // a bare address, as accounts have it
 			return "errors.invalid_email"
 		}
 	case utf8.RuneCountInString(d.Name) > 80 || utf8.RuneCountInString(d.Phone) > 30:

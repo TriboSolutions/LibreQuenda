@@ -11,6 +11,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"unicode/utf8"
 )
 
 // Address search through OpenStreetMap's Nominatim, called by the API so the
@@ -28,9 +29,17 @@ type nominatimPlace struct {
 	Lon         string `json:"lon"`
 }
 
+// maxGeocodeQuery: the most of an address sent to the geocoder, in characters.
+const maxGeocodeQuery = 300
+
 func geocode(ctx context.Context, query string, language string) ([]GeocodeResult, error) {
 	query = strings.TrimSpace(query)
-	if len(query) < 3 || len(query) > 300 {
+	// an address as long as the form takes (500 characters) is looked up by its
+	// beginning: the street, number and town come first, and Nominatim wants it short
+	if runes := []rune(query); len(runes) > maxGeocodeQuery {
+		query = strings.TrimSpace(string(runes[:maxGeocodeQuery]))
+	}
+	if utf8.RuneCountInString(query) < 3 {
 		return []GeocodeResult{}, nil
 	}
 

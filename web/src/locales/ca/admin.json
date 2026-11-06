@@ -207,6 +207,7 @@
     "tagsNone": "Cap",
     "tagsSearch": "Cerca a {{category}}",
     "tagsNoMatch": "Cap etiqueta no coincideix.",
+    "tagsMax": "Com a màxim {{count}} etiquetes per instal·lació.",
     "tagsClear": "Treu-les totes",
     "tabDetails": "Dades",
     "tabCheckin": "Entrada",

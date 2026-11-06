@@ -82,7 +82,7 @@ func (in *FacilityInput) validate() string {
 		return "errors.invalid_tags"
 	case utf8.RuneCountInString(in.Address) > 500 || utf8.RuneCountInString(in.Description) > 5000 || utf8.RuneCountInString(in.UsageRules) > 5000 || utf8.RuneCountInString(in.AccessibilityInfo) > 2000: // characters, as the forms count them
 		return "errors.invalid_text_length"
-	case len(in.ContactPhone) > 50:
+	case in.ContactPhone != "" && !validate.Phone(in.ContactPhone, 50):
 		return "errors.invalid_phone"
 	case in.ContactEmail != "" && !validate.Email(in.ContactEmail):
 		return "errors.invalid_email"
@@ -150,6 +150,9 @@ const maxWindowsPerDay = 6
 
 // parse checks the weekly schedule: valid times, closing after opening, no overlaps on a day.
 func (in *ScheduleInput) parse() ([]parsedWindow, string) {
+	if len(in.Windows) > 7*maxWindowsPerDay { // more than a full week cannot be right: refused before reading it
+		return nil, "errors.invalid_schedule"
+	}
 	var windows []parsedWindow
 	var perDay = map[int16][]parsedWindow{}
 	for _, w := range in.Windows {

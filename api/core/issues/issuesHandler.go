@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"librequenda/auth"
 	"librequenda/core/issue"
+	"librequenda/shared"
 	"net/http"
 	"sync"
 
@@ -32,7 +33,7 @@ func (h *issuesHandler) Report(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var body issue.Report
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+	if err := json.NewDecoder(shared.JSONBody(w, r)).Decode(&body); err != nil {
 		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_request_body")
 		return
 	}

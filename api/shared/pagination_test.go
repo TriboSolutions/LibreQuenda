@@ -16,6 +16,8 @@ func TestPage(t *testing.T) {
 		{"page=0", 0, 0, false},
 		{"page=x", 0, 0, false},
 		{"pageSize=101", 0, 0, false},
+		{"page=10000", 10000, 100, true},
+		{"page=10001", 0, 0, false}, // the offset would overflow the database's INT
 		{"pageSize=-5", 0, 0, false},
 	}
 	for _, c := range cases {

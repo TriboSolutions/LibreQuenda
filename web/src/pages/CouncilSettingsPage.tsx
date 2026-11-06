@@ -165,7 +165,7 @@ export function CouncilSettingsPage() {
             <form onSubmit={(e) => void invite(e)} className="grid gap-2 border-t pt-4">
               <Label htmlFor="invite-email">{t('admin:manage.inviteLabel')}</Label>
               <div className="flex gap-2">
-                <Input id="invite-email" type="email" required value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} />
+                <Input id="invite-email" type="email" required maxLength={255} value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} />
                 <Button type="submit" variant="outline" disabled={busy}>
                   {t('admin:manage.invite')}
                 </Button>

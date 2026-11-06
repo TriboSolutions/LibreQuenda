@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"librequenda/auth"
+	"librequenda/shared"
 	"net/http"
 	"sync"
 
@@ -60,7 +61,7 @@ func (h *entranceHandler) CheckIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var body CheckinInput
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+	if err := json.NewDecoder(shared.JSONBody(w, r)).Decode(&body); err != nil {
 		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_request_body")
 		return
 	}
@@ -75,7 +76,7 @@ func (h *entranceHandler) CheckIn(w http.ResponseWriter, r *http.Request) {
 // Nearby: the location goes in the body, so it stays out of the access logs.
 func (h *entranceHandler) Nearby(w http.ResponseWriter, r *http.Request) {
 	var body NearbyInput
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+	if err := json.NewDecoder(shared.JSONBody(w, r)).Decode(&body); err != nil {
 		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_request_body")
 		return
 	}

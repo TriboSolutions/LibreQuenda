@@ -207,6 +207,7 @@
     "tagsNone": "Ninguna",
     "tagsSearch": "Buscar en {{category}}",
     "tagsNoMatch": "Ninguna etiqueta coincide.",
+    "tagsMax": "Como mucho {{count}} etiquetas por instalación.",
     "tagsClear": "Quitar todas",
     "tabDetails": "Datos",
     "tabCheckin": "Entrada",
