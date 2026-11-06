@@ -57,7 +57,11 @@
     "remove": "Quitar a {{name}}",
     "nobody": "Aún no se ha unido nadie.",
     "error": "No se pudo cargar la invitación.",
-    "close": "Cerrar"
+    "close": "Cerrar",
+    "removeConfirm": "¿Sacar a {{name}}? Le avisaremos y no podrá volver a unirse a esta reserva.",
+    "removeGuestConfirm": "¿Sacar a {{name}}? Deja su plaza libre.",
+    "removeYes": "Sacar",
+    "removeKeep": "Mantener"
   },
   "page": {
     "title": "Unirse a una reserva",
@@ -90,7 +94,9 @@
     "you": "Tú",
     "organiser": "hizo la reserva",
     "noAccount": "sin cuenta",
-    "unnamed": "Sin nombre"
+    "unnamed": "Sin nombre",
+    "see": "Ver personas",
+    "title": "Quién viene a {{facility}}"
   },
   "meter": {
     "left_one": "Queda {{count}} plaza",

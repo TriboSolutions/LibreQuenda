@@ -274,6 +274,7 @@ func TestCancellationEmailsSayWhatWhereWhenAndWhy(t *testing.T) {
 		{model.NotificationTypeBookingCancelledByCouncil, `{"cause":"resident_revoked"}`, "took back your verification as a resident, so your booking"},
 		{model.NotificationTypeBookingCancelledByCouncil, `{"cause":"resident_revoked_left"}`, "you are no longer in the game"},
 		{model.NotificationTypeBookingCancelledByCouncil, `{"closed_from":"2026-11-03T00:00:00+01:00","closed_until":"2026-11-05T23:59:00+01:00"}`, "is closed from 03/11/2026"},
+		{model.NotificationTypeParticipantRemoved, `{"name":"Uxía"}`, "Uxía took you out of their public booking"},
 	}
 	for _, c := range cases {
 		row.Type, row.Payload = c.kind, []byte(c.payload)

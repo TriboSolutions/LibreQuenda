@@ -213,6 +213,7 @@
     "residents_only": "Esta instalación es solo para vecinos verificados por el ayuntamiento. Pide en el ayuntamiento que verifiquen tu cuenta.",
     "staff_residents_only": "Esta cuenta no es vecina verificada del ayuntamiento y la instalación es solo para vecinos. Verifícala en la pestaña Vecinos si lo es.",
     "guest_residents_only": "Esta instalación es solo para vecinos verificados por el ayuntamiento: para unirte, inicia sesión con una cuenta verificada.",
+    "invite_removed": "Quien hizo la reserva te sacó de ella: ya no puedes volver a unirte.",
     "resident_user_not_found": "No hay ninguna cuenta con ese correo verificado. La persona tiene que iniciar sesión una vez antes.",
     "resident_already_verified": "Esa persona ya está verificada en este ayuntamiento.",
     "resident_of_another_council": "Esa persona ya es vecina de otro ayuntamiento: solo se puede ser vecino de un ayuntamiento.",
@@ -277,6 +278,10 @@
       "intro_event": "Lo sentimos. {{1}} canceló el evento «{{5}}» en {{0}} el {{2}}, de {{3}} a {{4}}, al que te habías apuntado.",
       "intro_resident_revoked": "{{1}} retiró tu verificación como vecino, así que se canceló tu reserva en {{0}}, solo para vecinos, el {{2}}, de {{3}} a {{4}}.",
       "intro_resident_revoked_left": "{{1}} retiró tu verificación como vecino, así que ya no estás en la partida en {{0}}, solo para vecinos, el {{2}}, de {{3}} a {{4}}."
+    },
+    "participant_removed": {
+      "subject": "Ya no estás en la reserva en {{0}} del {{1}} a las {{2}}",
+      "intro": "{{5}} te sacó de su reserva pública en {{0}} ({{1}}) el {{2}}, de {{3}} a {{4}}. Ya no puedes volver a unirte a ella, pero sí buscar otra partida o reservar un turno libre."
     },
     "reason": "Motivo: {{0}}",
     "council_admin": {

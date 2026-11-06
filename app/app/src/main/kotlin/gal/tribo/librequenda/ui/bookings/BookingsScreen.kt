@@ -240,6 +240,7 @@ fun BookingPage(bookingId: String?, state: BookingsState, actions: ProfileAction
         var checkingIn by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) } // the check-in page, over this one (kept across the camera)
         var changing by remember { mutableStateOf(false) } // another turn, on a page over this one
         var reporting by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) } // a problem at the facility (kept across the photo picker)
+        var seeingPeople by remember { mutableStateOf(false) } // who is coming, on a page over this one (the owner takes people out there)
         val shareText = stringResource(R.string.invite_share_text, booking.facilityName, bookingDayInline(booking.startsAt), time(booking.startsAt))
 
         Column(
@@ -280,6 +281,7 @@ fun BookingPage(bookingId: String?, state: BookingsState, actions: ProfileAction
                 onCheckin = { checkingIn = true },
                 onChange = { changing = true },
                 onReport = { reporting = true },
+                onPeople = { seeingPeople = true },
             )
         }
 
@@ -291,6 +293,7 @@ fun BookingPage(bookingId: String?, state: BookingsState, actions: ProfileAction
             onChanged = { state.reload(); changing = false },
         )
         ReportIssuePage(booking = if (reporting) booking else null, actions = actions, onBack = { reporting = false })
+        PeoplePage(booking = if (seeingPeople) booking else null, actions = actions, onBack = { seeingPeople = false }, onChanged = { state.reload() })
 
         CheckinPage(
             booking = if (checkingIn) booking else null,
@@ -508,6 +511,7 @@ private fun BookingContent(
     onCheckin: () -> Unit,
     onChange: () -> Unit,
     onReport: () -> Unit,
+    onPeople: () -> Unit,
 ) {
     val now = Instant.now()
     // the entrance opens 15 minutes before; their own booking, at a facility that takes some way in
@@ -613,10 +617,15 @@ private fun BookingContent(
                         Text(stringResource(R.string.public_edit), style = MaterialTheme.typography.labelLarge, color = Lq.colors.primary)
                     }
                 }
-                Row(Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+                // who is coming: a page, where the owner can take someone out
+                Row(
+                    Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(onClick = onPeople).padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
                     Icon(painterResource(R.drawable.ic_users), contentDescription = null, tint = Lq.colors.foreground, modifier = Modifier.size(22.dp))
                     Spacer(Modifier.size(16.dp))
-                    Text(stringResource(R.string.people_count, booking.people, booking.capacity), style = MaterialTheme.typography.bodyLarge, color = Lq.colors.foreground)
+                    Text(stringResource(R.string.people_count, booking.people, booking.capacity), style = MaterialTheme.typography.bodyLarge, color = Lq.colors.foreground, modifier = Modifier.weight(1f))
+                    Icon(painterResource(R.drawable.ic_chevron_right), contentDescription = null, tint = Lq.colors.mutedForeground, modifier = Modifier.size(20.dp))
                 }
             }
             // an event they joined: what the council does, and how many are in (no owner among them)

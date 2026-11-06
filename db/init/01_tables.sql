@@ -51,7 +51,8 @@ CREATE TYPE notification_type AS ENUM (
     'resident_requested',           -- someone asks the council administrators to verify them as a resident
     'resident_verified',            -- the council verified the person as its resident
     'resident_rejected',            -- …or could not, from its own census
-    'resident_revoked'              -- the council took the verification back (payload: cancelled, how many bookings it cancelled)
+    'resident_revoked',             -- the council took the verification back (payload: cancelled, how many bookings it cancelled)
+    'participant_removed'           -- the owner of a public booking took the person out of it (they cannot join it again)
 );
 
 -- A problem a resident reports at a facility, in the council's maintenance list.
@@ -493,6 +494,15 @@ CREATE TABLE booking_participant (
     )
 );
 
+
+-- People the owner took out of their booking: they cannot join it again (by the
+-- public list or the invite link). Gone with the booking or the account.
+CREATE TABLE booking_removed (
+    booking_id UUID        NOT NULL REFERENCES booking(id)  ON DELETE CASCADE,
+    user_id    UUID        NOT NULL REFERENCES app_user(id) ON DELETE CASCADE,
+    removed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (booking_id, user_id)
+);
 
 -- ============================================================
 --  RATINGS (valoracións)

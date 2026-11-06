@@ -1,4 +1,4 @@
-import { CalendarClock, CalendarPlus, ChevronDown, DoorOpen, ExternalLink, MapPin, Star, UserPlus, Wrench } from 'lucide-react'
+import { CalendarClock, CalendarPlus, ChevronDown, DoorOpen, ExternalLink, MapPin, Star, UserPlus, Users, Wrench } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
@@ -9,6 +9,7 @@ import { CheckinDialog } from '@/components/CheckinDialog'
 import { FacilityInfo } from '@/components/FacilityInfo'
 import { ChangeBookingDialog } from '@/components/ChangeBookingDialog'
 import { InviteDialog } from '@/components/InviteDialog'
+import { PeopleDialog } from '@/components/PeopleDialog'
 import { ReportIssueDialog } from '@/components/ReportIssueDialog'
 import { LeaveDialog } from '@/components/LeaveDialog'
 import { RateDialog } from '@/components/RateDialog'
@@ -60,6 +61,7 @@ export function MyBookingsPage() {
   const [toChange, setToChange] = useState<Booking | null>(null)
   const [toLeave, setToLeave] = useState<Booking | null>(null)
   const [toInvite, setToInvite] = useState<Booking | null>(null)
+  const [toSeePeople, setToSeePeople] = useState<Booking | null>(null)
   const [toReport, setToReport] = useState<Booking | null>(null)
   const [toCheckIn, setToCheckIn] = useState<Booking | null>(null)
   // ?valorar=<booking id>: the rating notice opens the dialog straight away
@@ -172,7 +174,7 @@ export function MyBookingsPage() {
           ) : (
             <ul className="mt-4 grid gap-4">
               {upcoming.map((booking) => (
-                <BookingRow key={booking.id} booking={booking} today={today} now={ticking}>
+                <BookingRow key={booking.id} booking={booking} today={today} now={ticking} onPeople={() => setToSeePeople(booking)}>
                   {booking.role === 'owner' ? (
                     <>
                       {booking.capacity > 0 && booking.starts_at > now && <PublicSwitch booking={booking} token={token} onChanged={bookings.reload} />}
@@ -262,6 +264,7 @@ export function MyBookingsPage() {
         bookingId={toReport?.id ?? ''}
         onClose={() => setToReport(null)}
       />
+      <PeopleDialog key={`people-${toSeePeople?.id ?? 'none'}`} booking={toSeePeople} timeZone={TIME_ZONE} today={today} onClose={() => setToSeePeople(null)} onChanged={bookings.reload} />
       <InviteDialog
         key={toInvite?.id ?? 'none'}
         booking={toInvite}
@@ -289,6 +292,7 @@ type RowProps = {
   today: string
   now: number
   children?: React.ReactNode // actions
+  onPeople?: () => void // who is coming, in a dialog (the owner takes people out there)
 }
 
 /** Public: anyone signed in finds the booking in «For you» and can join it; private: only by the invite link. */
@@ -410,7 +414,7 @@ function HistoryRow({ booking, today, onRate }: { booking: Booking; today: strin
 }
 
 /** An upcoming booking with its details in place: photo, where, when, who is coming, and the rules on demand. */
-function BookingRow({ booking, today, now, children }: RowProps) {
+function BookingRow({ booking, today, now, children, onPeople }: RowProps) {
   const { t } = useTranslation(['invites', 'bookings', 'facility', 'common'])
   const [open, setOpen] = useState(false)
   const facility = booking.facility
@@ -478,7 +482,17 @@ function BookingRow({ booking, today, now, children }: RowProps) {
           <SpotsMeter capacity={booking.capacity} taken={booking.participant_count + (event ? 0 : 1)} />
         </div>
       )}
-      {booking.people.length > 0 && <PeopleList people={booking.people} />}
+      {booking.people.length > 0 && (
+        <div className="flex flex-wrap items-end gap-x-3 gap-y-1">
+          <PeopleList people={booking.people} />
+          {onPeople && booking.people.length > 1 && (
+            <Button variant="link" size="sm" className="h-auto px-0" onClick={onPeople}>
+              <Users aria-hidden />
+              {t('invites:people.see')}
+            </Button>
+          )}
+        </div>
+      )}
 
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-t pt-4">
         <button

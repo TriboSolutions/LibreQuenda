@@ -152,6 +152,7 @@ func shouldEmail(row model.ListPendingEmailsRow, now time.Time) bool {
 func usable(row model.ListPendingEmailsRow, now time.Time) bool {
 	return row.Status == model.BookingStatusConfirmed && row.EndsAt.After(now) &&
 		row.Type != model.NotificationTypeBookingCancelled && row.Type != model.NotificationTypeBookingCancelledByCouncil &&
+		row.Type != model.NotificationTypeParticipantRemoved && // they are out: no way in to explain
 		row.Type != model.NotificationTypeBookingJoined // a heads-up for the owner, not how to get in
 }
 
@@ -261,6 +262,8 @@ type councilCancellation struct {
 // pick it (NotificationBell, Notifier.describe); "" is the type's own.
 func cancellationVariant(kind model.NotificationType, why councilCancellation) string {
 	switch {
+	case kind == model.NotificationTypeParticipantRemoved:
+		return "removed"
 	case kind == model.NotificationTypeBookingCancelled && why.Cause == notice.CauseOwner:
 		return "owner"
 	case kind == model.NotificationTypeBookingCancelled && why.Cause == notice.CauseAccountDeleted:
@@ -327,12 +330,19 @@ func notificationEmail(row model.ListPendingEmailsRow, brand branding.Email, now
 		view.Footer = t("footer_reminders", shared.PUBLIC_URL+"/perfil")
 	}
 	var subject = t(kind+".subject", row.FacilityName, date, start)
-	var cancellation = row.Type == model.NotificationTypeBookingCancelled || row.Type == model.NotificationTypeBookingCancelledByCouncil
+	var cancellation = row.Type == model.NotificationTypeBookingCancelled || row.Type == model.NotificationTypeBookingCancelledByCouncil ||
+		row.Type == model.NotificationTypeParticipantRemoved // out of it: where and when, as a cancellation
 	if cancellation {
 		// what was cancelled, where and when, and why: each cause says it its own way
 		var why councilCancellation
 		_ = json.Unmarshal(row.Payload, &why) // older notices carry no cause: the type's own text is still right
 		switch variant := cancellationVariant(row.Type, why); variant {
+		case "removed":
+			var name = why.Name
+			if name == "" {
+				name = t("someone")
+			}
+			view.Intro = t(kind+".intro", row.FacilityName, row.TenantName, date, start, end, name)
 		case "closure":
 			const stamp = "02/01/2006 15:04"
 			view.Intro = t(kind+".intro_closure", row.FacilityName, row.TenantName, date, start, end,

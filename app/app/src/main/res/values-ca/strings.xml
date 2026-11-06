@@ -147,6 +147,8 @@
     <string name="notification_resident_verified">Veí verificat</string>
     <string name="notification_resident_rejected">Veí sense verificar</string>
     <string name="notification_resident_revoked">Veí ja no verificat</string>
+    <string name="notification_participant_removed">Fora de la reserva</string>
+    <string name="invite_removing">Traient…</string>
     <string name="notif_resident_requested">%5$s vol ser veí de %4$s.</string>
     <string name="notif_resident_verified">%4$s t’ha verificat com a veí.</string>
     <string name="notif_resident_rejected">%4$s no t’ha pogut verificar com a veí. Truca a l’ajuntament si creus que és un error.</string>

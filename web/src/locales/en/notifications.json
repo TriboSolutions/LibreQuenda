@@ -18,6 +18,7 @@
     "event_cancelled": "We are sorry: {{council}} cancelled the event «{{title}}» at {{facility}}, {{day}} at {{time}}.",
     "booking_cancelled_resident_revoked": "{{council}} took back your verification as a resident: your booking at {{facility}}, {{day}} at {{time}}, was cancelled.",
     "booking_left_resident_revoked": "{{council}} took back your verification as a resident: you are no longer in the game at {{facility}}, {{day}} at {{time}}.",
+    "participant_removed": "{{name}} took you out of their public booking at {{facility}}, {{day}} at {{time}}. You cannot join it again.",
     "council_admin_granted": "You are now an administrator of {{council}}. Open its administration from here or from your account menu.",
     "issue_solved": "The problem you reported at {{facility}} is fixed.",
     "issue_rejected": "The council looked at the problem you reported at {{facility}} and will not take it further.",

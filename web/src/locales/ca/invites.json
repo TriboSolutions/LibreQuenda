@@ -57,7 +57,11 @@
     "remove": "Treu {{name}}",
     "nobody": "Encara no s’hi ha unit ningú.",
     "error": "No s’ha pogut carregar la invitació.",
-    "close": "Tanca"
+    "close": "Tanca",
+    "removeConfirm": "Treure {{name}}? L’avisarem i no s’hi podrà tornar a unir.",
+    "removeGuestConfirm": "Treure {{name}}? La seva plaça queda lliure.",
+    "removeYes": "Treu",
+    "removeKeep": "Mantén"
   },
   "page": {
     "title": "Unir-se a una reserva",
@@ -90,7 +94,9 @@
     "you": "Tu",
     "organiser": "ha fet la reserva",
     "noAccount": "sense compte",
-    "unnamed": "Sense nom"
+    "unnamed": "Sense nom",
+    "see": "Veure persones",
+    "title": "Qui ve a {{facility}}"
   },
   "meter": {
     "left_one": "Queda {{count}} plaça",

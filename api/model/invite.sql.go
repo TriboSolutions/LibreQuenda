@@ -128,6 +128,52 @@ func (q *Queries) CountParticipantsByBookings(ctx context.Context, bookingIds []
 	return items, nil
 }
 
+const getBookingForNotice = `-- name: GetBookingForNotice :one
+SELECT
+    b.id,
+    b.facility_id,
+    f.name AS facility_name,
+    t.slug AS tenant_slug,
+    t.name AS tenant_name,
+    b.starts_at,
+    b.ends_at,
+    COALESCE(b.title, '')::TEXT AS title
+FROM
+    booking b
+    JOIN facility f ON f.id = b.facility_id
+    JOIN tenant   t ON t.id = f.tenant_id
+WHERE
+    b.id = $1
+`
+
+type GetBookingForNoticeRow struct {
+	ID           uuid.UUID `json:"id"`
+	FacilityID   uuid.UUID `json:"facility_id"`
+	FacilityName string    `json:"facility_name"`
+	TenantSlug   string    `json:"tenant_slug"`
+	TenantName   string    `json:"tenant_name"`
+	StartsAt     time.Time `json:"starts_at"`
+	EndsAt       time.Time `json:"ends_at"`
+	Title        string    `json:"title"`
+}
+
+// Where and when a booking is, for a notice about it.
+func (q *Queries) GetBookingForNotice(ctx context.Context, id uuid.UUID) (GetBookingForNoticeRow, error) {
+	row := q.db.QueryRowContext(ctx, getBookingForNotice, id)
+	var i GetBookingForNoticeRow
+	err := row.Scan(
+		&i.ID,
+		&i.FacilityID,
+		&i.FacilityName,
+		&i.TenantSlug,
+		&i.TenantName,
+		&i.StartsAt,
+		&i.EndsAt,
+		&i.Title,
+	)
+	return i, err
+}
+
 const getInviteByToken = `-- name: GetInviteByToken :one
 SELECT
     b.id,
@@ -311,6 +357,39 @@ func (q *Queries) GetParticipation(ctx context.Context, arg GetParticipationPara
 	var i GetParticipationRow
 	err := row.Scan(&i.ID, &i.StartsAt, &i.Status)
 	return i, err
+}
+
+const isKeptOutOfBooking = `-- name: IsKeptOutOfBooking :one
+SELECT EXISTS (SELECT 1 FROM booking_removed WHERE booking_id = $1 AND user_id = $2)::BOOLEAN AS kept_out
+`
+
+type IsKeptOutOfBookingParams struct {
+	BookingID uuid.UUID `json:"booking_id"`
+	UserID    uuid.UUID `json:"user_id"`
+}
+
+func (q *Queries) IsKeptOutOfBooking(ctx context.Context, arg IsKeptOutOfBookingParams) (bool, error) {
+	row := q.db.QueryRowContext(ctx, isKeptOutOfBooking, arg.BookingID, arg.UserID)
+	var kept_out bool
+	err := row.Scan(&kept_out)
+	return kept_out, err
+}
+
+const keepOutOfBooking = `-- name: KeepOutOfBooking :exec
+INSERT INTO booking_removed (booking_id, user_id)
+VALUES ($1, $2)
+ON CONFLICT DO NOTHING
+`
+
+type KeepOutOfBookingParams struct {
+	BookingID uuid.UUID `json:"booking_id"`
+	UserID    uuid.UUID `json:"user_id"`
+}
+
+// The person the owner removed cannot join that booking again.
+func (q *Queries) KeepOutOfBooking(ctx context.Context, arg KeepOutOfBookingParams) error {
+	_, err := q.db.ExecContext(ctx, keepOutOfBooking, arg.BookingID, arg.UserID)
+	return err
 }
 
 const leaveBooking = `-- name: LeaveBooking :execrows
@@ -789,14 +868,16 @@ func (q *Queries) LockPublicBooking(ctx context.Context, id uuid.UUID) (LockPubl
 	return i, err
 }
 
-const removeParticipant = `-- name: RemoveParticipant :execrows
-DELETE FROM booking_participant p
-USING booking b
-WHERE
-    p.id = $1
-    AND p.booking_id = b.id
-    AND b.id = $2
-    AND b.user_id = $3
+const removeParticipant = `-- name: RemoveParticipant :one
+WITH removed AS (
+    DELETE FROM booking_participant p
+    WHERE
+        p.id = $1
+        AND p.booking_id = $2
+        AND EXISTS (SELECT 1 FROM booking b WHERE b.id = p.booking_id AND b.user_id = $3)
+    RETURNING p.user_id
+)
+SELECT user_id FROM removed
 `
 
 type RemoveParticipantParams struct {
@@ -805,13 +886,13 @@ type RemoveParticipantParams struct {
 	OwnerID   uuid.NullUUID `json:"owner_id"`
 }
 
-// Only the owner of the booking removes someone.
-func (q *Queries) RemoveParticipant(ctx context.Context, arg RemoveParticipantParams) (int64, error) {
-	result, err := q.db.ExecContext(ctx, removeParticipant, arg.ID, arg.BookingID, arg.OwnerID)
-	if err != nil {
-		return 0, err
-	}
-	return result.RowsAffected()
+// Only the owner of the booking removes someone; answers who it was (user_id
+// NULL for a guest without an account), to keep them out and tell them.
+func (q *Queries) RemoveParticipant(ctx context.Context, arg RemoveParticipantParams) (uuid.NullUUID, error) {
+	row := q.db.QueryRowContext(ctx, removeParticipant, arg.ID, arg.BookingID, arg.OwnerID)
+	var user_id uuid.NullUUID
+	err := row.Scan(&user_id)
+	return user_id, err
 }
 
 const setBookingInviteToken = `-- name: SetBookingInviteToken :one

@@ -213,6 +213,7 @@
     "residents_only": "This facility is only for residents verified by the council. Ask the council to verify your account.",
     "staff_residents_only": "This account is not a verified resident of the council, and the facility is for residents only. Verify it in the Residents tab if it is one.",
     "guest_residents_only": "This facility is only for residents verified by the council: to join, sign in with a verified account.",
+    "invite_removed": "Whoever made the booking took you out of it: you cannot join it again.",
     "resident_user_not_found": "There is no account with that email verified. The person must sign in once first.",
     "resident_already_verified": "That person is already verified in this council.",
     "resident_of_another_council": "That person is already a resident of another council: a person is a resident of one council only.",
@@ -277,6 +278,10 @@
       "intro_event": "We are sorry. {{1}} cancelled the event «{{5}}» at {{0}} on {{2}}, from {{3}} to {{4}}, that you had signed up for.",
       "intro_resident_revoked": "{{1}} took back your verification as a resident, so your booking at {{0}}, for residents only, on {{2}}, from {{3}} to {{4}}, was cancelled.",
       "intro_resident_revoked_left": "{{1}} took back your verification as a resident, so you are no longer in the game at {{0}}, for residents only, on {{2}}, from {{3}} to {{4}}."
+    },
+    "participant_removed": {
+      "subject": "You are no longer in the booking at {{0}} on {{1}} at {{2}}",
+      "intro": "{{5}} took you out of their public booking at {{0}} ({{1}}) on {{2}}, from {{3}} to {{4}}. You cannot join it again, but you can look for another game or book a free turn."
     },
     "reason": "Reason: {{0}}",
     "council_admin": {

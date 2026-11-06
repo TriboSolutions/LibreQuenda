@@ -108,6 +108,16 @@
     <string name="resident_of_none">No council has verified your account. If a facility is for residents only, ask the council to verify you with this account’s email.</string>
     <string name="resident_of_since">Verified since %1$s</string>
     <string name="image_wrong_type">Only JPG, PNG or WebP images.</string>
+    <string name="invite_people">Who is coming</string>
+    <string name="invite_you">You</string>
+    <string name="invite_owner">booking owner</string>
+    <string name="invite_guest_age">No account, %1$s years</string>
+    <string name="invite_nobody">Nobody has joined yet.</string>
+    <string name="invite_remove">Remove %1$s</string>
+    <string name="invite_remove_confirm">Take %1$s out? We will tell them, and they cannot join this booking again.</string>
+    <string name="invite_remove_guest_confirm">Take %1$s out? Their spot becomes free.</string>
+    <string name="invite_remove_yes">Take out</string>
+    <string name="invite_remove_keep">Keep</string>
     <string name="text_count">%1$s / %2$s characters</string>
     <string name="bookings_title">My bookings</string>
     <string name="bookings_subtitle">Your upcoming bookings, the ones you were invited to, and your history.</string>
@@ -307,6 +317,7 @@
     <string name="notif_event_cancelled">We are sorry: %4$s cancelled the event «%8$s» at %1$s, %2$s at %3$s.</string>
     <string name="notif_booking_cancelled_resident_revoked">%4$s took back your verification as a resident: your booking at %1$s, %2$s at %3$s, was cancelled.</string>
     <string name="notif_booking_left_resident_revoked">%4$s took back your verification as a resident: you are no longer in the game at %1$s, %2$s at %3$s.</string>
+    <string name="notif_participant_removed">%5$s took you out of their public booking at %1$s, %2$s at %3$s. You cannot join it again.</string>
     <string name="notif_issue_solved">The problem you reported at %1$s is fixed.</string>
     <string name="notif_issue_rejected">The council looked at the problem you reported at %1$s and will not take it further.</string>
     <string name="notif_booking_joined">%5$s joined your booking at %1$s, %2$s at %3$s.</string>

@@ -57,7 +57,11 @@
     "remove": "Quitar a {{name}}",
     "nobody": "Aínda non se uniu ninguén.",
     "error": "Non se puido cargar o convite.",
-    "close": "Pechar"
+    "close": "Pechar",
+    "removeConfirm": "Sacar a {{name}}? Avisarémolo e non poderá volver unirse a esta reserva.",
+    "removeGuestConfirm": "Sacar a {{name}}? Deixa a súa praza libre.",
+    "removeYes": "Sacar",
+    "removeKeep": "Manter"
   },
   "page": {
     "title": "Unirse a unha reserva",
@@ -90,7 +94,9 @@
     "you": "Ti",
     "organiser": "fixo a reserva",
     "noAccount": "sen conta",
-    "unnamed": "Sen nome"
+    "unnamed": "Sen nome",
+    "see": "Ver persoas",
+    "title": "Quen vén a {{facility}}"
   },
   "meter": {
     "left_one": "Queda {{count}} praza",

@@ -337,6 +337,7 @@ const (
 	NotificationTypeResidentVerified          NotificationType = "resident_verified"
 	NotificationTypeResidentRejected          NotificationType = "resident_rejected"
 	NotificationTypeResidentRevoked           NotificationType = "resident_revoked"
+	NotificationTypeParticipantRemoved        NotificationType = "participant_removed"
 )
 
 func (e *NotificationType) Scan(src interface{}) error {
@@ -492,6 +493,12 @@ type BookingParticipant struct {
 	GuestName sql.NullString `json:"guest_name"`
 	GuestAge  sql.NullInt16  `json:"guest_age"`
 	JoinedAt  time.Time      `json:"joined_at"`
+}
+
+type BookingRemoved struct {
+	BookingID uuid.UUID `json:"booking_id"`
+	UserID    uuid.UUID `json:"user_id"`
+	RemovedAt time.Time `json:"removed_at"`
 }
 
 type CheckinDevice struct {

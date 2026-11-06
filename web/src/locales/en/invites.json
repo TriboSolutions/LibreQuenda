@@ -57,7 +57,11 @@
     "remove": "Remove {{name}}",
     "nobody": "Nobody has joined yet.",
     "error": "Could not load the invite.",
-    "close": "Close"
+    "close": "Close",
+    "removeConfirm": "Take {{name}} out? We will tell them, and they cannot join this booking again.",
+    "removeGuestConfirm": "Take {{name}} out? Their spot becomes free.",
+    "removeYes": "Take out",
+    "removeKeep": "Keep"
   },
   "page": {
     "title": "Join a booking",
@@ -90,7 +94,9 @@
     "you": "You",
     "organiser": "booked it",
     "noAccount": "no account",
-    "unnamed": "No name"
+    "unnamed": "No name",
+    "see": "See people",
+    "title": "Who is coming to {{facility}}"
   },
   "meter": {
     "left_one": "{{count}} spot left",

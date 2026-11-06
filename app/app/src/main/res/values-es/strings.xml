@@ -147,6 +147,8 @@
     <string name="notification_resident_verified">Vecino verificado</string>
     <string name="notification_resident_rejected">Vecino sin verificar</string>
     <string name="notification_resident_revoked">Vecino ya no verificado</string>
+    <string name="notification_participant_removed">Fuera de la reserva</string>
+    <string name="invite_removing">Sacando…</string>
     <string name="notif_resident_requested">%5$s quiere ser vecino de %4$s.</string>
     <string name="notif_resident_verified">%4$s te ha verificado como vecino.</string>
     <string name="notif_resident_rejected">%4$s no ha podido verificarte como vecino. Llama al ayuntamiento si crees que es un error.</string>

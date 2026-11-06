@@ -144,6 +144,8 @@
     <string name="notification_resident_verified">Resident verified</string>
     <string name="notification_resident_rejected">Resident not verified</string>
     <string name="notification_resident_revoked">No longer a verified resident</string>
+    <string name="notification_participant_removed">Out of the booking</string>
+    <string name="invite_removing">Taking out…</string>
     <string name="notif_resident_requested">%5$s wants to be a resident of %4$s.</string>
     <string name="notif_resident_verified">%4$s verified you as a resident.</string>
     <string name="notif_resident_rejected">%4$s could not verify you as a resident. Call the council if you think this is a mistake.</string>

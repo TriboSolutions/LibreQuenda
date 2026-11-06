@@ -213,6 +213,7 @@
     "residents_only": "Esta instalación é só para veciños verificados polo concello. Pide no concello que verifiquen a túa conta.",
     "staff_residents_only": "Esta conta non é veciña verificada do concello e a instalación é só para veciños. Verifícaa na lapela Veciños se o é.",
     "guest_residents_only": "Esta instalación é só para veciños verificados polo concello: para unirte, inicia sesión cunha conta verificada.",
+    "invite_removed": "Quen fixo a reserva sacoute dela: xa non podes volver unirte.",
     "resident_user_not_found": "Non hai ningunha conta con ese correo verificado. A persoa ten que iniciar sesión unha vez antes.",
     "resident_already_verified": "Esa persoa xa está verificada neste concello.",
     "resident_of_another_council": "Esa persoa xa é veciña doutro concello: só se pode ser veciño dun concello.",
@@ -277,6 +278,10 @@
       "intro_event": "Sentímolo. {{1}} cancelou o evento «{{5}}» en {{0}} o {{2}}, de {{3}} a {{4}}, ao que te apuntaras.",
       "intro_resident_revoked": "{{1}} retirou a túa verificación como veciño, así que cancelouse a túa reserva en {{0}}, só para veciños, o {{2}}, de {{3}} a {{4}}.",
       "intro_resident_revoked_left": "{{1}} retirou a túa verificación como veciño, así que xa non estás na partida en {{0}}, só para veciños, o {{2}}, de {{3}} a {{4}}."
+    },
+    "participant_removed": {
+      "subject": "Saíches da reserva en {{0}} do {{1}} ás {{2}}",
+      "intro": "{{5}} sacoute da súa reserva pública en {{0}} ({{1}}) o {{2}}, de {{3}} a {{4}}. Xa non podes volver unirte a ela, pero si buscar outra partida ou reservar un turno libre."
     },
     "reason": "Motivo: {{0}}",
     "council_admin": {

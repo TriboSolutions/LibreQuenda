@@ -128,15 +128,45 @@ WHERE
 ORDER BY
     p.joined_at ASC;
 
--- name: RemoveParticipant :execrows
--- Only the owner of the booking removes someone.
-DELETE FROM booking_participant p
-USING booking b
+-- name: RemoveParticipant :one
+-- Only the owner of the booking removes someone; answers who it was (user_id
+-- NULL for a guest without an account), to keep them out and tell them.
+WITH removed AS (
+    DELETE FROM booking_participant p
+    WHERE
+        p.id = sqlc.arg('id')
+        AND p.booking_id = sqlc.arg('booking_id')
+        AND EXISTS (SELECT 1 FROM booking b WHERE b.id = p.booking_id AND b.user_id = sqlc.arg('owner_id'))
+    RETURNING p.user_id
+)
+SELECT user_id FROM removed;
+
+-- name: KeepOutOfBooking :exec
+-- The person the owner removed cannot join that booking again.
+INSERT INTO booking_removed (booking_id, user_id)
+VALUES (sqlc.arg('booking_id'), sqlc.arg('user_id'))
+ON CONFLICT DO NOTHING;
+
+-- name: IsKeptOutOfBooking :one
+SELECT EXISTS (SELECT 1 FROM booking_removed WHERE booking_id = sqlc.arg('booking_id') AND user_id = sqlc.arg('user_id'))::BOOLEAN AS kept_out;
+
+-- name: GetBookingForNotice :one
+-- Where and when a booking is, for a notice about it.
+SELECT
+    b.id,
+    b.facility_id,
+    f.name AS facility_name,
+    t.slug AS tenant_slug,
+    t.name AS tenant_name,
+    b.starts_at,
+    b.ends_at,
+    COALESCE(b.title, '')::TEXT AS title
+FROM
+    booking b
+    JOIN facility f ON f.id = b.facility_id
+    JOIN tenant   t ON t.id = f.tenant_id
 WHERE
-    p.id = sqlc.arg('id')
-    AND p.booking_id = b.id
-    AND b.id = sqlc.arg('booking_id')
-    AND b.user_id = sqlc.arg('owner_id');
+    b.id = sqlc.arg('id');
 
 -- name: GetParticipation :one
 SELECT

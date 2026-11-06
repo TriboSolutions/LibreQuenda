@@ -18,6 +18,7 @@
     "event_cancelled": "Sentímolo: {{council}} cancelou o evento «{{title}}» en {{facility}}, {{day}} ás {{time}}.",
     "booking_cancelled_resident_revoked": "{{council}} retirou a túa verificación como veciño: cancelouse a túa reserva en {{facility}}, {{day}} ás {{time}}.",
     "booking_left_resident_revoked": "{{council}} retirou a túa verificación como veciño: xa non estás na partida en {{facility}}, {{day}} ás {{time}}.",
+    "participant_removed": "{{name}} sacoute da súa reserva pública en {{facility}}, {{day}} ás {{time}}. Xa non podes volver unirte a ela.",
     "council_admin_granted": "Xa es administrador ou administradora de {{council}}. Abre a súa administración desde aquí ou desde o menú da túa conta.",
     "issue_solved": "Arranxado o problema que avisaches en {{facility}}.",
     "issue_rejected": "O concello revisou o problema que avisaches en {{facility}} e non o vai tramitar.",

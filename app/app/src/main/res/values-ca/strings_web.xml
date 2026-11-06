@@ -108,6 +108,16 @@
     <string name="resident_of_none">Cap ajuntament ha verificat el teu compte. Si una instal·lació és només per a veïns, demana a l’ajuntament que et verifiquin amb el correu d’aquest compte.</string>
     <string name="resident_of_since">Verificat des del %1$s</string>
     <string name="image_wrong_type">Només imatges JPG, PNG o WebP.</string>
+    <string name="invite_people">Qui ve</string>
+    <string name="invite_you">Tu</string>
+    <string name="invite_owner">qui ha reservat</string>
+    <string name="invite_guest_age">Sense compte, %1$s anys</string>
+    <string name="invite_nobody">Encara no s’hi ha unit ningú.</string>
+    <string name="invite_remove">Treu %1$s</string>
+    <string name="invite_remove_confirm">Treure %1$s? L’avisarem i no s’hi podrà tornar a unir.</string>
+    <string name="invite_remove_guest_confirm">Treure %1$s? La seva plaça queda lliure.</string>
+    <string name="invite_remove_yes">Treu</string>
+    <string name="invite_remove_keep">Mantén</string>
     <string name="text_count">%1$s / %2$s caràcters</string>
     <string name="bookings_title">Les meves reserves</string>
     <string name="bookings_subtitle">Les teves properes reserves, aquelles a les quals t’han convidat i el teu historial.</string>
@@ -307,6 +317,7 @@
     <string name="notif_event_cancelled">Ho sentim: %4$s ha cancel·lat l’esdeveniment «%8$s» a %1$s, %2$s a les %3$s.</string>
     <string name="notif_booking_cancelled_resident_revoked">%4$s ha retirat la teva verificació com a veí: s’ha cancel·lat la teva reserva a %1$s, %2$s a les %3$s.</string>
     <string name="notif_booking_left_resident_revoked">%4$s ha retirat la teva verificació com a veí: ja no ets a la partida a %1$s, %2$s a les %3$s.</string>
+    <string name="notif_participant_removed">%5$s t’ha tret de la seva reserva pública a %1$s, %2$s a les %3$s. Ja no t’hi pots tornar a unir.</string>
     <string name="notif_issue_solved">Arreglat el problema que vas avisar a %1$s.</string>
     <string name="notif_issue_rejected">L’ajuntament ha revisat el problema que vas avisar a %1$s i no el tramitarà.</string>
     <string name="notif_booking_joined">%5$s s’ha unit a la teva reserva a %1$s, %2$s a les %3$s.</string>

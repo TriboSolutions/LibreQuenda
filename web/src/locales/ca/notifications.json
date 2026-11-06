@@ -18,6 +18,7 @@
     "event_cancelled": "Ho sentim: {{council}} ha cancel·lat l’esdeveniment «{{title}}» a {{facility}}, {{day}} a les {{time}}.",
     "booking_cancelled_resident_revoked": "{{council}} ha retirat la teva verificació com a veí: s’ha cancel·lat la teva reserva a {{facility}}, {{day}} a les {{time}}.",
     "booking_left_resident_revoked": "{{council}} ha retirat la teva verificació com a veí: ja no ets a la partida a {{facility}}, {{day}} a les {{time}}.",
+    "participant_removed": "{{name}} t’ha tret de la seva reserva pública a {{facility}}, {{day}} a les {{time}}. Ja no t’hi pots tornar a unir.",
     "council_admin_granted": "Ja ets administrador o administradora de {{council}}. Obre’n l’administració des d’aquí o des del menú del teu compte.",
     "issue_solved": "Arreglat el problema que vas avisar a {{facility}}.",
     "issue_rejected": "L’ajuntament ha revisat el problema que vas avisar a {{facility}} i no el tramitarà.",

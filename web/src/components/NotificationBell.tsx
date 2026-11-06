@@ -35,6 +35,7 @@ const icons: Record<NotificationType, typeof Bell> = {
   resident_verified: BadgeCheck,
   resident_rejected: House,
   resident_revoked: House,
+  participant_removed: CalendarX,
 }
 
 /** Where a notice leads: the council's administration, the facility of a reported problem, the rating dialog, or My bookings. */

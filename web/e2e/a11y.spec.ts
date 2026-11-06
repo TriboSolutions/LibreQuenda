@@ -1074,6 +1074,23 @@ test.describe('keyboard', () => {
     await expect(dialog.getByText('+4 apuntadas')).toBeVisible()
   })
 
+  test('the owner sees who is coming from the booking and takes someone out, after asking', async ({ page }) => {
+    await open(page, '/reservas')
+    let removed = ''
+    await page.route(/\/api\/me\/bookings\/[^/]+\/participants\/[^/]+$/, async (route) => {
+      removed = route.request().method() + ' ' + new URL(route.request().url()).pathname
+      await route.fulfill({ status: 204 })
+    })
+    await page.getByRole('button', { name: 'Ver persoas' }).first().click()
+    const dialog = page.getByRole('dialog', { name: /^Quen vén a / })
+    await dialog.getByRole('button', { name: 'Quitar a Xoán' }).click()
+    await expect(dialog.getByText('Sacar a Xoán? Deixa a súa praza libre.')).toBeVisible() // a guest: nobody to tell
+    await page.mouse.move(0, 0)
+    await expectAccessible(page)
+    await dialog.getByRole('button', { name: 'Sacar', exact: true }).click()
+    await expect.poll(() => removed).toMatch(/^DELETE \/api\/me\/bookings\/[^/]+\/participants\/p1$/)
+  })
+
   test('a council administrator reaches its administration from the account menu on any page', async ({ page }) => {
     await open(page, '/') // the home page is about no council
     await page.route('**/api/me', (route) => route.fulfill({ json: ME_COUNCIL_ADMIN }))

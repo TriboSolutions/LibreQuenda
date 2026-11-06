@@ -166,3 +166,27 @@ suspend fun reportIssue(
     photoRef?.let { body.put("photo_ref", it) }
     Api.send("POST", Api.baseUrl + "/me/issues", token, body)
 }
+
+/** Someone who joined the owner's booking (GET /me/bookings/{id}/invite): a guest has an age and no account. */
+data class Participant(val id: String, val name: String, val isGuest: Boolean, val age: Int?)
+
+/** Who joined the owner's booking, and whether it still takes changes (state "closed": no). */
+data class BookingPeople(val participants: List<Participant>, val closed: Boolean)
+
+/** GET /me/bookings/{id}/invite: who joined (the owner only). */
+suspend fun fetchBookingPeople(token: String, id: String): BookingPeople {
+    val json = Api.getJson(Api.baseUrl + "/me/bookings/$id/invite", token)
+    val list = json.optJSONArray("participants")
+    return BookingPeople(
+        participants = List(list?.length() ?: 0) { i ->
+            val p = list!!.getJSONObject(i)
+            Participant(p.optString("id"), p.optString("name"), p.optBoolean("is_guest"), if (p.isNull("age")) null else p.optInt("age"))
+        },
+        closed = json.optString("state") == "closed",
+    )
+}
+
+/** DELETE /me/bookings/{id}/participants/{participantId}: out, and (with an account) told, and kept out. */
+suspend fun removeParticipant(token: String, id: String, participantId: String) {
+    Api.send("DELETE", Api.baseUrl + "/me/bookings/$id/participants/$participantId", token)
+}

@@ -213,6 +213,7 @@
     "residents_only": "Aquesta instal·lació és només per a veïns verificats per l’ajuntament. Demana a l’ajuntament que verifiquin el teu compte.",
     "staff_residents_only": "Aquest compte no és veí verificat de l’ajuntament i la instal·lació és només per a veïns. Verifica’l a la pestanya Veïns si ho és.",
     "guest_residents_only": "Aquesta instal·lació és només per a veïns verificats per l’ajuntament: per unir-t’hi, inicia la sessió amb un compte verificat.",
+    "invite_removed": "Qui va fer la reserva te n’ha tret: ja no t’hi pots tornar a unir.",
     "resident_user_not_found": "No hi ha cap compte amb aquest correu verificat. La persona ha d’iniciar la sessió una vegada abans.",
     "resident_already_verified": "Aquesta persona ja està verificada en aquest ajuntament.",
     "resident_of_another_council": "Aquesta persona ja és veïna d’un altre ajuntament: només es pot ser veí d’un ajuntament.",
@@ -277,6 +278,10 @@
       "intro_event": "Ho sentim. {{1}} ha cancel·lat l’esdeveniment «{{5}}» a {{0}} el {{2}}, de {{3}} a {{4}}, al qual t’havies apuntat.",
       "intro_resident_revoked": "{{1}} ha retirat la teva verificació com a veí, així que s’ha cancel·lat la teva reserva a {{0}}, només per a veïns, el {{2}}, de {{3}} a {{4}}.",
       "intro_resident_revoked_left": "{{1}} ha retirat la teva verificació com a veí, així que ja no ets a la partida a {{0}}, només per a veïns, el {{2}}, de {{3}} a {{4}}."
+    },
+    "participant_removed": {
+      "subject": "Ja no ets a la reserva a {{0}} del {{1}} a les {{2}}",
+      "intro": "{{5}} t’ha tret de la seva reserva pública a {{0}} ({{1}}) el {{2}}, de {{3}} a {{4}}. Ja no t’hi pots tornar a unir, però sí buscar una altra partida o reservar un torn lliure."
     },
     "reason": "Motiu: {{0}}",
     "council_admin": {

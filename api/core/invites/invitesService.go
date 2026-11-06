@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"librequenda/core/bookings"
+	"librequenda/core/notice"
 	"librequenda/model"
 	"librequenda/shared"
 	"net/http"
@@ -84,17 +85,47 @@ func (s *invitesService) ShareInvite(ctx context.Context, ownerId uuid.UUID, boo
 	return s.GetInvite(ctx, ownerId, bookingId)
 }
 
+// RemoveParticipant: the owner takes someone out of their booking. Someone with an
+// account cannot join it again, and is told (in the app and by email) where and when,
+// and by whom (the owner's first name).
 func (s *invitesService) RemoveParticipant(ctx context.Context, ownerId uuid.UUID, bookingId uuid.UUID, participantId uuid.UUID) *shared.ErrorResponse {
-	var removed, err = model.New(s.db).RemoveParticipant(ctx, model.RemoveParticipantParams{
+	var tx, err = s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return failed("errors.invite_failed")
+	}
+	defer tx.Rollback()
+	var queries = model.New(tx)
+	var removed uuid.NullUUID
+	removed, err = queries.RemoveParticipant(ctx, model.RemoveParticipantParams{
 		ID:        participantId,
 		BookingID: bookingId,
 		OwnerID:   uuid.NullUUID{UUID: ownerId, Valid: true},
 	})
+	if errors.Is(err, sql.ErrNoRows) {
+		return &shared.ErrorResponse{Code: http.StatusNotFound, Message: "errors.participant_not_found"}
+	}
 	if err != nil {
 		return failed("errors.invite_failed")
 	}
-	if removed == 0 {
-		return &shared.ErrorResponse{Code: http.StatusNotFound, Message: "errors.participant_not_found"}
+	if removed.Valid { // a guest has no account to keep out or to tell
+		if err = queries.KeepOutOfBooking(ctx, model.KeepOutOfBookingParams{BookingID: bookingId, UserID: removed.UUID}); err != nil {
+			return failed("errors.invite_failed")
+		}
+		var booking, bookingErr = queries.GetBookingForNotice(ctx, bookingId)
+		if bookingErr != nil {
+			return failed("errors.invite_failed")
+		}
+		var owner, _ = queries.GetUserFullName(ctx, ownerId)
+		var payload = notice.Payload(
+			notice.Cancelled{FacilityID: booking.FacilityID, FacilityName: booking.FacilityName, TenantSlug: booking.TenantSlug, TenantName: booking.TenantName, Title: booking.Title, StartsAt: booking.StartsAt, EndsAt: booking.EndsAt},
+			map[string]any{"name": notice.FirstName(owner)},
+		)
+		if err = notice.Tell(ctx, queries, removed.UUID, bookingId, model.NotificationTypeParticipantRemoved, payload); err != nil {
+			return failed("errors.invite_failed")
+		}
+	}
+	if err = tx.Commit(); err != nil {
+		return failed("errors.invite_failed")
 	}
 	return nil
 }
@@ -201,12 +232,21 @@ func addUser(ctx context.Context, userId uuid.UUID) func(*model.Queries, model.L
 	return addAccount(ctx, userId, true)
 }
 
-// addAccount: an account joins; council staff signing someone up skip the council's
-// per-person limits, as when they book for someone (the rest still applies).
-func addAccount(ctx context.Context, userId uuid.UUID, limits bool) func(*model.Queries, model.LockBookingByInviteTokenRow, time.Time) *shared.ErrorResponse {
+// addAccount: an account joins. byThemselves false: council staff sign them up, who
+// skip the council's per-person limits, as when they book for someone, and may sign up
+// someone an owner took out (the rest still applies).
+func addAccount(ctx context.Context, userId uuid.UUID, byThemselves bool) func(*model.Queries, model.LockBookingByInviteTokenRow, time.Time) *shared.ErrorResponse {
 	return func(queries *model.Queries, booking model.LockBookingByInviteTokenRow, day time.Time) *shared.ErrorResponse {
 		if booking.OwnerID.Valid && booking.OwnerID.UUID == userId {
 			return &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.invite_own_booking"}
+		}
+		// the owner took them out of it: not again (council staff can still sign them up for an event)
+		if byThemselves {
+			if keptOut, err := queries.IsKeptOutOfBooking(ctx, model.IsKeptOutOfBookingParams{BookingID: booking.ID, UserID: userId}); err != nil {
+				return failed("errors.invite_failed")
+			} else if keptOut {
+				return &shared.ErrorResponse{Code: http.StatusForbidden, Message: "errors.invite_removed"}
+			}
 		}
 		// one place at a time: same rule as booking (bookings.insertBooking)
 		if err := queries.LockUserBookings(ctx, userId); err != nil {
@@ -223,7 +263,7 @@ func addAccount(ctx context.Context, userId uuid.UUID, limits bool) func(*model.
 		if overlaps {
 			return &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.booking_overlaps"}
 		}
-		if limits {
+		if byThemselves {
 			if limitErr := bookings.CouncilLimits(ctx, queries, userId, booking.TenantID, false); limitErr != nil {
 				return limitErr
 			}
