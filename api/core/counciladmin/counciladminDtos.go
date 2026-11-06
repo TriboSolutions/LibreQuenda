@@ -48,6 +48,27 @@ func (in *FacilityInput) normalise() {
 	in.UsageRules = strings.TrimSpace(in.UsageRules)
 }
 
+// DuplicateFacilityInput: the copy's own name and address; everything else comes from the original.
+type DuplicateFacilityInput struct {
+	Name string `json:"name"`
+	Slug string `json:"slug"`
+}
+
+// validate trims the input and returns the i18n key of the first invalid field, or "".
+func (in *DuplicateFacilityInput) validate() string {
+	in.Name = strings.TrimSpace(in.Name)
+	in.Slug = strings.ToLower(strings.TrimSpace(in.Slug))
+	switch {
+	case in.Name == "" || utf8.RuneCountInString(in.Name) > 255:
+		return "errors.invalid_facility_name"
+	case !validate.Slug(in.Slug):
+		return "errors.invalid_slug"
+	case reservedFacilitySlugs[in.Slug]:
+		return "errors.slug_reserved"
+	}
+	return ""
+}
+
 // validate returns the i18n key of the first invalid field, or "".
 func (in *FacilityInput) validate() string {
 	switch {

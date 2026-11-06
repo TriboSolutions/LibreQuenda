@@ -1177,6 +1177,9 @@ export const api = {
       request<AdminFacility>(`/tenants/${encodeURIComponent(slug)}/admin/facilities`, { token, method: 'POST', body: input }),
     updateFacility: (token: string, slug: string, id: string, input: FacilityInput) =>
       request<AdminFacility>(`/tenants/${encodeURIComponent(slug)}/admin/facilities/${id}`, { token, method: 'PUT', body: input }),
+    // a copy with every setting, switched off, under its own name and address
+    duplicateFacility: (token: string, slug: string, id: string, input: { name: string; slug: string }) =>
+      request<AdminFacility>(`/tenants/${encodeURIComponent(slug)}/admin/facilities/${id}/duplicate`, { token, method: 'POST', body: input }),
     deleteFacility: (token: string, slug: string, id: string) =>
       request<void>(`/tenants/${encodeURIComponent(slug)}/admin/facilities/${id}`, { token, method: 'DELETE' }),
     // deactivating keeps the bookings unless cancelBookings (then a reason for residents is required)

@@ -112,6 +112,21 @@
     "viewPage": "Obre la seva pàgina",
     "actions": "Accions"
   },
+  "duplicate": {
+    "open": "Duplica la instal·lació",
+    "title": "Duplica una instal·lació",
+    "help": "Es copia tot: horari, finestra de reserva, etiquetes, normes i maneres de registrar l’entrada. No els tancaments, els lectors ni les reserves. La còpia es crea desactivada.",
+    "source": "Instal·lació que cal copiar",
+    "sourcePlaceholder": "Tria una instal·lació",
+    "name": "Nom de la còpia",
+    "slug": "Adreça de la còpia",
+    "slugHelp": "La seva pàgina: {{url}}",
+    "copyName": "{{name}} (còpia)",
+    "cancel": "Cancel·la",
+    "submit": "Duplica",
+    "saving": "Duplicant…",
+    "done": "Instal·lació duplicada. Està desactivada: revisa el que canviï i activa-la quan estigui a punt."
+  },
   "editor": {
     "newTitle": "Nova instal·lació",
     "details": "Dades",
@@ -816,6 +831,7 @@
     },
     "actions": {
       "facility.created": "Ha creat una instal·lació",
+      "facility.duplicated": "Ha duplicat una instal·lació",
       "facility.updated": "Ha editat una instal·lació",
       "facility.deleted": "Ha eliminat una instal·lació",
       "facility.schedule_changed": "Ha canviat l’horari",

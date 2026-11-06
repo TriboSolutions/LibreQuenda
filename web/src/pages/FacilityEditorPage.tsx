@@ -2,7 +2,7 @@ import { ArrowLeft, ExternalLink, Info, Search } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
+import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router'
 import { FacilityMap } from '@/components/FacilityMap'
 import { ImagePicker } from '@/components/ImagePicker'
 import { FacilityBookingRules } from '@/components/admin/FacilityBookingRules'
@@ -106,7 +106,9 @@ function Editor({ slug, facility, council, token }: { slug: string; facility: Ad
   const [schedule, setSchedule] = useState<WeeklyWindow[]>(facility?.schedule ?? [])
   const [saving, setSaving] = useState(false)
   const [savingSchedule, setSavingSchedule] = useState(false)
-  const [notice, setNotice] = useState<string | null>(null)
+  // just duplicated (DuplicateFacilityDialog): it is switched off until reviewed
+  const duplicated = (useLocation().state as { duplicated?: boolean } | null)?.duplicated === true
+  const [notice, setNotice] = useState<string | null>(duplicated ? t('admin:duplicate.done') : null)
   const [error, setError] = useState<string | null>(null)
   const [results, setResults] = useState<GeocodeResult[] | null>(null)
   const [searching, setSearching] = useState(false)

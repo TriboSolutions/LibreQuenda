@@ -112,6 +112,21 @@
     "viewPage": "Abrir su página",
     "actions": "Acciones"
   },
+  "duplicate": {
+    "open": "Duplicar instalación",
+    "title": "Duplicar una instalación",
+    "help": "Se copia todo: horario, ventana de reserva, etiquetas, normas y formas de registrar la entrada. No los cierres, los lectores ni las reservas. La copia se crea desactivada.",
+    "source": "Instalación que copiar",
+    "sourcePlaceholder": "Elige una instalación",
+    "name": "Nombre de la copia",
+    "slug": "Dirección de la copia",
+    "slugHelp": "Su página: {{url}}",
+    "copyName": "{{name}} (copia)",
+    "cancel": "Cancelar",
+    "submit": "Duplicar",
+    "saving": "Duplicando…",
+    "done": "Instalación duplicada. Está desactivada: revisa lo que cambie y actívala cuando esté lista."
+  },
   "editor": {
     "newTitle": "Nueva instalación",
     "details": "Datos",
@@ -816,6 +831,7 @@
     },
     "actions": {
       "facility.created": "Creó una instalación",
+      "facility.duplicated": "Duplicó una instalación",
       "facility.updated": "Editó una instalación",
       "facility.deleted": "Eliminó una instalación",
       "facility.schedule_changed": "Cambió el horario",

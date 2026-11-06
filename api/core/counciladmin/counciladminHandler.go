@@ -203,6 +203,27 @@ func (h *counciladminHandler) DeleteFacility(w http.ResponseWriter, r *http.Requ
 	send(w, r, nil, GetCounciladminService(h.db).DeleteFacility(r.Context(), tenantId, id))
 }
 
+// DuplicateFacility copies a facility under the name and address given (POST {name, slug}).
+func (h *counciladminHandler) DuplicateFacility(w http.ResponseWriter, r *http.Request) {
+	var tenantId, ok = h.councilAdmin(w, r)
+	if !ok {
+		return
+	}
+	var id uuid.UUID
+	if id, ok = facilityId(w, r); !ok {
+		return
+	}
+	var input DuplicateFacilityInput
+	if !decode(w, r, &input) {
+		return
+	}
+	var response, err = GetCounciladminService(h.db).DuplicateFacility(r.Context(), tenantId, id, input)
+	if err == nil {
+		audit.Target(r.Context(), "facility", uuid.MustParse(response.Id), response.Name)
+	}
+	send(w, r, response, err)
+}
+
 func (h *counciladminHandler) ReplaceSchedule(w http.ResponseWriter, r *http.Request) {
 	var tenantId, ok = h.councilAdmin(w, r)
 	if !ok {

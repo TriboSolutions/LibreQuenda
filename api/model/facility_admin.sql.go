@@ -78,6 +78,54 @@ func (q *Queries) ClearFacilityTags(ctx context.Context, facilityID uuid.UUID) e
 	return err
 }
 
+const copyFacilityCheckin = `-- name: CopyFacilityCheckin :exec
+INSERT INTO facility_checkin (facility_id, printed_qr, entry_code, radius_m, flash_booking, staff_confirm, qr_reader, nfc, staff_contacts)
+SELECT $1, c.printed_qr, c.entry_code, c.radius_m, c.flash_booking, c.staff_confirm, c.qr_reader, c.nfc, c.staff_contacts
+FROM facility_checkin c WHERE c.facility_id = $2
+`
+
+type CopyFacilityCheckinParams struct {
+	FacilityID uuid.UUID `json:"facility_id"`
+	SourceID   uuid.UUID `json:"source_id"`
+}
+
+// The ways to check in and who to ask on site; the printed QR, the entry code and
+// the NFC tag get secrets of their own (the defaults), so the original's stay its own.
+func (q *Queries) CopyFacilityCheckin(ctx context.Context, arg CopyFacilityCheckinParams) error {
+	_, err := q.db.ExecContext(ctx, copyFacilityCheckin, arg.FacilityID, arg.SourceID)
+	return err
+}
+
+const copyFacilityTags = `-- name: CopyFacilityTags :exec
+INSERT INTO facility_tag (facility_id, tag_id)
+SELECT $1, t.tag_id FROM facility_tag t WHERE t.facility_id = $2
+`
+
+type CopyFacilityTagsParams struct {
+	FacilityID uuid.UUID `json:"facility_id"`
+	SourceID   uuid.UUID `json:"source_id"`
+}
+
+func (q *Queries) CopyFacilityTags(ctx context.Context, arg CopyFacilityTagsParams) error {
+	_, err := q.db.ExecContext(ctx, copyFacilityTags, arg.FacilityID, arg.SourceID)
+	return err
+}
+
+const copyOpeningHours = `-- name: CopyOpeningHours :exec
+INSERT INTO opening_hours (facility_id, weekday, opens_at, closes_at)
+SELECT $1, h.weekday, h.opens_at, h.closes_at FROM opening_hours h WHERE h.facility_id = $2
+`
+
+type CopyOpeningHoursParams struct {
+	FacilityID uuid.UUID `json:"facility_id"`
+	SourceID   uuid.UUID `json:"source_id"`
+}
+
+func (q *Queries) CopyOpeningHours(ctx context.Context, arg CopyOpeningHoursParams) error {
+	_, err := q.db.ExecContext(ctx, copyOpeningHours, arg.FacilityID, arg.SourceID)
+	return err
+}
+
 const countBookingsByFacility = `-- name: CountBookingsByFacility :one
 SELECT COUNT(*) FROM booking WHERE facility_id = $1
 `
@@ -215,6 +263,52 @@ DELETE FROM opening_hours WHERE facility_id = $1
 func (q *Queries) DeleteOpeningHoursByFacility(ctx context.Context, facilityID uuid.UUID) error {
 	_, err := q.db.ExecContext(ctx, deleteOpeningHoursByFacility, facilityID)
 	return err
+}
+
+const duplicateFacility = `-- name: DuplicateFacility :one
+INSERT INTO facility (
+    tenant_id, slug, name, description, address, latitude, longitude, capacity,
+    accessibility_info, contact_phone, contact_email, image_ref, show_weather, is_active, slot_minutes,
+    custom_rules, max_advance_hours, min_advance_minutes, min_cancel_hours, max_active_bookings_per_user,
+    max_bookings_per_day, max_turns_in_a_row, max_bookings_per_week, weekly_opening, opens_weekday, opens_minute,
+    no_show_penalty, no_show_limit, no_show_window_days, no_show_block_days,
+    min_age, residents_only, usage_rules_text
+)
+SELECT
+    f.tenant_id, $1, $2, f.description, f.address, f.latitude, f.longitude, f.capacity,
+    f.accessibility_info, f.contact_phone, f.contact_email, f.image_ref, f.show_weather, FALSE, f.slot_minutes,
+    f.custom_rules, f.max_advance_hours, f.min_advance_minutes, f.min_cancel_hours, f.max_active_bookings_per_user,
+    f.max_bookings_per_day, f.max_turns_in_a_row, f.max_bookings_per_week, f.weekly_opening, f.opens_weekday, f.opens_minute,
+    f.no_show_penalty, f.no_show_limit, f.no_show_window_days, f.no_show_block_days,
+    f.min_age, f.residents_only, f.usage_rules_text
+FROM
+    facility f
+WHERE
+    f.id = $3
+    AND f.tenant_id = $4
+RETURNING
+    id
+`
+
+type DuplicateFacilityParams struct {
+	Slug     string    `json:"slug"`
+	Name     string    `json:"name"`
+	SourceID uuid.UUID `json:"source_id"`
+	TenantID uuid.UUID `json:"tenant_id"`
+}
+
+// A copy of one of the council's facilities under another name and address: every
+// setting, its booking window included, and switched off until it is reviewed.
+func (q *Queries) DuplicateFacility(ctx context.Context, arg DuplicateFacilityParams) (uuid.UUID, error) {
+	row := q.db.QueryRowContext(ctx, duplicateFacility,
+		arg.Slug,
+		arg.Name,
+		arg.SourceID,
+		arg.TenantID,
+	)
+	var id uuid.UUID
+	err := row.Scan(&id)
+	return id, err
 }
 
 const ensureTenantBookingRules = `-- name: EnsureTenantBookingRules :exec

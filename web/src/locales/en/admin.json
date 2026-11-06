@@ -112,6 +112,21 @@
     "viewPage": "Open its page",
     "actions": "Actions"
   },
+  "duplicate": {
+    "open": "Duplicate facility",
+    "title": "Duplicate a facility",
+    "help": "Everything is copied: hours, booking window, tags, rules and ways to check in. Not the closures, readers or bookings. The copy is created switched off.",
+    "source": "Facility to copy",
+    "sourcePlaceholder": "Choose a facility",
+    "name": "Name of the copy",
+    "slug": "Address of the copy",
+    "slugHelp": "Its page: {{url}}",
+    "copyName": "{{name}} (copy)",
+    "cancel": "Cancel",
+    "submit": "Duplicate",
+    "saving": "Duplicating…",
+    "done": "Facility duplicated. It is switched off: review what differs and switch it on when it is ready."
+  },
   "editor": {
     "newTitle": "New facility",
     "details": "Details",
@@ -816,6 +831,7 @@
     },
     "actions": {
       "facility.created": "Created a facility",
+      "facility.duplicated": "Duplicated a facility",
       "facility.updated": "Edited a facility",
       "facility.deleted": "Deleted a facility",
       "facility.schedule_changed": "Changed the opening hours",

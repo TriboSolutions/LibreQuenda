@@ -15,6 +15,7 @@ var actions = map[string]action{
 	"POST /tenants/{slug}/admin/facilities":                             {code: "facility.created"},
 	"PUT /tenants/{slug}/admin/facilities/{id}":                         {code: "facility.updated", target: "facility", param: "id"},
 	"DELETE /tenants/{slug}/admin/facilities/{id}":                      {code: "facility.deleted", target: "facility", param: "id"},
+	"POST /tenants/{slug}/admin/facilities/{id}/duplicate":              {code: "facility.duplicated"},
 	"PUT /tenants/{slug}/admin/facilities/{id}/schedule":                {code: "facility.schedule_changed", target: "facility", param: "id"},
 	"PUT /tenants/{slug}/admin/facilities/{id}/active":                  {code: "facility.activation_changed", target: "facility", param: "id"},
 	"POST /tenants/{slug}/admin/facilities/{id}/devices":                {code: "reader.added", target: "facility", param: "id"},

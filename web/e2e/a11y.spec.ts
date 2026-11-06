@@ -720,6 +720,28 @@ test.describe('keyboard', () => {
     await expect(page.getByRole('button', { name: 'Encadrar' })).toBeVisible()
   })
 
+  test('an administrator duplicates a facility and lands on the switched-off copy', async ({ page }) => {
+    await open(page, '/lugo/admin')
+    let sent: unknown = null
+    await page.route('**/api/tenants/lugo/admin/facilities/f1/duplicate', async (route) => {
+      sent = route.request().postDataJSON()
+      await route.fulfill({ json: { id: 'f1' } }) // the editor then loads it like any other
+    })
+    await page.getByRole('button', { name: 'Duplicar instalación' }).click()
+    const dialog = page.getByRole('dialog', { name: 'Duplicar unha instalación' })
+    await dialog.getByRole('combobox', { name: 'Instalación que copiar' }).click()
+    await page.getByRole('option', { name: 'Pista de pádel 1' }).click()
+    await expect(dialog.getByLabel('Nome da copia')).toHaveValue('Pista de pádel 1 (copia)')
+    await expect(dialog.getByLabel('Enderezo da copia')).toHaveValue('pista-de-padel-1-copia')
+    await page.mouse.move(0, 0)
+    await page.waitForTimeout(300) // the select's list closing
+    await expectAccessible(page)
+    await dialog.getByRole('button', { name: 'Duplicar', exact: true }).click()
+    await expect(page).toHaveURL(/\/lugo\/admin\/facilities\/f1$/)
+    expect(sent).toEqual({ name: 'Pista de pádel 1 (copia)', slug: 'pista-de-padel-1-copia' })
+    await expect(page.getByText('Instalación duplicada. Está desactivada')).toBeVisible()
+  })
+
   test('an administrator without a second factor is told how to set one up', async ({ page }) => {
     await open(page, '/lugo/admin')
     // the general mock answers everything else; this route, added after it, wins

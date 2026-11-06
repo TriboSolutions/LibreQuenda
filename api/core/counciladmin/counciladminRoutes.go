@@ -37,6 +37,7 @@ func (r *counciladminRoutes) RegisterRoutes() {
 		{Path: "/tenants/{slug}/admin/facilities/{id}", Method: http.MethodGet, Handler: h.GetFacility},
 		{Path: "/tenants/{slug}/admin/facilities/{id}", Method: http.MethodPut, Handler: h.UpdateFacility},
 		{Path: "/tenants/{slug}/admin/facilities/{id}", Method: http.MethodDelete, Handler: h.DeleteFacility},
+		{Path: "/tenants/{slug}/admin/facilities/{id}/duplicate", Method: http.MethodPost, Handler: h.DuplicateFacility},
 		{Path: "/tenants/{slug}/admin/facilities/{id}/schedule", Method: http.MethodPut, Handler: h.ReplaceSchedule},
 		{Path: "/tenants/{slug}/admin/facilities/{id}/devices", Method: http.MethodGet, Handler: h.ListDevices},
 		{Path: "/tenants/{slug}/admin/facilities/{id}/devices", Method: http.MethodPost, Handler: h.CreateDevice},

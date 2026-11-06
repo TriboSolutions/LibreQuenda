@@ -278,6 +278,40 @@ func (s *counciladminService) CreateFacility(ctx context.Context, tenantId uuid.
 	return s.GetFacility(ctx, tenantId, id)
 }
 
+// DuplicateFacility copies one of the council's facilities: its details, tags, weekly
+// hours, booking window and ways to check in (with secrets of its own), switched off so
+// it is reviewed before residents see it. Not its closures, readers, bookings or issues.
+func (s *counciladminService) DuplicateFacility(ctx context.Context, tenantId uuid.UUID, sourceId uuid.UUID, input DuplicateFacilityInput) (*FacilityDetailDto, *shared.ErrorResponse) {
+	if key := input.validate(); key != "" {
+		return nil, &shared.ErrorResponse{Code: http.StatusUnprocessableEntity, Message: key}
+	}
+	var id uuid.UUID
+	var err = db.WithTenant(ctx, s.db, tenantId, func(queries *model.Queries) error {
+		var copyErr error
+		id, copyErr = queries.DuplicateFacility(ctx, model.DuplicateFacilityParams{Slug: input.Slug, Name: input.Name, SourceID: sourceId, TenantID: tenantId})
+		if copyErr != nil {
+			return copyErr // sql.ErrNoRows: not this council's facility
+		}
+		if err := queries.CopyFacilityTags(ctx, model.CopyFacilityTagsParams{FacilityID: id, SourceID: sourceId}); err != nil {
+			return err
+		}
+		if err := queries.CopyOpeningHours(ctx, model.CopyOpeningHoursParams{FacilityID: id, SourceID: sourceId}); err != nil {
+			return err
+		}
+		return queries.CopyFacilityCheckin(ctx, model.CopyFacilityCheckinParams{FacilityID: id, SourceID: sourceId})
+	})
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, &shared.ErrorResponse{Code: http.StatusNotFound, Message: "errors.facility_not_found"}
+	}
+	if isUniqueViolation(err) {
+		return nil, &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.facility_slug_taken"}
+	}
+	if err != nil {
+		return nil, failed("errors.facility_save_failed")
+	}
+	return s.GetFacility(ctx, tenantId, id)
+}
+
 func (s *counciladminService) UpdateFacility(ctx context.Context, tenantId uuid.UUID, id uuid.UUID, input FacilityInput) (*FacilityDetailDto, *shared.ErrorResponse) {
 	input.normalise()
 	if key := input.validate(); key != "" {

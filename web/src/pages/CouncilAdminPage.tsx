@@ -8,6 +8,7 @@ import { IssuesPanel } from '@/components/admin/IssuesPanel'
 import { StaffBookingsPanel } from '@/components/admin/StaffBookingsPanel'
 import { EventsPanel } from '@/components/admin/EventsPanel'
 import { ResidentsPanel } from '@/components/admin/ResidentsPanel'
+import { DuplicateFacilityDialog } from '@/components/admin/DuplicateFacilityDialog'
 import { useVerifyEmail } from '@/hooks/useVerifyEmail'
 import { CouncilHeading } from '@/components/CouncilHeading'
 import { TopBar } from '@/components/TopBar'
@@ -100,12 +101,15 @@ export function CouncilAdminPage() {
             </h2>
             {facilities.data && <span className="num text-muted-foreground">{t('admin:facilities.count', { count: list.length })}</span>}
           </div>
-          <Button asChild>
-            <Link to={`/${slug}/admin/facilities/new`}>
-              <Plus />
-              {t('admin:facilities.new')}
-            </Link>
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            {list.length > 0 && <DuplicateFacilityDialog slug={slug} token={token} facilities={list} />}
+            <Button asChild>
+              <Link to={`/${slug}/admin/facilities/new`}>
+                <Plus />
+                {t('admin:facilities.new')}
+              </Link>
+            </Button>
+          </div>
         </div>
         {facilities.error ? (
           <p className="mt-4 text-destructive">{facilities.error.message}</p>
