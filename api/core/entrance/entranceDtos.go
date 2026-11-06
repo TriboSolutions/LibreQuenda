@@ -1,7 +1,7 @@
 package entrance
 
 import (
-	"librequenda/checkin"
+	"librequenda/core/checkin"
 	"librequenda/core/reader"
 	"time"
 )

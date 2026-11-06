@@ -1,6 +1,6 @@
 package counciladmin
 
-import "librequenda/checkin"
+import "librequenda/core/checkin"
 
 // CheckinSettingsDto: the facility's ways in from the resident's phone (Entrada tab).
 type CheckinSettingsDto struct {

@@ -1,8 +1,8 @@
 package me
 
 import (
+	"librequenda/core/rating"
 	"librequenda/model"
-	"librequenda/rating"
 	"librequenda/storage"
 	"time"
 )

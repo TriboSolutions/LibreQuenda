@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"librequenda/auth"
-	"librequenda/issue"
+	"librequenda/core/issue"
 	"librequenda/model"
 	"net/http"
 	"os"

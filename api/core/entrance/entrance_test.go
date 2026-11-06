@@ -2,7 +2,7 @@ package entrance
 
 import (
 	"database/sql"
-	"librequenda/checkin"
+	"librequenda/core/checkin"
 	"librequenda/model"
 	"testing"
 

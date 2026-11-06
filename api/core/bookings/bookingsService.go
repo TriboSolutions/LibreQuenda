@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/angelbarreiros/Penguin/router/helpers"
-	"librequenda/checkin"
+	"librequenda/core/checkin"
 	"librequenda/model"
 	"librequenda/schedule"
 	"librequenda/shared"

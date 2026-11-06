@@ -3,11 +3,11 @@ package tenants
 import (
 	"context"
 	"librequenda/auth"
-	"librequenda/checkin"
 	"librequenda/core/bookings"
+	"librequenda/core/checkin"
 	"librequenda/core/me"
+	"librequenda/core/rating"
 	"librequenda/model"
-	"librequenda/rating"
 	"librequenda/schedule"
 	"librequenda/shared"
 	"net/http"

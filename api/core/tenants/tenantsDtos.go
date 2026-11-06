@@ -1,7 +1,7 @@
 package tenants
 
 import (
-	"librequenda/rating"
+	"librequenda/core/rating"
 	"librequenda/schedule"
 	"librequenda/shared"
 	"time"

@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"librequenda/auth"
-	"librequenda/checkin"
+	"librequenda/core/checkin"
 	"librequenda/core/me"
 	"librequenda/core/reader"
 	"librequenda/model"

@@ -1,7 +1,7 @@
 package bookings
 
 import (
-	"librequenda/checkin"
+	"librequenda/core/checkin"
 	"librequenda/model"
 	"librequenda/schedule"
 	"net/mail"

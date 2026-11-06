@@ -3,7 +3,7 @@ package counciladmin
 import (
 	"context"
 	"librequenda/audit"
-	"librequenda/checkin"
+	"librequenda/core/checkin"
 	"strings"
 	"testing"
 )

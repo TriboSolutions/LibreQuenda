@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"librequenda/checkin"
+	"librequenda/core/checkin"
 	"librequenda/db"
 	"librequenda/model"
 	"librequenda/shared"

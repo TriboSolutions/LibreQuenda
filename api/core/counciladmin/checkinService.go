@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"librequenda/checkin"
+	"librequenda/core/checkin"
 	"librequenda/db"
 	"librequenda/model"
 	"librequenda/shared"

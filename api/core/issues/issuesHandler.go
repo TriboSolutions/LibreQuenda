@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"librequenda/auth"
-	"librequenda/issue"
+	"librequenda/core/issue"
 	"net/http"
 	"sync"
 

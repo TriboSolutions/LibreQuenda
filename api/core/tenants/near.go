@@ -6,7 +6,7 @@ import (
 	"sort"
 	"strconv"
 
-	"librequenda/checkin"
+	"librequenda/core/checkin"
 )
 
 // Near: where the person is, from ?lat=&lon=, to sort facilities by distance,

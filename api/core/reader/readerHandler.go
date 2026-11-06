@@ -3,7 +3,7 @@ package reader
 import (
 	"database/sql"
 	"encoding/json"
-	"librequenda/checkin"
+	"librequenda/core/checkin"
 	"librequenda/db"
 	"librequenda/model"
 	"librequenda/shared"

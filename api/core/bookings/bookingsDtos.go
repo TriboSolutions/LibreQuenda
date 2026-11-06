@@ -2,7 +2,7 @@ package bookings
 
 import (
 	"database/sql"
-	"librequenda/checkin"
+	"librequenda/core/checkin"
 	"librequenda/core/ratings"
 	"librequenda/model"
 	"librequenda/shared"

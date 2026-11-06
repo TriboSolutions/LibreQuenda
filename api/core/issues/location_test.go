@@ -2,7 +2,7 @@ package issues
 
 import (
 	"database/sql"
-	"librequenda/issue"
+	"librequenda/core/issue"
 	"librequenda/model"
 	"testing"
 )

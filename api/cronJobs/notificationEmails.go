@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"html/template"
 	"librequenda/branding"
-	"librequenda/checkin"
+	"librequenda/core/checkin"
 	"librequenda/mailer"
 	"librequenda/model"
 	"librequenda/shared"
