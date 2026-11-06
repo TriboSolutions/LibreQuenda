@@ -29,7 +29,8 @@
     "resident_requested": "{{name}} vol ser veí de {{council}}.",
     "resident_verified": "{{council}} t’ha verificat com a veí: ja pots reservar a les seves instal·lacions només per a veïns.",
     "resident_rejected": "{{council}} no t’ha pogut verificar com a veí. Truca a l’ajuntament si creus que és un error.",
-    "resident_revoked": "{{council}} ha retirat la teva verificació com a veí: s’ha cancel·lat el que tenies reservat a les seves instal·lacions només per a veïns."
+    "resident_revoked": "{{council}} ha retirat la teva verificació com a veí: s’ha cancel·lat el que tenies reservat a les seves instal·lacions només per a veïns.",
+    "participant_removed_event": "{{council}} t’ha tret de l’esdeveniment «{{title}}» a {{facility}}, {{day}} a les {{time}}. Ja no t’hi pots tornar a apuntar."
   },
   "reason": "Motiu: {{reason}}",
   "councilNote": "Nota de l’ajuntament: {{reason}}",

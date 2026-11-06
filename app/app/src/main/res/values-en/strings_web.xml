@@ -341,6 +341,7 @@
     <string name="notif_booking_cancelled_resident_revoked">%4$s took back your verification as a resident: your booking at %1$s, %2$s at %3$s, was cancelled.</string>
     <string name="notif_booking_left_resident_revoked">%4$s took back your verification as a resident: you are no longer in the game at %1$s, %2$s at %3$s.</string>
     <string name="notif_participant_removed">%5$s took you out of their public booking at %1$s, %2$s at %3$s. You cannot join it again.</string>
+    <string name="notif_participant_removed_event">%4$s took you out of the event «%8$s» at %1$s, %2$s at %3$s. You cannot sign up for it again.</string>
     <string name="notif_issue_solved">The problem you reported at %1$s is fixed.</string>
     <string name="notif_issue_rejected">The council looked at the problem you reported at %1$s and will not take it further.</string>
     <string name="notif_booking_joined">%5$s joined your booking at %1$s, %2$s at %3$s.</string>

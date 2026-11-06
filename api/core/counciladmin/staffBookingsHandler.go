@@ -81,6 +81,40 @@ func (h *counciladminHandler) AddEventParticipant(w http.ResponseWriter, r *http
 	send(w, r, nil, invites.GetInvitesService(h.db).StaffAddToEvent(r.Context(), tenantId, bookingId, input))
 }
 
+// EventPeople: who is in one of the council's events (name, email, stars, resident or not).
+func (h *counciladminHandler) EventPeople(w http.ResponseWriter, r *http.Request) {
+	var tenantId, ok = h.councilAdmin(w, r)
+	if !ok {
+		return
+	}
+	var bookingId, err = helpers.GetUUidPathValue("bookingId", r)
+	if err != nil {
+		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_query_params")
+		return
+	}
+	var response, peopleErr = invites.GetInvitesService(h.db).EventPeople(r.Context(), tenantId, bookingId)
+	send(w, r, response, peopleErr)
+}
+
+// RemoveEventParticipant: staff take someone out of one of the council's events.
+func (h *counciladminHandler) RemoveEventParticipant(w http.ResponseWriter, r *http.Request) {
+	var tenantId, ok = h.councilAdmin(w, r)
+	if !ok {
+		return
+	}
+	var bookingId, err = helpers.GetUUidPathValue("bookingId", r)
+	if err != nil {
+		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_query_params")
+		return
+	}
+	var participantId uuid.UUID
+	if participantId, err = helpers.GetUUidPathValue("participantId", r); err != nil {
+		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_query_params")
+		return
+	}
+	send(w, r, nil, invites.GetInvitesService(h.db).StaffRemoveFromEvent(r.Context(), tenantId, bookingId, participantId))
+}
+
 func (h *counciladminHandler) StaffCheckIn(w http.ResponseWriter, r *http.Request) {
 	var tenantId, staffId, ok = h.councilAdminUser(w, r)
 	if !ok {

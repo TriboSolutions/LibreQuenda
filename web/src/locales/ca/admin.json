@@ -1002,7 +1002,23 @@
     "age": "Edat",
     "add": "Apunta",
     "adding": "Apuntant…",
-    "added": "S’ha apuntat {{name}}."
+    "added": "S’ha apuntat {{name}}.",
+    "peopleList": {
+      "people": "Persones ({{count}})",
+      "peopleTitle": "Persones apuntades a «{{title}}»",
+      "nobody": "Encara no s’hi ha apuntat ningú.",
+      "resident": "Veí",
+      "notResident": "No veí",
+      "guest": "Sense compte · {{age}} anys",
+      "remove": "Treure {{name}}",
+      "removeConfirm": "Treure {{name}} de l’esdeveniment? L’avisarem a l’app i per correu, i no s’hi podrà tornar a apuntar.",
+      "removeGuestConfirm": "Treure {{name}} de l’esdeveniment?",
+      "removeYes": "Treure",
+      "removeKeep": "No",
+      "removed": "S’ha tret {{name}} de l’esdeveniment.",
+      "close": "Tanca",
+      "noRating": "Sense valoracions"
+    }
   },
   "residents": {
     "tab": "Veïns",

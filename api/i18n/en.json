@@ -289,7 +289,9 @@
     },
     "participant_removed": {
       "subject": "You are no longer in the booking at {{0}} on {{1}} at {{2}}",
-      "intro": "{{5}} took you out of their public booking at {{0}} ({{1}}) on {{2}}, from {{3}} to {{4}}. You cannot join it again, but you can look for another game or book a free turn."
+      "intro": "{{5}} took you out of their public booking at {{0}} ({{1}}) on {{2}}, from {{3}} to {{4}}. You cannot join it again, but you can look for another game or book a free turn.",
+      "subject_event": "You are out of the event «{{0}}» on {{1}} at {{2}}",
+      "intro_event": "{{1}} took you out of the event «{{5}}» at {{0}} on {{2}}, from {{3}} to {{4}}. You cannot sign up for it again, but you can join other events or book a free turn."
     },
     "reason": "Reason: {{0}}",
     "council_admin": {

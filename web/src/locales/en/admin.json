@@ -1002,7 +1002,23 @@
     "age": "Age",
     "add": "Sign up",
     "adding": "Signing up…",
-    "added": "{{name}} is signed up."
+    "added": "{{name}} is signed up.",
+    "peopleList": {
+      "people": "People ({{count}})",
+      "peopleTitle": "People signed up for «{{title}}»",
+      "nobody": "Nobody has signed up yet.",
+      "resident": "Resident",
+      "notResident": "Not a resident",
+      "guest": "No account · {{age}} years old",
+      "remove": "Take {{name}} out",
+      "removeConfirm": "Take {{name}} out of the event? We will tell them in the app and by email, and they cannot sign up again.",
+      "removeGuestConfirm": "Take {{name}} out of the event?",
+      "removeYes": "Take out",
+      "removeKeep": "No",
+      "removed": "{{name}} is out of the event.",
+      "close": "Close",
+      "noRating": "No ratings"
+    }
   },
   "residents": {
     "tab": "Residents",

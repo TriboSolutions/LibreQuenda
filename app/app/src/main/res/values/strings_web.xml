@@ -341,6 +341,7 @@
     <string name="notif_booking_cancelled_resident_revoked">%4$s retirou a túa verificación como veciño: cancelouse a túa reserva en %1$s, %2$s ás %3$s.</string>
     <string name="notif_booking_left_resident_revoked">%4$s retirou a túa verificación como veciño: xa non estás na partida en %1$s, %2$s ás %3$s.</string>
     <string name="notif_participant_removed">%5$s sacoute da súa reserva pública en %1$s, %2$s ás %3$s. Xa non podes volver unirte a ela.</string>
+    <string name="notif_participant_removed_event">%4$s sacoute do evento «%8$s» en %1$s, %2$s ás %3$s. Xa non podes volver apuntarte a el.</string>
     <string name="notif_issue_solved">Arranxado o problema que avisaches en %1$s.</string>
     <string name="notif_issue_rejected">O concello revisou o problema que avisaches en %1$s e non o vai tramitar.</string>
     <string name="notif_booking_joined">%5$s uniuse á túa reserva en %1$s, %2$s ás %3$s.</string>

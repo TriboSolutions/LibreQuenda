@@ -1002,7 +1002,23 @@
     "age": "Edad",
     "add": "Apuntar",
     "adding": "Apuntando…",
-    "added": "Se apuntó a {{name}}."
+    "added": "Se apuntó a {{name}}.",
+    "peopleList": {
+      "people": "Personas ({{count}})",
+      "peopleTitle": "Personas apuntadas a «{{title}}»",
+      "nobody": "Todavía no se ha apuntado nadie.",
+      "resident": "Vecino",
+      "notResident": "No vecino",
+      "guest": "Sin cuenta · {{age}} años",
+      "remove": "Sacar a {{name}}",
+      "removeConfirm": "¿Sacar a {{name}} del evento? Le avisaremos en la app y por correo, y no podrá volver a apuntarse.",
+      "removeGuestConfirm": "¿Sacar a {{name}} del evento?",
+      "removeYes": "Sacar",
+      "removeKeep": "No",
+      "removed": "Se ha sacado a {{name}} del evento.",
+      "close": "Cerrar",
+      "noRating": "Sin valoraciones"
+    }
   },
   "residents": {
     "tab": "Vecinos",

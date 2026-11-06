@@ -1,8 +1,9 @@
-import { PartyPopper, Plus } from 'lucide-react'
+import { PartyPopper, Plus, Users } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import { Link, useLocation, useNavigate } from 'react-router'
+import { EventPeopleDialog } from '@/components/admin/EventPeopleDialog'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -30,6 +31,7 @@ export function EventsPanel({ slug, facilities }: Props) {
   const active = facilities.filter((f) => f.is_active)
   const events = useAsync(() => api.council.events(token, slug), `council-events:${slug}`)
   const [cancelling, setCancelling] = useState<CouncilEvent | null>(null)
+  const [seeing, setSeeing] = useState<CouncilEvent | null>(null) // whose people are open
   // what the editor page saved, handed over on the way back
   const location = useLocation()
   const navigate = useNavigate()
@@ -98,32 +100,39 @@ export function EventsPanel({ slug, facilities }: Props) {
                   <p className="num text-sm text-muted-foreground">{t('events.joined', { count: event.participant_count, capacity: event.capacity })}</p>
                 </div>
               </div>
-              {event.can_change && (
-                <div className="flex gap-2">
-                  <Button asChild variant="outline" size="sm">
-                    <Link to={`/${slug}/admin/eventos/${event.id}`}>
-                      {t('events.edit')}
-                    </Link>
-                  </Button>
-                  <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => { setNotice(null); setCancelling(event) }}>
-                    {t('events.cancel')}
-                  </Button>
-                </div>
-              )}
+              <div className="flex flex-wrap gap-2">
+                <Button variant="outline" size="sm" onClick={() => setSeeing(event)}>
+                  <Users />
+                  {t('events.peopleList.people', { count: event.participant_count })}
+                </Button>
+                {event.can_change && (
+                  <>
+                    <Button asChild variant="outline" size="sm">
+                      <Link to={`/${slug}/admin/eventos/${event.id}`}>{t('events.edit')}</Link>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive hover:text-destructive"
+                      onClick={() => {
+                        setNotice(null)
+                        setCancelling(event)
+                      }}
+                    >
+                      {t('events.cancel')}
+                    </Button>
+                  </>
+                )}
+              </div>
             </li>
           ))}
         </ul>
       )}
 
+      {seeing && <EventPeopleDialog slug={slug} token={token} zone={zone} event={seeing} onClose={() => setSeeing(null)} onChanged={() => events.reload()} />}
+
       {cancelling && (
-        <CancelEventDialog
-          slug={slug}
-          token={token}
-          zone={zone}
-          event={cancelling}
-          onClose={() => setCancelling(null)}
-          onCancelled={() => done(t('events.cancelled', { title: cancelling.title }))}
-        />
+        <CancelEventDialog slug={slug} token={token} zone={zone} event={cancelling} onClose={() => setCancelling(null)} onCancelled={() => done(t('events.cancelled', { title: cancelling.title }))} />
       )}
     </section>
   )

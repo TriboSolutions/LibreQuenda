@@ -1002,7 +1002,23 @@
     "age": "Idade",
     "add": "Apuntar",
     "adding": "Apuntando…",
-    "added": "Apuntouse a {{name}}."
+    "added": "Apuntouse a {{name}}.",
+    "peopleList": {
+      "people": "Persoas ({{count}})",
+      "peopleTitle": "Persoas apuntadas a «{{title}}»",
+      "nobody": "Aínda non se apuntou ninguén.",
+      "resident": "Veciño",
+      "notResident": "Non veciño",
+      "guest": "Sen conta · {{age}} anos",
+      "remove": "Sacar a {{name}}",
+      "removeConfirm": "Sacar a {{name}} do evento? Avisarémolo na app e por correo, e non poderá volver apuntarse.",
+      "removeGuestConfirm": "Sacar a {{name}} do evento?",
+      "removeYes": "Sacar",
+      "removeKeep": "Non",
+      "removed": "Sacouse a {{name}} do evento.",
+      "close": "Pechar",
+      "noRating": "Sen valoracións"
+    }
   },
   "residents": {
     "tab": "Veciños",

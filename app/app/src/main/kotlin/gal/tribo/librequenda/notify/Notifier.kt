@@ -128,6 +128,7 @@ object Notifier {
             n.type == "booking_cancelled_by_council" && n.cause == "resident_revoked_left" -> "booking_left_resident_revoked"
             n.type == "booking_cancelled_by_council" && n.title.isNotBlank() -> "event_cancelled"
             n.type == "booking_cancelled_by_council" && n.byStaff -> "booking_cancelled_by_staff"
+            n.type == "participant_removed" && n.title.isNotBlank() -> "participant_removed_event" // the council, from one of its events
             n.type == "rating_requested" && n.isPublic -> "rating_requested_public" // the others can be rated too
             else -> n.type
         }
@@ -139,7 +140,7 @@ object Notifier {
             "booking_confirmed" -> R.string.notification_booking_confirmed
             "booking_reminder" -> R.string.notification_booking_reminder
             "booking_cancelled", "booking_cancelled_by_owner", "booking_cancelled_account_deleted" -> R.string.notification_booking_cancelled
-            "participant_removed" -> R.string.notification_participant_removed
+            "participant_removed", "participant_removed_event" -> R.string.notification_participant_removed
             "booking_cancelled_by_council", "booking_cancelled_by_closure", "booking_cancelled_by_staff", "event_cancelled",
             "booking_cancelled_resident_revoked", "booking_left_resident_revoked" -> R.string.notification_booking_cancelled_by_council
             "issue_solved" -> R.string.notification_issue_solved
@@ -178,6 +179,7 @@ object Notifier {
         "booking_cancelled_resident_revoked" -> R.string.notif_booking_cancelled_resident_revoked
         "booking_left_resident_revoked" -> R.string.notif_booking_left_resident_revoked
         "participant_removed" -> R.string.notif_participant_removed
+        "participant_removed_event" -> R.string.notif_participant_removed_event
         "council_admin_granted" -> R.string.notif_council_admin_granted
         "issue_solved" -> R.string.notif_issue_solved
         "issue_rejected" -> R.string.notif_issue_rejected

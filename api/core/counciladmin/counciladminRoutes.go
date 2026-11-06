@@ -63,6 +63,8 @@ func (r *counciladminRoutes) RegisterRoutes() {
 		{Path: "/tenants/{slug}/admin/events", Method: http.MethodPost, Handler: h.CreateEvent},
 		{Path: "/tenants/{slug}/admin/events/preview", Method: http.MethodPost, Handler: h.PreviewEvent},
 		{Path: "/tenants/{slug}/admin/events/{bookingId}", Method: http.MethodPut, Handler: h.UpdateEvent},
+		{Path: "/tenants/{slug}/admin/events/{bookingId}/people", Method: http.MethodGet, Handler: h.EventPeople},
+		{Path: "/tenants/{slug}/admin/events/{bookingId}/people/{participantId}", Method: http.MethodDelete, Handler: h.RemoveEventParticipant},
 		{Path: "/tenants/{slug}/admin/indicators", Method: http.MethodGet, Handler: h.GetIndicators},
 		{Path: "/tenants/{slug}/admin/indicators/export", Method: http.MethodGet, Handler: h.ExportIndicators},
 		{Path: "/tenants/{slug}/admin/export", Method: http.MethodGet, Handler: middlewares.WithStrictRateLimit(h.ExportCouncil)},

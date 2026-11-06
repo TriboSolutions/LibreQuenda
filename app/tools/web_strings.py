@@ -135,7 +135,7 @@ KEYS = {
  # the notices as Android notifications: same words as the web's list
  **{f'notif_{t}': (N, f'type.{t}') for t in ['booking_confirmed', 'booking_reminder', 'booking_changed', 'booking_cancelled',
     'booking_cancelled_by_council', 'booking_cancelled_by_closure', 'booking_cancelled_by_staff', 'council_admin_granted',
-    'booking_cancelled_by_owner', 'booking_cancelled_account_deleted', 'event_cancelled', 'booking_cancelled_resident_revoked', 'booking_left_resident_revoked', 'participant_removed',
+    'booking_cancelled_by_owner', 'booking_cancelled_account_deleted', 'event_cancelled', 'booking_cancelled_resident_revoked', 'booking_left_resident_revoked', 'participant_removed', 'participant_removed_event',
     'issue_solved', 'issue_rejected', 'booking_joined', 'issue_reported', 'rating_requested', 'rating_requested_public']}, 'council': (K,'council'), 'slots_full': (H,'availability.full'),
  'status_cancelled': (B,'status.cancelled'), 'status_attended': (B,'status.attended'), 'status_no_show': (B,'status.noShow'),
  'status_ended': (B,'status.ended'), 'status_checked_in': (B,'status.checkedIn'),

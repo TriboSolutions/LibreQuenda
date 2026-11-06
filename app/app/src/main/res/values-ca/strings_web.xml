@@ -341,6 +341,7 @@
     <string name="notif_booking_cancelled_resident_revoked">%4$s ha retirat la teva verificació com a veí: s’ha cancel·lat la teva reserva a %1$s, %2$s a les %3$s.</string>
     <string name="notif_booking_left_resident_revoked">%4$s ha retirat la teva verificació com a veí: ja no ets a la partida a %1$s, %2$s a les %3$s.</string>
     <string name="notif_participant_removed">%5$s t’ha tret de la seva reserva pública a %1$s, %2$s a les %3$s. Ja no t’hi pots tornar a unir.</string>
+    <string name="notif_participant_removed_event">%4$s t’ha tret de l’esdeveniment «%8$s» a %1$s, %2$s a les %3$s. Ja no t’hi pots tornar a apuntar.</string>
     <string name="notif_issue_solved">Arreglat el problema que vas avisar a %1$s.</string>
     <string name="notif_issue_rejected">L’ajuntament ha revisat el problema que vas avisar a %1$s i no el tramitarà.</string>
     <string name="notif_booking_joined">%5$s s’ha unit a la teva reserva a %1$s, %2$s a les %3$s.</string>
