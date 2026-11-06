@@ -7,8 +7,7 @@
     "superadmins": "Superadministrators",
     "tags": "Tags",
     "branding": "Customise the app",
-    "audit": "Activity log",
-    "analytics": "Analytics"
+    "audit": "Activity log"
   },
   "guard": {
     "signIn": "Sign in to open the administration.",
@@ -1057,8 +1056,8 @@
     "back": "Back"
   },
   "analytics": {
-    "title": "Ask the data",
-    "help": "An AI assistant queries the data of {{scope}} (read-only, no personal data) and answers. Below are each query it ran and what it returned.",
+    "title": "Talk to the data",
+    "help": "An AI assistant queries the data of {{scope}} (read-only, no personal data) and answers. Each answer shows the queries it ran and what they returned.",
     "question": "Your question",
     "placeholder": "E.g. which facility had the most cancellations last month? Which hours are booked most on Saturdays?",
     "ask": "Ask",
@@ -1066,7 +1065,15 @@
     "queries_one": "{{count}} query",
     "queries_other": "{{count}} queries",
     "moreRows": "The first {{shown}} rows are shown.",
-    "everyCouncil": "every council"
+    "everyCouncil": "every council",
+    "bubble": "Talk to the data",
+    "scope": "Data of",
+    "back": "Back",
+    "empty": "Ask what you want to know: bookings, occupancy, cancellations, problems…",
+    "you": "You",
+    "assistant": "Assistant",
+    "clear": "New conversation",
+    "off": "The data assistant is not switched on, or you are not allowed to use it."
   },
   "aiSettings": {
     "title": "Data assistant (AI)",
@@ -1080,7 +1087,7 @@
     "baseUrlHelp": "For example https://api.openai.com/v1, or your own server such as http://ollama:11434/v1.",
     "model": "Model",
     "apiKey": "API key",
-    "apiKeyKept": "Saved: leave it empty to keep it",
+    "apiKeyKept": "One is saved: type another only to replace it.",
     "apiKeyHelp": "Stored encrypted and never shown again. A local model may not need one.",
     "privacy": "Query results (aggregated, without names, emails or free text) are sent to this model. With an outside provider they leave the installation; your own model keeps them in it.",
     "save": "Save",

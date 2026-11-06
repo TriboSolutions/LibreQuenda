@@ -1113,7 +1113,7 @@ test.describe('keyboard', () => {
     const panel = page.getByRole('region', { name: 'Asistente de datos (IA)' })
     await expect(panel.getByLabel('Enderezo da API')).toHaveValue('http://ollama:11434/v1')
     await expect(panel.getByLabel('Chave da API')).toHaveValue('') // never sent back
-    await expect(panel.getByLabel('Chave da API')).toHaveAttribute('placeholder', /Gardada/)
+    await expect(panel.getByLabel('Chave da API')).toHaveAttribute('placeholder', '••••••••••••••••') // a key is saved
     await panel.getByRole('switch', { name: 'Activado' }).click()
     await page.mouse.move(0, 0)
     await expectAccessible(page)
@@ -1122,8 +1122,21 @@ test.describe('keyboard', () => {
     expect(saved).toEqual({ enabled: true, provider: 'openai', base_url: 'http://ollama:11434/v1', model: 'qwen3', api_key: '' })
   })
 
-  test('a council asks its data, and sees the answer with each query it ran', async ({ page }) => {
-    await open(page, '/lugo/admin?vista=indicadores')
+  test('the data bubble shows only while the assistant is on, and opens the council’s data page', async ({ page }) => {
+    await open(page, '/lugo/admin')
+    await expect(page.getByRole('link', { name: 'Fala cos datos' })).toHaveCount(0) // off
+    await page.route('**/api/me', (route) => route.fulfill({ json: { ...ME_COUNCIL_ADMIN, analytics_enabled: true } }))
+    await page.reload()
+    await page.getByRole('link', { name: 'Fala cos datos' }).click()
+    await expect(page).toHaveURL(/\/datos\?concello=lugo$/)
+    await expect(page.getByRole('heading', { level: 1, name: 'Fala cos datos' })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Fala cos datos' })).toHaveCount(0) // not on its own page
+  })
+
+  test('a council talks to its data, and sees each answer with the queries it ran', async ({ page }) => {
+    await open(page, '/datos')
+    await page.route('**/api/me', (route) => route.fulfill({ json: { ...ME_COUNCIL_ADMIN, analytics_enabled: true } }))
+    await page.reload()
     let asked: unknown = null
     await page.route('**/api/tenants/lugo/admin/analytics/ask', async (route) => {
       asked = route.request().postDataJSON()
@@ -1134,13 +1147,13 @@ test.describe('keyboard', () => {
         },
       })
     })
-    const assistant = page.getByRole('region', { name: 'Pregunta aos datos' })
-    await assistant.getByLabel('A túa pregunta').fill('Cantas cancelacións houbo en outubro?')
-    await assistant.getByRole('button', { name: 'Preguntar' }).click()
-    await expect(assistant.getByText('Pista de pádel 1 tivo 12 cancelacións en outubro. <b>non é HTML</b>')).toBeVisible() // plain text
+    await page.getByLabel('A túa pregunta').fill('Cantas cancelacións houbo en outubro?')
+    await page.getByRole('button', { name: 'Preguntar' }).click()
+    const conversation = page.getByRole('list', { name: 'Fala cos datos' })
+    await expect(conversation.getByText('Pista de pádel 1 tivo 12 cancelacións en outubro. <b>non é HTML</b>')).toBeVisible() // plain text
     expect(asked).toEqual({ question: 'Cantas cancelacións houbo en outubro?' })
-    await assistant.getByText('1 consulta').click()
-    await expect(assistant.getByRole('cell', { name: '12' })).toBeVisible()
+    await conversation.getByText('1 consulta').click()
+    await expect(conversation.getByRole('cell', { name: '12' })).toBeVisible()
     await page.mouse.move(0, 0)
     await expectAccessible(page)
   })

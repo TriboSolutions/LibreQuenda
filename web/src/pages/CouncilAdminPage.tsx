@@ -8,7 +8,6 @@ import { IssuesPanel } from '@/components/admin/IssuesPanel'
 import { StaffBookingsPanel } from '@/components/admin/StaffBookingsPanel'
 import { EventsPanel } from '@/components/admin/EventsPanel'
 import { ResidentsPanel } from '@/components/admin/ResidentsPanel'
-import { AnalyticsAssistant } from '@/components/admin/AnalyticsAssistant'
 import { DuplicateFacilityDialog } from '@/components/admin/DuplicateFacilityDialog'
 import { useVerifyEmail } from '@/hooks/useVerifyEmail'
 import { CouncilHeading } from '@/components/CouncilHeading'
@@ -254,7 +253,6 @@ export function CouncilAdminPage() {
           <AuditLogPanel load={(filters) => api.council.audit(token, slug, filters)} download={(filters) => api.council.downloadAudit(token, slug, filters)} />
         </TabsContent>
         <TabsContent value="indicators" className="grid gap-6">
-          <AnalyticsAssistant ask={(question) => api.council.askAnalytics(token, slug, question)} scope={council?.name ?? slug} />
           <Suspense fallback={<Skeleton className="h-96 w-full" />}>
             <IndicatorsPanel slug={slug} facilities={list} />
           </Suspense>

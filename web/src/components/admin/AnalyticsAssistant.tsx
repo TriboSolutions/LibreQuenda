@@ -1,5 +1,5 @@
 import { Sparkles } from 'lucide-react'
-import { useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -12,47 +12,78 @@ const SHOWN_ROWS = 50
 
 type Props = {
   ask: (question: string) => Promise<AnalyticsAnswer>
-  scope: string // whose data it looks at, said under the title
 }
 
+type Exchange = { question: string; answer?: AnalyticsAnswer; error?: string }
+
 /**
- * «Ask the data»: a question in the person's words; a language model writes SQL on
- * the read-only analytics views and answers. Every query it ran shows below the
- * answer with what it returned, so each figure can be checked. The answer is plain
- * text: nothing the model writes is read as markup.
+ * «Talk to the data»: questions in the person's words, one after another; a language
+ * model writes SQL on the read-only analytics views and answers each. Every query it
+ * ran shows under its answer with what it returned, so each figure can be checked.
+ * Answers are plain text: nothing the model writes is read as markup. Each question
+ * is answered on its own (the model does not see the earlier ones).
  */
-export function AnalyticsAssistant({ ask, scope }: Props) {
+export function AnalyticsAssistant({ ask }: Props) {
   const { t } = useTranslation('admin')
   const [question, setQuestion] = useState('')
   const [busy, setBusy] = useState(false)
-  const [answer, setAnswer] = useState<AnalyticsAnswer | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [exchanges, setExchanges] = useState<Exchange[]>([])
+  const end = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    end.current?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' })
+  }, [exchanges.length, busy])
 
   const submit = async (event: FormEvent) => {
     event.preventDefault()
-    if (!question.trim()) return
+    const asked = question.trim()
+    if (!asked || busy) return
     setBusy(true)
-    setError(null)
-    setAnswer(null)
+    setQuestion('')
+    setExchanges((list) => [...list, { question: asked }])
+    let outcome: Exchange
     try {
-      setAnswer(await ask(question.trim()))
+      outcome = { question: asked, answer: await ask(asked) }
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e))
-    } finally {
-      setBusy(false)
+      outcome = {
+        question: asked,
+        error: e instanceof Error ? e.message : String(e),
+      }
     }
+    setExchanges((list) => [...list.slice(0, -1), outcome])
+    setBusy(false)
   }
 
   return (
-    <section aria-labelledby="assistant-title" className="grid gap-4 rounded-lg border bg-card p-5">
-      <div className="grid gap-1">
-        <h2 id="assistant-title" className="flex items-center gap-2 text-lg font-semibold">
-          <Sparkles className="size-5 text-primary" aria-hidden />
-          {t('analytics.title')}
-        </h2>
-        <p className="text-sm text-muted-foreground">{t('analytics.help', { scope })}</p>
-      </div>
-      <form onSubmit={(e) => void submit(e)} className="grid gap-2">
+    <div className="grid gap-6">
+      <ol aria-label={t('analytics.title')} aria-live="polite" className="grid gap-6">
+        {exchanges.length === 0 && <li className="text-muted-foreground">{t('analytics.empty')}</li>}
+        {exchanges.map((exchange, i) => (
+          <li key={i} className="grid gap-3">
+            <div className="ml-auto max-w-[85%] rounded-2xl rounded-br-sm bg-primary px-4 py-2 text-primary-foreground">
+              <span className="sr-only">{t('analytics.you')}: </span>
+              <p className="whitespace-pre-wrap">{exchange.question}</p>
+            </div>
+            <div className="flex max-w-full gap-3">
+              <span className="mt-1 grid size-8 shrink-0 place-items-center rounded-full bg-muted" aria-hidden>
+                <Sparkles className="size-4 text-primary" />
+              </span>
+              <div className="grid min-w-0 flex-1 gap-3">
+                <span className="sr-only">{t('analytics.assistant')}: </span>
+                {!exchange.answer && !exchange.error && <p className="text-muted-foreground">{t('analytics.thinking')}</p>}
+                {exchange.error && (
+                  <Alert variant="destructive">
+                    <AlertDescription>{exchange.error}</AlertDescription>
+                  </Alert>
+                )}
+                {exchange.answer && <Answer answer={exchange.answer} />}
+              </div>
+            </div>
+          </li>
+        ))}
+      </ol>
+      <div ref={end} />
+      <form onSubmit={(e) => void submit(e)} className="sticky bottom-0 grid gap-2 border-t bg-background pt-4 pb-4">
         <Label htmlFor="assistant-question">{t('analytics.question')}</Label>
         <Textarea
           id="assistant-question"
@@ -62,38 +93,40 @@ export function AnalyticsAssistant({ ask, scope }: Props) {
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) void submit(e)
+            if (e.key === 'Enter' && !e.shiftKey) void submit(e)
           }}
         />
-        <div>
+        <div className="flex flex-wrap gap-2">
           <Button type="submit" disabled={busy || !question.trim()}>
             {busy ? t('analytics.thinking') : t('analytics.ask')}
           </Button>
+          {exchanges.length > 0 && (
+            <Button type="button" variant="outline" disabled={busy} onClick={() => setExchanges([])}>
+              {t('analytics.clear')}
+            </Button>
+          )}
         </div>
       </form>
-      <div aria-live="polite" className="grid gap-4 empty:hidden">
-        {error && (
-          <Alert variant="destructive">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-        {answer && (
-          <>
-            <p className="whitespace-pre-wrap">{answer.answer}</p>
-            {answer.steps.length > 0 && (
-              <details className="rounded-md border p-3">
-                <summary className="cursor-pointer text-sm font-medium">{t('analytics.queries', { count: answer.steps.length })}</summary>
-                <ol className="mt-3 grid gap-4">
-                  {answer.steps.map((step, i) => (
-                    <StepResult key={i} step={step} />
-                  ))}
-                </ol>
-              </details>
-            )}
-          </>
-        )}
-      </div>
-    </section>
+    </div>
+  )
+}
+
+function Answer({ answer }: { answer: AnalyticsAnswer }) {
+  const { t } = useTranslation('admin')
+  return (
+    <>
+      <p className="whitespace-pre-wrap">{answer.answer}</p>
+      {answer.steps.length > 0 && (
+        <details className="rounded-md border p-3">
+          <summary className="cursor-pointer text-sm font-medium">{t('analytics.queries', { count: answer.steps.length })}</summary>
+          <ol className="mt-3 grid gap-4">
+            {answer.steps.map((step, i) => (
+              <StepResult key={i} step={step} />
+            ))}
+          </ol>
+        </details>
+      )}
+    </>
   )
 }
 
@@ -131,7 +164,11 @@ function StepResult({ step }: { step: AnalyticsStep }) {
             </tbody>
           </table>
           {(result.rows.length > SHOWN_ROWS || result.truncated) && (
-            <p className="mt-1 text-xs text-muted-foreground">{t('analytics.moreRows', { shown: Math.min(SHOWN_ROWS, result.rows.length) })}</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {t('analytics.moreRows', {
+                shown: Math.min(SHOWN_ROWS, result.rows.length),
+              })}
+            </p>
           )}
         </div>
       )}

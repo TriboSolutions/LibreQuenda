@@ -1,9 +1,10 @@
 # Asking the data (analytics assistant)
 
 Council administrators ask questions about their council's data in their own words,
-in the **Indicators** tab («Pregunta aos datos»), and superadministrators about every
-council in **Platform → Analytics**: «which facility had the most cancellations last
-month?», «which hours are booked most on Saturdays?». A language model writes SQL,
+and superadministrators about every council: «which facility had the most cancellations
+last month?», «which hours are booked most on Saturdays?». While it is switched on, they
+see a «Fala cos datos» bubble in the bottom right corner of every page, which opens the
+conversation (`/datos`; from a council's administration, on that council's data). A language model writes SQL,
 LibreQuenda runs it read-only and the model answers; every query it ran shows under
 the answer with what it returned, so each figure can be checked.
 

@@ -110,12 +110,13 @@ function AISettingsForm({ saved, token, onSaved }: { saved: AISettings; token: s
           type="password"
           autoComplete="off"
           maxLength={500}
-          placeholder={saved.has_key ? t('aiSettings.apiKeyKept') : ''}
+          placeholder={saved.has_key ? '••••••••••••••••' : ''}
           value={form.api_key}
           onChange={(e) => set('api_key', e.target.value)}
           aria-describedby="ai-key-help"
         />
         <p id="ai-key-help" className="text-xs text-muted-foreground">
+          {saved.has_key && `${t('aiSettings.apiKeyKept')} `}
           {t('aiSettings.apiKeyHelp')}
         </p>
       </div>

@@ -7,8 +7,7 @@
     "superadmins": "Superadministradores",
     "tags": "Etiquetas",
     "branding": "Personalizar a aplicación",
-    "audit": "Rexistro",
-    "analytics": "Analítica"
+    "audit": "Rexistro"
   },
   "guard": {
     "signIn": "Inicia sesión para entrar na administración.",
@@ -1057,8 +1056,8 @@
     "back": "Volver"
   },
   "analytics": {
-    "title": "Pregunta aos datos",
-    "help": "Un asistente de IA consulta os datos de {{scope}} (só lectura, sen datos persoais) e responde. Debaixo ves cada consulta que fixo e o que devolveu.",
+    "title": "Fala cos datos",
+    "help": "Un asistente de IA consulta os datos de {{scope}} (só lectura, sen datos persoais) e responde. En cada resposta ves as consultas que fixo e o que devolveron.",
     "question": "A túa pregunta",
     "placeholder": "Ex.: que instalación tivo máis cancelacións o mes pasado? Que horas se reservan máis os sábados?",
     "ask": "Preguntar",
@@ -1066,7 +1065,15 @@
     "queries_one": "{{count}} consulta",
     "queries_other": "{{count}} consultas",
     "moreRows": "Amósanse as primeiras {{shown}} filas.",
-    "everyCouncil": "todos os concellos"
+    "everyCouncil": "todos os concellos",
+    "bubble": "Fala cos datos",
+    "scope": "Datos de",
+    "back": "Volver",
+    "empty": "Pregunta o que queiras saber: reservas, ocupación, cancelacións, incidencias…",
+    "you": "Ti",
+    "assistant": "Asistente",
+    "clear": "Nova conversa",
+    "off": "O asistente de datos non está activado ou non tes permiso para usalo."
   },
   "aiSettings": {
     "title": "Asistente de datos (IA)",
@@ -1080,7 +1087,7 @@
     "baseUrlHelp": "Por exemplo https://api.openai.com/v1, ou un servidor propio como http://ollama:11434/v1.",
     "model": "Modelo",
     "apiKey": "Chave da API",
-    "apiKeyKept": "Gardada: déixaa baleira para mantela",
+    "apiKeyKept": "Hai unha gardada: escribe outra só para cambiala.",
     "apiKeyHelp": "Gárdase cifrada e non se volve amosar. Un modelo local pode non precisala.",
     "privacy": "Os resultados das consultas (agregados, sen nomes, correos nin textos libres) envíanse a este modelo. Cun provedor externo saen da instalación; un modelo propio mantenos nela.",
     "save": "Gardar",

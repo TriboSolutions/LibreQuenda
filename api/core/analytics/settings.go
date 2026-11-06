@@ -94,6 +94,12 @@ type llm struct {
 	provider, baseURL, model, key string
 }
 
+// Enabled: the assistant is on and has a model (what decides whether the web offers it).
+func Enabled(ctx context.Context, db *sql.DB) bool {
+	var row, err = model.New(db).GetAISettings(ctx)
+	return err == nil && row.Enabled && row.BaseUrl != "" && row.Model != ""
+}
+
 var ErrNotConfigured = errors.New("the analytics assistant is off: a superadministrator sets its language model in the platform settings")
 
 func loadLLM(ctx context.Context, db *sql.DB) (*llm, error) {

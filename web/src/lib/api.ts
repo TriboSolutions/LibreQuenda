@@ -677,6 +677,7 @@ export type Me = {
   full_name: string
   is_superadmin: boolean
   roles: { tenant_id: string; tenant_slug: string; tenant_name: string; role: 'admin' }[]
+  analytics_enabled?: boolean // the data assistant is on and they can use it
   // profile kept by LibreQuenda; name and email belong to Zitadel
   birth_date: string // YYYY-MM-DD, "" until filled in
   phone: string

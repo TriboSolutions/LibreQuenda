@@ -6280,6 +6280,9 @@ components:
           type: string
         is_superadmin:
           type: boolean
+        analytics_enabled:
+          type: boolean
+          description: The data assistant is switched on and this person can use it (a superadministrator or a council's administrator).
         roles:
           type: array
           items:

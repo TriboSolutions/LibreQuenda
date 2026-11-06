@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import { Link } from 'react-router'
 import { AuditLogPanel } from '@/components/admin/AuditLogPanel'
-import { AnalyticsAssistant } from '@/components/admin/AnalyticsAssistant'
 import { BrandingPanel } from '@/components/admin/BrandingPanel'
 import { CouncilsPanel } from '@/components/admin/CouncilsPanel'
 import { SuperadminsPanel } from '@/components/admin/SuperadminsPanel'
@@ -61,7 +60,6 @@ export function PlatformAdmin() {
             <TabsTrigger value="superadmins">{t('admin:tabs.superadmins')}</TabsTrigger>
             <TabsTrigger value="tags">{t('admin:tabs.tags')}</TabsTrigger>
             <TabsTrigger value="branding">{t('admin:tabs.branding')}</TabsTrigger>
-            <TabsTrigger value="analytics">{t('admin:tabs.analytics')}</TabsTrigger>
             <TabsTrigger value="audit">{t('admin:tabs.audit')}</TabsTrigger>
           </TabsList>
           {/* the platform's own settings, like the gear of a council's administration */}
@@ -82,9 +80,6 @@ export function PlatformAdmin() {
         </TabsContent>
         <TabsContent value="branding">
           <BrandingPanel />
-        </TabsContent>
-        <TabsContent value="analytics">
-          <AnalyticsAssistant ask={(question) => api.admin.askAnalytics(auth.user?.access_token ?? '', question)} scope={t('admin:analytics.everyCouncil')} />
         </TabsContent>
         <TabsContent value="audit">
           <PlatformAudit />

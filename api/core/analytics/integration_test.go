@@ -83,7 +83,7 @@ func TestIntegration(t *testing.T) {
 		"SELECT count(*) FROM tenant_smtp",                                             // secrets
 		"WITH gone AS (DELETE FROM booking RETURNING 1) SELECT count(*) FROM gone",     // writing
 		"SELECT 1) AS a; SELECT count(*) FROM public.booking; SELECT * FROM (SELECT 1", // a second statement
-		"SELECT pg_sleep(30)", // the time limit
+		"SELECT pg_sleep(30)",                                                          // the time limit
 	} {
 		if _, err := Run(ctx, Scope{Councils: []uuid.UUID{lalin}}, query); err == nil {
 			t.Errorf("ran: %s", query)
