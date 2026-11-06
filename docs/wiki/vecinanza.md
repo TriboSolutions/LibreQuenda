@@ -1,6 +1,6 @@
 # 🏃 Veciñanza
 
-O que pode facer calquera persoa desde a app Android (e tamén desde a web): atopar unha instalación libre, reservala, entrar sen chaves e contar como foi.
+O que pode facer calquera persoa desde a app Android ou desde a web, unha interface alternativa coas mesmas funcións: atopar unha instalación libre, reservala, entrar sen chaves e contar como foi.
 
 [← Volver á wiki](README.md) · [Concello](concello.md) · [Superadministración](superadmin.md)
 
@@ -26,6 +26,12 @@ Todas as instalacións de todos os concellos nun só sitio: en lista ou no mapa,
 |:-:|:-:|:-:|:-:|
 | <img src="../screenshots/android/vecino/facilities/home.webp" width="200"> | <img src="../screenshots/android/vecino/facilities/facilities-list.webp" width="200"> | <img src="../screenshots/android/vecino/facilities/facilities-map.webp" width="200"> | <img src="../screenshots/android/vecino/facilities/facility-detail.webp" width="200"> |
 
+**Na web.** A mesma función na interface web, unha alternativa á app desde calquera navegador.
+
+| Inicio: «Para ti», filtros, lista e mapa | Páxina do concello: dispoñibilidade do día |
+|:-:|:-:|
+| <img src="../screenshots/web/vecino/facilities/01-home.webp" width="420"> | <img src="../screenshots/web/vecino/facilities/03-council-page.webp" width="420"> |
+
 ## Reserva en liña
 
 Reserva dunha quenda libre aceptando as normas, cun correo verificado e comprobando todas as regras do concello; nunca se solapan dúas reservas. A reserva pode compartirse cunha ligazón de invitación, tamén con convidados sen conta, ou facerse pública para que outras persoas se unan desde «Para ti».
@@ -33,6 +39,12 @@ Reserva dunha quenda libre aceptando as normas, cun correo verificado e comproba
 | Aceptar as normas e facela pública | Reserva feita | Ligazón de invitación |
 |:-:|:-:|:-:|
 | <img src="../screenshots/android/vecino/booking/01-checkout-rules.webp" width="230"> | <img src="../screenshots/android/vecino/booking/02-booking-public.webp" width="230"> | <img src="../screenshots/android/vecino/booking/03-invite-link.webp" width="230"> |
+
+**Na web.**
+
+| Ficha da instalación, cos turnos | Reservar, coas normas |
+|:-:|:-:|
+| <img src="../screenshots/web/vecino/facilities/04-facility-page.webp" width="420"> | <img src="../screenshots/web/vecino/weather/04-booking-dialog-forecast.webp" width="420"> |
 
 **Partidas públicas.** Desde «Únete» vense as reservas públicas próximas con prazas libres.
 
@@ -52,7 +64,13 @@ Reserva dunha quenda libre aceptando as normas, cun correo verificado e comproba
 |:-:|:-:|
 | <img src="../screenshots/android/vecino/booking/08-council-event.webp" width="230"> | <img src="../screenshots/android/vecino/booking/09-event-joined.webp" width="230"> |
 
-**Só para veciños.** Nas instalacións «Só para veciños», quen aínda non está verificado solicita desde a propia app a verificación do seu empadroamento. O concello contrástaa co padrón ([ver o lado do concello](concello.md#veciñanza-empadroada)).
+Na web, os eventos aparecen na páxina da instalación, xunto aos seus turnos:
+
+<p align="center"><img src="../screenshots/web/vecino/events/01-facility-with-event.webp" width="520" alt="Instalación cun evento na web"></p>
+
+**Só para veciños.** Nas instalacións «Só para veciños», quen aínda non está verificado solicita desde a propia app a verificación do seu empadroamento. O concello contrástaa co padrón ([ver o lado do concello](concello.md#veciñanza-empadroada)). Na web, a instalación leva a mesma marca:
+
+<p align="center"><img src="../screenshots/web/vecino/residents-only/01-residents-only-facility.webp" width="620" alt="Instalación só para veciños na web"></p>
 
 | Instalación só para veciños | A solicitude | Enviada | Xa verificada: pode reservar |
 |:-:|:-:|:-:|:-:|
@@ -76,6 +94,12 @@ As próximas reservas, as que te convidaron e o historial coa asistencia. Unha r
 | **Cambiar a hora** | **Cambiada** | **Calendario (.ics)** |
 | <img src="../screenshots/android/vecino/my-bookings/04-change-turn.webp" width="230"> | <img src="../screenshots/android/vecino/my-bookings/05-changed.webp" width="230"> | <img src="../screenshots/android/vecino/my-bookings/06-calendar-feed.webp" width="230"> |
 
+**Na web.**
+
+| As miñas reservas e o historial |
+|:-:|
+| <img src="../screenshots/web/vecino/my-bookings/01-my-bookings.webp" width="840"> |
+
 ## Entrada na instalación
 
 Segundo o que admita cada instalación, éntrase co QR da reserva ou o QR persoal nun lector (calquera móbil ou tableta), co QR impreso na porta, co código de entrada, cunha etiqueta NFC ou coa confirmación do persoal. O QR impreso e o código comproban a localización do móbil sen gardala, e ningún QR leva datos persoais.
@@ -89,6 +113,12 @@ Segundo o que admita cada instalación, éntrase co QR da reserva ou o QR persoa
 O **lector** é unha páxina web (`/lector`) que funciona en calquera móbil ou tableta con cámara na porta:
 
 <p align="center"><img src="../screenshots/android/vecino/entrance/10-reader-device.webp" width="230" alt="Lector QR nunha tableta"></p>
+
+**Na web.**
+
+| Rexistrar a entrada desde a reserva | Páxina da porta (QR impreso, código, NFC) |
+|:-:|:-:|
+| <img src="../screenshots/web/vecino/entrance/01-checkin-dialog.webp" width="420"> | <img src="../screenshots/web/vecino/entrance/02-entrance-page.webp" width="420"> |
 
 ## Reserva flash
 
@@ -118,6 +148,12 @@ Ao rematar cada reserva, valoración anónima da instalación de 1 a 5 estrelas 
 |:-:|:-:|
 | <img src="../screenshots/android/vecino/participation/05-notices-issue-solved.webp" width="230"> | <img src="../screenshots/android/vecino/participation/06-system-notifications.webp" width="230"> |
 
+**Na web.**
+
+| Valorar | Avisar dun problema | Avisos |
+|:-:|:-:|:-:|
+| <img src="../screenshots/web/vecino/participation/01-rate.webp" width="280"> | <img src="../screenshots/web/vecino/participation/02-report-issue.webp" width="280"> | <img src="../screenshots/web/vecino/participation/03-notices.webp" width="280"> |
+
 ## Predición meteorolóxica
 
 Datos abertos de MeteoGalicia nas instalacións exteriores, con avisos de chuvia, tormenta, neve, vento, calor ou xeada. Amósase na páxina web da instalación e ao reservar.
@@ -141,3 +177,10 @@ Rexistro con contrasinal, Google ou claves de acceso, perfil e preferencias, des
 | En inglés | Tema claro |
 |:-:|:-:|
 | <img src="../screenshots/android/vecino/account/08-home-english.webp" width="230"> | <img src="../screenshots/android/vecino/account/09-home-light-theme.webp" width="230"> |
+
+**Na web.**
+
+| Perfil e preferencias | Tema escuro |
+|:-:|:-:|
+| <img src="../screenshots/web/vecino/account/01-profile.webp" width="420"> | <img src="../screenshots/web/vecino/account/02-home-dark.webp" width="420"> |
+
