@@ -683,15 +683,11 @@ func (h *counciladminHandler) RemoveResident(w http.ResponseWriter, r *http.Requ
 	send(w, r, nil, GetCounciladminService(h.db).RemoveResident(r.Context(), tenantId, userId))
 }
 
-// AskAnalytics: a council administrator's question, about that council only.
+// AskAnalytics: a question about this council only, from its administrators or a
+// superadministrator inside it (analytics are always one council's, never all of them).
 func (h *counciladminHandler) AskAnalytics(w http.ResponseWriter, r *http.Request) {
 	var tenantId, userId, ok = h.councilAdminUser(w, r)
 	if !ok {
-		return
-	}
-	// its own administrators only: a superadministrator manages the platform, it does not analyse a council's data
-	if admin, err := model.New(h.db).IsTenantAdmin(r.Context(), model.IsTenantAdminParams{UserID: userId, TenantID: tenantId}); err != nil || !admin {
-		helpers.SendI18NErrorResponse(w, r, http.StatusForbidden, "errors.forbidden")
 		return
 	}
 	var input analytics.AskInput

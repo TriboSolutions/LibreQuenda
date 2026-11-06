@@ -9,15 +9,16 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useAsync } from '@/hooks/useAsync'
 import { useLogin } from '@/hooks/useLogin'
 import { useMe } from '@/hooks/useMe'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { api } from '@/lib/api'
 
 /**
- * /datos: «talk to the data», only by council, for its administrators (one of the
- * councils they run: ?concello=<slug>). The bubble links here from any page while
- * the assistant is on.
+ * /datos: «talk to the data», always one council's (?concello=<slug>): one of the
+ * councils they run, or any council for a superadministrator. The bubble links here
+ * while the assistant is on.
  */
 export function DataAssistantPage() {
   const { t } = useTranslation(['admin', 'common'])
@@ -30,15 +31,18 @@ export function DataAssistantPage() {
   usePageTitle(t('admin:analytics.title'))
   const token = auth.user?.access_token ?? ''
 
-  // whose data: one of the councils they run (superadministrators manage the platform, they do not analyse it)
-  const councils = me?.roles.filter((r) => r.role === 'admin') ?? []
+  // whose data: one council, of those they run (any one for a superadministrator)
+  const every = useAsync(me?.is_superadmin && me.analytics_enabled ? () => api.admin.councils(token) : null, 'admin:councils')
+  const councils = me?.is_superadmin
+    ? (every.data?.tenants ?? []).map((c) => ({ tenant_slug: c.slug, tenant_name: c.name }))
+    : (me?.roles.filter((r) => r.role === 'admin') ?? [])
   const wanted = params.get('concello')
   const scope = wanted && councils.some((c) => c.tenant_slug === wanted) ? wanted : (councils[0]?.tenant_slug ?? '')
   const scopeName = councils.find((c) => c.tenant_slug === scope)?.tenant_name ?? scope
   const options = councils.map((c) => ({ value: c.tenant_slug, label: c.tenant_name }))
 
   let body
-  if (auth.isLoading || (auth.isAuthenticated && (loading || !me))) {
+  if (auth.isLoading || (auth.isAuthenticated && (loading || !me || (me.is_superadmin && me.analytics_enabled && !every.data && !every.error)))) {
     body = <Skeleton className="mt-6 h-40 w-full" />
   } else if (!auth.isAuthenticated) {
     body = (

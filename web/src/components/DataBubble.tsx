@@ -9,8 +9,8 @@ const HIDDEN = ['/datos', '/callback', '/lector', '/:slug/widget', '/:slug/widge
 
 /**
  * «Talk to the data», floating in the bottom right corner on every page for the
- * councils' administrators (the analytics are only by council) while a superadministrator
- * has the assistant switched on. In a council's administration it
+ * councils' administrators while a superadministrator has the assistant switched on;
+ * superadministrators see it inside a council (analytics are always one council's). In a council's administration it
  * opens on that council's data.
  */
 export function DataBubble() {
@@ -20,7 +20,9 @@ export function DataBubble() {
   if (!me?.analytics_enabled || HIDDEN.some((path) => matchPath(path, pathname))) return null
 
   const slug = matchPath('/:slug/admin/*', pathname)?.params.slug
-  const runs = slug && me.roles.some((r) => r.tenant_slug === slug && r.role === 'admin')
+  const runs = slug && (me.is_superadmin || me.roles.some((r) => r.tenant_slug === slug && r.role === 'admin'))
+  // a superadministrator who runs no council of their own: only inside a council
+  if (!runs && !me.roles.some((r) => r.role === 'admin')) return null
   return (
     <Link
       to={runs ? `/datos?concello=${encodeURIComponent(slug)}` : '/datos'}

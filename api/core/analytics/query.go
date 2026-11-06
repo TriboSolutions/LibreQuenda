@@ -21,8 +21,8 @@ import (
 	"github.com/google/uuid"
 )
 
-// Scope: which councils a query sees: the ones the person administers (analytics are
-// only by council; superadministrators manage the platform, they do not analyse it).
+// Scope: which councils a query sees (analytics are by council: a superadministrator
+// asks inside one council, never about all of them at once).
 type Scope struct {
 	Councils []uuid.UUID
 }

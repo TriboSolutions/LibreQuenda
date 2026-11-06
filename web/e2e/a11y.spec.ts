@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, type Page, test } from '@playwright/test'
 import QRCode from 'qrcode'
-import { defaultBranding, mockApp, ME_COUNCIL_ADMIN, ME_UNVERIFIED, staffBooking, staffDay, type MockOptions } from './mocks'
+import { defaultBranding, mockApp, ME_COUNCIL_ADMIN, ME_SUPERADMIN_ONLY, ME_UNVERIFIED, staffBooking, staffDay, type MockOptions } from './mocks'
 
 // Every automatable WCAG 2.1 A and AA rule, plus axe's AAA rules (7:1 contrast and the like).
 const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag2aaa', 'best-practice']
@@ -1131,6 +1131,19 @@ test.describe('keyboard', () => {
     await expect(page).toHaveURL(/\/datos\?concello=lugo$/)
     await expect(page.getByRole('heading', { level: 1, name: 'Fala cos datos' })).toBeVisible()
     await expect(page.getByRole('link', { name: 'Fala cos datos' })).toHaveCount(0) // not on its own page
+  })
+
+  test('a superadministrator talks to the data only inside a council', async ({ page }) => {
+    await open(page, '/')
+    await page.route('**/api/me', (route) => route.fulfill({ json: { ...ME_SUPERADMIN_ONLY, analytics_enabled: true } }))
+    await page.route('**/api/admin/tenants', (route) => route.fulfill({ json: { tenants: [{ slug: 'lugo', name: 'Concello de Lugo' }, { slug: 'lalin', name: 'Concello de Lalín' }] } }))
+    await page.reload()
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Fala cos datos' })).toHaveCount(0) // about no council
+    await page.goto('/lugo/admin')
+    await page.getByRole('link', { name: 'Fala cos datos' }).click()
+    await expect(page).toHaveURL(/\/datos\?concello=lugo$/)
+    await expect(page.getByRole('combobox', { name: 'Datos de' })).toHaveText('Concello de Lugo')
   })
 
   test('a council talks to its data, and sees each answer with the queries it ran', async ({ page }) => {

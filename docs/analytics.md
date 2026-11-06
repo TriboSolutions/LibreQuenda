@@ -2,9 +2,9 @@
 
 Council administrators ask questions about their council's data in their own words:
 «which facility had the most cancellations
-last month?», «which hours are booked most on Saturdays?». Analytics are only by council:
-superadministrators manage the platform (they set the model), they do not analyse its
-data. While it is switched on, council administrators
+last month?», «which hours are booked most on Saturdays?». Analytics are always by council:
+a superadministrator, who sets the model, asks inside one council, never about all of
+them at once. While it is switched on, council administrators
 see a «Fala cos datos» bubble in the bottom right corner of every page, which opens the
 conversation (`/datos`; from a council's administration, on that council's data). A language model writes SQL,
 LibreQuenda runs it read-only and the model answers; every query it ran shows under
