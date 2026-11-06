@@ -81,17 +81,30 @@ WHERE
 ORDER BY
     created_at DESC;
 
--- name: CancelUpcomingBookingsOfUser :execrows
--- Account erasure: the slots the user still held go back to everyone else.
-UPDATE booking
+-- name: CancelUpcomingBookingsOfUser :many
+-- Account erasure: the slots the user still held go back to everyone else (and
+-- whoever had joined them is told, with where and when).
+UPDATE booking b
 SET
     status       = 'cancelled',
     cancelled_at = NOW(),
     cancelled_by = 'user'
+FROM
+    facility f
+    JOIN tenant t ON t.id = f.tenant_id
 WHERE
-    user_id = sqlc.arg('user_id')
-    AND status = 'confirmed'
-    AND starts_at > NOW();
+    b.facility_id = f.id
+    AND b.user_id = sqlc.arg('user_id')
+    AND b.status = 'confirmed'
+    AND b.starts_at > NOW()
+RETURNING
+    b.id,
+    b.facility_id,
+    f.name AS facility_name,
+    t.slug AS tenant_slug,
+    t.name AS tenant_name,
+    b.starts_at,
+    b.ends_at;
 
 -- name: RevokeInviteLinksOfUser :exec
 -- Account erasure: links to the user's bookings stop working.

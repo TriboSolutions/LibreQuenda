@@ -263,13 +263,19 @@
     },
     "booking_cancelled": {
       "subject": "Booking cancelled: {{0}}, {{1}} at {{2}}",
-      "intro": "Your booking at {{0}} ({{1}}) on {{2}}, from {{3}} to {{4}}, has been cancelled."
+      "intro": "Your booking at {{0}} ({{1}}) on {{2}}, from {{3}} to {{4}}, has been cancelled.",
+      "intro_owner": "{{5}} cancelled the public booking you had joined at {{0}} ({{1}}) on {{2}}, from {{3}} to {{4}}. You can look for another game or book a free turn whenever you like.",
+      "intro_account_deleted": "The booking you had joined at {{0}} ({{1}}) on {{2}}, from {{3}} to {{4}}, was cancelled: whoever made it deleted their account. You can look for another game or book a free turn whenever you like."
     },
     "booking_cancelled_by_council": {
       "subject": "We’re sorry: your booking at {{0}} was cancelled",
       "intro": "We’re sorry. {{1}} has closed {{0}}, so your booking on {{2}}, from {{3}} to {{4}}, has been cancelled. You can book another free slot whenever you like.",
       "intro_closure": "We’re sorry. {{0}} ({{1}}) is closed from {{5}} to {{6}}, so your booking on {{2}}, from {{3}} to {{4}}, has been cancelled. You can book another free slot whenever you like.",
-      "intro_staff": "We’re sorry. {{1}} has cancelled your booking at {{0}} on {{2}}, from {{3}} to {{4}}. You can book another free slot whenever you like."
+      "intro_staff": "We’re sorry. {{1}} has cancelled your booking at {{0}} on {{2}}, from {{3}} to {{4}}. You can book another free slot whenever you like.",
+      "subject_event": "The event «{{0}}» on {{1}} at {{2}} was cancelled",
+      "intro_event": "We are sorry. {{1}} cancelled the event «{{5}}» at {{0}} on {{2}}, from {{3}} to {{4}}, that you had signed up for.",
+      "intro_resident_revoked": "{{1}} took back your verification as a resident, so your booking at {{0}}, for residents only, on {{2}}, from {{3}} to {{4}}, was cancelled.",
+      "intro_resident_revoked_left": "{{1}} took back your verification as a resident, so you are no longer in the game at {{0}}, for residents only, on {{2}}, from {{3}} to {{4}}."
     },
     "reason": "Reason: {{0}}",
     "council_admin": {

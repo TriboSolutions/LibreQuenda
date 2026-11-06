@@ -250,3 +250,51 @@ func TestEmailHeaderShowsTheInstallationLogo(t *testing.T) {
 		t.Errorf("booking with QR and logo: %d images, %v", len(withQR.Inline), err)
 	}
 }
+
+// Every cancellation says what was cancelled, where (facility, council and address)
+// and when, and why, in each language.
+func TestCancellationEmailsSayWhatWhereWhenAndWhy(t *testing.T) {
+	helpers.GetI18nInstance(helpers.SetDefaultLocale("gl"), helpers.SetDirectory("../i18n"))
+	var now = time.Date(2026, 11, 2, 10, 0, 0, 0, time.UTC)
+	var row = model.ListPendingEmailsRow{
+		Status: model.BookingStatusCancelled, StartsAt: now.Add(48 * time.Hour), EndsAt: now.Add(49 * time.Hour),
+		FacilityName: "Pista de tenis", TenantName: "Concello de Lalín", Timezone: "Europe/Madrid", Email: "a@example.com", EmailNotifications: true,
+	}
+	row.FacilityAddress.String, row.FacilityAddress.Valid = "Rúa do Parque 3, Lalín", true
+	var cases = []struct {
+		kind    model.NotificationType
+		payload string
+		want    string // in English
+	}{
+		{model.NotificationTypeBookingCancelled, `{}`, "Your booking at Pista de tenis"},
+		{model.NotificationTypeBookingCancelled, `{"cause":"owner","name":"Uxía"}`, "Uxía cancelled the public booking you had joined"},
+		{model.NotificationTypeBookingCancelled, `{"cause":"account_deleted"}`, "whoever made it deleted their account"},
+		{model.NotificationTypeBookingCancelledByCouncil, `{"by_staff":true}`, "Concello de Lalín has cancelled your booking"},
+		{model.NotificationTypeBookingCancelledByCouncil, `{"by_staff":true,"title":"Torneo de pádel"}`, "cancelled the event «Torneo de pádel»"},
+		{model.NotificationTypeBookingCancelledByCouncil, `{"cause":"resident_revoked"}`, "took back your verification as a resident, so your booking"},
+		{model.NotificationTypeBookingCancelledByCouncil, `{"cause":"resident_revoked_left"}`, "you are no longer in the game"},
+		{model.NotificationTypeBookingCancelledByCouncil, `{"closed_from":"2026-11-03T00:00:00+01:00","closed_until":"2026-11-05T23:59:00+01:00"}`, "is closed from 03/11/2026"},
+	}
+	for _, c := range cases {
+		row.Type, row.Payload = c.kind, []byte(c.payload)
+		for _, language := range []string{"gl", "es", "ca", "en"} {
+			row.PreferredLanguage.String, row.PreferredLanguage.Valid = language, true
+			var message, err = notificationEmail(row, branding.Email{Name: "Reservas Lalín"}, now)
+			if err != nil {
+				t.Fatalf("%s %s: %v", c.payload, language, err)
+			}
+			var text = message.Subject + "\n" + message.Text
+			if strings.Contains(text, "email.") || strings.Contains(text, "{{") {
+				t.Errorf("%s %s: missing translation:\n%s", c.payload, language, text)
+			}
+			for _, part := range []string{"Pista de tenis", "04/11/2026", "11:00", "12:00", "Rúa do Parque 3, Lalín"} {
+				if !strings.Contains(message.Text, part) {
+					t.Errorf("%s %s: no %q in:\n%s", c.payload, language, part, message.Text)
+				}
+			}
+			if language == "en" && !strings.Contains(message.Text, c.want) {
+				t.Errorf("%s: want %q in:\n%s", c.payload, c.want, message.Text)
+			}
+		}
+	}
+}

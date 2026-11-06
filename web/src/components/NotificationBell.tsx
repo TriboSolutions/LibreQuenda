@@ -1,3 +1,4 @@
+import { noticeKey } from '@/lib/notices'
 import { AlarmClock, BadgeCheck, Bell, CalendarCheck, CalendarClock, CalendarX, House, ShieldCheck, Star, UserPlus, Wrench } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -115,7 +116,7 @@ function NotificationItem({ notification: n, today, highlighted, onSelect }: Ite
       <Icon aria-hidden className={`mt-0.5 shrink-0 ${sorry ? 'text-destructive' : 'text-muted-foreground'}`} />
       <span className="min-w-0 whitespace-normal">
         <span className={`block text-sm ${highlighted ? 'font-medium' : ''}`}>
-          {t(n.closed_from && n.closed_until ? 'type.booking_cancelled_by_closure' : n.by_staff ? 'type.booking_cancelled_by_staff' : n.type === 'rating_requested' && n.is_public ? 'type.rating_requested_public' : `type.${n.type}`, {
+          {t(noticeKey(n), {
             name: n.name || t('someone'),
             facility: n.facility_name,
             day: n.starts_at ? formatBookingDay(n.starts_at, TIME_ZONE, today) : '',
@@ -123,6 +124,7 @@ function NotificationItem({ notification: n, today, highlighted, onSelect }: Ite
             from: n.closed_from ? formatDateTime(n.closed_from, TIME_ZONE) : '',
             until: n.closed_until ? formatDateTime(n.closed_until, TIME_ZONE) : '',
             council: n.tenant_name,
+            title: n.title,
           })}
         </span>
         {n.reason && (

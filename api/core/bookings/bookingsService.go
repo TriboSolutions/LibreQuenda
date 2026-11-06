@@ -7,6 +7,7 @@ import (
 	"errors"
 	"github.com/angelbarreiros/Penguin/router/helpers"
 	"librequenda/core/checkin"
+	"librequenda/core/notice"
 	"librequenda/model"
 	"librequenda/schedule"
 	"librequenda/shared"
@@ -609,8 +610,15 @@ func (s *bookingsService) CancelBooking(ctx context.Context, userId uuid.UUID, b
 		facilityName = facility.Name
 	}
 	s.notify(ctx, queries, userId, cancelled.ID, model.NotificationTypeBookingCancelled, facilityName, cancelled.StartsAt, cancelled.EndsAt)
-	// who joined loses the place too: they are told the same
-	s.notifyParticipants(ctx, queries, cancelled.ID, model.NotificationTypeBookingCancelled, NotificationPayload(facilityName, cancelled.StartsAt, cancelled.EndsAt))
+	// who joined loses the place too: they are told that its owner cancelled it, and who (first name)
+	var ownerName, _ = queries.GetUserFullName(ctx, userId)
+	var payload = notice.Payload(
+		notice.Cancelled{FacilityID: cancelled.FacilityID, FacilityName: facilityName, StartsAt: cancelled.StartsAt, EndsAt: cancelled.EndsAt},
+		map[string]any{"cause": notice.CauseOwner, "name": notice.FirstName(ownerName)},
+	)
+	if err = notice.TellParticipants(ctx, queries, cancelled.ID, model.NotificationTypeBookingCancelled, payload); err != nil {
+		shared.Logger.Error("failed to tell who joined booking %s it was cancelled: %v", cancelled.ID, err)
+	}
 	return nil
 }
 

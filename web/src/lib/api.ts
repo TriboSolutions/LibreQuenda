@@ -559,6 +559,8 @@ export type AppNotification = {
   closed_from: string | null // council cancellations caused by a closure
   closed_until: string | null
   by_staff: boolean // a council cancellation of this one booking, by staff
+  cause: '' | 'owner' | 'account_deleted' | 'resident_revoked' | 'resident_revoked_left' // why it was cancelled, beyond the type
+  title: string // the event's name, when the booking was one
   tenant_name: string // council_admin_granted
   tenant_slug: string
   created_at: string

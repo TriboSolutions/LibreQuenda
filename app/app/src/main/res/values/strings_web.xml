@@ -302,6 +302,11 @@
     <string name="notif_booking_cancelled_by_closure">Sentímolo: %1$s está pechada do %6$s ao %7$s, así que a túa reserva do %2$s ás %3$s foi cancelada.</string>
     <string name="notif_booking_cancelled_by_staff">Sentímolo: %4$s cancelou a túa reserva en %1$s o %2$s ás %3$s.</string>
     <string name="notif_council_admin_granted">Xa es administrador ou administradora de %4$s. Abre a súa administración desde aquí ou desde o menú da túa conta.</string>
+    <string name="notif_booking_cancelled_by_owner">%5$s cancelou a reserva pública á que te uniras en %1$s, %2$s ás %3$s.</string>
+    <string name="notif_booking_cancelled_account_deleted">Cancelouse a reserva á que te uniras en %1$s, %2$s ás %3$s: quen a fixo borrou a súa conta.</string>
+    <string name="notif_event_cancelled">Sentímolo: %4$s cancelou o evento «%8$s» en %1$s, %2$s ás %3$s.</string>
+    <string name="notif_booking_cancelled_resident_revoked">%4$s retirou a túa verificación como veciño: cancelouse a túa reserva en %1$s, %2$s ás %3$s.</string>
+    <string name="notif_booking_left_resident_revoked">%4$s retirou a túa verificación como veciño: xa non estás na partida en %1$s, %2$s ás %3$s.</string>
     <string name="notif_issue_solved">Arranxado o problema que avisaches en %1$s.</string>
     <string name="notif_issue_rejected">O concello revisou o problema que avisaches en %1$s e non o vai tramitar.</string>
     <string name="notif_booking_joined">%5$s uniuse á túa reserva en %1$s, %2$s ás %3$s.</string>

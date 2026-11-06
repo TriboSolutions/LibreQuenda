@@ -23,6 +23,8 @@ type NotificationDto struct {
 	ClosedFrom   *time.Time `json:"closed_from"` // council cancellations caused by a closure
 	ClosedUntil  *time.Time `json:"closed_until"`
 	ByStaff      bool       `json:"by_staff"`    // council cancellation of one booking by staff
+	Cause        string     `json:"cause"`       // why it was cancelled, beyond the type (notice.Cause*); "" otherwise
+	Title        string     `json:"title"`       // the event's name, when the booking was one
 	TenantName   string     `json:"tenant_name"` // council_admin_granted
 	TenantSlug   string     `json:"tenant_slug"`
 	CreatedAt    time.Time  `json:"created_at"`
@@ -50,6 +52,8 @@ type payload struct {
 	TenantName   string     `json:"tenant_name"`
 	TenantSlug   string     `json:"tenant_slug"`
 	IsPublic     bool       `json:"is_public"`
+	Cause        string     `json:"cause"`
+	Title        string     `json:"title"`
 }
 
 func MapNotifications(rows []model.ListNotificationsByUserRow, unread int64) *NotificationsResponse {
@@ -71,6 +75,8 @@ func MapNotifications(rows []model.ListNotificationsByUserRow, unread int64) *No
 			ClosedFrom:   data.ClosedFrom,
 			ClosedUntil:  data.ClosedUntil,
 			ByStaff:      data.ByStaff,
+			Cause:        data.Cause,
+			Title:        data.Title,
 			TenantName:   data.TenantName,
 			TenantSlug:   data.TenantSlug,
 			CreatedAt:    row.CreatedAt,

@@ -9,6 +9,7 @@ import (
 	"html/template"
 	"librequenda/branding"
 	"librequenda/core/checkin"
+	"librequenda/core/notice"
 	"librequenda/mailer"
 	"librequenda/model"
 	"librequenda/shared"
@@ -251,6 +252,33 @@ type councilCancellation struct {
 	ClosedFrom  *time.Time `json:"closed_from"`
 	ClosedUntil *time.Time `json:"closed_until"`
 	ByStaff     bool       `json:"by_staff"`
+	Cause       string     `json:"cause"` // notice.Cause*: why, beyond the type
+	Title       string     `json:"title"` // the event's name, when it was one
+	Name        string     `json:"name"`  // cause owner: the owner's first name
+}
+
+// cancellationVariant: which wording of a cancellation fits, as the web and the app
+// pick it (NotificationBell, Notifier.describe); "" is the type's own.
+func cancellationVariant(kind model.NotificationType, why councilCancellation) string {
+	switch {
+	case kind == model.NotificationTypeBookingCancelled && why.Cause == notice.CauseOwner:
+		return "owner"
+	case kind == model.NotificationTypeBookingCancelled && why.Cause == notice.CauseAccountDeleted:
+		return "account_deleted"
+	case kind != model.NotificationTypeBookingCancelledByCouncil:
+		return ""
+	case why.ClosedFrom != nil && why.ClosedUntil != nil:
+		return "closure"
+	case why.Cause == notice.CauseResidentRevoked:
+		return "resident_revoked"
+	case why.Cause == notice.CauseResidentRevokedLeft:
+		return "resident_revoked_left"
+	case why.Title != "":
+		return "event"
+	case why.ByStaff:
+		return "staff"
+	}
+	return ""
 }
 
 var emailTemplate = template.Must(template.New("notification").Parse(`<!doctype html>
@@ -298,20 +326,37 @@ func notificationEmail(row model.ListPendingEmailsRow, brand branding.Email, now
 	if row.Type == model.NotificationTypeBookingReminder {
 		view.Footer = t("footer_reminders", shared.PUBLIC_URL+"/perfil")
 	}
-	if row.Type == model.NotificationTypeBookingCancelledByCouncil {
+	var subject = t(kind+".subject", row.FacilityName, date, start)
+	var cancellation = row.Type == model.NotificationTypeBookingCancelled || row.Type == model.NotificationTypeBookingCancelledByCouncil
+	if cancellation {
+		// what was cancelled, where and when, and why: each cause says it its own way
 		var why councilCancellation
-		_ = json.Unmarshal(row.Payload, &why) // older notices carry no reason: the plain text is still right
-		if why.ByStaff {
-			view.Intro = t(kind+".intro_staff", row.FacilityName, row.TenantName, date, start, end)
-		}
-		if why.ClosedFrom != nil && why.ClosedUntil != nil {
+		_ = json.Unmarshal(row.Payload, &why) // older notices carry no cause: the type's own text is still right
+		switch variant := cancellationVariant(row.Type, why); variant {
+		case "closure":
 			const stamp = "02/01/2006 15:04"
 			view.Intro = t(kind+".intro_closure", row.FacilityName, row.TenantName, date, start, end,
 				why.ClosedFrom.In(loc).Format(stamp), why.ClosedUntil.In(loc).Format(stamp))
+		case "event":
+			view.Intro = t(kind+".intro_event", row.FacilityName, row.TenantName, date, start, end, why.Title)
+			subject = t(kind+".subject_event", why.Title, date, start)
+		case "owner":
+			var name = why.Name
+			if name == "" {
+				name = t("someone")
+			}
+			view.Intro = t(kind+".intro_owner", row.FacilityName, row.TenantName, date, start, end, name)
+		case "":
+		default:
+			view.Intro = t(kind+".intro_"+variant, row.FacilityName, row.TenantName, date, start, end)
 		}
 		if why.Reason != "" {
 			view.Reason = t("reason", why.Reason)
 		}
+	}
+	// where: the facility's address, on a cancellation too (the way there only while it can be used)
+	if row.FacilityAddress.String != "" && (cancellation || usable(row, now)) {
+		view.Address = t("address", row.FacilityAddress.String)
 	}
 	if name := strings.Fields(row.FullName.String); len(name) > 0 {
 		view.Greeting = t("greeting", name[0])
@@ -333,9 +378,6 @@ func notificationEmail(row model.ListPendingEmailsRow, brand branding.Email, now
 				view.WaysTitle = t("checkin.title_many")
 			}
 			view.Window = t("checkin.window")
-		}
-		if row.FacilityAddress.String != "" {
-			view.Address = t("address", row.FacilityAddress.String)
 		}
 		if row.FacilityLatitude.Valid && row.FacilityLongitude.Valid {
 			view.Directions, view.DirectionsURL = t("directions"), directionsURL(row.FacilityLatitude.Float64, row.FacilityLongitude.Float64)
@@ -391,7 +433,7 @@ func notificationEmail(row model.ListPendingEmailsRow, brand branding.Email, now
 
 	var message = mailer.Message{
 		To:      row.Email,
-		Subject: t(kind+".subject", row.FacilityName, date, start),
+		Subject: subject,
 		Text:    strings.Join(text, "\n"),
 		HTML:    html.String(),
 	}

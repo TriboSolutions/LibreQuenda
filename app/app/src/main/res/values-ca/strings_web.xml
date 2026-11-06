@@ -302,6 +302,11 @@
     <string name="notif_booking_cancelled_by_closure">Ho sentim: %1$s és tancada del %6$s al %7$s, així que la teva reserva del %2$s a les %3$s s’ha cancel·lat.</string>
     <string name="notif_booking_cancelled_by_staff">Ho sentim: %4$s ha cancel·lat la teva reserva a %1$s el %2$s a les %3$s.</string>
     <string name="notif_council_admin_granted">Ja ets administrador o administradora de %4$s. Obre’n l’administració des d’aquí o des del menú del teu compte.</string>
+    <string name="notif_booking_cancelled_by_owner">%5$s ha cancel·lat la reserva pública a què t’havies unit a %1$s, %2$s a les %3$s.</string>
+    <string name="notif_booking_cancelled_account_deleted">S’ha cancel·lat la reserva a què t’havies unit a %1$s, %2$s a les %3$s: qui la va fer ha esborrat el seu compte.</string>
+    <string name="notif_event_cancelled">Ho sentim: %4$s ha cancel·lat l’esdeveniment «%8$s» a %1$s, %2$s a les %3$s.</string>
+    <string name="notif_booking_cancelled_resident_revoked">%4$s ha retirat la teva verificació com a veí: s’ha cancel·lat la teva reserva a %1$s, %2$s a les %3$s.</string>
+    <string name="notif_booking_left_resident_revoked">%4$s ha retirat la teva verificació com a veí: ja no ets a la partida a %1$s, %2$s a les %3$s.</string>
     <string name="notif_issue_solved">Arreglat el problema que vas avisar a %1$s.</string>
     <string name="notif_issue_rejected">L’ajuntament ha revisat el problema que vas avisar a %1$s i no el tramitarà.</string>
     <string name="notif_booking_joined">%5$s s’ha unit a la teva reserva a %1$s, %2$s a les %3$s.</string>

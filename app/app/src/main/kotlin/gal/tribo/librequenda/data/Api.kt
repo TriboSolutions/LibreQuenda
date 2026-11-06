@@ -209,6 +209,8 @@ data class AppNotification(
     val closedFrom: java.time.Instant? = null, // a council cancellation caused by a closure
     val closedUntil: java.time.Instant? = null,
     val byStaff: Boolean = false, // a council cancellation of one booking by staff
+    val cause: String = "", // why it was cancelled, beyond the type: owner, account_deleted, resident_revoked, resident_revoked_left
+    val title: String = "", // the event's name, when the booking was one
     val createdAt: java.time.Instant? = null, // when the notice came
     val bookingId: String = "", // "" for notices about no booking
     val isPublic: Boolean = false, // rating_requested: the others can be rated too
@@ -237,6 +239,8 @@ suspend fun fetchNotifications(accessToken: String): Notifications {
                 closedFrom = n.instant("closed_from"),
                 closedUntil = n.instant("closed_until"),
                 byStaff = n.optBoolean("by_staff"),
+                cause = n.optString("cause"),
+                title = n.optString("title"),
                 createdAt = n.instant("created_at"),
                 bookingId = n.optString("booking_id"),
                 isPublic = n.optBoolean("is_public"),

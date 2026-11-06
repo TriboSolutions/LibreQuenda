@@ -296,33 +296,82 @@ func (q *Queries) IsTenantResident(ctx context.Context, arg IsTenantResidentPara
 	return verified, err
 }
 
-const leaveGamesOfFormerResident = `-- name: LeaveGamesOfFormerResident :execrows
-DELETE FROM booking_participant p
-USING
-    booking b,
-    facility f
-WHERE
-    p.booking_id = b.id
-    AND b.facility_id = f.id
-    AND f.tenant_id = $1
-    AND f.residents_only = TRUE
-    AND p.user_id = $2
-    AND b.status = 'confirmed'
-    AND b.starts_at > NOW()
+const leaveGamesOfFormerResident = `-- name: LeaveGamesOfFormerResident :many
+WITH left_games AS (
+    DELETE FROM booking_participant p
+    WHERE
+        p.user_id = $1
+        AND p.booking_id IN (
+            SELECT b.id
+            FROM booking b JOIN facility f ON f.id = b.facility_id
+            WHERE f.tenant_id = $2 AND f.residents_only = TRUE AND b.status = 'confirmed' AND b.starts_at > NOW()
+        )
+    RETURNING p.booking_id
+)
+SELECT
+    b.id,
+    b.facility_id,
+    f.name AS facility_name,
+    t.slug AS tenant_slug,
+    t.name AS tenant_name,
+    b.starts_at,
+    b.ends_at,
+    COALESCE(b.title, '')::TEXT AS title
+FROM
+    left_games l
+    JOIN booking  b ON b.id = l.booking_id
+    JOIN facility f ON f.id = b.facility_id
+    JOIN tenant   t ON t.id = f.tenant_id
 `
 
 type LeaveGamesOfFormerResidentParams struct {
-	TenantID uuid.UUID     `json:"tenant_id"`
 	UserID   uuid.NullUUID `json:"user_id"`
+	TenantID uuid.UUID     `json:"tenant_id"`
 }
 
-// …and they leave the upcoming public bookings and events they had joined there.
-func (q *Queries) LeaveGamesOfFormerResident(ctx context.Context, arg LeaveGamesOfFormerResidentParams) (int64, error) {
-	result, err := q.db.ExecContext(ctx, leaveGamesOfFormerResident, arg.TenantID, arg.UserID)
+type LeaveGamesOfFormerResidentRow struct {
+	ID           uuid.UUID `json:"id"`
+	FacilityID   uuid.UUID `json:"facility_id"`
+	FacilityName string    `json:"facility_name"`
+	TenantSlug   string    `json:"tenant_slug"`
+	TenantName   string    `json:"tenant_name"`
+	StartsAt     time.Time `json:"starts_at"`
+	EndsAt       time.Time `json:"ends_at"`
+	Title        string    `json:"title"`
+}
+
+// …and they leave the upcoming public bookings and events they had joined there
+// (each one is told to them: where and when).
+func (q *Queries) LeaveGamesOfFormerResident(ctx context.Context, arg LeaveGamesOfFormerResidentParams) ([]LeaveGamesOfFormerResidentRow, error) {
+	rows, err := q.db.QueryContext(ctx, leaveGamesOfFormerResident, arg.UserID, arg.TenantID)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
-	return result.RowsAffected()
+	defer rows.Close()
+	var items []LeaveGamesOfFormerResidentRow
+	for rows.Next() {
+		var i LeaveGamesOfFormerResidentRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.FacilityID,
+			&i.FacilityName,
+			&i.TenantSlug,
+			&i.TenantName,
+			&i.StartsAt,
+			&i.EndsAt,
+			&i.Title,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const listPendingResidentEmails = `-- name: ListPendingResidentEmails :many

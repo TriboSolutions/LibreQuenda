@@ -263,13 +263,19 @@
     },
     "booking_cancelled": {
       "subject": "Reserva cancelada: {{0}}, {{1}} ás {{2}}",
-      "intro": "A túa reserva en {{0}} ({{1}}) o {{2}}, de {{3}} a {{4}}, foi cancelada."
+      "intro": "A túa reserva en {{0}} ({{1}}) o {{2}}, de {{3}} a {{4}}, foi cancelada.",
+      "intro_owner": "{{5}} cancelou a reserva pública á que te uniras en {{0}} ({{1}}) o {{2}}, de {{3}} a {{4}}. Podes buscar outra partida ou reservar un turno libre cando queiras.",
+      "intro_account_deleted": "Cancelouse a reserva á que te uniras en {{0}} ({{1}}) o {{2}}, de {{3}} a {{4}}: quen a fixo borrou a súa conta. Podes buscar outra partida ou reservar un turno libre cando queiras."
     },
     "booking_cancelled_by_council": {
       "subject": "Sentímolo: cancelouse a túa reserva en {{0}}",
       "intro": "Sentímolo. {{1}} pechou {{0}}, así que a túa reserva do {{2}}, de {{3}} a {{4}}, foi cancelada. Podes reservar outro turno libre cando queiras.",
       "intro_closure": "Sentímolo. {{0}} ({{1}}) está pechada do {{5}} ao {{6}}, así que a túa reserva do {{2}}, de {{3}} a {{4}}, foi cancelada. Podes reservar outro turno libre cando queiras.",
-      "intro_staff": "Sentímolo. {{1}} cancelou a túa reserva en {{0}} o {{2}}, de {{3}} a {{4}}. Podes reservar outra quenda libre cando queiras."
+      "intro_staff": "Sentímolo. {{1}} cancelou a túa reserva en {{0}} o {{2}}, de {{3}} a {{4}}. Podes reservar outra quenda libre cando queiras.",
+      "subject_event": "Cancelouse o evento «{{0}}» do {{1}} ás {{2}}",
+      "intro_event": "Sentímolo. {{1}} cancelou o evento «{{5}}» en {{0}} o {{2}}, de {{3}} a {{4}}, ao que te apuntaras.",
+      "intro_resident_revoked": "{{1}} retirou a túa verificación como veciño, así que cancelouse a túa reserva en {{0}}, só para veciños, o {{2}}, de {{3}} a {{4}}.",
+      "intro_resident_revoked_left": "{{1}} retirou a túa verificación como veciño, así que xa non estás na partida en {{0}}, só para veciños, o {{2}}, de {{3}} a {{4}}."
     },
     "reason": "Motivo: {{0}}",
     "council_admin": {

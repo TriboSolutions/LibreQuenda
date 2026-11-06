@@ -263,13 +263,19 @@
     },
     "booking_cancelled": {
       "subject": "Reserva cancelada: {{0}}, {{1}} a las {{2}}",
-      "intro": "Tu reserva en {{0}} ({{1}}) el {{2}}, de {{3}} a {{4}}, ha sido cancelada."
+      "intro": "Tu reserva en {{0}} ({{1}}) el {{2}}, de {{3}} a {{4}}, ha sido cancelada.",
+      "intro_owner": "{{5}} canceló la reserva pública a la que te habías unido en {{0}} ({{1}}) el {{2}}, de {{3}} a {{4}}. Puedes buscar otra partida o reservar un turno libre cuando quieras.",
+      "intro_account_deleted": "Se canceló la reserva a la que te habías unido en {{0}} ({{1}}) el {{2}}, de {{3}} a {{4}}: quien la hizo borró su cuenta. Puedes buscar otra partida o reservar un turno libre cuando quieras."
     },
     "booking_cancelled_by_council": {
       "subject": "Lo sentimos: se canceló tu reserva en {{0}}",
       "intro": "Lo sentimos. {{1}} ha cerrado {{0}}, así que tu reserva del {{2}}, de {{3}} a {{4}}, ha sido cancelada. Puedes reservar otro turno libre cuando quieras.",
       "intro_closure": "Lo sentimos. {{0}} ({{1}}) está cerrada del {{5}} al {{6}}, así que tu reserva del {{2}}, de {{3}} a {{4}}, ha sido cancelada. Puedes reservar otro turno libre cuando quieras.",
-      "intro_staff": "Lo sentimos. {{1}} ha cancelado tu reserva en {{0}} el {{2}}, de {{3}} a {{4}}. Puedes reservar otro turno libre cuando quieras."
+      "intro_staff": "Lo sentimos. {{1}} ha cancelado tu reserva en {{0}} el {{2}}, de {{3}} a {{4}}. Puedes reservar otro turno libre cuando quieras.",
+      "subject_event": "Se canceló el evento «{{0}}» del {{1}} a las {{2}}",
+      "intro_event": "Lo sentimos. {{1}} canceló el evento «{{5}}» en {{0}} el {{2}}, de {{3}} a {{4}}, al que te habías apuntado.",
+      "intro_resident_revoked": "{{1}} retiró tu verificación como vecino, así que se canceló tu reserva en {{0}}, solo para vecinos, el {{2}}, de {{3}} a {{4}}.",
+      "intro_resident_revoked_left": "{{1}} retiró tu verificación como vecino, así que ya no estás en la partida en {{0}}, solo para vecinos, el {{2}}, de {{3}} a {{4}}."
     },
     "reason": "Motivo: {{0}}",
     "council_admin": {

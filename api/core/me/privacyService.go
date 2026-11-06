@@ -3,6 +3,7 @@ package me
 import (
 	"context"
 	"librequenda/auth"
+	"librequenda/core/notice"
 	"librequenda/model"
 	"librequenda/shared"
 	"librequenda/storage"
@@ -107,9 +108,21 @@ func (s *meService) DeleteAccount(ctx context.Context, session auth.Session) *sh
 	var queries = model.New(tx)
 	var owner = uuid.NullUUID{UUID: userId, Valid: true}
 
-	if _, err = queries.CancelUpcomingBookingsOfUser(ctx, owner); err != nil {
+	var cancelled []model.CancelUpcomingBookingsOfUserRow
+	if cancelled, err = queries.CancelUpcomingBookingsOfUser(ctx, owner); err != nil {
 		shared.Logger.Error("erasure of %s: cancel bookings: %v", userId, err)
 		return failed
+	}
+	// who had joined them loses the place: told where and when, and why (never who: the account is gone)
+	for _, booking := range cancelled {
+		var payload = notice.Payload(
+			notice.Cancelled{FacilityID: booking.FacilityID, FacilityName: booking.FacilityName, TenantSlug: booking.TenantSlug, TenantName: booking.TenantName, StartsAt: booking.StartsAt, EndsAt: booking.EndsAt},
+			map[string]any{"cause": notice.CauseAccountDeleted},
+		)
+		if err = notice.TellParticipants(ctx, queries, booking.ID, model.NotificationTypeBookingCancelled, payload); err != nil {
+			shared.Logger.Error("erasure of %s: tell who joined: %v", userId, err)
+			return failed
+		}
 	}
 	if err = queries.RevokeInviteLinksOfUser(ctx, owner); err != nil {
 		shared.Logger.Error("erasure of %s: revoke invite links: %v", userId, err)

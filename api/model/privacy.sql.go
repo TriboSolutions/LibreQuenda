@@ -14,25 +14,71 @@ import (
 	"github.com/google/uuid"
 )
 
-const cancelUpcomingBookingsOfUser = `-- name: CancelUpcomingBookingsOfUser :execrows
-UPDATE booking
+const cancelUpcomingBookingsOfUser = `-- name: CancelUpcomingBookingsOfUser :many
+UPDATE booking b
 SET
     status       = 'cancelled',
     cancelled_at = NOW(),
     cancelled_by = 'user'
+FROM
+    facility f
+    JOIN tenant t ON t.id = f.tenant_id
 WHERE
-    user_id = $1
-    AND status = 'confirmed'
-    AND starts_at > NOW()
+    b.facility_id = f.id
+    AND b.user_id = $1
+    AND b.status = 'confirmed'
+    AND b.starts_at > NOW()
+RETURNING
+    b.id,
+    b.facility_id,
+    f.name AS facility_name,
+    t.slug AS tenant_slug,
+    t.name AS tenant_name,
+    b.starts_at,
+    b.ends_at
 `
 
-// Account erasure: the slots the user still held go back to everyone else.
-func (q *Queries) CancelUpcomingBookingsOfUser(ctx context.Context, userID uuid.NullUUID) (int64, error) {
-	result, err := q.db.ExecContext(ctx, cancelUpcomingBookingsOfUser, userID)
+type CancelUpcomingBookingsOfUserRow struct {
+	ID           uuid.UUID `json:"id"`
+	FacilityID   uuid.UUID `json:"facility_id"`
+	FacilityName string    `json:"facility_name"`
+	TenantSlug   string    `json:"tenant_slug"`
+	TenantName   string    `json:"tenant_name"`
+	StartsAt     time.Time `json:"starts_at"`
+	EndsAt       time.Time `json:"ends_at"`
+}
+
+// Account erasure: the slots the user still held go back to everyone else (and
+// whoever had joined them is told, with where and when).
+func (q *Queries) CancelUpcomingBookingsOfUser(ctx context.Context, userID uuid.NullUUID) ([]CancelUpcomingBookingsOfUserRow, error) {
+	rows, err := q.db.QueryContext(ctx, cancelUpcomingBookingsOfUser, userID)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
-	return result.RowsAffected()
+	defer rows.Close()
+	var items []CancelUpcomingBookingsOfUserRow
+	for rows.Next() {
+		var i CancelUpcomingBookingsOfUserRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.FacilityID,
+			&i.FacilityName,
+			&i.TenantSlug,
+			&i.TenantName,
+			&i.StartsAt,
+			&i.EndsAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const deleteUser = `-- name: DeleteUser :one

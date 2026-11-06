@@ -263,13 +263,19 @@
     },
     "booking_cancelled": {
       "subject": "Reserva cancel·lada: {{0}}, {{1}} a les {{2}}",
-      "intro": "La teva reserva a {{0}} ({{1}}) el {{2}}, de {{3}} a {{4}}, s’ha cancel·lat."
+      "intro": "La teva reserva a {{0}} ({{1}}) el {{2}}, de {{3}} a {{4}}, s’ha cancel·lat.",
+      "intro_owner": "{{5}} ha cancel·lat la reserva pública a què t’havies unit a {{0}} ({{1}}) el {{2}}, de {{3}} a {{4}}. Pots buscar una altra partida o reservar un torn lliure quan vulguis.",
+      "intro_account_deleted": "S’ha cancel·lat la reserva a què t’havies unit a {{0}} ({{1}}) el {{2}}, de {{3}} a {{4}}: qui la va fer ha esborrat el seu compte. Pots buscar una altra partida o reservar un torn lliure quan vulguis."
     },
     "booking_cancelled_by_council": {
       "subject": "Ho sentim: s’ha cancel·lat la teva reserva a {{0}}",
       "intro": "Ho sentim. {{1}} ha tancat {{0}}, així que la teva reserva del {{2}}, de {{3}} a {{4}}, s’ha cancel·lat. Pots reservar un altre torn lliure quan vulguis.",
       "intro_closure": "Ho sentim. {{0}} ({{1}}) és tancada del {{5}} al {{6}}, així que la teva reserva del {{2}}, de {{3}} a {{4}}, s’ha cancel·lat. Pots reservar un altre torn lliure quan vulguis.",
-      "intro_staff": "Ho sentim. {{1}} ha cancel·lat la teva reserva a {{0}} el {{2}}, de {{3}} a {{4}}. Pots reservar un altre torn lliure quan vulguis."
+      "intro_staff": "Ho sentim. {{1}} ha cancel·lat la teva reserva a {{0}} el {{2}}, de {{3}} a {{4}}. Pots reservar un altre torn lliure quan vulguis.",
+      "subject_event": "S’ha cancel·lat l’esdeveniment «{{0}}» del {{1}} a les {{2}}",
+      "intro_event": "Ho sentim. {{1}} ha cancel·lat l’esdeveniment «{{5}}» a {{0}} el {{2}}, de {{3}} a {{4}}, al qual t’havies apuntat.",
+      "intro_resident_revoked": "{{1}} ha retirat la teva verificació com a veí, així que s’ha cancel·lat la teva reserva a {{0}}, només per a veïns, el {{2}}, de {{3}} a {{4}}.",
+      "intro_resident_revoked_left": "{{1}} ha retirat la teva verificació com a veí, així que ja no ets a la partida a {{0}}, només per a veïns, el {{2}}, de {{3}} a {{4}}."
     },
     "reason": "Motiu: {{0}}",
     "council_admin": {

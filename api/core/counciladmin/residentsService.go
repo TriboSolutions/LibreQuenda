@@ -3,8 +3,8 @@ package counciladmin
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"errors"
+	"librequenda/core/notice"
 	"librequenda/db"
 	"librequenda/model"
 	"librequenda/shared"
@@ -102,8 +102,9 @@ func (s *counciladminService) AddResident(ctx context.Context, tenantId uuid.UUI
 
 // RemoveResident takes the verification back. A person is a resident of one
 // council only, so their upcoming bookings at its residents-only facilities go
-// too (those who had joined them are told), they leave the games they joined
-// there, and they are told by notice and email how many bookings were cancelled.
+// too and they leave the games they joined there. Each one is told to them (where
+// and when) and to whoever had joined, by notice and email, and a last notice says
+// the verification was taken back and how many bookings went with it.
 func (s *counciladminService) RemoveResident(ctx context.Context, tenantId uuid.UUID, userId uuid.UUID) *shared.ErrorResponse {
 	var removed int64
 	var err = db.WithTenant(ctx, s.db, tenantId, func(queries *model.Queries) error {
@@ -116,33 +117,24 @@ func (s *counciladminService) RemoveResident(ctx context.Context, tenantId uuid.
 			return cancelErr
 		}
 		for _, booking := range cancelled {
-			var payload, _ = json.Marshal(map[string]any{
-				"facility_id":   booking.FacilityID,
-				"facility_name": booking.FacilityName,
-				"tenant_slug":   booking.TenantSlug,
-				"tenant_name":   booking.TenantName,
-				"starts_at":     booking.StartsAt,
-				"ends_at":       booking.EndsAt,
-				"by_staff":      true, // one booking, not a closure
-				"title":         booking.Title,
-			})
-			var joined, listErr = queries.ListParticipantAccounts(ctx, booking.ID)
-			if listErr != nil {
-				return listErr
+			var c = notice.Cancelled{FacilityID: booking.FacilityID, FacilityName: booking.FacilityName, TenantSlug: booking.TenantSlug, TenantName: booking.TenantName, Title: booking.Title, StartsAt: booking.StartsAt, EndsAt: booking.EndsAt}
+			// they are told each booking that went, where and when; who had joined it, that the council cancelled it
+			if tellErr := notice.Tell(ctx, queries, userId, booking.ID, model.NotificationTypeBookingCancelledByCouncil, notice.Payload(c, map[string]any{"cause": notice.CauseResidentRevoked})); tellErr != nil {
+				return tellErr
 			}
-			for _, user := range joined {
-				if notifyErr := queries.CreateNotification(ctx, model.CreateNotificationParams{
-					UserID:    user.UUID,
-					BookingID: uuid.NullUUID{UUID: booking.ID, Valid: true},
-					Type:      model.NotificationTypeBookingCancelledByCouncil,
-					Payload:   payload,
-				}); notifyErr != nil {
-					return notifyErr
-				}
+			if tellErr := notice.TellParticipants(ctx, queries, booking.ID, model.NotificationTypeBookingCancelledByCouncil, notice.Payload(c, map[string]any{"by_staff": true})); tellErr != nil {
+				return tellErr
 			}
 		}
-		if _, leaveErr := queries.LeaveGamesOfFormerResident(ctx, model.LeaveGamesOfFormerResidentParams{TenantID: tenantId, UserID: uuid.NullUUID{UUID: userId, Valid: true}}); leaveErr != nil {
+		var left, leaveErr = queries.LeaveGamesOfFormerResident(ctx, model.LeaveGamesOfFormerResidentParams{TenantID: tenantId, UserID: uuid.NullUUID{UUID: userId, Valid: true}})
+		if leaveErr != nil {
 			return leaveErr
+		}
+		for _, game := range left {
+			var c = notice.Cancelled{FacilityID: game.FacilityID, FacilityName: game.FacilityName, TenantSlug: game.TenantSlug, TenantName: game.TenantName, Title: game.Title, StartsAt: game.StartsAt, EndsAt: game.EndsAt}
+			if tellErr := notice.Tell(ctx, queries, userId, game.ID, model.NotificationTypeBookingCancelledByCouncil, notice.Payload(c, map[string]any{"cause": notice.CauseResidentRevokedLeft})); tellErr != nil {
+				return tellErr
+			}
 		}
 		return queries.NotifyResidentRevoked(ctx, model.NotifyResidentRevokedParams{UserID: userId, TenantID: tenantId, Cancelled: int32(len(cancelled))})
 	})

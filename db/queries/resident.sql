@@ -285,20 +285,34 @@ RETURNING
     b.ends_at,
     COALESCE(b.title, '')::TEXT AS title;
 
--- name: LeaveGamesOfFormerResident :execrows
--- …and they leave the upcoming public bookings and events they had joined there.
-DELETE FROM booking_participant p
-USING
-    booking b,
-    facility f
-WHERE
-    p.booking_id = b.id
-    AND b.facility_id = f.id
-    AND f.tenant_id = sqlc.arg('tenant_id')
-    AND f.residents_only = TRUE
-    AND p.user_id = sqlc.arg('user_id')
-    AND b.status = 'confirmed'
-    AND b.starts_at > NOW();
+-- name: LeaveGamesOfFormerResident :many
+-- …and they leave the upcoming public bookings and events they had joined there
+-- (each one is told to them: where and when).
+WITH left_games AS (
+    DELETE FROM booking_participant p
+    WHERE
+        p.user_id = sqlc.arg('user_id')
+        AND p.booking_id IN (
+            SELECT b.id
+            FROM booking b JOIN facility f ON f.id = b.facility_id
+            WHERE f.tenant_id = sqlc.arg('tenant_id') AND f.residents_only = TRUE AND b.status = 'confirmed' AND b.starts_at > NOW()
+        )
+    RETURNING p.booking_id
+)
+SELECT
+    b.id,
+    b.facility_id,
+    f.name AS facility_name,
+    t.slug AS tenant_slug,
+    t.name AS tenant_name,
+    b.starts_at,
+    b.ends_at,
+    COALESCE(b.title, '')::TEXT AS title
+FROM
+    left_games l
+    JOIN booking  b ON b.id = l.booking_id
+    JOIN facility f ON f.id = b.facility_id
+    JOIN tenant   t ON t.id = f.tenant_id;
 
 -- name: NotifyResidentRevoked :exec
 -- Tells the person (bell and email) that the council took the verification back,
