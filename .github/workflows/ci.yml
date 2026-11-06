@@ -54,6 +54,7 @@ jobs:
               - "api/**"
               - "db/init/**"
               - "db/queries/**"
+              - "docs/openapi/**" # api/openapi_test.go checks it has every route
               - ".github/workflows/**"
             web:
               - "web/**"
