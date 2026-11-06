@@ -1,0 +1,17 @@
+{
+  "ar": { "common": { "title": "تسجيل الدخول" }, "register": { "description": "أنشئ حسابك." } },
+  "de": { "common": { "title": "Anmelden" }, "register": { "description": "Erstellen Sie Ihr Konto." } },
+  "en": { "common": { "title": "Sign in" }, "register": { "description": "Create your account." } },
+  "es": { "common": { "title": "Iniciar sesión" }, "register": { "description": "Crea tu cuenta." } },
+  "fr": { "common": { "title": "Connexion" }, "register": { "description": "Créez votre compte." } },
+  "hu": { "common": { "title": "Bejelentkezés" }, "register": { "description": "Hozd létre a fiókodat." } },
+  "it": { "common": { "title": "Accedi" }, "register": { "description": "Crea il tuo account." } },
+  "ja": { "common": { "title": "ログイン" }, "register": { "description": "アカウントを作成します。" } },
+  "nl": { "common": { "title": "Inloggen" }, "register": { "description": "Maak jouw account aan." } },
+  "pl": { "common": { "title": "Zaloguj się" }, "register": { "description": "Utwórz konto." } },
+  "pt": { "common": { "title": "Entrar" }, "register": { "description": "Crie sua conta." } },
+  "ru": { "common": { "title": "Войти" }, "register": { "description": "Создайте свой аккаунт." } },
+  "tr": { "common": { "title": "Giriş" }, "register": { "description": "Hesabınızı oluşturun." } },
+  "uk": { "common": { "title": "Вхід" }, "register": { "description": "Створіть свій обліковий запис." } },
+  "zh": { "common": { "title": "登录" }, "register": { "description": "创建您的账户。" } }
+}

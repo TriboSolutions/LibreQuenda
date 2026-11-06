@@ -9,6 +9,7 @@
 #  - short access tokens (ZITADEL_ACCESS_TOKEN_MINUTES, 10 by default), renewed by the web
 #  - brands the login and console as LibreQuenda (logo, colours, no Zitadel links)
 #  - Spanish as the default language (Zitadel has no Galician or Catalan)
+#  - login texts without "Zitadel" in them (login-texts.json)
 #  - creates the "librequenda-api" service account (user and settings manager of
 #    the residents' organisation) and writes its token to /api-secrets, for /perfil
 #    (name, email, password) and to copy the installation's name and logo there
@@ -253,6 +254,22 @@ log "branding applied"
 # Spanish rather than English.
 call PUT /admin/v1/languages/default/es '{}' >/dev/null 2>&1 || true # "no changes" is reported as an error
 log "default language: es"
+
+# --- login texts without "Zitadel" ---
+# The login's own texts name Zitadel ("Crea tu cuenta Zitadel.", the page title);
+# login-texts.json overrides those keys in every language its switcher offers,
+# merged over the defaults. Set on the instance and on the organisation residents
+# register in: once the login knows that organisation, it reads only its texts.
+# The login caches them for an hour (restart zitadel-login to see a change at once).
+ORG_ID=$(call GET /management/v1/orgs/me | jq -r '.org.id')
+LOCALES=$(jq -r 'keys[]' /login-texts.json) # outside the loop, so a bad file stops the script
+for locale in $LOCALES; do
+	for level in '"instance":true' "\"organizationId\":\"$ORG_ID\""; do
+		call PUT /v2/settings/hosted_login_translation \
+			"$(jq -c --arg l "$locale" "{$level, locale: \$l, translations: .[\$l]}" /login-texts.json)" >/dev/null
+	done
+done
+log "login texts applied"
 
 # --- service account for the API: residents manage their account from /perfil ---
 # Only ORG_USER_MANAGER and ORG_SETTINGS_MANAGER on the organisation residents

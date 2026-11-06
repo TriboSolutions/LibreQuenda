@@ -3,6 +3,8 @@ FROM alpine:3
 RUN apk add --no-cache curl jq
 
 COPY setup.sh /setup.sh
+# the login's texts that name Zitadel, without it
+COPY login-texts.json /login-texts.json
 # copies of docs/brand: the logo and symbol on the login and console
 COPY brand /brand
 RUN chmod +x /setup.sh
