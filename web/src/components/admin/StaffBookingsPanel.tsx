@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import QRCode from 'qrcode'
-import { CircleCheck, ChevronLeft, ChevronRight, PartyPopper, Plus, Printer, Undo2, UserCheck } from 'lucide-react'
+import { CircleCheck, ChevronLeft, ChevronRight, PartyPopper, Plus, Printer, Undo2, UserCheck, UserPlus } from 'lucide-react'
 import { DatePicker } from '@/components/DatePicker'
 import { QrImage } from '@/components/QrImage'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -462,6 +462,20 @@ function DetailsDialog({ slug, token, booking, zone, facilityName, reader, onClo
             {b.checked_in_at && <span className={`${pill} num bg-pill-positive-bg text-pill-positive-ink`}>{t('staff.checkedIn', { time: formatTime(b.checked_in_at, zone) })}</span>}
             {b.participant_count > 0 && <span className={`${pill} num bg-pill-neutral-bg text-pill-neutral-ink`}>{t('staff.joined', { count: b.participant_count })}</span>}
           </p>
+          {/* an upcoming event: staff sign people up, at the desk or on the phone */}
+          {b.is_event && b.can_cancel && (
+            <AddToEvent
+              slug={slug}
+              token={token}
+              bookingId={b.id}
+              onAdded={(name) => {
+                setB((current) => ({ ...current, participant_count: current.participant_count + 1 }))
+                setError(null)
+                setStatus(t('events.added', { name }))
+                onChanged()
+              }}
+            />
+          )}
           {b.checked_in_at && b.checked_in_method && (
             <p className="text-sm text-muted-foreground">
               {b.checked_in_method === 'staff' && b.checked_in_by
@@ -504,7 +518,7 @@ function DetailsDialog({ slug, token, booking, zone, facilityName, reader, onClo
           )}
           {b.can_cancel && (
             <Button variant="outline" className="text-destructive" onClick={onCancel}>
-              {t('staff.cancel')}
+              {b.is_event ? t('events.confirmCancel') : t('staff.cancel')}
             </Button>
           )}
           {canUndo && (
@@ -525,6 +539,87 @@ function DetailsDialog({ slug, token, booking, zone, facilityName, reader, onClo
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  )
+}
+
+/** Inside an event's dialog: sign someone up, with their account or by their name and age. */
+function AddToEvent({ slug, token, bookingId, onAdded }: { slug: string; token: string; bookingId: string; onAdded: (name: string) => void }) {
+  const { t } = useTranslation('admin')
+  const [open, setOpen] = useState(false)
+  const [kind, setKind] = useState<'account' | 'name'>('name')
+  const [email, setEmail] = useState('')
+  const [name, setName] = useState('')
+  const [age, setAge] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  if (!open) {
+    return (
+      <div>
+        <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
+          <UserPlus />
+          {t('events.addPerson')}
+        </Button>
+      </div>
+    )
+  }
+
+  const submit = async (event: FormEvent) => {
+    event.preventDefault()
+    setSaving(true)
+    setError(null)
+    try {
+      await api.council.addEventParticipant(token, slug, bookingId, kind === 'account' ? { email } : { name, age: Number(age) })
+      onAdded(kind === 'account' ? email : name)
+      setEmail('')
+      setName('')
+      setAge('')
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <form onSubmit={(e) => void submit(e)} className="grid gap-3 rounded-md border p-3" aria-labelledby="add-to-event-title">
+      <p id="add-to-event-title" className="font-medium">
+        {t('events.addPerson')}
+      </p>
+      <ToggleGroup type="single" variant="outline" value={kind} onValueChange={(value) => value && setKind(value as 'account' | 'name')} aria-label={t('events.addWho')}>
+        <ToggleGroupItem value="name">{t('staff.byName')}</ToggleGroupItem>
+        <ToggleGroupItem value="account">{t('staff.byAccount')}</ToggleGroupItem>
+      </ToggleGroup>
+      {kind === 'account' ? (
+        <div className="grid gap-1.5">
+          <Label htmlFor="event-add-email">{t('staff.email')}</Label>
+          <Input id="event-add-email" type="email" required maxLength={255} autoComplete="off" value={email} onChange={(e) => setEmail(e.target.value)} />
+        </div>
+      ) : (
+        <div className="grid grid-cols-[1fr_6rem] gap-2">
+          <div className="grid gap-1.5">
+            <Label htmlFor="event-add-name">{t('staff.name')}</Label>
+            <Input id="event-add-name" required maxLength={80} autoComplete="off" value={name} onChange={(e) => setName(e.target.value)} />
+          </div>
+          <div className="grid gap-1.5">
+            <Label htmlFor="event-add-age">{t('events.age')}</Label>
+            <Input id="event-add-age" type="number" required min={1} max={120} value={age} onChange={(e) => setAge(e.target.value)} />
+          </div>
+        </div>
+      )}
+      <div aria-live="polite" className="empty:hidden">
+        {error && (
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+      </div>
+      <div>
+        <Button type="submit" size="sm" disabled={saving}>
+          {saving ? t('events.adding') : t('events.add')}
+        </Button>
+      </div>
+    </form>
   )
 }
 

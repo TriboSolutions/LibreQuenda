@@ -859,6 +859,7 @@
       "booking_window.council_changed": "Changed the council’s booking window",
       "staff.booking_created": "Booked for someone",
       "staff.booking_cancelled": "Cancelled a booking",
+      "staff.event_participant_added": "Signed someone up for an event",
       "staff.checked_in": "Marked a check-in",
       "staff.check_in_undone": "Undid a check-in",
       "smtp.changed": "Changed the email server",
@@ -993,7 +994,13 @@
     "cancelTitle": "Cancel “{{title}}”?",
     "cancelNotice_one": "We will tell the {{count}} person who joined, with the reason if you give one.",
     "cancelNotice_other": "We will tell the {{count}} people who joined, with the reason if you give one.",
-    "confirmCancel": "Cancel the event"
+    "confirmCancel": "Cancel the event",
+    "addPerson": "Sign someone up",
+    "addWho": "Who you sign up",
+    "age": "Age",
+    "add": "Sign up",
+    "adding": "Signing up…",
+    "added": "{{name}} is signed up."
   },
   "residents": {
     "tab": "Residents",

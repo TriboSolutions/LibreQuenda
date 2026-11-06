@@ -198,6 +198,12 @@ func lockPublic(bookingId uuid.UUID) lock {
 
 // addUser: a signed-in person joins, as themselves.
 func addUser(ctx context.Context, userId uuid.UUID) func(*model.Queries, model.LockBookingByInviteTokenRow, time.Time) *shared.ErrorResponse {
+	return addAccount(ctx, userId, true)
+}
+
+// addAccount: an account joins; council staff signing someone up skip the council's
+// per-person limits, as when they book for someone (the rest still applies).
+func addAccount(ctx context.Context, userId uuid.UUID, limits bool) func(*model.Queries, model.LockBookingByInviteTokenRow, time.Time) *shared.ErrorResponse {
 	return func(queries *model.Queries, booking model.LockBookingByInviteTokenRow, day time.Time) *shared.ErrorResponse {
 		if booking.OwnerID.Valid && booking.OwnerID.UUID == userId {
 			return &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.invite_own_booking"}
@@ -217,8 +223,10 @@ func addUser(ctx context.Context, userId uuid.UUID) func(*model.Queries, model.L
 		if overlaps {
 			return &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.booking_overlaps"}
 		}
-		if limitErr := bookings.CouncilLimits(ctx, queries, userId, booking.TenantID, false); limitErr != nil {
-			return limitErr
+		if limits {
+			if limitErr := bookings.CouncilLimits(ctx, queries, userId, booking.TenantID, false); limitErr != nil {
+				return limitErr
+			}
 		}
 		if residentErr := bookings.CheckResident(ctx, queries, userId, booking.TenantID, booking.ResidentsOnly); residentErr != nil {
 			return residentErr
@@ -246,7 +254,12 @@ func addUser(ctx context.Context, userId uuid.UUID) func(*model.Queries, model.L
 
 // JoinAsGuest adds someone without an account: only a name and an age are kept.
 func (s *invitesService) JoinAsGuest(ctx context.Context, token uuid.UUID, guest GuestJoinDto) *shared.ErrorResponse {
-	return s.join(ctx, lockByToken(token), func(queries *model.Queries, booking model.LockBookingByInviteTokenRow, _ time.Time) *shared.ErrorResponse {
+	return s.join(ctx, lockByToken(token), addGuest(ctx, guest), joiner{guestName: guest.Name})
+}
+
+// addGuest: someone without an account joins, by their name and age.
+func addGuest(ctx context.Context, guest GuestJoinDto) func(*model.Queries, model.LockBookingByInviteTokenRow, time.Time) *shared.ErrorResponse {
+	return func(queries *model.Queries, booking model.LockBookingByInviteTokenRow, _ time.Time) *shared.ErrorResponse {
 		// a guest has no account the council could have verified
 		if booking.ResidentsOnly {
 			return &shared.ErrorResponse{Code: http.StatusForbidden, Message: "errors.guest_residents_only"}
@@ -263,7 +276,7 @@ func (s *invitesService) JoinAsGuest(ctx context.Context, token uuid.UUID, guest
 			return failed("errors.invite_failed")
 		}
 		return nil
-	}, joiner{guestName: guest.Name})
+	}
 }
 
 // join locks the booking row, so two people cannot both take the last spot.

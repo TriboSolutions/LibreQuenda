@@ -859,6 +859,7 @@
       "booking_window.council_changed": "Cambiou a ventá de reserva do concello",
       "staff.booking_created": "Reservou por alguén",
       "staff.booking_cancelled": "Cancelou unha reserva",
+      "staff.event_participant_added": "Apuntou a alguén a un evento",
       "staff.checked_in": "Marcou unha entrada",
       "staff.check_in_undone": "Desfixo unha entrada",
       "smtp.changed": "Cambiou o servidor de correo",
@@ -993,7 +994,13 @@
     "cancelTitle": "Cancelar «{{title}}»?",
     "cancelNotice_one": "Avisaremos a {{count}} persoa apuntada, co motivo se o indicas.",
     "cancelNotice_other": "Avisaremos ás {{count}} persoas apuntadas, co motivo se o indicas.",
-    "confirmCancel": "Cancelar o evento"
+    "confirmCancel": "Cancelar o evento",
+    "addPerson": "Apuntar a alguén",
+    "addWho": "A quen apuntas",
+    "age": "Idade",
+    "add": "Apuntar",
+    "adding": "Apuntando…",
+    "added": "Apuntouse a {{name}}."
   },
   "residents": {
     "tab": "Veciños",

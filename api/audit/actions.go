@@ -31,6 +31,7 @@ var actions = map[string]action{
 	"PUT /tenants/{slug}/admin/issues/{issueId}":                        {code: "issue.changed"},
 	"POST /tenants/{slug}/admin/bookings":                               {code: "staff.booking_created"},
 	"POST /tenants/{slug}/admin/bookings/{bookingId}/cancel":            {code: "staff.booking_cancelled", target: "booking", param: "bookingId"},
+	"POST /tenants/{slug}/admin/bookings/{bookingId}/participants":      {code: "staff.event_participant_added", target: "booking", param: "bookingId"},
 	"POST /tenants/{slug}/admin/bookings/{bookingId}/checkin":           {code: "staff.checked_in", target: "booking", param: "bookingId"},
 	"DELETE /tenants/{slug}/admin/bookings/{bookingId}/checkin":         {code: "staff.check_in_undone", target: "booking", param: "bookingId"},
 	"POST /tenants/{slug}/admin/events/preview":                         {code: ""},

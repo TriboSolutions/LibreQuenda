@@ -859,6 +859,7 @@
       "booking_window.council_changed": "Cambió la ventana de reserva del ayuntamiento",
       "staff.booking_created": "Reservó por alguien",
       "staff.booking_cancelled": "Canceló una reserva",
+      "staff.event_participant_added": "Apuntó a alguien a un evento",
       "staff.checked_in": "Marcó una entrada",
       "staff.check_in_undone": "Deshizo una entrada",
       "smtp.changed": "Cambió el servidor de correo",
@@ -993,7 +994,13 @@
     "cancelTitle": "¿Cancelar «{{title}}»?",
     "cancelNotice_one": "Avisaremos a {{count}} persona apuntada, con el motivo si lo indicas.",
     "cancelNotice_other": "Avisaremos a las {{count}} personas apuntadas, con el motivo si lo indicas.",
-    "confirmCancel": "Cancelar el evento"
+    "confirmCancel": "Cancelar el evento",
+    "addPerson": "Apuntar a alguien",
+    "addWho": "A quién apuntas",
+    "age": "Edad",
+    "add": "Apuntar",
+    "adding": "Apuntando…",
+    "added": "Se apuntó a {{name}}."
   },
   "residents": {
     "tab": "Vecinos",

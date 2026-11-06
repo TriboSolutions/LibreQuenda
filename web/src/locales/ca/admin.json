@@ -859,6 +859,7 @@
       "booking_window.council_changed": "Ha canviat la finestra de reserva de l’ajuntament",
       "staff.booking_created": "Ha reservat per algú",
       "staff.booking_cancelled": "Ha cancel·lat una reserva",
+      "staff.event_participant_added": "Ha apuntat algú a un esdeveniment",
       "staff.checked_in": "Ha marcat una entrada",
       "staff.check_in_undone": "Ha desfet una entrada",
       "smtp.changed": "Ha canviat el servidor de correu",
@@ -993,7 +994,13 @@
     "cancelTitle": "Vols cancel·lar «{{title}}»?",
     "cancelNotice_one": "Avisarem la {{count}} persona apuntada, amb el motiu si l’indiques.",
     "cancelNotice_other": "Avisarem les {{count}} persones apuntades, amb el motiu si l’indiques.",
-    "confirmCancel": "Cancel·la l’esdeveniment"
+    "confirmCancel": "Cancel·la l’esdeveniment",
+    "addPerson": "Apuntar algú",
+    "addWho": "Qui apuntes",
+    "age": "Edat",
+    "add": "Apunta",
+    "adding": "Apuntant…",
+    "added": "S’ha apuntat {{name}}."
   },
   "residents": {
     "tab": "Veïns",

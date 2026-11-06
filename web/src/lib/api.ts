@@ -1238,6 +1238,9 @@ export const api = {
     staffBook: (token: string, slug: string, input: StaffBookingInput) =>
       request<StaffBooking>(`/tenants/${encodeURIComponent(slug)}/admin/bookings`, { token, method: 'POST', body: input }),
     // the resident is told if they have an account, with the reason when there is one
+    // staff sign someone up for one of the council's events: an account (email) or a name and an age
+    addEventParticipant: (token: string, slug: string, bookingId: string, input: { email: string } | { name: string; age: number }) =>
+      request<void>(`/tenants/${encodeURIComponent(slug)}/admin/bookings/${bookingId}/participants`, { token, method: 'POST', body: input }),
     staffCancel: (token: string, slug: string, bookingId: string, reason: string) =>
       request<void>(`/tenants/${encodeURIComponent(slug)}/admin/bookings/${bookingId}/cancel`, { token, method: 'POST', body: { reason } }),
     events: (token: string, slug: string) => request<{ timezone: string; events: CouncilEvent[] }>(`/tenants/${encodeURIComponent(slug)}/admin/events`, { token }),

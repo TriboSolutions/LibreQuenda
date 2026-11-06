@@ -4,6 +4,7 @@ import (
 	"github.com/google/uuid"
 	"librequenda/audit"
 	"librequenda/core/bookings"
+	"librequenda/core/invites"
 	"librequenda/model"
 	"net/http"
 
@@ -60,6 +61,24 @@ func (h *counciladminHandler) CancelStaffBooking(w http.ResponseWriter, r *http.
 		return
 	}
 	send(w, r, nil, bookings.GetBookingsService(h.db).StaffCancel(r.Context(), tenantId, bookingId, input))
+}
+
+// AddEventParticipant: staff sign someone up for one of the council's events ({email} or {name, age}).
+func (h *counciladminHandler) AddEventParticipant(w http.ResponseWriter, r *http.Request) {
+	var tenantId, ok = h.councilAdmin(w, r)
+	if !ok {
+		return
+	}
+	var bookingId, err = helpers.GetUUidPathValue("bookingId", r)
+	if err != nil {
+		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_query_params")
+		return
+	}
+	var input invites.StaffJoinInput
+	if !decode(w, r, &input) {
+		return
+	}
+	send(w, r, nil, invites.GetInvitesService(h.db).StaffAddToEvent(r.Context(), tenantId, bookingId, input))
 }
 
 func (h *counciladminHandler) StaffCheckIn(w http.ResponseWriter, r *http.Request) {

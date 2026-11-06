@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, type Page, test } from '@playwright/test'
 import QRCode from 'qrcode'
-import { defaultBranding, mockApp, ME_COUNCIL_ADMIN, ME_UNVERIFIED, type MockOptions } from './mocks'
+import { defaultBranding, mockApp, ME_COUNCIL_ADMIN, ME_UNVERIFIED, staffBooking, staffDay, type MockOptions } from './mocks'
 
 // Every automatable WCAG 2.1 A and AA rule, plus axe's AAA rules (7:1 contrast and the like).
 const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag2aaa', 'best-practice']
@@ -1047,6 +1047,31 @@ test.describe('keyboard', () => {
     await expect(dialog.getByRole('listitem')).toHaveText([/lector da entrada/, /persoal/])
     await expect(dialog.getByRole('img', { name: 'QR de entrada de Xan' })).toBeVisible()
     await expect(dialog.getByRole('button', { name: 'Imprimir QR' })).toBeVisible()
+  })
+
+  test('staff sign someone up for an event, and cancel the event by its name', async ({ page }) => {
+    const later = (hours: number) => new Date(Date.now() + hours * 3_600_000).toISOString()
+    const event = { ...staffBooking, id: 'ev1', is_event: true, booked_by_staff: true, name: 'Torneo de pádel', starts_at: later(5), ends_at: later(7), participant_count: 3 }
+    await open(page, '/lugo/admin?vista=reservas')
+    await page.route(/\/api\/tenants\/lugo\/admin\/facilities\/[^/]+\/bookings/, (route) => route.fulfill({ json: { ...staffDay, bookings: [event] } }))
+    let sent: unknown = null
+    await page.route('**/api/tenants/lugo/admin/bookings/ev1/participants', async (route) => {
+      sent = route.request().postDataJSON()
+      await route.fulfill({ status: 204 })
+    })
+    await page.reload()
+    await page.getByRole('button', { name: /Torneo de pádel/ }).first().click()
+    const dialog = page.getByRole('dialog', { name: 'Torneo de pádel' })
+    await expect(dialog.getByRole('button', { name: 'Cancelar o evento' })).toBeVisible()
+    await dialog.getByRole('button', { name: 'Apuntar a alguén' }).click()
+    await dialog.getByLabel('Nome', { exact: true }).fill('Xan')
+    await dialog.getByLabel('Idade').fill('34')
+    await page.mouse.move(0, 0)
+    await expectAccessible(page)
+    await dialog.getByRole('button', { name: 'Apuntar', exact: true }).click()
+    await expect(dialog.getByText('Apuntouse a Xan.')).toBeVisible()
+    expect(sent).toEqual({ name: 'Xan', age: 34 })
+    await expect(dialog.getByText('+4 apuntadas')).toBeVisible()
   })
 
   test('a council administrator reaches its administration from the account menu on any page', async ({ page }) => {

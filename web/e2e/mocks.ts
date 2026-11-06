@@ -487,7 +487,7 @@ const smtp: CouncilSmtp = {
 
 // the Reservas tab: a turn under way whose entry staff can mark, a free turn, one walk-in
 // booked by staff, and one online booking that came in with the reader
-const staffBooking: StaffBooking = {
+export const staffBooking: StaffBooking = {
   id: '',
   starts_at: '',
   ends_at: '',
@@ -507,7 +507,7 @@ const staffBooking: StaffBooking = {
   checkin_code: '',
 }
 
-const staffDay: StaffDay = {
+export const staffDay: StaffDay = {
   date: iso(now).slice(0, 10),
   timezone: TZ,
   facility_id: 'f1',
