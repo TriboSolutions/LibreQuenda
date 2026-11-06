@@ -8,6 +8,8 @@ import gal.tribo.librequenda.notify.Notifier
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.compose.runtime.LaunchedEffect
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.getValue
@@ -49,6 +51,17 @@ class MainActivity : ComponentActivity() {
                 val branding by model.branding.collectAsStateWithLifecycle()
                 val home by model.home.collectAsStateWithLifecycle()
                 val scope = rememberCoroutineScope()
+                // the bell's count while the app is on screen: at once on coming back, then every minute
+                // (the background check posts phone notifications, not this count)
+                val lifecycle = androidx.lifecycle.compose.LocalLifecycleOwner.current.lifecycle
+                LaunchedEffect(session.signedIn) {
+                    if (session.signedIn) lifecycle.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
+                        while (true) {
+                            model.refreshNotifications()
+                            kotlinx.coroutines.delay(60_000)
+                        }
+                    }
+                }
 
                 // Zitadel's sign-in page in a Custom Tab; back here with the code (or nothing when closed)
                 val signInLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {

@@ -119,6 +119,7 @@
     <string name="resident_not_verified">Esta instalación es solo para vecinos de %1$s verificados por el ayuntamiento, y tu cuenta aún no lo está.</string>
     <string name="resident_request_row">Pedir ser vecino</string>
     <string name="resident_request_sent">Petición enviada</string>
+    <string name="resident_of_short">Vecino de %1$s</string>
     <string name="resident_request_row_help">Llama al ayuntamiento o envía la petición desde aquí</string>
     <string name="resident_request_pending">Petición enviada el %1$s, pendiente de revisión</string>
     <string name="resident_request_pending_help">Toca para verla o retirarla</string>

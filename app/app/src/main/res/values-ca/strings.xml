@@ -119,6 +119,7 @@
     <string name="resident_not_verified">Aquesta instal·lació és només per a veïns de %1$s verificats per l’ajuntament, i el teu compte encara no ho està.</string>
     <string name="resident_request_row">Demana ser veí</string>
     <string name="resident_request_sent">Petició enviada</string>
+    <string name="resident_of_short">Veí de %1$s</string>
     <string name="resident_request_row_help">Truca a l’ajuntament o envia la petició des d’aquí</string>
     <string name="resident_request_pending">Petició enviada el %1$s, pendent de revisió</string>
     <string name="resident_request_pending_help">Toca per veure-la o retirar-la</string>

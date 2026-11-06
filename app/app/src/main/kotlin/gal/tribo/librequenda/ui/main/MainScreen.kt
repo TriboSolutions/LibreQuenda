@@ -434,6 +434,11 @@ private fun MenuPage(
                             Text(me?.email.orEmpty(), style = MaterialTheme.typography.bodyMedium, color = Lq.colors.mutedForeground, maxLines = 1, overflow = TextOverflow.Ellipsis)
                             // their rating, under who they are; nothing until someone rated them
                             me?.rating?.let { gal.tribo.librequenda.ui.components.RatingBadge(it, Modifier.padding(top = 4.dp)) }
+                            // the council that verified them as its resident (one; an administrator counts where they administer)
+                            if (me != null && me.residentCouncils.isNotEmpty()) {
+                                Spacer(Modifier.height(8.dp))
+                                Pill(stringResource(R.string.resident_of_short, me.residentCouncils.joinToString(", ") { it.name }), Lq.colors.pillPositiveBg, Lq.colors.pillPositiveInk)
+                            }
                             if (me != null && !me.emailVerified) {
                                 Spacer(Modifier.height(8.dp))
                                 Pill(stringResource(R.string.email_not_verified), Lq.colors.pillNegativeBg, Lq.colors.pillNegativeInk)
