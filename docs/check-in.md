@@ -1,35 +1,35 @@
-# Check-in at the entrance
+# Rexistrar a entrada na instalación
 
-Councils need to know who actually turned up: it frees no-show turns, feeds the attendance indicators and keeps the facility for the people who booked it.
+Os concellos precisan saber quen se presentou de verdade: así quedan libres as quendas de quen non vén, aliméntanse os indicadores de asistencia e a instalación queda para as persoas que a reservaron.
 
-**What LibreQuenda does today.** The facility has a reader at the door (`/lector`): any phone, tablet or small computer with a camera, paired to the facility with a device key from `/<council>/admin`. The resident shows one of two QR codes:
+**O que fai hoxe LibreQuenda.** A instalación ten un lector na porta (`/lector`): calquera teléfono, tableta ou ordenador pequeno con cámara, vinculado á instalación cunha clave de dispositivo desde `/<council>/admin`. A persoa amosa un destes dous códigos QR:
 
-- **Booking QR**: each booking has its own (in the app, in the confirmation and reminder emails, and printable by staff for someone without an account). The reader lets the person in from 15 minutes before the start until the end.
-- **Flash booking QR**: the personal QR in the account menu. It changes every minute and works once, so a screenshot is useless. If the turn under way (or the one about to start) is free, scanning it books it on the spot, within the usual limits and rules.
+- **QR da reserva**: cada reserva ten o seu (na app, nos correos de confirmación e de recordatorio, e o persoal pódeo imprimir para alguén sen conta). O lector deixa entrar a persoa desde 15 minutos antes do comezo ata o final.
+- **QR de reserva flash**: o QR persoal do menú da conta. Cambia cada minuto e só vale unha vez, así que unha captura de pantalla non serve. Se a quenda en curso (ou a que está a piques de empezar) está libre, ao lelo resérvaa no momento, cos límites e as normas de sempre.
 
-Staff can also book from the desk ("Reserva manual"), print the entry QR for the person, and cancel.
+O persoal tamén pode reservar desde o mostrador («Reserva manual»), imprimirlle á persoa o QR de entrada e cancelar.
 
-The resident can also check in from their own phone, reading the facility instead of being read. Both ways are switched on per facility in the facility editor's **Entrada** tab, and both need the facility's map pin:
+A persoa tamén pode rexistrar a entrada desde o seu propio teléfono, lendo ela a instalación en vez de ser lida. Ambas as formas actívanse por instalación na lapela **Entrada** do editor da instalación, e as dúas precisan o punto da instalación no mapa:
 
-- **Printed QR at the door**: the tab prints a sheet with the facility's QR. It opens `/<council>/<facility>/entrada` with a random token, so the address alone does not work. "New QR" changes the token and the sheets already printed stop working.
-- **Entry code**: the tab shows the facility's fixed 6-digit code and prints it for the door. It comes from an HMAC of a per-facility secret, so "New code" gives a new one and the printed copies stop working. The resident types it on the same `/entrada` page; their booking still has to be open for entry (from 15 minutes before it starts until it ends), and the endpoint has the strict rate limit, so guessing codes is slow.
+- **QR impreso na porta**: a lapela imprime unha folla co QR da instalación. Abre `/<council>/<facility>/entrada` cun token aleatorio, así que o enderezo por si só non funciona. «Novo QR» cambia o token e as follas xa impresas deixan de funcionar.
+- **Código de entrada**: a lapela amosa o código fixo de 6 díxitos da instalación e imprímeo para a porta. Sae dun HMAC dun segredo propio de cada instalación, así que «Novo código» dá un novo e as copias impresas deixan de funcionar. A persoa escríbeo na mesma páxina `/entrada`; a súa reserva ten que estar aberta para entrar (desde 15 minutos antes do comezo ata que remata), e o endpoint ten o límite de peticións estrito, así que adiviñar códigos é lento.
 
-Either way the phone's location is required: within the facility's distance (100 m unless the council changes it, between 25 and 1000 m) of its pin, with an accuracy of 150 m or better. The browser asks the resident; the API checks the location and drops it, it is never stored. A location can be faked by someone determined, so these two are the cheap options, not the strict ones. Then the check-in is the reader's own: the person's booking for this turn goes in. Without one, the page offers **Book and check in**, a flash booking of the free turn under the usual rules. The council can turn flash booking off for the facility in the same tab, which also turns it off for the personal QR at the readers.
+Nos dous casos é obrigatoria a localización do teléfono: dentro da distancia da instalación (100 m salvo que o concello a cambie, entre 25 e 1000 m) ao seu punto, cunha precisión de 150 m ou mellor. O navegador pídella á persoa; a API comproba a localización e descártaa, nunca se garda. Alguén decidido pode falsear unha localización, así que estas dúas son as opcións baratas, non as estritas. Despois, o rexistro de entrada é o mesmo que no lector: entra a reserva da persoa para esta quenda. Se non a ten, a páxina ofrece **Reservar e entrar**, unha reserva flash da quenda libre coas normas de sempre. O concello pode desactivar a reserva flash para a instalación na mesma lapela, o que tamén a desactiva para o QR persoal nos lectores.
 
-**Staff confirmation** is the third way the tab switches on, and needs no pin. In the "Reserva manual" calendar, staff open a booking and press **Mark as in**, from 15 minutes before the start until the turn ends, as at a reader. It works for bookings by name too, and the booking shows who marked it. A staff entry can be undone for 5 minutes, in case they picked the wrong booking; entries from a reader or a phone cannot.
+**A confirmación do persoal** é a terceira forma que activa a lapela, e non precisa punto no mapa. No calendario da «Reserva manual», o persoal abre unha reserva e preme **Marcar entrada**, desde 15 minutos antes do comezo ata que remata a quenda, coma nun lector. Tamén funciona coas reservas a nome dunha persoa, e a reserva amosa quen a marcou. Unha entrada marcada polo persoal pódese desfacer durante 5 minutos, por se se escolleu a reserva equivocada; as entradas desde un lector ou un teléfono non.
 
-Every entry records how it happened (`reader`, `printed_qr`, `entry_code` or `staff`), and the council's data export includes it.
+Cada entrada garda como se fixo (`reader`, `printed_qr`, `entry_code` ou `staff`), e a exportación de datos do concello inclúeo.
 
-**Other ways it could work (not built yet).** The options below let a council choose by budget and by how much it cares about cheating. They would all end in the same check-in on the booking, so the indicators stay the same.
+**Outras formas en que podería funcionar (aínda sen facer).** As opcións de abaixo permiten que un concello escolla segundo o orzamento e o que lle importen as trampas. Todas rematarían no mesmo rexistro de entrada na reserva, así que os indicadores non cambian.
 
-| Way | At the door | How the resident checks in | Cost | Hard to cheat? |
+| Forma | Na porta | Como rexistra a entrada a persoa | Custo | Difícil de facer trampa? |
 | --- | --- | --- | --- | --- |
-| Booking or flash QR (built) | A device with a camera running `/lector` | Shows the QR from their phone or a printout | A cheap phone or tablet | Yes: tokens are per booking or change every minute |
-| Printed QR (built) | A sheet of paper with the facility's QR | Scans it with their phone; the app checks in their booking for that facility and turn | Nearly free | Low: a photo of the sheet works anywhere, so the phone's location is always checked |
-| Entry code (built) | A sheet at the door or the desk with the facility's fixed code | Types the code on their phone | Nearly free | Low on its own: the code does not change until the council makes a new one; the phone's location is always checked |
-| NFC tag | A sticker on the door | Taps it with their phone, which opens the check-in page | A few euros per door | Low with a plain tag (it can be copied). High with a tag that signs every tap (e.g. NTAG 424 DNA "SUN" messages), which the API checks |
-| Staff confirmation (built) | Nobody, or the desk | Staff mark them as in from the booking on the "Reserva manual" calendar | Staff time | As good as the staff |
+| QR da reserva ou flash (feito) | Un dispositivo con cámara que executa `/lector` | Amosa o QR desde o seu teléfono ou impreso | Un teléfono ou unha tableta baratos | Si: os tokens son por reserva ou cambian cada minuto |
+| QR impreso (feito) | Unha folla de papel co QR da instalación | Léo co seu teléfono; a app rexistra a entrada da súa reserva nesa instalación e quenda | Case de balde | Baixo: unha foto da folla funciona en calquera parte, así que sempre se comproba a localización do teléfono |
+| Código de entrada (feito) | Unha folla na porta ou no mostrador co código fixo da instalación | Escribe o código no seu teléfono | Case de balde | Baixo por si só: o código non cambia ata que o concello xera un novo; sempre se comproba a localización do teléfono |
+| Etiqueta NFC | Un adhesivo na porta | Achega o teléfono, que abre a páxina de rexistro de entrada | Uns poucos euros por porta | Baixo cunha etiqueta simple (pódese copiar). Alto cunha etiqueta que asina cada lectura (p. ex. mensaxes «SUN» de NTAG 424 DNA), que comproba a API |
+| Confirmación do persoal (feito) | Ninguén, ou o mostrador | O persoal marca a súa entrada desde a reserva no calendario da «Reserva manual» | Tempo do persoal | Tan bo coma o persoal |
 
-What the ones not built yet would need:
+O que precisarían as que aínda non están feitas:
 
-- **NFC tag:** a plain tag can hold the `/entrada` address of the printed QR today. A signed one needs the tag's key, stored per door, and a check of the tap counter so a recorded tap cannot be replayed.
+- **Etiqueta NFC:** unha etiqueta simple xa pode gardar hoxe o enderezo `/entrada` do QR impreso. Unha asinada precisa a clave da etiqueta, gardada por porta, e unha comprobación do contador de lecturas para que non se poida reproducir unha lectura gravada.

@@ -1,32 +1,28 @@
-# React + TypeScript + Vite
+# Web de LibreQuenda
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A aplicación web de LibreQuenda, feita con React, TypeScript e Vite: a veciñanza reserva desde ela, o concello xestiona en `/<concello>/admin` e a superadministración en `/admin`. Os textos están en `src/locales` (gl, es, ca, en).
 
-Currently, two official plugins are available:
+## Desenvolvemento
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Precisa Node.js e pnpm (a versión está fixada en `packageManager` de `package.json`). Desde este directorio:
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```sh
+pnpm install
+pnpm dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+O servidor de desenvolvemento de Vite reenvía `/api` e `/config.json` ao Caddy da pila de Docker Compose (`http://localhost` por defecto, ou o valor de `VITE_API_PROXY_TARGET`), así que antes cómpre ter arrincada a pila de desenvolvemento de LibreQuenda.
+
+## Ordes
+
+| Orde | Que fai |
+|---|---|
+| `pnpm dev` | servidor de desenvolvemento con recarga en quente |
+| `pnpm build` | comproba os tipos (`tsc -b`) e compila para produción en `dist/` |
+| `pnpm preview` | serve a compilación de `dist/` |
+| `pnpm lint` | analiza o código con Oxlint |
+| `pnpm test:a11y` | probas de accesibilidade (WCAG 2.1) con Playwright en Chromium, coa API simulada (`e2e/`) |
+
+Para as probas de accesibilidade, instala antes o navegador con `pnpm exec playwright install --with-deps chromium`. A CI executa `pnpm lint`, `pnpm build` e `pnpm test:a11y`.
+
+A pila, a estrutura do repositorio e o resto da documentación de desenvolvemento están en [docs/development.md](../docs/development.md).

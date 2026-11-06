@@ -1,33 +1,33 @@
 # LibreQuenda
 
-Free-software platform for managing and booking **municipal sports facilities**, built for Galician councils (*concellos*).
+Plataforma de software libre para xestionar e reservar **instalacións deportivas municipais**, feita para os concellos galegos.
 
-Residents look up facilities, book, change or cancel their bookings, invite others or open a booking to people nearby, check in at the door (QR, printed QR, entry code or staff), report problems and get notifications and emails. Councils manage their facilities, opening hours, closures, usage rules and images, answer residents' reports, and follow live indicators they can export. Superadministrators manage the councils and their administrators, and an activity log records every administrative change. One installation can serve one council or many, on the web and in an Android app that each installation can build with its own name and logo.
+A veciñanza consulta as instalacións, reserva, cambia ou cancela as súas reservas, convida outras persoas ou abre unha reserva a quen estea preto, rexistra a entrada na porta (QR, QR impreso, código de entrada ou persoal), avisa de problemas e recibe avisos e correos. Os concellos xestionan as súas instalacións, os horarios, os peches, as normas de uso e as imaxes, responden ás incidencias da veciñanza e seguen indicadores en directo que poden exportar. A superadministración xestiona os concellos e as súas persoas administradoras, e un rexistro de actividade garda cada cambio administrativo. Unha mesma instalación de LibreQuenda pode servir a un concello ou a moitos, na web e nunha app Android que cada instalación pode compilar co seu propio nome e logotipo.
 
-LibreQuenda is Tribo Solutions' proposal for the [I Certame GOBTEC de Software Libre](https://www.agasol.gal/i-certame-gobtec/) (AGASOL, 2026).
+LibreQuenda é a proposta de Tribo Solutions para o [I Certame GOBTEC de Software Libre](https://www.agasol.gal/i-certame-gobtec/) (AGASOL, 2026).
 
-## Screenshots
+## Capturas
 
 | | |
 |---|---|
-| ![Every council's facilities, on a list and a map, with suggestions from the resident's own bookings](docs/screenshots/web-home.png) | ![A facility's page: its free turns by day, the council's events and public bookings to join, and where it is](docs/screenshots/web-facility.png) |
-| **Find a facility**: every council's, on a list and a map, and suggestions from your own bookings | **Book a turn**: free turns by day, events and public bookings to join |
-| ![My bookings: who is coming, inviting, making it public, checking in, and the history to rate](docs/screenshots/web-bookings.png) | ![A council's administration: facilities, manual bookings, events, residents, indicators, issues and the activity log](docs/screenshots/web-admin.png) |
-| **Your bookings**: who is coming, invite or open it to others, check in at the door | **Run the council**: facilities, manual bookings, events, residents, live indicators |
+| ![As instalacións de todos os concellos, nunha lista e nun mapa, con suxestións a partir das propias reservas da persoa](docs/screenshots/web-home.png) | ![A páxina dunha instalación: as súas quendas libres por día, os eventos do concello e as reservas públicas ás que unirse, e onde está](docs/screenshots/web-facility.png) |
+| **Atopa unha instalación**: as de todos os concellos, nunha lista e nun mapa, e suxestións a partir das túas propias reservas | **Reserva unha quenda**: quendas libres por día, eventos e reservas públicas ás que unirse |
+| ![As miñas reservas: quen vén, convidar, facela pública, rexistrar a entrada e o historial para valorar](docs/screenshots/web-bookings.png) | ![A administración dun concello: instalacións, reservas manuais, eventos, veciñanza, indicadores, incidencias e o rexistro de actividade](docs/screenshots/web-admin.png) |
+| **As túas reservas**: quen vén, convida ou ábrea a outras persoas, rexistra a entrada na porta | **Xestiona o concello**: instalacións, reservas manuais, eventos, veciñanza, indicadores en directo |
 
-The screenshots show demo data.
+As capturas amosan datos de demostración.
 
-## Requirements
+## Requisitos
 
-- A Linux server with [Docker](https://docs.docker.com/engine/install/) (Compose v2) and `curl`, with 2 GB of RAM (the whole stack uses about 400 MB idle) and some disk for the database, images and backups.
-- Two domain names pointing (DNS A/AAAA) to it: the web app and the sign-in, e.g. `reservas.concello.gal` and `auth.reservas.concello.gal`.
-- Ports 80 and 443 open (HTTPS certificates come from Let's Encrypt), or another proxy in front that handles HTTPS.
-- An SMTP account to send email (confirmations, reminders, sign-in codes).
-- For your own Android app: nothing else, it is built in Docker too, but the build needs about 4 GB of RAM (on the server or any other machine).
+- Un servidor Linux con [Docker](https://docs.docker.com/engine/install/) (Compose v2) e `curl`, con 2 GB de RAM (toda a pila usa uns 400 MB en repouso) e algo de disco para a base de datos, as imaxes e as copias de seguridade.
+- Dous nomes de dominio que apunten (DNS A/AAAA) a el: a aplicación web e o inicio de sesión, p. ex. `reservas.concello.gal` e `auth.reservas.concello.gal`.
+- Os portos 80 e 443 abertos (os certificados HTTPS veñen de Let's Encrypt), ou outro proxy diante que se encargue do HTTPS.
+- Unha conta SMTP para enviar correo (confirmacións, recordatorios, códigos de inicio de sesión).
+- Para a túa propia app Android: nada máis, tamén se compila en Docker, pero a compilación precisa uns 4 GB de RAM (no servidor ou en calquera outra máquina).
 
-## Install
+## Instalación
 
-On the server, in the directory that will hold the installation:
+No servidor, no directorio que vai conter a instalación:
 
 ```sh
 mkdir librequenda && cd librequenda
@@ -35,29 +35,29 @@ curl -fsSLO https://raw.githubusercontent.com/TriboSolutions/LibreQuenda/main/in
 bash install.sh
 ```
 
-The installer asks for the domains, the first administrator and the SMTP account, generates every secret, writes `.env`, and starts LibreQuenda from the prebuilt images. At the end it can also build **your own Android app** (your name, logo and package, already pointing to your server) as an APK to install directly and an AAB for Google Play.
+O instalador pide os dominios, a primeira persoa administradora e a conta SMTP, xera todos os segredos, escribe `.env` e arrinca LibreQuenda a partir das imaxes xa compiladas. Ao final tamén pode compilar **a túa propia app Android** (co teu nome, logotipo e paquete, xa apuntando ao teu servidor) como un APK para instalar directamente e un AAB para Google Play.
 
-Then open `https://<your domain>/admin`, sign in as the administrator, and create your council.
+Despois abre `https://<your domain>/admin`, inicia sesión como persoa administradora e crea o teu concello.
 
-**Keep a copy of `.env` (and `android/` if you built the app) somewhere safe.** `ZITADEL_MASTERKEY` cannot be recovered, backups cannot be restored without it, and app updates must be signed with the same key.
+**Garda unha copia de `.env` (e de `android/` se compilaches a app) nun lugar seguro.** `ZITADEL_MASTERKEY` non se pode recuperar, sen ela non se poden restaurar as copias de seguridade, e as actualizacións da app teñen que asinarse coa mesma chave.
 
-Run it again at any time to change the configuration (Enter keeps each current value), or:
+Execútao de novo cando queiras para cambiar a configuración (Intro conserva cada valor actual), ou:
 
 ```sh
 docker compose pull && docker compose up -d --wait   # update LibreQuenda
 bash install.sh app                                  # build your app again (e.g. after an update)
 ```
 
-## Booking from an AI agent
+## Reservar desde un axente de IA
 
-Each installation also serves an [MCP](https://modelcontextprotocol.io) server at `https://<your domain>/api/mcp`: add it as a connector in Claude, ChatGPT, Cursor or any MCP client, and the agent can find facilities and free turns, and book, cancel or join public games for you. You sign in on your installation's own page with a code; the agent never sees your password. See [docs/mcp.md](docs/mcp.md).
+Cada instalación serve tamén un servidor [MCP](https://modelcontextprotocol.io) en `https://<your domain>/api/mcp`: engádeo como conector en Claude, ChatGPT, Cursor ou calquera cliente MCP, e o axente pode atopar instalacións e quendas libres, e reservar, cancelar ou unirse a partidas públicas por ti. Inicias sesión na propia páxina da túa instalación cun código; o axente nunca ve o teu contrasinal. Consulta [docs/mcp.md](docs/mcp.md).
 
-Council administrators can also ask their data questions in their own words (which facility had the most cancellations, which hours fill up first), answered by the language model of your choice on read-only views without personal data: see [docs/analytics.md](docs/analytics.md).
+As persoas administradoras dos concellos tamén poden facerlles preguntas aos seus datos coas súas propias palabras (que instalación tivo máis cancelacións, que horas se enchen antes), que responde o modelo de linguaxe que elixas sobre vistas de só lectura sen datos persoais: consulta [docs/analytics.md](docs/analytics.md).
 
-Everything else (configuration options, backups and restoring them, sign-in settings, installing by hand) is in [docs/self-hosting.md](docs/self-hosting.md). For development, see [docs/development.md](docs/development.md).
+Todo o demais (opcións de configuración, copias de seguridade e como restauralas, axustes do inicio de sesión, instalación manual) está en [docs/self-hosting.md](docs/self-hosting.md). Para o desenvolvemento, consulta [docs/development.md](docs/development.md).
 
-## License
+## Licenza
 
 Copyright (C) 2026 Tribo Solutions
 
-This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. See [LICENSE](LICENSE).
+Este programa é software libre: podes redistribuílo e/ou modificalo baixo os termos da GNU Affero General Public License tal como a publica a Free Software Foundation, xa sexa a versión 3 da licenza ou (á túa elección) calquera versión posterior. Consulta [LICENSE](LICENSE).

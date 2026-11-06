@@ -1,55 +1,55 @@
-# Asking the data (analytics assistant)
+# Preguntarlles aos datos (asistente de analítica)
 
-Council administrators ask questions about their council's data in their own words:
-«which facility had the most cancellations
-last month?», «which hours are booked most on Saturdays?». Analytics are always by council:
-a superadministrator, who sets the model, asks inside one council, never about all of
-them at once. While it is switched on, a «Fala cos datos» bubble in the bottom right corner of a
-council's **Indicators** opens the conversation on that council's data (`/datos`). A language model writes SQL,
-LibreQuenda runs it read-only and the model answers, in Markdown and, when a chart is asked for or helps, with charts (bars, stacked or horizontal bars, lines, pies, heatmaps: the model picks the kind and the SQL of its data, and the chart shows what that SQL returned, never numbers the model wrote). The SQL is not shown to the person (each chart
-has its table); the API logs every query, per person.
+As persoas administradoras dun concello fan preguntas sobre os datos do seu concello coas súas propias palabras:
+«que instalación tivo máis cancelacións
+o mes pasado?», «que horas se reservan máis os sábados?». A analítica é sempre por concello:
+unha persoa da superadministración, que configura o modelo, pregunta dentro dun concello, nunca sobre todos
+eles á vez. Mentres está activado, unha burbulla «Fala cos datos» na esquina inferior dereita dos
+**Indicadores** dun concello abre a conversa sobre os datos dese concello (`/datos`). Un modelo de linguaxe escribe SQL,
+LibreQuenda execútao en modo só lectura e o modelo responde, en Markdown e, cando se pide unha gráfica ou axuda, con gráficas (barras, barras apiladas ou horizontais, liñas, sectores, mapas de calor: o modelo escolle o tipo e o SQL dos seus datos, e a gráfica amosa o que devolveu ese SQL, nunca números que escribise o modelo). O SQL non se lle amosa á persoa (cada gráfica
+ten a súa táboa); a API rexistra cada consulta, por persoa.
 
-Agents do the same through the MCP server (`analytics_views`, `analytics_query`), for
-the councils the signed-in person runs: see [mcp.md](mcp.md).
+Os axentes fan o mesmo a través do servidor MCP (`analytics_views`, `analytics_query`), para
+os concellos que xestiona a persoa que iniciou sesión: consulta [mcp.md](mcp.md).
 
-## Setting it up
+## Configuración
 
-1. `ANALYTICS_DB_PASSWORD` in `.env` (`install.sh` generates it): the password of the
-   read-only PostgreSQL user the queries run as.
-2. In **Platform → Settings (⚙) → Data assistant (AI)**, a superadministrator sets the
-   language model and switches it on:
-   - **OpenAI-compatible**: OpenAI, Mistral, Groq, OpenRouter… or a model on your own
-     server (Ollama, vLLM, LM Studio), e.g. `http://ollama:11434/v1`.
+1. `ANALYTICS_DB_PASSWORD` en `.env` (xérao `install.sh`): o contrasinal do
+   usuario de PostgreSQL de só lectura co que se executan as consultas.
+2. En **Plataforma → Axustes (⚙) → Asistente de datos (IA)**, unha persoa da superadministración configura o
+   modelo de linguaxe e actívao:
+   - **Compatible con OpenAI**: OpenAI, Mistral, Groq, OpenRouter… ou un modelo no teu propio
+     servidor (Ollama, vLLM, LM Studio), p. ex. `http://ollama:11434/v1`.
    - **Anthropic**: `https://api.anthropic.com`.
 
-   The API key is stored encrypted with `SECRETS_KEY` and never shown again.
+   A clave da API gárdase cifrada con `SECRETS_KEY` e non se volve amosar.
 
-The query results the model reads are aggregated and carry no names, emails, phones
-or free text, but with an outside provider they do leave the installation. A model on
-your own server keeps them in it.
+Os resultados das consultas que le o modelo están agregados e non levan nomes, correos, teléfonos
+nin texto libre, pero cun provedor externo si saen da instalación. Un modelo no
+teu propio servidor mantenos dentro dela.
 
-## What keeps it safe
+## Que o fai seguro
 
-The guarantees are PostgreSQL's, not a check of the SQL the model writes:
+As garantías son de PostgreSQL, non unha revisión do SQL que escribe o modelo:
 
-- **A read-only user** (`librequenda_analytics`, `db/init/08_analytics_role.sh`) whose
-  every transaction is read-only, with a time limit, and who can only `SELECT` from the
-  **analytics views** (`db/init/07_analytics_views.sql`): no right on any table.
-- **One view per table, without** personal data (names, emails, phones, DNI, addresses;
-  only the year of birth), secrets or tokens (QR, NFC, calendar, reader keys, SMTP), or
-  the free text people write (descriptions, reasons, notes, rules, titles, notification
-  contents), which could carry instructions to the model. People are ids, to count.
-- **Each council sees only its rows**: the API names the councils with `SET LOCAL`, the
-  views filter by them, and the read-only user cannot change them (`set_config` is
-  revoked from it). A council's administrator never sees another council's data,
-  whatever the SQL says. Nothing that belongs to no council is in the views.
-- **One statement**: the SQL runs wrapped as a subquery (no second statement can follow),
-  with at most 500 rows and an 8-second limit, on a connection that is closed afterwards.
-- **Only about the data**: a question about anything else (code, general knowledge, writing…) is
-  declined with a fixed message: the model has an `off_topic` tool that ends the conversation,
-  and the API itself refuses an answer with code, or a long one that no query backs.
-- **Recorded**: every question is in the activity log, and every query the assistant
-  ran in the API's log.
+- **Un usuario de só lectura** (`librequenda_analytics`, `db/init/08_analytics_role.sh`) no que
+  todas as transaccións son de só lectura, cun límite de tempo, e que só pode facer `SELECT` sobre as
+  **vistas de analítica** (`db/init/07_analytics_views.sql`): ningún permiso sobre ningunha táboa.
+- **Unha vista por táboa, sen** datos persoais (nomes, correos, teléfonos, DNI, enderezos;
+  só o ano de nacemento), segredos nin tokens (QR, NFC, calendario, claves dos lectores, SMTP), nin
+  o texto libre que escribe a xente (descricións, motivos, notas, normas, títulos, contidos
+  dos avisos), que podería levar instrucións para o modelo. As persoas son identificadores, para contar.
+- **Cada concello ve só as súas filas**: a API indica os concellos con `SET LOCAL`, as
+  vistas filtran por eles e o usuario de só lectura non os pode cambiar (retíraselle
+  `set_config`). Unha persoa administradora dun concello nunca ve os datos doutro concello,
+  diga o que diga o SQL. Nas vistas non hai nada que non pertenza a ningún concello.
+- **Unha única sentenza**: o SQL execútase envolto nunha subconsulta (non pode ir despois unha segunda sentenza),
+  con 500 filas como máximo e un límite de 8 segundos, nunha conexión que se pecha despois.
+- **Só sobre os datos**: unha pregunta sobre calquera outra cousa (código, coñecemento xeral, redacción…)
+  rexéitase cunha mensaxe fixa: o modelo ten unha ferramenta `off_topic` que remata a conversa,
+  e a propia API rexeita unha resposta con código, ou unha longa que non respalde ningunha consulta.
+- **Rexistrado**: cada pregunta queda no rexistro de actividade, e cada consulta que executou
+  o asistente, no rexistro da API.
 
-At most, a model misled by what it reads could run other read-only queries on the same
-views of the same councils: the person asking could see those anyway.
+Como moito, un modelo enganado polo que le podería executar outras consultas de só lectura sobre as mesmas
+vistas dos mesmos concellos: a persoa que pregunta podería velas de todos modos.

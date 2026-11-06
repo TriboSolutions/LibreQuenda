@@ -1,116 +1,116 @@
-# LibreQuenda features
+# Funcións de LibreQuenda
 
-What the app does today, what is being built, and ideas for later. For the plan and what is left before the contest, see [todo.md](todo.md).
+O que fai hoxe a aplicación, o que se está a construír e ideas para máis adiante. Para o plan e o que queda antes do certame, consulta [todo.md](todo.md).
 
-Status: **built** · **in progress** (open work) · **idea** (not started).
+Estado: **feito** · **en curso** (traballo aberto) · **idea** (sen comezar).
 
-## Residents
+## Veciñanza
 
-| Feature | Status |
+| Función | Estado |
 |---|---|
-| Home page with every facility of every council: list beside a map, search, filters by council, sport, kind of place (tag catalogue) and kind of booking (public games, events), "near me" with a distance | built |
-| Council pages and facility pages: photos, description, address and directions, contact (the facility's, else the council's), opening hours, closures, usage rules, minimum age, the booking window that applies, the residents' average rating | built |
-| Day view of free, booked, closed and past turns | built |
-| Weather forecast at outdoor facilities (MeteoGalicia's open data, by the council's municipality): the day on the facility page, the turn's period in the booking dialog, with a warning in words for rain, storm, snow or hail, strong wind, heat or frost | built |
-| Book a free turn, accepting the usage rules; change it to another time of the same facility; cancel it until the deadline | built |
-| Invite people to fill a booking's capacity by link, with an account or as a guest (name and age); leave a booking; the owner removes people | built |
-| Public bookings: make a booking public, and join others' public bookings from "For you" | built |
-| Council events: join the council's events (a title, its own capacity and time) from the facility page, "For you" or the top of the app's home, and hear when one is moved or cancelled | built |
-| My bookings: upcoming and history, countdown to each turn ("starts in 2 h", "you can go in now"), attendance of past ones | built |
-| "For you" on the home page: your usual turn when it falls today and is free, the facilities you book most with turns left today, similar ones you have not tried, public games and events to join; can be turned off | built |
-| Ratings: when a booking ends, rate the facility from 1 to 5 stars and, after a public booking, the others with an account; anonymous (only the average and the count are shown), final once given; averages on facilities and on each person's profile | built |
-| Notifications in the app (bell, refreshed every 30 s) and emails: confirmation, reminder 15 minutes before, change, cancellation by you or by the council (with the reason and the closure dates) | built |
-| Emails explain how to check in at that facility (only its ways), with directions and the facility's and council's contacts | built |
-| Calendar feed (.ics) to subscribe from Google, Outlook or Apple, with one-click buttons | built |
-| Profile: photo framed in a circle (copied to the sign-in account), birth date, phone; preferences apart (email language, reminders, "For you") | built |
-| Account in Zitadel: sign up and in with a password or Google (passkeys optional), change name, email and password from the profile | built |
-| Verified email required to book, join a turn or book at the door (keeps bot accounts from taking turns) | built |
-| Your data as a file (JSON and CSV) and deleting your account (bookings anonymised, sign-in account deleted) | built |
-| Residents-only facilities marked «Só para veciños» on their page, their cards and their events; someone not verified there asks to be: phone the council, or send a request (DNI or NIE, name, postal code, street), one a week at most, and withdraw it while pending; told by notice and email when the council decides | built |
-| Report a problem at a facility (broken net, no light, dirty changing rooms…) from a booking or the facility's page, with a category, a photo and whether it is urgent; told by notice and email when the council fixes or rejects it | built |
-| Terms of use and privacy policy pages; support contact in the footer | built |
-| Four languages (Galician, Spanish, English, Catalan), light and dark theme | built |
+| Páxina de inicio con todas as instalacións de todos os concellos: lista xunto a un mapa, busca, filtros por concello, deporte, tipo de espazo (catálogo de etiquetas) e tipo de reserva (partidas públicas, eventos), «preto de min» coa distancia | feito |
+| Páxinas de concello e de instalación: fotos, descrición, enderezo e como chegar, contacto (o da instalación ou, se non, o do concello), horario, peches, normas de uso, idade mínima, a ventá de reserva que se aplica, a valoración media da veciñanza | feito |
+| Vista do día coas quendas libres, reservadas, pechadas e pasadas | feito |
+| Predición do tempo nas instalacións ao aire libre (datos abertos de MeteoGalicia, polo municipio do concello): o día na páxina da instalación e o período da quenda no diálogo de reserva, cun aviso en palabras para choiva, treboada, neve ou sarabia, vento forte, calor ou xeada | feito |
+| Reservar unha quenda libre aceptando as normas de uso; cambiala a outra hora da mesma instalación; cancelala ata o prazo límite | feito |
+| Convidar a outras persoas a encher o aforo dunha reserva cunha ligazón, con conta ou como convidadas (nome e idade); saír dunha reserva; quen reserva pode quitar xente | feito |
+| Reservas públicas: facer pública unha reserva e unirse ás reservas públicas doutras persoas desde «Para ti» | feito |
+| Eventos do concello: apuntarse aos eventos do concello (un título, aforo e horario propios) desde a páxina da instalación, «Para ti» ou a parte superior do inicio da app, e recibir aviso cando un se move ou se cancela | feito |
+| As miñas reservas: próximas e historial, conta atrás ata cada quenda («empeza en 2 h», «xa podes entrar»), asistencia ás pasadas | feito |
+| «Para ti» na páxina de inicio: a túa quenda habitual cando cae hoxe e está libre, as instalacións que máis reservas con quendas libres hoxe, outras parecidas que aínda non probaches, partidas públicas e eventos aos que unirse; pódese desactivar | feito |
+| Valoracións: ao rematar unha reserva, valorar a instalación de 1 a 5 estrelas e, despois dunha reserva pública, ás outras persoas con conta; anónimas (só se amosan a media e o número), definitivas unha vez dadas; medias nas instalacións e no perfil de cada persoa | feito |
+| Avisos na app (campá, actualizada cada 30 s) e correos: confirmación, recordatorio 15 minutos antes, cambio, cancelación por ti ou polo concello (co motivo e as datas do peche) | feito |
+| Os correos explican como rexistrar a entrada nesa instalación (só as súas formas), con indicacións para chegar e os contactos da instalación e do concello | feito |
+| Calendario (.ics) para subscribirse desde Google, Outlook ou Apple, con botóns dun só clic | feito |
+| Perfil: foto encadrada nun círculo (copiada á conta de acceso), data de nacemento, teléfono; preferencias á parte (idioma dos correos, recordatorios, «Para ti») | feito |
+| Conta en Zitadel: rexistro e acceso con contrasinal ou Google (chaves de acceso opcionais), cambio de nome, correo e contrasinal desde o perfil | feito |
+| Correo verificado obrigatorio para reservar, unirse a unha quenda ou reservar na porta (impide que contas de bots collan quendas) | feito |
+| Os teus datos nun ficheiro (JSON e CSV) e borrado da conta (reservas anonimizadas, conta de acceso borrada) | feito |
+| Instalacións só para a veciñanza marcadas «Só para veciños» na súa páxina, nas súas tarxetas e nos seus eventos; quen non está verificado alí pode pedilo: chamar ao concello ou enviar unha solicitude (DNI ou NIE, nome, código postal, rúa), unha á semana como máximo, e retirala mentres está pendente; recibe aviso e correo cando o concello decide | feito |
+| Avisar dun problema nunha instalación (rede rota, sen luz, vestiarios sucios…) desde unha reserva ou desde a páxina da instalación, cunha categoría, unha foto e se é urxente; recibe aviso e correo cando o concello o arranxa ou o rexeita | feito |
+| Páxinas de condicións de uso e de política de privacidade; contacto de soporte no pé de páxina | feito |
+| Catro idiomas (galego, castelán, inglés, catalán), tema claro e escuro | feito |
 
-## Android app
+## App Android
 
-| Feature | Status |
+| Función | Estado |
 |---|---|
-| Residents' app (Kotlin, Jetpack Compose) on the same API and Zitadel sign-in as the web (native OIDC app): home with events, "For you" and today's public games; signed out, the facilities list to look through | built |
-| Facility search in a list or on a map («Ver no mapa»), facility page and booking | built |
-| Bookings and history: change a booking's turn, report a problem, rate it, check in every way (reader QR, entry code, door QR, NFC tag, staff) | built |
-| Flash booking from the app, also with an NFC tag | built |
-| Notices without push (background check), local reminders, Android notifications to rate a booking once it ends | built |
-| Profile, preferences, language, support and legal texts; texts generated from the web's locales | built |
-| Residents-only facilities marked «Só para veciños» (facility page, cards, events and public games), and asking to be verified from a bottom sheet: phone the council or send the request, see it pending and withdraw it (administration stays on the web) | built |
+| App da veciñanza (Kotlin, Jetpack Compose) sobre a mesma API e o mesmo acceso de Zitadel ca web (app OIDC nativa): inicio con eventos, «Para ti» e as partidas públicas de hoxe; sen sesión iniciada, a lista de instalacións para consultar | feito |
+| Busca de instalacións nunha lista ou nun mapa («Ver no mapa»), páxina da instalación e reserva | feito |
+| Reservas e historial: cambiar a quenda dunha reserva, avisar dun problema, valorala, rexistrar a entrada de todas as formas (QR no lector, código de entrada, QR da porta, etiqueta NFC, persoal) | feito |
+| Reserva flash desde a app, tamén cunha etiqueta NFC | feito |
+| Avisos sen push (comprobación en segundo plano), recordatorios locais, notificacións de Android para valorar unha reserva cando remata | feito |
+| Perfil, preferencias, idioma, soporte e textos legais; textos xerados a partir das traducións da web | feito |
+| Instalacións só para a veciñanza marcadas «Só para veciños» (páxina da instalación, tarxetas, eventos e partidas públicas), e petición de verificación desde unha folla inferior: chamar ao concello ou enviar a solicitude, vela pendente e retirala (a xestión segue na web) | feito |
 
-## Checking in at the door
+## Rexistro de entrada na porta
 
-| Feature | Status |
+| Función | Estado |
 |---|---|
-| QR reader at the door (`/lector`, any phone or tablet with a camera, paired with a device key): scans the booking's QR or the personal flash QR | built |
-| Turn a facility's readers off without removing them (broken, switched off) | built |
-| Printed QR on the door, read with the phone's camera from the app; the phone's location must be within the facility's distance (checked before the camera opens, never stored) | built |
-| Fixed entry code per facility, printable (also in braille, to scale for swell paper or an embosser), typed in the app with the location checked | built |
-| NFC tags at the door: the tag's address and «new address» in the admin, read by the Android app or opened on the web's entrance page | built |
-| Staff confirmation from the bookings calendar, undoable for 5 minutes; contact people per facility (who to ask on site), falling back to the facility's and the council's contact | built |
-| "Check in" dialog in My bookings with one tab per way the facility takes | built |
-| Flash booking: book the free turn under way or about to start, with any way to check in (personal QR at a reader, entry code, door QR, NFC, staff); can be turned off per facility | built |
+| Lector QR na porta (`/lector`, calquera móbil ou tableta con cámara, emparellado cunha clave de dispositivo): le o QR da reserva ou o QR persoal de reserva flash | feito |
+| Apagar os lectores dunha instalación sen retiralos (avariados, desconectados) | feito |
+| QR impreso na porta, lido coa cámara do móbil desde a app; a localización do móbil ten que estar dentro da distancia da instalación (compróbase antes de abrir a cámara e nunca se garda) | feito |
+| Código de entrada fixo por instalación, imprimible (tamén en braille, a escala para papel microcapsulado ou unha impresora braille), escrito na app comprobando a localización | feito |
+| Etiquetas NFC na porta: o enderezo da etiqueta e «novo enderezo» na administración, lidas pola app Android ou abertas na páxina de entrada da web | feito |
+| Confirmación do persoal desde o calendario de reservas, que se pode desfacer durante 5 minutos; persoas de contacto por instalación (a quen preguntar alí), e se non, o contacto da instalación e o do concello | feito |
+| Diálogo «Rexistrar entrada» en As miñas reservas cunha lapela por cada forma que admite a instalación | feito |
+| Reserva flash: reservar a quenda libre en curso ou a piques de comezar, con calquera forma de rexistrar a entrada (QR persoal nun lector, código de entrada, QR da porta, NFC, persoal); pódese desactivar por instalación | feito |
 
-## Councils
+## Concellos
 
-| Feature | Status |
+| Función | Estado |
 |---|---|
-| Facilities: create, edit, deactivate (optionally cancelling upcoming bookings with a notice), photo, map pin (address search), tags, capacity, minimum age, usage rules | built |
-| Residents-only facilities: administrators verify people as the council's residents (Veciños tab, by email), and take the verification back (with a confirmation); the council's administrators, and superadministrators everywhere, count as verified without a request; only they book and join there (bookings, public games, events, invite links), guests cannot | built |
-| Requests to be verified: they reach the Veciños tab (badge with the pending ones), the administrators' bell and their email («X quere ser veciño»); staff check the DNI and address against their own census, then verify or discard. Either way the request is deleted at once, with its DNI and address, and one nobody decided on is deleted after 15 days | built |
-| Weekly opening hours and closures (cancelling the bookings inside, with an apology and the reason) | built |
-| Ways to check in per facility (Entrada tab) and printable QR and code sheets | built |
-| Booking window per council, inherited by its facilities or overridden in each one's Reserva tab: how far ahead (hours or days) or next week opening at a fixed hour (e.g. Sunday 20:00), how close to the start from the app, cancel and change deadline, upcoming bookings, bookings per day and per week, turns in a row, optional no-show penalty | built |
-| A council-wide cap on each person's upcoming bookings across all its facilities; one council at a time per account (a platform setting, on by default); nobody can hold two bookings at the same time | built |
-| Events (Eventos tab): a kind of booking only administrators create, with a title, an optional capacity, any start and end and no per-person limits; it lists the bookings or closures in the way, which staff cancel first; moving or cancelling one tells who joined | built |
-| Staff booking by phone or at the desk, for an account or just a name and phone; cancel any booking; print the entry QR | built |
-| Indicators: bookings, occupancy, cancellations, no-shows (counting every way to check in), busiest days and hours, ratings (average, spread from 1 to 5, over time), comparison with another period, per facility; CSV and Excel export | built |
-| No-shows remember when check-in was off (history of the facility's ways to check in) | built |
-| Widget of free turns to embed in the council's own website (`/<council>/widget`, all or one facility, light or dark, any of the four languages), with the code to paste and a preview in the council settings | built |
-| Maintenance list (Incidencias tab): residents' reports with a badge of new ones, filters by facility and status, status and a note for the reporter, the reporter's email only if they shared it | built |
-| Council settings page: details, administrators (invite, remove), booking window, own email relay (SMTP) with a test email, full data export (CSV + Frictionless datapackage + images, optionally with residents' personal data) | built |
+| Instalacións: crear, editar, desactivar (cancelando, se se quere, as reservas próximas cun aviso), foto, punto no mapa (busca por enderezo), etiquetas, aforo, idade mínima, normas de uso | feito |
+| Instalacións só para a veciñanza: as persoas administradoras verifican a xente como veciñanza do concello (lapela Veciños, por correo) e retiran a verificación (con confirmación); as persoas administradoras do concello, e as da superadministración en todos, contan como verificadas sen solicitude; só elas reservan e se unen alí (reservas, partidas públicas, eventos, ligazóns de convite), as persoas convidadas sen conta non | feito |
+| Solicitudes de verificación: chegan á lapela Veciños (distintivo coas pendentes), á campá das persoas administradoras e ao seu correo («X quere ser veciño»); o persoal contrasta o DNI e o enderezo co seu propio padrón e despois verifica ou descarta. En calquera caso a solicitude bórrase no momento, co seu DNI e enderezo, e a que ninguén decidiu bórrase aos 15 días | feito |
+| Horario semanal e peches (cancelando as reservas afectadas, cunha desculpa e o motivo) | feito |
+| Formas de rexistrar a entrada por instalación (lapela Entrada) e follas imprimibles co QR e o código | feito |
+| Ventá de reserva por concello, herdada polas súas instalacións ou substituída na lapela Reserva de cada unha: con canta antelación (horas ou días) ou apertura da semana seguinte a unha hora fixa (p. ex., domingo ás 20:00), canto antes do comezo se pode reservar desde a app, prazo para cancelar e cambiar, reservas próximas, reservas por día e por semana, quendas seguidas, penalización opcional por non presentarse | feito |
+| Un límite para todo o concello das reservas próximas de cada persoa en todas as súas instalacións; un só concello á vez por conta (axuste da plataforma, activado por defecto); ninguén pode ter dúas reservas á mesma hora | feito |
+| Eventos (lapela Eventos): un tipo de reserva que só crean as persoas administradoras, cun título, aforo opcional, calquera inicio e fin e sen límites por persoa; amosa as reservas ou peches que coinciden, que o persoal cancela antes; movelo ou cancelalo avisa a quen se apuntou | feito |
+| Reserva do persoal por teléfono ou no mostrador, para unha conta ou só cun nome e un teléfono; cancelar calquera reserva; imprimir o QR de entrada | feito |
+| Indicadores: reservas, ocupación, cancelacións, non presentacións (contando todas as formas de rexistrar a entrada), días e horas con máis reservas, valoracións (media, reparto de 1 a 5, evolución), comparación con outro período, por instalación; exportación a CSV e Excel | feito |
+| As non presentacións lembran cando estaba desactivado o rexistro de entrada (historial das formas de rexistrar a entrada da instalación) | feito |
+| Widget de quendas libres para incrustar na propia web do concello (`/<council>/widget`, todas as instalacións ou unha, claro ou escuro, en calquera dos catro idiomas), co código para pegar e unha vista previa nos axustes do concello | feito |
+| Lista de mantemento (lapela Incidencias): avisos da veciñanza cun distintivo para os novos, filtros por instalación e estado, estado e nota para quen avisou, o correo de quen avisou só se o compartiu | feito |
+| Páxina de axustes do concello: datos, persoas administradoras (invitar, retirar), ventá de reserva, servidor de correo propio (SMTP) con correo de proba, descarga completa dos datos (CSV + datapackage de Frictionless + imaxes, opcionalmente cos datos persoais da veciñanza) | feito |
 
-## Platform
+## Plataforma
 
-| Feature | Status |
+| Función | Estado |
 |---|---|
-| Superadministrators: create, edit, deactivate and delete councils, invite their administrators, manage superadministrators | built |
-| Tag catalogue in categories, shared by every council | built |
-| The installation's own name and logo (self-hosting), also in the emails and on Zitadel's sign-in pages and emails | built |
-| Self-hosting with Docker Compose: PostgreSQL with row-level security per council, Zitadel for accounts, Garage for files, Caddy in front | built |
-| Private storage: one bucket per council, images only through presigned links | built |
-| Accessibility (WCAG 2.1 AA and the AAA criteria that apply), with automated checks in CI and an accessibility statement page | built |
-| CI: Go, web and Android checks (path-filtered on pull requests), vulnerability and image scanning (govulncheck, pnpm audit, Trivy), images published to ghcr.io, signed release APK on version tags | built |
-| Short-lived access tokens (10 min, renewed silently), second factor required for administrators, least-privilege Zitadel bootstrap | built |
-| Rate limit on sign-up and sign-in at the proxy (no captcha: Zitadel's login has none) | built |
-| Activity log of every administrative change, for superadministrators (all) and each council's administrators (their own), append-only with a retention period, CSV download | built |
-| API: sorting, filtering and pagination in the backend, with validated query params | built |
-| Demo deployment, production kit (`deploy/`), OpenAPI spec | idea (see todo.md) |
+| Superadministración: crear, editar, desactivar e borrar concellos, invitar as súas persoas administradoras, xestionar as persoas da superadministración | feito |
+| Catálogo de etiquetas por categorías, compartido por todos os concellos | feito |
+| Nome e logotipo propios da instalación do servizo (autoaloxamento), tamén nos correos e nas páxinas e correos de acceso de Zitadel | feito |
+| Autoaloxamento con Docker Compose: PostgreSQL con seguridade a nivel de fila por concello, Zitadel para as contas, Garage para os ficheiros, Caddy diante | feito |
+| Almacenamento privado: un bucket por concello, imaxes só mediante ligazóns presinadas | feito |
+| Accesibilidade (WCAG 2.1 AA e os criterios AAA que se aplican), con comprobacións automáticas na CI e unha páxina de declaración de accesibilidade | feito |
+| CI: comprobacións de Go, web e Android (filtradas por rutas nos pull requests), análise de vulnerabilidades e de imaxes (govulncheck, pnpm audit, Trivy), imaxes publicadas en ghcr.io, APK de versión asinado nas etiquetas de versión | feito |
+| Tokens de acceso de curta duración (10 min, renovados en segundo plano), segundo factor obrigatorio para as persoas administradoras, arranque de Zitadel co mínimo privilexio | feito |
+| Límite de peticións no rexistro e no acceso, no proxy (sen captcha: o login de Zitadel non ten) | feito |
+| Rexistro de actividade de todos os cambios administrativos, para a superadministración (todos) e para as persoas administradoras de cada concello (os seus), só de engadir e cun período de conservación, descargable en CSV | feito |
+| API: ordenación, filtrado e paxinación no backend, con parámetros de consulta validados | feito |
+| Despregamento de demostración, kit de produción (`deploy/`), especificación OpenAPI | idea (ver todo.md) |
 
-## Ideas for later
+## Ideas para máis adiante
 
-Grouped by who gains most; none of these is started.
+Agrupadas segundo quen máis gaña; ningunha está comezada.
 
-**Residents**
+**Veciñanza**
 
-- **Waiting list:** join the queue of a full turn and get a notice (and a few minutes to take it) when someone cancels.
-- **Find players:** say you are looking for people for a sport and level, and see others who are, building on public bookings.
-- **Push notifications** (web push, and real push in the Android app instead of the background check) and **SMS** for people without email, through the council's provider.
-- **Installable web app that works offline:** the manifest exists; a service worker would keep My bookings and the entry QR available without coverage at the door.
+- **Lista de espera:** poñerse na cola dunha quenda completa e recibir un aviso (e uns minutos para collela) cando alguén cancela.
+- **Atopar xogadores:** indicar que buscas xente para un deporte e un nivel, e ver quen máis busca, a partir das reservas públicas.
+- **Notificacións push** (web push, e push real na app Android en vez da comprobación en segundo plano) e **SMS** para quen non ten correo, a través do provedor do concello.
+- **Aplicación web instalable que funcione sen conexión:** o manifesto xa existe; un service worker deixaría dispoñibles As miñas reservas e o QR de entrada sen cobertura na porta.
 
-**Councils**
+**Concellos**
 
-- **Recurring bookings for clubs and schools:** a season's slots booked in one go by staff, with their own limits, and priority windows for registered entities.
-- **Fees and payment:** a price per turn or a pass, paid through the public administrations' payment gateway (Pasarela de Pagamentos), with exemptions.
-- **Limits per sport across facilities:** e.g. at most two upcoming padel bookings across all the council's courts (today the council-wide cap counts every facility).
-- **Kiosk screen at the entrance:** today's turns and who is in, on the reader's tablet.
-- **Open data:** publish anonymised occupancy as open data (DCAT-AP, datos.gob.es / abertos.xunta.gal) on a schedule.
+- **Reservas periódicas para clubs e centros de ensino:** as franxas dunha tempada reservadas dunha vez polo persoal, cos seus propios límites, e ventás de prioridade para entidades rexistradas.
+- **Taxas e pagamento:** un prezo por quenda ou un bono, pagado a través da Pasarela de Pagamentos das administracións públicas, con exencións.
+- **Límites por deporte entre instalacións:** p. ex., como máximo dúas reservas próximas de pádel en todas as pistas do concello (hoxe o límite de todo o concello conta todas as instalacións).
+- **Pantalla quiosco na entrada:** as quendas de hoxe e quen está dentro, na tableta do lector.
+- **Datos abertos:** publicar a ocupación anonimizada como datos abertos (DCAT-AP, datos.gob.es / abertos.xunta.gal) de forma periódica.
 
-**Platform**
+**Plataforma**
 
-- **Cl@ve / Chave365** sign-in for residents (to confirm with AMTEGA/AGASOL).
+- Acceso con **Cl@ve / Chave365** para a veciñanza (por confirmar con AMTEGA/AGASOL).
