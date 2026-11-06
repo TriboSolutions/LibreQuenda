@@ -2564,6 +2564,171 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
         '500':
           $ref: '#/components/responses/InternalError'
+  /admin/ai-settings:
+    get:
+      operationId: getAISettings
+      tags:
+      - Platform
+      summary: The analytics assistant's language model
+      description: Superadministrators only. The API key is never returned (has_key says whether one is saved).
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AISettings'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    put:
+      operationId: saveAISettings
+      tags:
+      - Platform
+      summary: Set the analytics assistant's language model
+      description: Superadministrators only. Audited. The key is stored sealed with SECRETS_KEY; an empty api_key keeps the saved one.
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AISettingsInput'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AISettings'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+  /admin/analytics/ask:
+    post:
+      operationId: askAnalyticsPlatform
+      tags:
+      - Platform
+      summary: Ask the data of every council
+      description: Superadministrators only. Audited. A language model writes read-only SQL on the analytics views (db/init/07_analytics_views.sql), run as the read-only analytics user, and answers. 409 when the assistant is off or unset.
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                question:
+                  type: string
+                  minLength: 1
+                  maxLength: 1000
+              required:
+              - question
+      responses:
+        '200':
+          description: The answer, and every query it ran with what it returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyticsAnswer'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          description: The read-only analytics user is not set up (ANALYTICS_DB_PASSWORD).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /tenants/{slug}/admin/analytics/ask:
+    post:
+      operationId: askAnalyticsCouncil
+      tags:
+      - Council admin
+      summary: Ask the data of this council
+      description: The council's administrators (and superadministrators). Audited. As /admin/analytics/ask, limited to this council's rows by the database.
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/TenantSlug'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                question:
+                  type: string
+                  minLength: 1
+                  maxLength: 1000
+              required:
+              - question
+      responses:
+        '200':
+          description: The answer, and every query it ran with what it returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyticsAnswer'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          description: The read-only analytics user is not set up (ANALYTICS_DB_PASSWORD).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /tenants/{slug}/admin/facilities:
     get:
       operationId: adminListFacilities
@@ -7971,6 +8136,98 @@ components:
         logo_ref:
           type: string
           description: A storage reference from POST /media (folder branding); "" = the LibreQuenda logo.
+    AISettings:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+        provider:
+          type: string
+          enum:
+          - openai
+          - anthropic
+          description: openai is any OpenAI-compatible chat completions API ({base_url}/chat/completions); anthropic, the Messages API ({base_url}/v1/messages).
+        base_url:
+          type: string
+        model:
+          type: string
+        has_key:
+          type: boolean
+        updated_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+      required:
+      - enabled
+      - provider
+      - base_url
+      - model
+      - has_key
+      - updated_at
+    AISettingsInput:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+        provider:
+          type: string
+          enum:
+          - openai
+          - anthropic
+        base_url:
+          type: string
+          format: uri
+          maxLength: 255
+          description: http(s), without credentials, query or fragment.
+        model:
+          type: string
+          minLength: 1
+          maxLength: 100
+        api_key:
+          type: string
+          maxLength: 500
+          description: Empty keeps the saved key.
+      required:
+      - enabled
+      - provider
+      - base_url
+      - model
+    AnalyticsAnswer:
+      type: object
+      properties:
+        answer:
+          type: string
+          description: Plain text, in the language of the question.
+        steps:
+          type: array
+          items:
+            type: object
+            properties:
+              sql:
+                type: string
+              result:
+                type: object
+                properties:
+                  columns:
+                    type: array
+                    items:
+                      type: string
+                  rows:
+                    type: array
+                    items:
+                      type: array
+                      items: {}
+                  truncated:
+                    type: boolean
+                    description: The query returned more than 500 rows.
+              error:
+                type: string
+            required:
+            - sql
+      required:
+      - answer
+      - steps
     BookingPolicy:
       type: object
       properties:

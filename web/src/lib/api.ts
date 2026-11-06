@@ -162,6 +162,14 @@ export type FacilityPage = {
 // --- ratings ------------------------------------------------------------------
 
 /** 1 to 5 stars: the average (one decimal) and how many gave them, never who. */
+/** The analytics assistant's language model, as a superadministrator sees it (never the key). */
+export type AISettings = { enabled: boolean; provider: 'openai' | 'anthropic'; base_url: string; model: string; has_key: boolean; updated_at: string | null }
+/** What the form saves; an empty api_key keeps the saved one. */
+export type AISettingsInput = { enabled: boolean; provider: 'openai' | 'anthropic'; base_url: string; model: string; api_key: string }
+/** One query the assistant ran, and what it returned (at most 500 rows). */
+export type AnalyticsStep = { sql: string; result?: { columns: string[]; rows: unknown[][]; truncated: boolean }; error?: string }
+export type AnalyticsAnswer = { answer: string; steps: AnalyticsStep[] }
+
 export type RatingSummary = { average: number; count: number }
 
 /** Someone else in a public booking, with the stars the signed-in person gave them (0 = not yet). */
@@ -1171,6 +1179,9 @@ export const api = {
   },
 
   council: {
+    // the analytics assistant, about this council's data only
+    askAnalytics: (token: string, slug: string, question: string) =>
+      request<AnalyticsAnswer>(`/tenants/${encodeURIComponent(slug)}/admin/analytics/ask`, { token, method: 'POST', body: { question } }),
     audit: (token: string, slug: string, filters: AuditFilters) =>
       request<AuditPage>(`/tenants/${encodeURIComponent(slug)}/admin/audit?${auditParams(filters)}`, { token }),
     downloadAudit: (token: string, slug: string, filters: AuditFilters) =>
@@ -1334,6 +1345,10 @@ export const api = {
     audit: (token: string, filters: AuditFilters) => request<AuditPage>(`/admin/audit?${auditParams(filters)}`, { token }),
     downloadAudit: (token: string, filters: AuditFilters) => downloadAudit(token, '/admin/audit', filters),
     // platform-wide booking rules (superadministrators)
+    // the analytics assistant: its language model (the key is never sent back), and questions about every council
+    aiSettings: (token: string) => request<AISettings>('/admin/ai-settings', { token }),
+    saveAISettings: (token: string, input: AISettingsInput) => request<AISettings>('/admin/ai-settings', { token, method: 'PUT', body: input }),
+    askAnalytics: (token: string, question: string) => request<AnalyticsAnswer>('/admin/analytics/ask', { token, method: 'POST', body: { question } }),
     bookingPolicy: (token: string) => request<BookingPolicy>('/admin/booking-policy', { token }),
     saveBookingPolicy: (token: string, policy: BookingPolicy) => request<BookingPolicy>('/admin/booking-policy', { token, method: 'PUT', body: policy }),
     councils: (token: string) => request<{ tenants: CouncilSummary[] }>('/admin/tenants', { token }),

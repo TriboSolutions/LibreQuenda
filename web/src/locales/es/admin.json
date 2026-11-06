@@ -7,7 +7,8 @@
     "superadmins": "Superadministradores",
     "tags": "Etiquetas",
     "branding": "Personalizar la aplicación",
-    "audit": "Registro"
+    "audit": "Registro",
+    "analytics": "Analítica"
   },
   "guard": {
     "signIn": "Inicia sesión para entrar en la administración.",
@@ -844,6 +845,8 @@
     "actions": {
       "facility.created": "Creó una instalación",
       "facility.duplicated": "Duplicó una instalación",
+      "platform.ai_settings_changed": "Cambió el modelo del asistente de datos",
+      "analytics.asked": "Preguntó a los datos",
       "facility.updated": "Editó una instalación",
       "facility.deleted": "Eliminó una instalación",
       "facility.schedule_changed": "Cambió el horario",
@@ -1052,5 +1055,36 @@
   "platformSettings": {
     "title": "Ajustes de la plataforma",
     "back": "Volver"
+  },
+  "analytics": {
+    "title": "Pregunta a los datos",
+    "help": "Un asistente de IA consulta los datos de {{scope}} (solo lectura, sin datos personales) y responde. Debajo ves cada consulta que hizo y lo que devolvió.",
+    "question": "Tu pregunta",
+    "placeholder": "Ej.: ¿qué instalación tuvo más cancelaciones el mes pasado? ¿Qué horas se reservan más los sábados?",
+    "ask": "Preguntar",
+    "thinking": "Consultando los datos…",
+    "queries_one": "{{count}} consulta",
+    "queries_other": "{{count}} consultas",
+    "moreRows": "Se muestran las primeras {{shown}} filas.",
+    "everyCouncil": "todos los ayuntamientos"
+  },
+  "aiSettings": {
+    "title": "Asistente de datos (IA)",
+    "help": "El modelo de lenguaje que responde las preguntas sobre los datos, en los indicadores de los ayuntamientos y en la analítica de la plataforma.",
+    "enabled": "Activado",
+    "enabledHelp": "Apagado, nadie puede preguntar a los datos.",
+    "provider": "Tipo de API",
+    "providerOpenai": "Compatible con OpenAI (OpenAI, Mistral, Groq, Ollama, vLLM…)",
+    "providerAnthropic": "Anthropic",
+    "baseUrl": "Dirección de la API",
+    "baseUrlHelp": "Por ejemplo https://api.openai.com/v1, o un servidor propio como http://ollama:11434/v1.",
+    "model": "Modelo",
+    "apiKey": "Clave de la API",
+    "apiKeyKept": "Guardada: déjala vacía para mantenerla",
+    "apiKeyHelp": "Se guarda cifrada y no se vuelve a mostrar. Un modelo local puede no necesitarla.",
+    "privacy": "Los resultados de las consultas (agregados, sin nombres, correos ni textos libres) se envían a este modelo. Con un proveedor externo salen de la instalación; un modelo propio los mantiene en ella.",
+    "save": "Guardar",
+    "saving": "Guardando…",
+    "saved": "Se guardó el modelo."
   }
 }

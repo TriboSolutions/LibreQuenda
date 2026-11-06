@@ -7,7 +7,8 @@
     "superadmins": "Superadministradores",
     "tags": "Etiquetas",
     "branding": "Personalizar a aplicación",
-    "audit": "Rexistro"
+    "audit": "Rexistro",
+    "analytics": "Analítica"
   },
   "guard": {
     "signIn": "Inicia sesión para entrar na administración.",
@@ -844,6 +845,8 @@
     "actions": {
       "facility.created": "Creou unha instalación",
       "facility.duplicated": "Duplicou unha instalación",
+      "platform.ai_settings_changed": "Cambiou o modelo do asistente de datos",
+      "analytics.asked": "Preguntou aos datos",
       "facility.updated": "Editou unha instalación",
       "facility.deleted": "Eliminou unha instalación",
       "facility.schedule_changed": "Cambiou o horario",
@@ -1052,5 +1055,36 @@
   "platformSettings": {
     "title": "Axustes da plataforma",
     "back": "Volver"
+  },
+  "analytics": {
+    "title": "Pregunta aos datos",
+    "help": "Un asistente de IA consulta os datos de {{scope}} (só lectura, sen datos persoais) e responde. Debaixo ves cada consulta que fixo e o que devolveu.",
+    "question": "A túa pregunta",
+    "placeholder": "Ex.: que instalación tivo máis cancelacións o mes pasado? Que horas se reservan máis os sábados?",
+    "ask": "Preguntar",
+    "thinking": "Consultando os datos…",
+    "queries_one": "{{count}} consulta",
+    "queries_other": "{{count}} consultas",
+    "moreRows": "Amósanse as primeiras {{shown}} filas.",
+    "everyCouncil": "todos os concellos"
+  },
+  "aiSettings": {
+    "title": "Asistente de datos (IA)",
+    "help": "O modelo de linguaxe que responde as preguntas sobre os datos, nos indicadores dos concellos e na analítica da plataforma.",
+    "enabled": "Activado",
+    "enabledHelp": "Apagado, ninguén pode preguntar aos datos.",
+    "provider": "Tipo de API",
+    "providerOpenai": "Compatible con OpenAI (OpenAI, Mistral, Groq, Ollama, vLLM…)",
+    "providerAnthropic": "Anthropic",
+    "baseUrl": "Enderezo da API",
+    "baseUrlHelp": "Por exemplo https://api.openai.com/v1, ou un servidor propio como http://ollama:11434/v1.",
+    "model": "Modelo",
+    "apiKey": "Chave da API",
+    "apiKeyKept": "Gardada: déixaa baleira para mantela",
+    "apiKeyHelp": "Gárdase cifrada e non se volve amosar. Un modelo local pode non precisala.",
+    "privacy": "Os resultados das consultas (agregados, sen nomes, correos nin textos libres) envíanse a este modelo. Cun provedor externo saen da instalación; un modelo propio mantenos nela.",
+    "save": "Gardar",
+    "saving": "Gardando…",
+    "saved": "Gardouse o modelo."
   }
 }

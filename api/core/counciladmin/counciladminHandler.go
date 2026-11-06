@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"librequenda/audit"
 	"librequenda/auth"
+	"librequenda/core/analytics"
 	"librequenda/core/me"
 	"librequenda/model"
 	"librequenda/shared"
@@ -680,4 +681,26 @@ func (h *counciladminHandler) RemoveResident(w http.ResponseWriter, r *http.Requ
 		return
 	}
 	send(w, r, nil, GetCounciladminService(h.db).RemoveResident(r.Context(), tenantId, userId))
+}
+
+// AskAnalytics: a council administrator's question, about that council only.
+func (h *counciladminHandler) AskAnalytics(w http.ResponseWriter, r *http.Request) {
+	var tenantId, userId, ok = h.councilAdminUser(w, r)
+	if !ok {
+		return
+	}
+	var input analytics.AskInput
+	if !decode(w, r, &input) {
+		return
+	}
+	var who = "one council"
+	if name, err := model.New(h.db).GetTenantName(r.Context(), tenantId); err == nil {
+		who = name
+	}
+	var answer, err = analytics.Answering(r.Context(), h.db, analytics.Scope{Councils: []uuid.UUID{tenantId}}, who, userId, input.Question)
+	if err != nil {
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
+		return
+	}
+	helpers.SendSuccessResponse(w, answer)
 }

@@ -7,7 +7,8 @@
     "superadmins": "Superadministrators",
     "tags": "Tags",
     "branding": "Customise the app",
-    "audit": "Activity log"
+    "audit": "Activity log",
+    "analytics": "Analytics"
   },
   "guard": {
     "signIn": "Sign in to open the administration.",
@@ -844,6 +845,8 @@
     "actions": {
       "facility.created": "Created a facility",
       "facility.duplicated": "Duplicated a facility",
+      "platform.ai_settings_changed": "Changed the data assistant's model",
+      "analytics.asked": "Asked the data",
       "facility.updated": "Edited a facility",
       "facility.deleted": "Deleted a facility",
       "facility.schedule_changed": "Changed the opening hours",
@@ -1052,5 +1055,36 @@
   "platformSettings": {
     "title": "Platform settings",
     "back": "Back"
+  },
+  "analytics": {
+    "title": "Ask the data",
+    "help": "An AI assistant queries the data of {{scope}} (read-only, no personal data) and answers. Below are each query it ran and what it returned.",
+    "question": "Your question",
+    "placeholder": "E.g. which facility had the most cancellations last month? Which hours are booked most on Saturdays?",
+    "ask": "Ask",
+    "thinking": "Querying the data…",
+    "queries_one": "{{count}} query",
+    "queries_other": "{{count}} queries",
+    "moreRows": "The first {{shown}} rows are shown.",
+    "everyCouncil": "every council"
+  },
+  "aiSettings": {
+    "title": "Data assistant (AI)",
+    "help": "The language model that answers questions about the data, in the councils' indicators and the platform's analytics.",
+    "enabled": "On",
+    "enabledHelp": "Off, nobody can ask the data.",
+    "provider": "API type",
+    "providerOpenai": "OpenAI-compatible (OpenAI, Mistral, Groq, Ollama, vLLM…)",
+    "providerAnthropic": "Anthropic",
+    "baseUrl": "API address",
+    "baseUrlHelp": "For example https://api.openai.com/v1, or your own server such as http://ollama:11434/v1.",
+    "model": "Model",
+    "apiKey": "API key",
+    "apiKeyKept": "Saved: leave it empty to keep it",
+    "apiKeyHelp": "Stored encrypted and never shown again. A local model may not need one.",
+    "privacy": "Query results (aggregated, without names, emails or free text) are sent to this model. With an outside provider they leave the installation; your own model keeps them in it.",
+    "save": "Save",
+    "saving": "Saving…",
+    "saved": "The model was saved."
   }
 }

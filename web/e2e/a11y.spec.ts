@@ -1102,6 +1102,49 @@ test.describe('keyboard', () => {
     await expectAccessible(page)
   })
 
+  test('a superadministrator sets the data assistant’s model; the key is never shown back', async ({ page }) => {
+    let saved: unknown = null
+    await open(page, '/admin/axustes')
+    await page.route('**/api/admin/ai-settings', async (route) => {
+      if (route.request().method() === 'PUT') saved = route.request().postDataJSON()
+      await route.fulfill({ json: { enabled: saved !== null, provider: 'openai', base_url: 'http://ollama:11434/v1', model: 'qwen3', has_key: true, updated_at: null } })
+    })
+    await page.reload()
+    const panel = page.getByRole('region', { name: 'Asistente de datos (IA)' })
+    await expect(panel.getByLabel('Enderezo da API')).toHaveValue('http://ollama:11434/v1')
+    await expect(panel.getByLabel('Chave da API')).toHaveValue('') // never sent back
+    await expect(panel.getByLabel('Chave da API')).toHaveAttribute('placeholder', /Gardada/)
+    await panel.getByRole('switch', { name: 'Activado' }).click()
+    await page.mouse.move(0, 0)
+    await expectAccessible(page)
+    await panel.getByRole('button', { name: 'Gardar' }).click()
+    await expect(panel.getByText('Gardouse o modelo.')).toBeVisible()
+    expect(saved).toEqual({ enabled: true, provider: 'openai', base_url: 'http://ollama:11434/v1', model: 'qwen3', api_key: '' })
+  })
+
+  test('a council asks its data, and sees the answer with each query it ran', async ({ page }) => {
+    await open(page, '/lugo/admin?vista=indicadores')
+    let asked: unknown = null
+    await page.route('**/api/tenants/lugo/admin/analytics/ask', async (route) => {
+      asked = route.request().postDataJSON()
+      await route.fulfill({
+        json: {
+          answer: 'Pista de pádel 1 tivo 12 cancelacións en outubro. <b>non é HTML</b>',
+          steps: [{ sql: "SELECT count(*) FROM booking WHERE status = 'cancelled'", result: { columns: ['count'], rows: [[12]], truncated: false } }],
+        },
+      })
+    })
+    const assistant = page.getByRole('region', { name: 'Pregunta aos datos' })
+    await assistant.getByLabel('A túa pregunta').fill('Cantas cancelacións houbo en outubro?')
+    await assistant.getByRole('button', { name: 'Preguntar' }).click()
+    await expect(assistant.getByText('Pista de pádel 1 tivo 12 cancelacións en outubro. <b>non é HTML</b>')).toBeVisible() // plain text
+    expect(asked).toEqual({ question: 'Cantas cancelacións houbo en outubro?' })
+    await assistant.getByText('1 consulta').click()
+    await expect(assistant.getByRole('cell', { name: '12' })).toBeVisible()
+    await page.mouse.move(0, 0)
+    await expectAccessible(page)
+  })
+
   test('a council administrator reaches its administration from the account menu on any page', async ({ page }) => {
     await open(page, '/') // the home page is about no council
     await page.route('**/api/me', (route) => route.fulfill({ json: ME_COUNCIL_ADMIN }))

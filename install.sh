@@ -234,6 +234,7 @@ server_questions() {
 	# everything else: generated once and never changed (the masterkey cannot change)
 	secret POSTGRES_PASSWORD gen_alnum32
 	secret APP_DB_PASSWORD gen_alnum32
+	secret ANALYTICS_DB_PASSWORD gen_alnum32
 	secret ZITADEL_MASTERKEY gen_alnum32
 	secret LOGIN_SESSION_COOKIE_SECRET rand_b64
 	secret ZITADEL_DB_PASSWORD gen_alnum32

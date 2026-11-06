@@ -32,6 +32,7 @@ var actions = map[string]action{
 	"POST /tenants/{slug}/admin/bookings":                               {code: "staff.booking_created"},
 	"POST /tenants/{slug}/admin/bookings/{bookingId}/cancel":            {code: "staff.booking_cancelled", target: "booking", param: "bookingId"},
 	"POST /tenants/{slug}/admin/bookings/{bookingId}/participants":      {code: "staff.event_participant_added", target: "booking", param: "bookingId"},
+	"POST /tenants/{slug}/admin/analytics/ask":                          {code: "analytics.asked"},
 	"POST /tenants/{slug}/admin/bookings/{bookingId}/checkin":           {code: "staff.checked_in", target: "booking", param: "bookingId"},
 	"DELETE /tenants/{slug}/admin/bookings/{bookingId}/checkin":         {code: "staff.check_in_undone", target: "booking", param: "bookingId"},
 	"POST /tenants/{slug}/admin/events/preview":                         {code: ""},
@@ -64,6 +65,8 @@ var actions = map[string]action{
 	"PUT /admin/tags/{id}":                          {code: "tag.updated", target: "tag", param: "id"},
 	"DELETE /admin/tags/{id}":                       {code: "tag.deleted", target: "tag", param: "id"},
 	"PUT /admin/branding":                           {code: "branding.changed"},
+	"PUT /admin/ai-settings":                        {code: "platform.ai_settings_changed"},
+	"POST /admin/analytics/ask":                     {code: "analytics.asked"},
 	"PUT /admin/booking-policy":                     {code: "booking_policy.changed"},
 	"GET /admin/audit":                              {code: ""},
 

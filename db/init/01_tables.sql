@@ -169,6 +169,19 @@ CREATE TABLE app_settings (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- The language model behind the analytics assistant (the indicators' «ask the
+-- data»), set by a superadministrator. The key is sealed with SECRETS_KEY (as the
+-- councils' SMTP passwords) and never sent back. A single row.
+CREATE TABLE ai_settings (
+    id         BOOLEAN      PRIMARY KEY DEFAULT TRUE CHECK (id),
+    enabled    BOOLEAN      NOT NULL DEFAULT FALSE,
+    provider   VARCHAR(16)  NOT NULL DEFAULT 'openai' CHECK (provider IN ('openai', 'anthropic')), -- openai: any OpenAI-compatible API (Mistral, Groq, Ollama, vLLM…)
+    base_url   VARCHAR(255) NOT NULL DEFAULT '',
+    model      VARCHAR(100) NOT NULL DEFAULT '',
+    api_key    BYTEA        NULL,
+    updated_at TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+);
+
 -- Roles per council. Residents have no row: any logged-in user can book.
 CREATE TABLE tenant_membership (
     user_id    UUID        NOT NULL REFERENCES app_user(id) ON DELETE CASCADE,

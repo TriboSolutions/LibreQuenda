@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import { Link, useLocation, useNavigate } from 'react-router'
 import { BookingPolicyPanel } from '@/components/admin/BookingPolicyPanel'
+import { AISettingsPanel } from '@/components/admin/AISettingsPanel'
 import { SiteFooter } from '@/components/SiteFooter'
 import { TopBar } from '@/components/TopBar'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -30,8 +31,9 @@ export function PlatformSettingsPage() {
     )
   } else {
     body = (
-      <div className="mt-6">
+      <div className="mt-6 grid gap-10">
         <BookingPolicyPanel />
+        <AISettingsPanel />
       </div>
     )
   }

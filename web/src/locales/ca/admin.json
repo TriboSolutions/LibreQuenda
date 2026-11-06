@@ -7,7 +7,8 @@
     "superadmins": "Superadministradors",
     "tags": "Etiquetes",
     "branding": "Personalitza l’aplicació",
-    "audit": "Registre"
+    "audit": "Registre",
+    "analytics": "Analítica"
   },
   "guard": {
     "signIn": "Inicia la sessió per entrar a l’administració.",
@@ -844,6 +845,8 @@
     "actions": {
       "facility.created": "Ha creat una instal·lació",
       "facility.duplicated": "Ha duplicat una instal·lació",
+      "platform.ai_settings_changed": "Ha canviat el model de l’assistent de dades",
+      "analytics.asked": "Ha preguntat a les dades",
       "facility.updated": "Ha editat una instal·lació",
       "facility.deleted": "Ha eliminat una instal·lació",
       "facility.schedule_changed": "Ha canviat l’horari",
@@ -1052,5 +1055,36 @@
   "platformSettings": {
     "title": "Configuració de la plataforma",
     "back": "Torna"
+  },
+  "analytics": {
+    "title": "Pregunta a les dades",
+    "help": "Un assistent d’IA consulta les dades de {{scope}} (només lectura, sense dades personals) i respon. A sota veus cada consulta que ha fet i el que ha retornat.",
+    "question": "La teva pregunta",
+    "placeholder": "P. ex.: quina instal·lació va tenir més cancel·lacions el mes passat? Quines hores es reserven més els dissabtes?",
+    "ask": "Pregunta",
+    "thinking": "Consultant les dades…",
+    "queries_one": "{{count}} consulta",
+    "queries_other": "{{count}} consultes",
+    "moreRows": "Es mostren les primeres {{shown}} files.",
+    "everyCouncil": "tots els ajuntaments"
+  },
+  "aiSettings": {
+    "title": "Assistent de dades (IA)",
+    "help": "El model de llenguatge que respon les preguntes sobre les dades, als indicadors dels ajuntaments i a l’analítica de la plataforma.",
+    "enabled": "Activat",
+    "enabledHelp": "Apagat, ningú no pot preguntar a les dades.",
+    "provider": "Tipus d’API",
+    "providerOpenai": "Compatible amb OpenAI (OpenAI, Mistral, Groq, Ollama, vLLM…)",
+    "providerAnthropic": "Anthropic",
+    "baseUrl": "Adreça de l’API",
+    "baseUrlHelp": "Per exemple https://api.openai.com/v1, o un servidor propi com http://ollama:11434/v1.",
+    "model": "Model",
+    "apiKey": "Clau de l’API",
+    "apiKeyKept": "Desada: deixa-la buida per mantenir-la",
+    "apiKeyHelp": "Es desa xifrada i no es torna a mostrar. Un model local pot no necessitar-la.",
+    "privacy": "Els resultats de les consultes (agregats, sense noms, correus ni textos lliures) s’envien a aquest model. Amb un proveïdor extern surten de la instal·lació; un model propi els hi manté.",
+    "save": "Desa",
+    "saving": "Desant…",
+    "saved": "S’ha desat el model."
   }
 }
