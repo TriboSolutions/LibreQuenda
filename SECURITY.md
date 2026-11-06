@@ -1,18 +1,18 @@
-# Security
+# Seguridade
 
-LibreQuenda keeps residents' bookings, accounts and, while a council checks them,
-their census data. If you find a vulnerability, please tell us privately first.
+LibreQuenda garda as reservas e as contas da veciñanza e, mentres un concello os comproba,
+os seus datos do padrón. Se atopas unha vulnerabilidade, por favor, cóntanola primeiro en privado.
 
-## Reporting a vulnerability
+## Comunicar unha vulnerabilidade
 
-Use GitHub's private reporting (**Security → Report a vulnerability** on this
-repository) or write to **contact@tribosolutions.es**. Please include what is
-affected, how to reproduce it, and the impact you see. Do not open a public issue, and do not test against an installation you
-do not run yourself.
+Usa a comunicación privada de GitHub (**Security → Report a vulnerability** neste
+repositorio) ou escribe a **contact@tribosolutions.es**. Por favor, indica que está
+afectado, como reproducilo e o impacto que ves. Non abras unha incidencia pública nin fagas probas contra unha instalación
+que non xestiones ti.
 
-We answer within a week, and publish a fix and an advisory once installations can
-update (`docker compose pull && docker compose up -d --wait`).
+Respondemos nun prazo dunha semana e publicamos unha corrección e un aviso cando as instalacións poden
+actualizar (`docker compose pull && docker compose up -d --wait`).
 
-## Supported versions
+## Versións con soporte
 
-Only the latest release, and `main`, receive security fixes.
+Só a última versión publicada e `main` reciben correccións de seguridade.

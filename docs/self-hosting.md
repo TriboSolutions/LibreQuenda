@@ -1,10 +1,10 @@
-# Running a LibreQuenda server
+# Manter un servidor de LibreQuenda
 
-How an installation works and how to operate it. To install, see the [README](../README.md) (`install.sh` asks for everything below that is required).
+Como funciona unha instalación e como xestionala. Para instalar, consulta o [README](../README.md) (`install.sh` pide todo o que sexa obrigatorio do que segue).
 
-## Without the installer
+## Sen o instalador
 
-Only two files are needed on the server: `docker-compose.yaml` and `.env`. The images are prebuilt by CI and pulled from `ghcr.io/tribosolutions/librequenda-*` (`api`, `db`, `proxy` with the web app inside, `storage`, `zitadel-setup`, `backup`); nothing is built there.
+No servidor só fan falla dous ficheiros: `docker-compose.yaml` e `.env`. As imaxes constrúeas a CI e descárganse de `ghcr.io/tribosolutions/librequenda-*` (`api`, `db`, `proxy` coa app web dentro, `storage`, `zitadel-setup`, `backup`); alí non se constrúe nada.
 
 ```sh
 mkdir librequenda && cd librequenda
@@ -14,54 +14,54 @@ curl -fL -o .env https://raw.githubusercontent.com/TriboSolutions/LibreQuenda/ma
 docker compose up -d --wait
 ```
 
-`LIBREQUENDA_VERSION` in `.env` picks the images' tag: `latest` follows `main`; a release tag (e.g. `1.2.3`) stays on that release. To update: `docker compose pull && docker compose up -d --wait`. To run your own changes instead, build the images from this repository with the same names (e.g. `docker build -t ghcr.io/tribosolutions/librequenda-api:latest api`).
+`LIBREQUENDA_VERSION` en `.env` escolle a etiqueta das imaxes: `latest` segue `main`; unha etiqueta de versión (p. ex. `1.2.3`) queda nesa versión. Para actualizar: `docker compose pull && docker compose up -d --wait`. Para executar os teus propios cambios, constrúe as imaxes desde este repositorio cos mesmos nomes (p. ex. `docker build -t ghcr.io/tribosolutions/librequenda-api:latest api`).
 
-## How it runs
+## Como funciona
 
-The stack refuses to start while a required value is missing. Everything goes through one Caddy proxy (`proxy/`), which obtains and renews the TLS certificates:
+A pila négase a arrincar mentres falte un valor obrigatorio. Todo pasa por un único proxy Caddy (`proxy/`), que obtén e renova os certificados TLS:
 
-| What | URL |
+| Que | URL |
 |---|---|
-| Web app | `https://<WEB_DOMAIN>` |
-| Core API | `https://<WEB_DOMAIN>/api/…` (e.g. `/api/health/db`) |
-| Sign-in (Zitadel) | `https://<ZITADEL_DOMAIN>` |
-| OIDC discovery | `https://<ZITADEL_DOMAIN>/.well-known/openid-configuration` |
+| App web | `https://<WEB_DOMAIN>` |
+| API principal | `https://<WEB_DOMAIN>/api/…` (p. ex. `/api/health/db`) |
+| Inicio de sesión (Zitadel) | `https://<ZITADEL_DOMAIN>` |
+| Descubrimento OIDC | `https://<ZITADEL_DOMAIN>/.well-known/openid-configuration` |
 
-PostgreSQL is not published on the host: use `docker compose exec db psql -U librequenda`.
+PostgreSQL non se publica no host: usa `docker compose exec db psql -U librequenda`.
 
-Besides the app's own user, the database has a read-only one, `librequenda_analytics` (password `ANALYTICS_DB_PASSWORD`), that can only read the analytics views: the councils' data assistant runs its queries as it once a superadministrator sets a language model in the platform settings. See [analytics.md](analytics.md).
+Ademais do usuario propio da aplicación, a base de datos ten un de só lectura, `librequenda_analytics` (contrasinal `ANALYTICS_DB_PASSWORD`), que só pode ler as vistas de analítica: o asistente de datos dos concellos executa as súas consultas con el unha vez que unha persoa da superadministración configura un modelo de linguaxe nos axustes da plataforma. Consulta [analytics.md](analytics.md).
 
-The first Zitadel admin (`ZITADEL_ADMIN_*`), Zitadel's email settings and the `ZITADEL_MASTERKEY` are only applied on the very first start; the masterkey can never be changed afterwards, so back it up. Data lives in Docker volumes (`postgres_data`, `garage_data`, …).
+A primeira persoa administradora de Zitadel (`ZITADEL_ADMIN_*`), os axustes de correo de Zitadel e a `ZITADEL_MASTERKEY` só se aplican no primeiro arranque; a masterkey non se pode cambiar nunca despois, así que fai unha copia de seguranza dela. Os datos están en volumes de Docker (`postgres_data`, `garage_data`, …).
 
-**LibreQuenda starts empty.** The superadministrator (`SUPERADMIN_EMAIL`, by default the Zitadel admin) signs in and opens `/admin` to create councils, invite each council's administrator by email address and manage other superadministrators. The invited person gets an email at once; the role is granted when they sign in with that email verified (sign-in asks for the emailed code), with a notice in the bell.
+**LibreQuenda arrinca baleira.** A persoa da superadministración (`SUPERADMIN_EMAIL`, por defecto a persoa administradora de Zitadel) inicia sesión e abre `/admin` para crear concellos, convidar por correo electrónico á persoa administradora de cada concello e xestionar outras persoas da superadministración. A persoa convidada recibe un correo ao momento; o rol concédese cando inicia sesión con ese correo verificado (o inicio de sesión pide o código enviado por correo), cun aviso na campá.
 
-**Your own name and logo:** in `/admin`, the "Personalizar a aplicación" tab sets the app's name and logo for the whole installation: the top bar, tab titles and browser icon, the QR reader screens, the calendar feed and the emails use them. Leave them empty to go back to LibreQuenda's. The footer keeps naming LibreQuenda as the free software it runs on (AGPL-3.0). The sign-in screens are Zitadel's and keep the branding from `zitadel/setup.sh`.
+**O teu propio nome e logotipo:** en `/admin`, a lapela «Personalizar a aplicación» define o nome e o logotipo da aplicación para toda a instalación: úsanos a barra superior, os títulos das lapelas e a icona do navegador, as pantallas do lector QR, o feed do calendario e os correos. Déixaos baleiros para volver aos de LibreQuenda. O pé de páxina segue nomeando LibreQuenda como o software libre sobre o que funciona (AGPL-3.0). As pantallas de inicio de sesión son de Zitadel e manteñen a imaxe de `zitadel/setup.sh`.
 
-**Council administration:** a council's administrators (and superadministrators) open `/<council>/admin` to create facilities with photo, description, address, map pin, booking rules, weekly opening hours and closures. Each facility has its own page at `/<council>/<facility>`.
+**Administración do concello:** as persoas administradoras dun concello (e a superadministración) abren `/<council>/admin` para crear instalacións con foto, descrición, enderezo, punto no mapa, normas de reserva, horario semanal e peches. Cada instalación ten a súa propia páxina en `/<council>/<facility>`.
 
-**Residents** never see Zitadel's own screens beyond signing in: name, email and password are changed from `/perfil`. Zitadel is branded as LibreQuenda by `zitadel/setup.sh`.
+**A veciñanza** nunca ve as pantallas propias de Zitadel máis alá do inicio de sesión: o nome, o correo e o contrasinal cámbianse desde `/perfil`. `zitadel/setup.sh` dálle a Zitadel a imaxe de LibreQuenda.
 
-**Email:** LibreQuenda sends booking confirmations, a reminder 15 minutes before with the entry QR, cancellations (with the reason when the council closes a facility) and administrator invitations. Zitadel sends verification codes and password resets through the same relay.
+**Correo:** LibreQuenda envía as confirmacións de reserva, un recordatorio 15 minutos antes co QR de entrada, as cancelacións (co motivo cando o concello pecha unha instalación) e os convites para persoas administradoras. Zitadel envía os códigos de verificación e os restablecementos de contrasinal polo mesmo servidor de correo.
 
-**Images** are stored in **Garage** (self-hosted, S3-compatible; service `storage`). Buckets are private, one per council; the database only keeps references such as `<council id>/facilities/<id>.webp`, and the API turns them into presigned `/storage/…` links (valid a week) when it answers. **Maps** use OpenStreetMap (Leaflet); "Como chegar" is a plain link to Google Maps directions. Address search goes through the API to OpenStreetMap Nominatim (or `GEOCODER_URL`).
+**As imaxes** gárdanse en **Garage** (autoaloxado, compatible con S3; servizo `storage`). Os buckets son privados, un por concello; a base de datos só garda referencias como `<council id>/facilities/<id>.webp`, e a API convérteas en ligazóns `/storage/…` presinadas (válidas durante unha semana) ao responder. **Os mapas** usan OpenStreetMap (Leaflet); «Como chegar» é unha ligazón simple ás indicacións de Google Maps. A busca de enderezos pasa pola API cara a OpenStreetMap Nominatim (ou `GEOCODER_URL`).
 
-**Sign in with Google (optional):** create an OAuth client ID (type *Web application*) in Google Cloud with the authorized redirect URI `https://<ZITADEL_DOMAIN>/idps/callback`, then set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in `.env` and run `docker compose up -d`. Leave them empty to remove the Google button again.
+**Iniciar sesión con Google (opcional):** crea un ID de cliente OAuth (tipo *Web application*) en Google Cloud co URI de redirección autorizado `https://<ZITADEL_DOMAIN>/idps/callback`, despois define `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` en `.env` e executa `docker compose up -d`. Déixaos baleiros para quitar outra vez o botón de Google.
 
-**Passwords, not passkeys:** sign-up and sign-in go straight to a password. Set `ZITADEL_PASSKEYS=true` in `.env` and run `docker compose up -d` to also offer passkeys.
+**Contrasinais, non chaves de acceso:** o rexistro e o inicio de sesión van directamente a un contrasinal. Define `ZITADEL_PASSKEYS=true` en `.env` e executa `docker compose up -d` para ofrecer tamén chaves de acceso (passkeys).
 
-**Facility tags:** descriptive metadata for classification and filtering (including finding similar facilities). Tags must never enable features or change booking, access or other operational rules; those belong to explicit facility settings.
+**Etiquetas das instalacións:** metadatos descritivos para clasificar e filtrar (incluído atopar instalacións parecidas). As etiquetas nunca deben activar funcións nin cambiar as normas de reserva, de acceso ou outras normas de funcionamento; iso corresponde a axustes explícitos da instalación.
 
-**Weather:** each facility has a “Show weather forecast” switch in its editing form (off for new facilities, independent of tags). When enabled, it shows MeteoGalicia's forecast for their council's municipality, set as its INE code in the council's details (e.g. 36024 for Lalín). The API fetches it (keyless, `servizos.meteogalicia.gal/mgrss/predicion/jsonPredConcellos.action`), caches it for an hour and shows nothing if it is unreachable; `WEATHER_URL` points it elsewhere. Data © MeteoGalicia, credited where it is shown.
+**Tempo:** cada instalación ten un interruptor «Amosar previsión meteorolóxica» no seu formulario de edición (desactivado nas instalacións novas, independente das etiquetas). Cando está activado, amosa a predición de MeteoGalicia para o municipio do seu concello, indicado co seu código INE nos datos do concello (p. ex. 36024 para Lalín). A API obtena (sen clave, `servizos.meteogalicia.gal/mgrss/predicion/jsonPredConcellos.action`), gárdaa en caché durante unha hora e non amosa nada se non se pode acceder a ela; `WEATHER_URL` diríxea a outro sitio. Datos © MeteoGalicia, citada onde se amosan.
 
-**Short sessions:** access tokens last 10 minutes (`ZITADEL_ACCESS_TOKEN_MINUTES`), so a blocked account or a removed role stops working that soon. The web renews them silently with its refresh token, so people stay signed in while they use it; after 30 idle days (`ZITADEL_REFRESH_IDLE_DAYS`), or 90 days in all (`ZITADEL_REFRESH_DAYS`), they sign in again. Run `docker compose up -d` after changing them.
+**Sesións curtas:** os tokens de acceso duran 10 minutos (`ZITADEL_ACCESS_TOKEN_MINUTES`), así que unha conta bloqueada ou un rol retirado deixa de funcionar nese prazo. A web renóvaos sen que se note co seu token de renovación, así que a xente segue coa sesión iniciada mentres a usa; despois de 30 días sen actividade (`ZITADEL_REFRESH_IDLE_DAYS`), ou de 90 días en total (`ZITADEL_REFRESH_DAYS`), volven iniciar sesión. Executa `docker compose up -d` despois de cambialos.
 
-**Second factor for administrators:** council administrators and superadministrators only get into the administration after signing in with a second factor (an authenticator app, a security key or a passkey), set up in their sign-in account. Zitadel's access tokens don't say how the person signed in, so the API asks Zitadel (token introspection, with an API application `zitadel-setup` creates) once per token. On by default (`REQUIRE_ADMIN_MFA=true` in `docker-compose.yaml`); the local development stack leaves it off. Residents are not affected. Before turning it on in an existing installation, ask the administrators to set up a second factor first.
+**Segundo factor para as persoas administradoras:** as persoas administradoras dos concellos e a superadministración só entran na administración despois de iniciar sesión cun segundo factor (unha app de autenticación, unha chave de seguranza ou unha chave de acceso), configurado na súa conta de inicio de sesión. Os tokens de acceso de Zitadel non indican como iniciou sesión a persoa, así que a API pregúntallo a Zitadel (introspección de tokens, cunha aplicación de API que crea `zitadel-setup`) unha vez por token. Activado por defecto (`REQUIRE_ADMIN_MFA=true` en `docker-compose.yaml`); a pila de desenvolvemento local déixao desactivado. Non afecta á veciñanza. Antes de activalo nunha instalación xa existente, pídelles primeiro ás persoas administradoras que configuren un segundo factor.
 
-**Sign-up and sign-in limits:** Zitadel's login has no captcha, so the proxy limits its form posts per IP address: 5 account registrations per hour (`SIGNUP_LIMIT_PER_HOUR`) and 30 sign-in, password, code or email-verification attempts per 10 minutes (`SIGNIN_LIMIT_PER_10_MIN`). Over a limit the person gets "429 Too Many Requests" and can try again a little later. Behind another proxy, the limits count the visitor's address only if that proxy is on a private network (`trusted_proxies`).
+**Límites de rexistro e de inicio de sesión:** o inicio de sesión de Zitadel non ten captcha, así que o proxy limita os envíos dos seus formularios por enderezo IP: 5 rexistros de conta por hora (`SIGNUP_LIMIT_PER_HOUR`) e 30 intentos de inicio de sesión, contrasinal, código ou verificación de correo cada 10 minutos (`SIGNIN_LIMIT_PER_10_MIN`). Ao superar un límite, a persoa recibe «429 Too Many Requests» e pode volver tentalo un pouco despois. Detrás doutro proxy, os límites contan o enderezo de quen visita só se ese proxy está nunha rede privada (`trusted_proxies`).
 
-**Zitadel admin token:** on its very first start Zitadel creates the `librequenda-setup` service account and writes its token (`admin.pat`) to the `zitadel-admin` volume, which only `zitadel-setup` mounts (read-only); the login app's own token goes to `zitadel-login-client`, and the API only ever sees `api-secrets`. The account is an instance owner, the least role that can set the instance's login, token and branding policies. To leave no such token behind, set `ZITADEL_SETUP_REVOKE_TOKEN=true`: once the setup succeeds it revokes the token, and later starts keep the configuration as it is (to change it again, create a new token for `librequenda-setup` in Zitadel's console and put it in that volume). `ZITADEL_ADMIN_PAT_EXPIRATION` sets the token's expiry on the very first start.
+**Token de administración de Zitadel:** no seu primeiro arranque, Zitadel crea a conta de servizo `librequenda-setup` e escribe o seu token (`admin.pat`) no volume `zitadel-admin`, que só monta `zitadel-setup` (en só lectura); o token propio da app de inicio de sesión vai a `zitadel-login-client`, e a API só ve `api-secrets`. A conta é propietaria da instancia, o rol mínimo que pode definir as políticas de inicio de sesión, de tokens e de imaxe da instancia. Para non deixar ningún token así, define `ZITADEL_SETUP_REVOKE_TOKEN=true`: cando a configuración remata ben, revoga o token, e os arranques posteriores manteñen a configuración tal como está (para cambiala outra vez, crea un novo token para `librequenda-setup` na consola de Zitadel e ponno nese volume). `ZITADEL_ADMIN_PAT_EXPIRATION` define a caducidade do token no primeiro arranque.
 
-*Upgrading an installation that still has the single `zitadel-bootstrap` volume:* copy the two tokens to the new volumes once, then start as usual (replace `librequenda` with your compose project name):
+*Actualizar unha instalación que aínda ten o volume único `zitadel-bootstrap`:* copia unha vez os dous tokens nos volumes novos e despois arrinca como sempre (substitúe `librequenda` polo nome do teu proxecto de compose):
 
 ```sh
 docker run --rm -v librequenda_zitadel-bootstrap:/old:ro -v librequenda_zitadel-admin:/admin -v librequenda_zitadel-login-client:/login \
@@ -70,11 +70,11 @@ docker compose up -d
 docker volume rm librequenda_zitadel-bootstrap   # once everything works
 ```
 
-A local `docker-compose.dev.yaml` keeps working as it is; to mirror production, mount `zitadel-admin` at `/zitadel/bootstrap` in `zitadel-setup` and `zitadel-login-client` at `/zitadel/login-client` in `zitadel-login` (with `ZITADEL_SERVICE_USER_TOKEN_FILE` and the `ZITADEL_FIRSTINSTANCE_*PATPATH` paths as in `docker-compose.yaml`).
+Un `docker-compose.dev.yaml` local segue funcionando tal como está; para reproducir produción, monta `zitadel-admin` en `/zitadel/bootstrap` en `zitadel-setup` e `zitadel-login-client` en `/zitadel/login-client` en `zitadel-login` (con `ZITADEL_SERVICE_USER_TOKEN_FILE` e as rutas `ZITADEL_FIRSTINSTANCE_*PATPATH` como en `docker-compose.yaml`).
 
-**TLS behind another proxy:** if a load balancer in front already terminates TLS, set `CADDY_AUTO_HTTPS=false` and keep `PUBLIC_SCHEME=https`; Caddy then serves plain HTTP to it.
+**TLS detrás doutro proxy:** se un balanceador de carga situado diante xa termina o TLS, define `CADDY_AUTO_HTTPS=false` e mantén `PUBLIC_SCHEME=https`; entón Caddy sérvelle HTTP simple.
 
-**Backups:** the `backup` service dumps PostgreSQL every day at 03:30 (`BACKUP_AT`, Europe/Madrid): LibreQuenda's database and Zitadel's (the accounts the bookings belong to), each with `pg_dump` and read back before it is kept, plus the roles. They go into the `backups` bucket of this server's Garage (`BACKUP_BUCKET`), one folder per backup, and are removed after 14 days (`BACKUP_KEEP_DAYS`). The service turns unhealthy in `docker compose ps` after a backup fails, until the next one works; `docker compose logs backup` says why. A backup on the same server does not survive losing its disk: point `BACKUP_S3_URL`, `BACKUP_S3_REGION`, `BACKUP_S3_ACCESS_KEY` and `BACKUP_S3_SECRET_KEY` to an S3-compatible storage elsewhere (another Garage, a provider) to keep them off it. Uploaded images stay in Garage and are not in these backups. Zitadel's data is encrypted with `ZITADEL_MASTERKEY`: keep a copy of `.env` apart, since a backup cannot be restored without it.
+**Copias de seguranza:** o servizo `backup` fai un volcado de PostgreSQL todos os días ás 03:30 (`BACKUP_AT`, Europe/Madrid): a base de datos de LibreQuenda e a de Zitadel (as contas ás que pertencen as reservas), cada unha con `pg_dump` e relida antes de gardala, ademais dos roles. Van ao bucket `backups` do Garage deste servidor (`BACKUP_BUCKET`), un cartafol por copia, e bórranse aos 14 días (`BACKUP_KEEP_DAYS`). O servizo pasa a estado unhealthy en `docker compose ps` despois dunha copia fallida, ata que a seguinte funcione; `docker compose logs backup` indica por que. Unha copia no mesmo servidor non sobrevive á perda do seu disco: apunta `BACKUP_S3_URL`, `BACKUP_S3_REGION`, `BACKUP_S3_ACCESS_KEY` e `BACKUP_S3_SECRET_KEY` a un almacenamento compatible con S3 noutro lugar (outro Garage, un provedor) para gardalas fóra del. As imaxes subidas quedan en Garage e non están nestas copias. Os datos de Zitadel están cifrados con `ZITADEL_MASTERKEY`: garda unha copia de `.env` á parte, porque sen el non se pode restaurar unha copia.
 
 ```sh
 docker compose exec backup backup                 # one now
@@ -84,12 +84,12 @@ docker compose exec backup restore 20261105T023000Z
 docker compose start api zitadel-api zitadel-login
 ```
 
-**Images from CI:** every push to `main` and every version tag builds the images and publishes them to `ghcr.io/<owner>/librequenda-<image>` (`.github/workflows/ci.yml`).
+**Imaxes desde a CI:** cada push a `main` e cada etiqueta de versión constrúe as imaxes e publícaas en `ghcr.io/<owner>/librequenda-<image>` (`.github/workflows/ci.yml`).
 
-## Your own Android app
+## A túa propia app Android
 
-`./install.sh app` builds LibreQuenda's Android app with your name, logo and package (applicationId), pointing to your server, in Docker (`app/builder/`): an APK to install directly and an AAB for Google Play. It keeps its answers, the logo and the signing key in `android/` next to `.env`.
+`./install.sh app` constrúe a app Android de LibreQuenda co teu nome, logotipo e paquete (applicationId), apuntando ao teu servidor, en Docker (`app/builder/`): un APK para instalar directamente e un AAB para Google Play. Garda as túas respostas, o logotipo e a clave de sinatura en `android/`, xunto a `.env`.
 
-- **The signing key** (`android/release.jks` and `android/keystore.env`) signs every update: phones and Google Play refuse an update signed with another key. Back it up with `.env`.
-- **Sign-in** returns to the app through its package (`<applicationId>:/oauth2redirect`), so Zitadel must know it: the installer adds it to `ANDROID_APP_IDS` in `.env` and restarts the stack, and `zitadel-setup` registers it. The server lists the accepted ones in `/config.json` (`androidAppIds`). Built on another machine, add it to the server's `.env` by hand and run `docker compose up -d --wait`. With `ZITADEL_SETUP_REVOKE_TOKEN=true` the setup can no longer change Zitadel: give it a new token first (see "Zitadel admin token").
-- **Updates:** after updating LibreQuenda, run `./install.sh app` again: same package and key, a higher version code.
+- **A clave de sinatura** (`android/release.jks` e `android/keystore.env`) asina cada actualización: os teléfonos e Google Play rexeitan unha actualización asinada con outra clave. Fai unha copia de seguranza dela xunto con `.env`.
+- **O inicio de sesión** volve á app a través do seu paquete (`<applicationId>:/oauth2redirect`), así que Zitadel ten que coñecelo: o instalador engádeo a `ANDROID_APP_IDS` en `.env` e reinicia a pila, e `zitadel-setup` rexístrao. O servidor lista os aceptados en `/config.json` (`androidAppIds`). Se se constrúe noutra máquina, engádeo a man ao `.env` do servidor e executa `docker compose up -d --wait`. Con `ZITADEL_SETUP_REVOKE_TOKEN=true` a configuración xa non pode cambiar Zitadel: dálle primeiro un novo token (consulta «Token de administración de Zitadel»).
+- **Actualizacións:** despois de actualizar LibreQuenda, executa outra vez `./install.sh app`: o mesmo paquete e a mesma clave, cun código de versión máis alto.

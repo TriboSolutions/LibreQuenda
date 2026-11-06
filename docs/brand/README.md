@@ -1,7 +1,7 @@
-# LibreQuenda logo kit
+# Kit do logotipo de LibreQuenda
 
-Colours: blue #0096D1 · navy #0B2544 · band #3FB0DD · light blue #67BFE3 · white #FFFFFF. Typeface: Figtree (wordmark text is outlined in the SVGs).
+Cores: azul #0096D1 · azul mariño #0B2544 · banda #3FB0DD · azul claro #67BFE3 · branco #FFFFFF. Tipografía: Figtree (o texto do logotipo está convertido en contornos nos SVG).
 
-- `svg/`, `png/`: mark, horizontal and stacked logos, wordmark, one-colour marks (`mark-mono.svg` uses currentColor).
-- `web/`: copy to the site root and paste `head-snippet.html` into `<head>`.
-- `android/res/`: merge into `app/src/main/res` (adaptive icon with monochrome layer for themed icons, PNG fallbacks, colours). `play-store-512.png` is for the Play Console.
+- `svg/`, `png/`: símbolo, logotipos horizontal e apilado, logotipo de texto, símbolos dunha soa cor (`mark-mono.svg` usa currentColor).
+- `web/`: cópiao na raíz do sitio e pega `head-snippet.html` dentro de `<head>`.
+- `android/res/`: combínao con `app/src/main/res` (icona adaptativa con capa monocroma para as iconas con tema, PNG de reserva, cores). `play-store-512.png` é para a Play Console.

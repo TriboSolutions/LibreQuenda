@@ -1,20 +1,20 @@
-# Development
+# Desenvolvemento
 
-## Stack
+## Tecnoloxías
 
-| Part | Technology |
+| Parte | Tecnoloxía |
 |---|---|
-| Core API | Go, [Penguin](https://github.com/angelbarreiros/Penguin) (HTTP router, scheduler, logger), [sqlc](https://sqlc.dev) |
-| Database | PostgreSQL |
-| Image storage | [Garage](https://garagehq.deuxfleurs.fr) (self-hosted, S3-compatible) |
-| Maps | [Leaflet](https://leafletjs.com) + [OpenStreetMap](https://www.openstreetmap.org) |
-| Identity | [Zitadel](https://zitadel.com) (OIDC) |
+| API principal | Go, [Penguin](https://github.com/angelbarreiros/Penguin) (enrutador HTTP, planificador, rexistro), [sqlc](https://sqlc.dev) |
+| Base de datos | PostgreSQL |
+| Almacenamento de imaxes | [Garage](https://garagehq.deuxfleurs.fr) (autoaloxado, compatible con S3) |
+| Mapas | [Leaflet](https://leafletjs.com) + [OpenStreetMap](https://www.openstreetmap.org) |
+| Identidade | [Zitadel](https://zitadel.com) (OIDC) |
 | Web | React, Vite, pnpm |
-| Proxy | [Caddy](https://caddyserver.com) (single entry point, automatic HTTPS) |
-| Deployment | Docker Compose |
+| Proxy | [Caddy](https://caddyserver.com) (punto de entrada único, HTTPS automático) |
+| Despregamento | Docker Compose |
 
 
-## Repository layout
+## Estrutura do repositorio
 
 ```
 .agents/   AI agent instructions for development
@@ -32,10 +32,10 @@ web/       React web app
 ```
 
 
-## Documentation
+## Documentación
 
-- [Features](../features.md) and [todo](../todo.md)
-- [Running a server](self-hosting.md), [check-in at the entrance](check-in.md), [activity log](audit-log.md), [proposal: a personal home](specs/feed.md)
+- [Funcións](../features.md) e [pendentes](../todo.md)
+- [Manter un servidor](self-hosting.md), [rexistrar a entrada na instalación](check-in.md), [rexistro de actividade](audit-log.md), [proposta: un inicio persoal](specs/feed.md)
 
-- [Contest bases (v3, Galician)](https://www.agasol.gal/wp-content/uploads/2026/10/Bases_I_Certame_GOBTEC_2026_GL_v3.pdf), published by AGASOL
-- API spec: [`docs/openapi/openapi.yaml`](openapi/openapi.yaml) (OpenAPI 3.1); agents: [MCP server](mcp.md); [asking the data](analytics.md)
+- [Bases do certame (v3, en galego)](https://www.agasol.gal/wp-content/uploads/2026/10/Bases_I_Certame_GOBTEC_2026_GL_v3.pdf), publicadas por AGASOL
+- Especificación da API: [`docs/openapi/openapi.yaml`](openapi/openapi.yaml) (OpenAPI 3.1); axentes: [servidor MCP](mcp.md); [preguntarlles aos datos](analytics.md)
