@@ -76,6 +76,8 @@ jobs:
               - "db/*.sh"
               - "zitadel/*.sh"
               - "backup/**"
+              - "landing/**"
+              - "docs/screenshots/**" # the landing shows them
               - ".github/workflows/**"
 
   api:
@@ -286,6 +288,9 @@ jobs:
           - image: backup
             context: backup
             dockerfile: backup/dockerfile
+          - image: landing # the project's static landing page
+            context: .
+            dockerfile: landing/dockerfile
     env:
       PUBLISH: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')) }}
     steps:

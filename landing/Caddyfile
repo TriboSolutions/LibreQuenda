@@ -1,0 +1,25 @@
+# Serves the landing on :80; put TLS in front, or set SITE_ADDRESS to a domain
+# and Caddy fetches the certificate itself.
+{
+	admin off
+}
+
+{$SITE_ADDRESS::80} {
+	root * /srv
+	encode zstd gzip
+	file_server
+
+	@hashed path /_astro/*
+	header @hashed Cache-Control "public, max-age=31536000, immutable"
+
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
+
+	handle_errors {
+		rewrite * /404.html
+		file_server
+	}
+}

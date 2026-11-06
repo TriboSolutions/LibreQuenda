@@ -1,0 +1,106 @@
+---
+import { Server, Globe, Mail, Smartphone, ArrowRight, TriangleAlert, RefreshCw, BookOpen, Network } from "@lucide/astro";
+import Base from "../layouts/Base.astro";
+import Github from "./GithubIcon.astro";
+import Code from "./Code.astro";
+import { REPO, INSTALL } from "../site";
+import { DICT, type Lang } from "../i18n";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = DICT[lang];
+const i = t.install;
+
+const needIcons = [Server, Globe, Network, Mail];
+---
+
+<Base lang={lang} title={i.title} description={i.description}>
+  <section class="relative overflow-hidden pt-32 pb-16 sm:pt-40">
+    <div class="dots absolute inset-0 -z-10 [mask-image:radial-gradient(ellipse_at_top,black,transparent_70%)]"></div>
+    <div class="mx-auto max-w-3xl px-4 sm:px-6">
+      <p class="rise text-sm font-semibold uppercase tracking-wider text-brand-blue">{i.eyebrow}</p>
+      <h1 class="rise mt-3 text-4xl font-semibold tracking-tight sm:text-5xl" style="--d:80ms">{i.h1}</h1>
+      <p class="rise mt-4 text-lg text-muted-foreground" style="--d:160ms">{i.lead}</p>
+    </div>
+  </section>
+
+  <section class="pb-16">
+    <div class="mx-auto max-w-3xl px-4 sm:px-6">
+      <h2 data-reveal class="text-xl font-semibold">{i.needsTitle}</h2>
+      <div class="mt-5 grid gap-3 sm:grid-cols-2">
+        {
+          i.needs.map((n, k) => {
+            const Icon = needIcons[k];
+            return (
+              <div data-reveal style={`--d:${k * 70}ms`} class="flex gap-4 rounded-xl border border-border bg-card p-5">
+                <Icon class="mt-0.5 size-5 shrink-0 text-brand-blue" />
+                <div>
+                  <h3 class="font-medium">{n.t}</h3>
+                  <p class="mt-1 text-sm text-muted-foreground">{n.d}</p>
+                </div>
+              </div>
+            );
+          })
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="pb-16">
+    <div class="mx-auto max-w-3xl px-4 sm:px-6">
+      <h2 data-reveal class="text-xl font-semibold">{i.stepsTitle}</h2>
+      <ol class="relative mt-8 space-y-10 border-l-2 border-border pl-8">
+        {
+          i.steps.map((s, k) => (
+            <li data-reveal style={`--d:${k * 90}ms`} class="relative min-w-0">
+              <span class="absolute -left-[calc(2rem+1.0625rem)] grid size-8 place-items-center rounded-full bg-brand-blue text-sm font-semibold text-white ring-4 ring-background">
+                {k + 1}
+              </span>
+              <h3 class="font-semibold">{s.t}</h3>
+              <p class="mt-1 text-sm text-muted-foreground">{s.d}</p>
+              {k === 0 && <Code code={INSTALL} class="mt-4" t={t.code} />}
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  <section class="pb-16">
+    <div class="mx-auto grid max-w-3xl gap-4 px-4 sm:px-6">
+      <div data-reveal class="flex gap-4 rounded-xl border border-[#b45309]/30 bg-[#b45309]/5 p-5">
+        <TriangleAlert class="mt-0.5 size-5 shrink-0 text-star" />
+        <p class="text-sm"><strong>{i.warnStrong}</strong> {i.warn}</p>
+      </div>
+
+      <div data-reveal class="min-w-0 rounded-xl border border-border bg-card p-5">
+        <div class="flex items-center gap-2 font-medium"><RefreshCw class="size-4 text-brand-blue" /> {i.update}</div>
+        <Code class="mt-4" code="docker compose pull && docker compose up -d --wait" t={t.code} />
+      </div>
+
+      <div data-reveal class="min-w-0 rounded-xl border border-border bg-card p-5">
+        <div class="flex items-center gap-2 font-medium"><Smartphone class="size-4 text-brand-blue" /> {i.appTitle}</div>
+        <p class="mt-1 text-sm text-muted-foreground">{i.appText}</p>
+        <Code class="mt-4" code="bash install.sh app" t={t.code} />
+      </div>
+    </div>
+  </section>
+
+  <section class="pb-28">
+    <div class="mx-auto grid max-w-3xl gap-3 px-4 sm:grid-cols-2 sm:px-6">
+      <a data-reveal href={`${REPO}/blob/main/docs/self-hosting.md`} class="group flex items-center gap-3 rounded-xl border border-border bg-card px-5 py-4 text-sm font-medium transition-colors hover:border-brand-blue/40">
+        <BookOpen class="size-4 text-brand-blue" />
+        {i.fullGuide}
+        <ArrowRight class="ml-auto size-4 text-muted-foreground transition-transform group-hover:translate-x-1" />
+      </a>
+      <a data-reveal style="--d:70ms" href={REPO} class="group flex items-center gap-3 rounded-xl border border-border bg-card px-5 py-4 text-sm font-medium transition-colors hover:border-brand-blue/40">
+        <Github class="size-4 text-brand-blue" />
+        {i.source}
+        <ArrowRight class="ml-auto size-4 text-muted-foreground transition-transform group-hover:translate-x-1" />
+      </a>
+      {lang !== "gl" && <p class="text-xs text-muted-foreground sm:col-span-2">{i.docNote}</p>}
+    </div>
+  </section>
+</Base>

@@ -1,0 +1,30 @@
+# The project's landing page: a static Astro site served by Caddy.
+# Build context: repository root (it uses the screenshots in docs/screenshots)
+#   docker build -f landing/dockerfile -t librequenda-landing .
+
+# --- Build the static site ---
+FROM node:24-alpine AS builder
+
+RUN corepack enable
+
+WORKDIR /repo/landing
+
+COPY landing/package.json landing/pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
+
+COPY docs/screenshots /repo/docs/screenshots
+COPY landing/ .
+
+RUN pnpm build
+
+
+# --- Serve it ---
+FROM caddy:2.11.7-alpine
+
+# security fixes released after the base image was built
+RUN apk upgrade --no-cache
+
+COPY landing/Caddyfile /etc/caddy/Caddyfile
+COPY --from=builder /repo/landing/dist /srv
+
+EXPOSE 80

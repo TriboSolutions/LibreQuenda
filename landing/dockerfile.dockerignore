@@ -1,0 +1,7 @@
+# Used instead of the root .dockerignore when building landing/dockerfile
+**
+!landing/
+!docs/screenshots/
+**/node_modules
+**/dist
+**/.astro

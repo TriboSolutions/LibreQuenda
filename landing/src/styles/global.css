@@ -1,0 +1,301 @@
+@import "tailwindcss";
+@import "@fontsource-variable/dm-sans";
+
+@custom-variant dark (&:is(.dark *));
+
+/* The same tokens as the app (web/src/globals.css), so the landing reads as part of it. */
+:root {
+  --background: #f6f9fb;
+  --foreground: #111827;
+  --card: #ffffff;
+  --primary: #074f80;
+  --primary-foreground: #ffffff;
+  --muted: #f1f4f7;
+  --muted-foreground: #434c59;
+  --accent: #eef6fb;
+  --accent-foreground: #0b3d61;
+  --border: #e3e8ed;
+  --ring: #0a6fb0;
+  --slot-free: #0a6fb0;
+  --slot-booked: #848f9c;
+  --slot-past: #e8edf2;
+  --brand-ink: #0b2544;
+  --brand-blue: #0096d1;
+  --pill-positive-bg: #dcfce7;
+  --pill-positive-ink: #14532d;
+  --star: #b45309;
+  --glow: rgb(0 150 209 / 0.18);
+  --code-bg: #0b2544;
+  --code-fg: #e6f4fb;
+}
+
+.dark {
+  --background: #0e0f10;
+  --foreground: #f3f4f6;
+  --card: #17181a;
+  --primary: #8fcaf2;
+  --primary-foreground: #06253a;
+  --muted: #212226;
+  --muted-foreground: #c4c8ce;
+  --accent: #10283a;
+  --accent-foreground: #b5daf3;
+  --border: #2a2c30;
+  --ring: #5fb0e6;
+  --slot-free: #4aa3df;
+  --slot-booked: #6a717a;
+  --slot-past: #222428;
+  --brand-ink: #ffffff;
+  --brand-blue: #33b4eb;
+  --pill-positive-bg: #12301f;
+  --pill-positive-ink: #74d6a0;
+  --star: #fbbf24;
+  --glow: rgb(51 180 235 / 0.14);
+  --code-bg: #17181a;
+  --code-fg: #e6f4fb;
+}
+
+@theme inline {
+  --font-sans: "DM Sans Variable", system-ui, sans-serif;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+  --color-slot-free: var(--slot-free);
+  --color-slot-booked: var(--slot-booked);
+  --color-slot-past: var(--slot-past);
+  --color-brand-ink: var(--brand-ink);
+  --color-brand-blue: var(--brand-blue);
+  --color-positive-bg: var(--pill-positive-bg);
+  --color-positive-ink: var(--pill-positive-ink);
+  --color-star: var(--star);
+  --color-code-bg: var(--code-bg);
+  --color-code-fg: var(--code-fg);
+  --radius-lg: 0.5rem;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+  ::selection {
+    background: var(--brand-blue);
+    color: white;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+/* ---------- reveal on scroll ---------- */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--d, 0ms);
+}
+[data-reveal="left"] { transform: translateX(-32px); }
+[data-reveal="right"] { transform: translateX(32px); }
+[data-reveal="zoom"] { transform: scale(0.94); }
+[data-reveal].in {
+  opacity: 1;
+  transform: none;
+}
+
+/* ---------- hero ---------- */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.float { animation: float 6s ease-in-out infinite; }
+.float-slow { animation: float 8s ease-in-out infinite -2s; }
+
+@keyframes pop-in {
+  0% { opacity: 0; transform: translateY(12px) scale(0.85); }
+  60% { opacity: 1; transform: translateY(-2px) scale(1.04); }
+  100% { opacity: 1; transform: none; }
+}
+.pop-in {
+  opacity: 0;
+  animation: pop-in 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation-delay: var(--d, 0ms);
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(18px); filter: blur(6px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+.rise {
+  opacity: 0;
+  animation: rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation-delay: var(--d, 0ms);
+}
+
+/* the brand ring turning slowly behind the hero */
+@keyframes spin-slow { to { transform: rotate(360deg); } }
+.spin-slow { animation: spin-slow 60s linear infinite; }
+
+/* ---------- phone screens crossfade ---------- */
+.screen {
+  opacity: 0;
+  transform: scale(1.04) translateY(8px);
+  transition:
+    opacity 0.6s ease,
+    transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.screen.on {
+  opacity: 1;
+  transform: none;
+}
+
+/* ---------- marquee ---------- */
+@keyframes marquee { to { transform: translateX(-50%); } }
+.marquee {
+  animation: marquee var(--speed, 60s) linear infinite;
+}
+.marquee.reverse { animation-direction: reverse; }
+.marquee-wrap:hover .marquee { animation-play-state: paused; }
+.mask-x {
+  mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+}
+
+/* ---------- success tick, like the app's Success screen: the circle springs, the tick draws ---------- */
+@keyframes spring-in {
+  0% { transform: scale(0); }
+  45% { transform: scale(1.18); }
+  65% { transform: scale(0.94); }
+  82% { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+@keyframes draw { to { stroke-dashoffset: 0; } }
+.tick-circle { animation: spring-in 0.7s ease-out both; }
+.tick-path {
+  stroke-dasharray: 40;
+  stroke-dashoffset: 40;
+  animation: draw 0.38s ease-out 0.35s forwards;
+}
+
+/* ---------- day strip slots ---------- */
+.slot {
+  transition:
+    background-color 0.25s,
+    transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+    color 0.25s;
+}
+.slot.free:hover { transform: translateY(-3px); }
+@keyframes slot-pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+.slot.just { animation: slot-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+/* ---------- stars, like the app's rating pop ---------- */
+@keyframes star-pop {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.45) rotate(-12deg); }
+  100% { transform: scale(1); }
+}
+.star-pop { animation: star-pop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+/* ---------- check-in pulse ---------- */
+@keyframes ping-ring {
+  0% { transform: scale(0.8); opacity: 0.6; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+.ping-ring { animation: ping-ring 2.2s cubic-bezier(0, 0, 0.2, 1) infinite; }
+
+@keyframes scanline {
+  0%, 100% { top: 0%; }
+  50% { top: 100%; }
+}
+.scanline { animation: scanline 2.4s ease-in-out infinite; }
+
+/* typing caret */
+@keyframes blink { 50% { opacity: 0; } }
+.caret { animation: blink 1s step-end infinite; }
+
+/* bar charts that grow when seen */
+.bar {
+  transform: scaleY(0);
+  transform-origin: bottom;
+  transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--d, 0ms);
+}
+.in .bar { transform: scaleY(1); }
+
+/* tab panels */
+.panel {
+  opacity: 0;
+  transform: translateY(10px) scale(0.99);
+  transition: opacity 0.45s ease, transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+.panel.on {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+/* words rolling up, one language after another */
+.word {
+  opacity: 0;
+  transform: translateY(100%);
+  transition: opacity 0.4s ease, transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.word.on { opacity: 1; transform: none; }
+.word.out { opacity: 0; transform: translateY(-100%); }
+
+/* a light sweeping over what is still on its way (iOS) */
+@keyframes sweep { to { transform: translateX(100%); } }
+.shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(100deg, transparent 30%, var(--glow) 50%, transparent 70%);
+  animation: sweep 2.8s ease-in-out infinite;
+}
+
+/* the data orbiting inside the server's boundary; the icons stay upright */
+.spin-orbit { animation: spin-slow 24s linear infinite; }
+.counter-orbit { animation: spin-slow 24s linear infinite reverse; }
+
+/* check marks that draw themselves when their card shows up */
+.tick-draw { stroke-dasharray: 40; stroke-dashoffset: 40; }
+.in .tick-draw { animation: draw 0.4s ease-out forwards; animation-delay: var(--d, 0ms); }
+
+/* the progress line under the active feature */
+@keyframes fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.progress { transform-origin: left; transform: scaleX(0); }
+.on > .progress { animation: fill var(--dur, 4s) linear forwards; }
+
+/* grain-free dotted backdrop */
+.dots {
+  background-image: radial-gradient(var(--border) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  [data-reveal] { opacity: 1; transform: none; }
+  .marquee { animation: none; }
+}

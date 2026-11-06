@@ -1,0 +1,182 @@
+---
+// A playable copy of the app's day strip: free slots in the brand blue, taken ones grey.
+// Click a free slot to book it; when it comes into view a cursor books one by itself.
+import { Zap, MapPin, Star } from "@lucide/astro";
+import type { Dict } from "../i18n";
+
+const { t } = Astro.props as { t: Dict["strip"] };
+const days = t.days;
+const slots: { t: string; s: "past" | "booked" | "free" }[] = [
+  { t: "09:00", s: "past" },
+  { t: "10:30", s: "past" },
+  { t: "12:00", s: "booked" },
+  { t: "13:30", s: "free" },
+  { t: "15:00", s: "booked" },
+  { t: "16:30", s: "free" },
+  { t: "18:00", s: "free" },
+  { t: "19:30", s: "booked" },
+  { t: "21:00", s: "free" },
+];
+---
+
+<div data-strip data-book-at={t.bookAt} data-unavailable={t.unavailable} data-yours={t.yourBooking} class="relative rounded-2xl border border-border bg-card p-5 shadow-xl shadow-[#0b2544]/5 sm:p-7">
+  <div class="flex flex-wrap items-start justify-between gap-3">
+    <div>
+      <p class="text-lg font-semibold">{t.facility}</p>
+      <p class="mt-0.5 flex items-center gap-3 text-sm text-muted-foreground">
+        <span class="flex items-center gap-1"><MapPin class="size-3.5" /> {t.council}</span>
+        <span class="flex items-center gap-1"><Star class="size-3.5 fill-star text-star" /> 4.3</span>
+      </p>
+    </div>
+    <span class="inline-flex items-center gap-1.5 rounded-full bg-positive-bg px-2.5 py-1 text-xs font-medium text-positive-ink">
+      <Zap class="size-3.5" /><span data-free-count>4</span>&nbsp;{t.freeToday}
+    </span>
+  </div>
+
+  <div class="mt-5 flex gap-1.5 overflow-x-auto pb-1" role="tablist" aria-label={t.day}>
+    {
+      days.map((d, i) => (
+        <button
+          type="button"
+          data-day={i}
+          class:list={[
+            "shrink-0 rounded-md border px-3 py-1.5 text-sm transition-colors",
+            i === 0 ? "border-ring bg-accent text-accent-foreground" : "border-border hover:bg-accent",
+          ]}
+        >
+          {d}
+        </button>
+      ))
+    }
+  </div>
+
+  <div data-slots class="relative mt-4 grid grid-cols-3 gap-2 sm:grid-cols-5 lg:grid-cols-9">
+    {
+      slots.map((s) => (
+        <button
+          type="button"
+          disabled={s.s !== "free"}
+          data-t={s.t}
+          class:list={[
+            "slot num relative h-12 rounded-md text-sm font-medium",
+            s.s === "free" && "free bg-slot-free text-white cursor-pointer",
+            s.s === "booked" && "bg-slot-booked/25 text-muted-foreground",
+            s.s === "past" && "bg-slot-past text-muted-foreground line-through",
+          ]}
+          aria-label={s.s === "free" ? `${t.bookAt} ${s.t}` : `${s.t}, ${t.unavailable}`}
+        >
+          {s.t}
+        </button>
+      ))
+    }
+    <svg data-cursor class="pointer-events-none absolute left-0 top-0 z-10 size-6 opacity-0 drop-shadow-md transition-[transform,opacity] duration-700 ease-[cubic-bezier(.22,1,.36,1)]" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M4 2l16 10-7 1.5L9.5 21z" fill="#0b2544" stroke="white" stroke-width="1.5" stroke-linejoin="round" />
+    </svg>
+  </div>
+
+  <div class="mt-4 flex flex-wrap gap-4 text-xs text-muted-foreground">
+    <span class="flex items-center gap-1.5"><i class="size-2.5 rounded-sm bg-slot-free"></i>{t.free}</span>
+    <span class="flex items-center gap-1.5"><i class="size-2.5 rounded-sm bg-slot-booked/40"></i>{t.booked}</span>
+    <span class="flex items-center gap-1.5"><i class="size-2.5 rounded-sm bg-brand-ink"></i>{t.yours}</span>
+  </div>
+
+  <!-- the success toast, a nod to the app's Success screen -->
+  <div
+    data-toast
+    role="status"
+    class="pointer-events-none absolute -bottom-6 left-1/2 flex -translate-x-1/2 translate-y-3 items-center gap-3 rounded-full border border-border bg-card py-2 pl-2 pr-5 opacity-0 shadow-xl transition-all duration-500"
+  >
+    <span data-tick class="grid size-8 place-items-center rounded-full bg-[#16a34a]">
+      <svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path class="tick-path" d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+    </span>
+    <span class="whitespace-nowrap text-sm font-medium">{t.bookedAt} <span data-toast-t class="num">18:00</span></span>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-strip]").forEach((strip) => {
+    const toast = strip.querySelector<HTMLElement>("[data-toast]")!;
+    const tick = strip.querySelector<HTMLElement>("[data-tick]")!;
+    const toastT = strip.querySelector<HTMLElement>("[data-toast-t]")!;
+    const count = strip.querySelector<HTMLElement>("[data-free-count]")!;
+    const cursor = strip.querySelector<SVGElement>("[data-cursor]")!;
+    const grid = strip.querySelector<HTMLElement>("[data-slots]")!;
+    let hide = 0;
+
+    const freeSlots = () => [...strip.querySelectorAll<HTMLButtonElement>(".slot.free")];
+
+    const restartAnim = (el: Element, cls: string) => {
+      el.classList.remove(cls);
+      void (el as HTMLElement).offsetWidth;
+      el.classList.add(cls);
+    };
+
+    const book = (b: HTMLButtonElement) => {
+      b.classList.remove("free", "bg-slot-free", "cursor-pointer");
+      b.classList.add("bg-brand-ink", "text-white", "dark:text-[#0b2544]");
+      b.disabled = true;
+      b.setAttribute("aria-label", `${b.dataset.t}, ${strip.dataset.yours}`);
+      restartAnim(b, "just");
+      count.textContent = String(freeSlots().length);
+      toastT.textContent = b.dataset.t ?? "";
+      toast.classList.remove("opacity-0", "translate-y-3");
+      restartAnim(tick, "tick-circle");
+      restartAnim(tick.querySelector("path")!, "tick-path");
+      clearTimeout(hide);
+      hide = window.setTimeout(() => toast.classList.add("opacity-0", "translate-y-3"), 2400);
+    };
+
+    strip.addEventListener("click", (e) => {
+      const b = (e.target as HTMLElement).closest<HTMLButtonElement>(".slot.free");
+      if (b) book(b);
+      const d = (e.target as HTMLElement).closest<HTMLButtonElement>("[data-day]");
+      if (d) {
+        strip.querySelectorAll("[data-day]").forEach((x) => {
+          const on = x === d;
+          x.classList.toggle("border-ring", on);
+          x.classList.toggle("bg-accent", on);
+          x.classList.toggle("text-accent-foreground", on);
+          x.classList.toggle("border-border", !on);
+        });
+        // another day: shuffle which slots are free, with a little wave
+        strip.querySelectorAll<HTMLButtonElement>(".slot").forEach((s, i) => {
+          const free = (i * 7 + Number(d.dataset.day) * 3) % 5 > 1;
+          s.className = "slot num relative h-12 rounded-md text-sm font-medium " +
+            (free ? "free bg-slot-free text-white cursor-pointer" : "bg-slot-booked/25 text-muted-foreground");
+          s.disabled = !free;
+          s.setAttribute("aria-label", free ? `${strip.dataset.bookAt} ${s.dataset.t}` : `${s.dataset.t}, ${strip.dataset.unavailable}`);
+          s.style.animationDelay = `${i * 35}ms`;
+          restartAnim(s, "just");
+        });
+        count.textContent = String(freeSlots().length);
+      }
+    });
+
+    // the first time it shows up, a cursor books 18:00 by itself
+    const demo = () => {
+      if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      const target = strip.querySelector<HTMLButtonElement>('.slot.free[data-t="18:00"]');
+      if (!target) return;
+      const g = grid.getBoundingClientRect();
+      const r = target.getBoundingClientRect();
+      cursor.style.transform = `translate(${g.width - 10}px, ${g.height + 30}px)`;
+      cursor.style.opacity = "1";
+      setTimeout(() => {
+        cursor.style.transform = `translate(${r.left - g.left + r.width / 2}px, ${r.top - g.top + r.height / 2}px)`;
+      }, 400);
+      setTimeout(() => {
+        if (target.classList.contains("free")) book(target);
+      }, 1300);
+      setTimeout(() => (cursor.style.opacity = "0"), 2000);
+    };
+    new IntersectionObserver(
+      ([e], o) => {
+        if (e.isIntersecting) {
+          setTimeout(demo, 500);
+          o.disconnect();
+        }
+      },
+      { threshold: 0.6 },
+    ).observe(strip);
+  });
+</script>

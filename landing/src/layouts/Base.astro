@@ -1,0 +1,222 @@
+---
+import "../styles/global.css";
+import Github from "../components/GithubIcon.astro";
+import { Moon, Sun, Star, Languages, Check } from "@lucide/astro";
+import { REPO } from "../site";
+import { DICT, LANGS, LANG_NAMES, href, swapLang, type Lang } from "../i18n";
+
+interface Props {
+  lang: Lang;
+  title: string;
+  description: string;
+}
+const { lang, title, description } = Astro.props;
+const t = DICT[lang];
+const path = Astro.url.pathname;
+const site = Astro.site ?? new URL("https://librequenda.gal");
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    {LANGS.map((l) => <link rel="alternate" hreflang={l} href={new URL(swapLang(path, l), site).href} />)}
+    <link rel="alternate" hreflang="x-default" href={new URL(swapLang(path, "gl"), site).href} />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="theme-color" content="#0B2544" />
+    <script is:inline>
+      // same rule as the app: the saved choice, else the system's
+      (() => {
+        let t = null;
+        try { t = localStorage.getItem("lq-theme"); } catch {}
+        const dark = t ? t === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+        document.documentElement.classList.toggle("dark", dark);
+      })();
+    </script>
+  </head>
+  <body class="min-h-dvh overflow-x-clip">
+    <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-card focus:px-3 focus:py-2">
+      {t.nav.skip}
+    </a>
+
+    <header
+      id="nav"
+      class="fixed inset-x-0 top-0 z-40 border-b border-transparent transition-[background-color,border-color,backdrop-filter] duration-300 data-[scrolled]:border-border data-[scrolled]:bg-background/80 data-[scrolled]:backdrop-blur-md"
+    >
+      <nav class="mx-auto flex h-16 max-w-6xl items-center gap-6 px-4 sm:px-6">
+        <a href={href(lang)} class="flex shrink-0 items-center gap-2.5" aria-label={t.nav.home}>
+          <img src="/mark.svg" alt="" class="size-8 transition-transform duration-500 hover:rotate-[360deg]" />
+          <img src="/wordmark-on-light.svg" alt="" class="hidden h-[22px] w-auto sm:block dark:hidden" />
+          <img src="/wordmark-on-dark.svg" alt="" class="hidden h-[22px] w-auto sm:dark:block" />
+        </a>
+        <div class="ml-auto hidden items-center gap-6 text-sm text-muted-foreground lg:flex">
+          <a href={`${href(lang)}#vecinanza`} class="transition-colors hover:text-foreground">{t.nav.residents}</a>
+          <a href={`${href(lang)}#concello`} class="transition-colors hover:text-foreground">{t.nav.councils}</a>
+          <a href={`${href(lang)}#libre`} class="transition-colors hover:text-foreground">{t.nav.free}</a>
+          <a href={href(lang, "/instalar")} class:list={["transition-colors hover:text-foreground", path.includes("/instalar") && "font-medium text-foreground"]}>{t.nav.install}</a>
+        </div>
+        <div class="ml-auto flex items-center gap-1.5 lg:ml-0">
+          <!-- language menu -->
+          <details data-langmenu class="relative">
+            <summary
+              class="flex h-9 cursor-pointer list-none items-center gap-1.5 rounded-md px-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground [&::-webkit-details-marker]:hidden"
+              aria-label={t.nav.language}
+            >
+              <Languages class="size-[18px]" />
+              <span class="font-medium uppercase">{lang}</span>
+            </summary>
+            <ul class="pop-in absolute right-0 mt-2 w-44 rounded-xl border border-border bg-card p-1 shadow-xl">
+              {
+                LANGS.map((l) => (
+                  <li>
+                    <a
+                      href={swapLang(path, l)}
+                      hreflang={l}
+                      lang={l}
+                      aria-current={l === lang ? "true" : undefined}
+                      class="flex items-center justify-between rounded-lg px-3 py-2 text-sm hover:bg-accent aria-[current]:font-medium aria-[current]:text-accent-foreground"
+                    >
+                      {LANG_NAMES[l]}
+                      {l === lang && <Check class="size-4 text-brand-blue" />}
+                    </a>
+                  </li>
+                ))
+              }
+            </ul>
+          </details>
+          <button
+            id="theme"
+            type="button"
+            class="grid size-9 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            aria-label={t.nav.theme}
+          >
+            <Sun class="hidden size-[18px] dark:block" />
+            <Moon class="size-[18px] dark:hidden" />
+          </button>
+          <a
+            href={REPO}
+            class="group ml-1 inline-flex h-9 items-center gap-2 rounded-md border border-border bg-card px-3 text-sm font-medium transition-colors hover:border-brand-blue/50"
+          >
+            <Github class="size-4" />
+            <span class="hidden sm:inline">GitHub</span>
+            <span class="hidden items-center gap-1 border-l border-border pl-2 text-muted-foreground sm:flex">
+              <Star class="size-3.5 transition-transform group-hover:scale-125 group-hover:fill-current group-hover:text-star" />
+              <span class="num" data-stars>{t.nav.star}</span>
+            </span>
+          </a>
+        </div>
+      </nav>
+    </header>
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <footer class="border-t border-border bg-card">
+      <div class="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.5fr_1fr_1fr_1fr]">
+        <div class="space-y-4">
+          <div class="flex items-center gap-2.5">
+            <img src="/mark.svg" alt="" class="size-7" />
+            <img src="/wordmark-on-light.svg" alt="LibreQuenda" class="h-5 w-auto dark:hidden" />
+            <img src="/wordmark-on-dark.svg" alt="LibreQuenda" class="hidden h-5 w-auto dark:block" />
+          </div>
+          <p class="max-w-xs text-sm text-muted-foreground">{t.footer.tagline}</p>
+          <span class="inline-block rounded-full bg-accent px-2.5 py-1 text-xs font-medium text-accent-foreground">{t.footer.badge}</span>
+        </div>
+        <div>
+          <h2 class="mb-3 text-sm font-semibold">{t.footer.project}</h2>
+          <ul class="space-y-2 text-sm text-muted-foreground">
+            <li><a class="hover:text-foreground" href={REPO}>{t.footer.source}</a></li>
+            <li><a class="hover:text-foreground" href={`${REPO}/releases`}>{t.footer.releases}</a></li>
+            <li><a class="hover:text-foreground" href={`${REPO}/issues`}>{t.footer.issues}</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2 class="mb-3 text-sm font-semibold">{t.footer.docs}</h2>
+          <ul class="space-y-2 text-sm text-muted-foreground">
+            <li><a class="hover:text-foreground" href={href(lang, "/instalar")}>{t.footer.installation}</a></li>
+            <li><a class="hover:text-foreground" href={`${REPO}/blob/main/docs/self-hosting.md`}>{t.footer.selfHosting}</a></li>
+            <li><a class="hover:text-foreground" href={`${REPO}/blob/main/docs/mcp.md`}>{t.footer.mcp}</a></li>
+            <li><a class="hover:text-foreground" href={`${REPO}/blob/main/docs/development.md`}>{t.footer.development}</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2 class="mb-3 text-sm font-semibold">{t.footer.legal}</h2>
+          <ul class="space-y-2 text-sm text-muted-foreground">
+            <li><a class="hover:text-foreground" href={`${REPO}/blob/main/LICENSE`}>{t.footer.licence}</a></li>
+            <li><a class="hover:text-foreground" href={`${REPO}/blob/main/SECURITY.md`}>{t.footer.security}</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-border">
+        <p class="mx-auto max-w-6xl px-4 py-5 text-xs text-muted-foreground sm:px-6">
+          © 2026 Tribo Solutions · {t.footer.contest}
+          <a class="underline underline-offset-2 hover:text-foreground" href="https://www.agasol.gal/i-certame-gobtec/">{t.footer.contestName}</a>.
+        </p>
+      </div>
+    </footer>
+
+    <script>
+      import { REPO_API } from "../site";
+
+      // nav background once the page scrolls
+      const nav = document.getElementById("nav")!;
+      const onScroll = () => nav.toggleAttribute("data-scrolled", scrollY > 8);
+      onScroll();
+      addEventListener("scroll", onScroll, { passive: true });
+
+      // theme toggle
+      document.getElementById("theme")!.addEventListener("click", () => {
+        const dark = document.documentElement.classList.toggle("dark");
+        try { localStorage.setItem("lq-theme", dark ? "dark" : "light"); } catch {}
+      });
+
+      // the language menu closes on a click outside or Escape
+      const menu = document.querySelector<HTMLDetailsElement>("[data-langmenu]");
+      if (menu) {
+        document.addEventListener("click", (e) => {
+          if (!menu.contains(e.target as Node)) menu.open = false;
+        });
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape" && menu.open) {
+            menu.open = false;
+            menu.querySelector("summary")?.focus();
+          }
+        });
+      }
+
+      // reveal on scroll
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (e.isIntersecting) {
+              e.target.classList.add("in");
+              e.target.dispatchEvent(new CustomEvent("revealed"));
+              io.unobserve(e.target);
+            }
+          }
+        },
+        { threshold: 0.15, rootMargin: "0px 0px -40px 0px" },
+      );
+      document.querySelectorAll("[data-reveal]").forEach((el) => io.observe(el));
+
+      // live star count; the label stays as it is if GitHub does not answer or there are none yet
+      fetch(REPO_API)
+        .then((r) => (r.ok ? r.json() : Promise.reject()))
+        .then((d) => {
+          const n = d.stargazers_count;
+          if (typeof n !== "number" || n === 0) return;
+          const label = n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n);
+          document.querySelectorAll<HTMLElement>("[data-stars]").forEach((el) => (el.textContent = label));
+        })
+        .catch(() => {});
+    </script>
+  </body>
+</html>

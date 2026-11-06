@@ -1,0 +1,61 @@
+---
+import { Image } from "astro:assets";
+import type { ImageMetadata } from "astro";
+
+interface Props {
+  screens: { src: ImageMetadata; alt: string }[];
+  id?: string;
+  /** ms between screens; 0 leaves it to whoever drives it */
+  interval?: number;
+  class?: string;
+  eager?: boolean;
+}
+const { screens, id, interval = 3200, class: cls, eager = false } = Astro.props;
+---
+
+<div
+  data-phone
+  data-interval={interval}
+  id={id}
+  class:list={["relative aspect-[540/1200] rounded-[2.6rem] bg-[#0b0c0d] p-[9px] shadow-2xl shadow-black/25 ring-1 ring-white/10", cls]}
+>
+  <div class="relative h-full w-full overflow-hidden rounded-[2.1rem] bg-[#141517]">
+    {
+      screens.map((s, i) => (
+        <Image
+          src={s.src}
+          alt={s.alt}
+          widths={[300, 540]}
+          sizes="(min-width: 768px) 300px, 60vw"
+          loading={eager && i === 0 ? "eager" : "lazy"}
+          class:list={["screen absolute inset-0 h-full w-full object-cover object-top", i === 0 && "on"]}
+          aria-hidden={i === 0 ? undefined : "true"}
+        />
+      ))
+    }
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-phone]").forEach((phone) => {
+    const shots = [...phone.querySelectorAll<HTMLElement>(".screen")];
+    let i = 0;
+    const show = (n: number) => {
+      shots[i].classList.remove("on");
+      shots[i].setAttribute("aria-hidden", "true");
+      i = (n + shots.length) % shots.length;
+      shots[i].classList.add("on");
+      shots[i].removeAttribute("aria-hidden");
+    };
+    phone.addEventListener("phone:show", (e) => show((e as CustomEvent<number>).detail));
+    const every = Number(phone.dataset.interval);
+    if (!every || shots.length < 2) return;
+    let timer = 0;
+    const run = () => (timer = window.setInterval(() => show(i + 1), every));
+    // only turn pages while the phone is on screen
+    new IntersectionObserver(([e]) => {
+      clearInterval(timer);
+      if (e.isIntersecting) run();
+    }).observe(phone);
+  });
+</script>

@@ -1,0 +1,22 @@
+---
+interface Props {
+  url?: string;
+  class?: string;
+}
+const { url = "reservas.concello.gal", class: cls } = Astro.props;
+---
+
+<div class:list={["overflow-hidden rounded-xl border border-border bg-card shadow-2xl shadow-[#0b2544]/10", cls]}>
+  <div class="flex h-9 items-center gap-2 border-b border-border px-3">
+    <span class="size-2.5 rounded-full bg-[#ff5f57]"></span>
+    <span class="size-2.5 rounded-full bg-[#febc2e]"></span>
+    <span class="size-2.5 rounded-full bg-[#28c840]"></span>
+    <span class="mx-auto flex h-6 w-1/2 max-w-xs items-center justify-center truncate rounded-md bg-muted px-3 text-[11px] text-muted-foreground">
+      {url}
+    </span>
+    <span class="w-[42px]"></span>
+  </div>
+  <div class="relative aspect-[16/10] overflow-hidden">
+    <slot />
+  </div>
+</div>
