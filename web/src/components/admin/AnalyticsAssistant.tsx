@@ -1,5 +1,5 @@
 import { Sparkles } from 'lucide-react'
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import ReactMarkdown, { type Components } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -7,7 +7,11 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { Skeleton } from '@/components/ui/skeleton'
 import type { AnalyticsAnswer, AnalyticsStep } from '@/lib/api'
+
+// the charts library loads only when an answer brings a chart
+const AnswerChart = lazy(() => import('@/components/admin/AnswerChart').then((m) => ({ default: m.AnswerChart })))
 
 const MAX_QUESTION = 1000
 const SHOWN_ROWS = 50
@@ -119,6 +123,11 @@ function Answer({ answer }: { answer: AnalyticsAnswer }) {
   const { t } = useTranslation('admin')
   return (
     <>
+      {(answer.charts ?? []).map((chart, i) => (
+        <Suspense key={i} fallback={<Skeleton className="h-64 w-full" />}>
+          <AnswerChart chart={chart} />
+        </Suspense>
+      ))}
       <div className="grid gap-3 leading-relaxed">
         <ReactMarkdown remarkPlugins={[remarkGfm]} allowedElements={MARKDOWN_ELEMENTS} unwrapDisallowed components={MARKDOWN}>
           {answer.answer}

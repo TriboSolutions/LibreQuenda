@@ -1157,6 +1157,20 @@ test.describe('keyboard', () => {
         json: {
           answer: 'Pista de pádel 1 tivo **12 cancelacións** en outubro. <b>non é HTML</b> [ligazón](https://example.com) ![imaxe](https://example.com/x.png)',
           steps: [{ sql: "SELECT count(*) FROM booking WHERE status = 'cancelled'", result: { columns: ['count'], rows: [[12]], truncated: false } }],
+          charts: [
+            {
+              kind: 'bar',
+              title: 'Cancelacións por mes',
+              x: 'x',
+              series: [{ key: 's0', label: 'Cancelacións' }],
+              rows: [
+                { x: 'setembro', s0: 7 },
+                { x: 'outubro', s0: 12 },
+              ],
+              sql: 'SELECT …',
+            },
+            { kind: 'heatmap', title: 'Reservas por día e hora', x: 'x', y: 'y', series: [{ key: 's0', label: 'Reservas' }], rows: [{ x: '18', y: 'luns', s0: 4 }], sql: 'SELECT …' },
+          ],
         },
       })
     })
@@ -1167,10 +1181,16 @@ test.describe('keyboard', () => {
     await expect(conversation.getByText('<b>non é HTML</b>', { exact: false })).toBeVisible() // never HTML
     await expect(conversation.getByText('ligazón')).toBeVisible() // a link's text, not the link
     await expect(conversation.getByRole('link')).toHaveCount(0)
-    await expect(conversation.getByRole('img')).toHaveCount(0)
+    await expect(conversation.getByRole('img', { name: /ligazón|imaxe/ })).toHaveCount(0)
+    // the charts it drew, each with its table
+    const chart = conversation.getByRole('figure', { name: 'Cancelacións por mes' })
+    await expect(chart.locator('.recharts-bar-rectangle')).toHaveCount(2)
+    await chart.getByText('Ver os datos en táboa').click()
+    await expect(chart.getByRole('row', { name: 'outubro 12' })).toBeVisible()
+    await expect(conversation.getByRole('figure', { name: 'Reservas por día e hora' })).toBeVisible()
     expect(asked).toEqual({ question: 'Cantas cancelacións houbo en outubro?' })
     await conversation.getByText('1 consulta').click()
-    await expect(conversation.getByRole('cell', { name: '12' })).toBeVisible()
+    await expect(conversation.getByRole('row', { name: '12', exact: true })).toBeVisible()
     await page.mouse.move(0, 0)
     await expectAccessible(page)
   })

@@ -8151,6 +8151,39 @@ components:
         answer:
           type: string
           description: Plain text, in the language of the question.
+        charts:
+          type: array
+          description: Charts the assistant drew (when asked for one, or when a trend, ranking or share reads better drawn). Their rows are what their SQL returned, never numbers the model wrote.
+          items:
+            type: object
+            properties:
+              kind:
+                type: string
+                enum: [bar, stacked_bar, horizontal_bar, line, pie, heatmap]
+              title:
+                type: string
+              x:
+                type: string
+                description: The key of each row's category or time (always "x").
+              y:
+                type: string
+                description: heatmap only, the key of each row's grid row (always "y").
+              series:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    key:
+                      type: string
+                    label:
+                      type: string
+              rows:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+              sql:
+                type: string
         steps:
           type: array
           items:

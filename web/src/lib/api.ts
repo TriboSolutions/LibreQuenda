@@ -168,7 +168,18 @@ export type AISettings = { enabled: boolean; provider: 'openai' | 'anthropic'; b
 export type AISettingsInput = { enabled: boolean; provider: 'openai' | 'anthropic'; base_url: string; model: string; api_key: string }
 /** One query the assistant ran, and what it returned (at most 500 rows). */
 export type AnalyticsStep = { sql: string; result?: { columns: string[]; rows: unknown[][]; truncated: boolean }; error?: string }
-export type AnalyticsAnswer = { answer: string; steps: AnalyticsStep[] }
+/** A chart the data assistant drew: its data is what its SQL returned, never numbers the model wrote. */
+export type AnalyticsChart = {
+  kind: 'bar' | 'stacked_bar' | 'horizontal_bar' | 'line' | 'pie' | 'heatmap'
+  title: string
+  x: 'x'
+  y?: 'y' // heatmap: the rows of the grid
+  series: { key: string; label: string }[]
+  rows: Record<string, string | number | null>[]
+  sql: string
+}
+
+export type AnalyticsAnswer = { answer: string; steps: AnalyticsStep[]; charts?: AnalyticsChart[] }
 
 export type RatingSummary = { average: number; count: number }
 
