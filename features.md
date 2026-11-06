@@ -1,6 +1,6 @@
 # LibreQuenda features
 
-What the app does today, what is being built, and ideas for later. For the plan and what is left before the contest, see [todo.md](todo.md); for how it works inside, [docs/specs/architecture.md](docs/specs/architecture.md).
+What the app does today, what is being built, and ideas for later. For the plan and what is left before the contest, see [todo.md](todo.md).
 
 Status: **built** · **in progress** (open work) · **idea** (not started).
 

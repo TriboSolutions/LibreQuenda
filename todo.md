@@ -1,7 +1,7 @@
 # TODO
 
 Deadline: **18 Nov 2026 23:59** (certame@agasol.gal). Final pitch: 26 Nov 2026.
-Scope: bases §1.1 (minimum) + §1.2 (technical). See [architecture plan](docs/specs/architecture.md).
+Scope: bases §1.1 (minimum) + §1.2 (technical).
 
 ## Residents (bases §1.1 — Cidadanía)
 
