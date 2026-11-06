@@ -161,6 +161,35 @@ else
 	log "OIDC app $ANDROID_APP_NAME exists ($ANDROID_CLIENT_ID), config synced"
 fi
 
+# --- OIDC app for agents (the API's MCP server, /api/mcp) ---
+# The device flow: an agent asks to sign in, the person opens the sign-in page on
+# any device, enters the code shown and approves; the API then holds the tokens for
+# that agent's session. Native, no secret, no redirect; same project (audience).
+MCP_APP_NAME="LibreQuenda MCP" # what the consent page names
+MCP_OIDC_CONFIG=$(jq -n --argjson dev "$([ "$PUBLIC_SCHEME" = http ] && echo true || echo false)" '{
+	redirectUris: [],
+	responseTypes: ["OIDC_RESPONSE_TYPE_CODE"],
+	grantTypes: ["OIDC_GRANT_TYPE_DEVICE_CODE", "OIDC_GRANT_TYPE_REFRESH_TOKEN"],
+	appType: "OIDC_APP_TYPE_NATIVE",
+	authMethodType: "OIDC_AUTH_METHOD_TYPE_NONE",
+	accessTokenType: "OIDC_TOKEN_TYPE_JWT",
+	idTokenUserinfoAssertion: true,
+	devMode: $dev
+}')
+MCP_APP=$(call POST "/management/v1/projects/$PROJECT_ID/apps/_search" \
+	"{\"queries\":[{\"nameQuery\":{\"name\":\"$MCP_APP_NAME\",\"method\":\"TEXT_QUERY_METHOD_EQUALS\"}}]}" \
+	| jq -c '.result[0] // empty')
+if [ -z "$MCP_APP" ]; then
+	MCP_CLIENT_ID=$(call POST "/management/v1/projects/$PROJECT_ID/apps/oidc" \
+		"$(echo "$MCP_OIDC_CONFIG" | jq --arg name "$MCP_APP_NAME" '. + {name: $name}')" | jq -r '.clientId')
+	log "created OIDC app $MCP_APP_NAME ($MCP_CLIENT_ID)"
+else
+	MCP_CLIENT_ID=$(echo "$MCP_APP" | jq -r '.oidcConfig.clientId')
+	call PUT "/management/v1/projects/$PROJECT_ID/apps/$(echo "$MCP_APP" | jq -r '.id')/oidc_config" "$MCP_OIDC_CONFIG" >/dev/null 2>&1 \
+		|| true # "no changes" is reported as an error
+	log "OIDC app $MCP_APP_NAME exists ($MCP_CLIENT_ID), config synced"
+fi
+
 # --- Google login (optional) ---
 # Enabled when GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are set, removed from the login otherwise.
 GOOGLE_IDP_NAME=Google
@@ -325,11 +354,13 @@ jq -n \
 	--arg clientId "$CLIENT_ID" \
 	--arg projectId "$PROJECT_ID" \
 	--arg androidClientId "$ANDROID_CLIENT_ID" \
+	--arg mcpClientId "$MCP_CLIENT_ID" \
 	--argjson androidAppIds "$ANDROID_APP_IDS_JSON" \
 	'{
 		authority: $authority,
 		clientId: $clientId,
 		androidClientId: $androidClientId,
+		mcpClientId: $mcpClientId,
 		androidAppIds: $androidAppIds,
 		projectId: $projectId,
 		scope: ("openid profile email offline_access urn:zitadel:iam:org:project:id:" + $projectId + ":aud urn:zitadel:iam:org:project:id:zitadel:aud")

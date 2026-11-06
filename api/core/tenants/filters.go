@@ -2,6 +2,7 @@ package tenants
 
 import (
 	"net/http"
+	"net/url"
 	"regexp"
 	"slices"
 	"strings"
@@ -40,7 +41,12 @@ const (
 
 // filtersFromQuery reads and checks the filters; ok false on any bad value.
 func filtersFromQuery(r *http.Request, withDay bool) (Filters, bool) {
-	var q = r.URL.Query()
+	return FiltersFromValues(r.URL.Query(), withDay)
+}
+
+// FiltersFromValues: the same filters from any set of values (the agents' tools pass
+// theirs as these query parameters), with the same checks.
+func FiltersFromValues(q url.Values, withDay bool) (Filters, bool) {
 	var f Filters
 	if text := strings.TrimSpace(q.Get("q")); text != "" {
 		if len([]rune(text)) > maxQueryLength {

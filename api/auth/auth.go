@@ -34,8 +34,18 @@ var publicKeys keyfunc.Keyfunc
 var audience string
 
 type runtimeConfig struct {
-	ProjectId string `json:"projectId"`
+	ProjectId   string `json:"projectId"`
+	McpClientId string `json:"mcpClientId"` // the agents' OIDC app (device flow), see zitadel/setup.sh
 }
+
+// mcpClientId: the OIDC client the MCP server signs agents in with; "" before setup made it.
+var mcpClientId string
+
+// ProjectId: Zitadel's project, the audience every access token must carry.
+func ProjectId() string { return audience }
+
+// MCPClientId: the OIDC client of the agents' device sign-in ("" when not set up).
+func MCPClientId() string { return mcpClientId }
 
 // InitializeAuth loads the expected token audience and Zitadel's public signing keys.
 // The keys are cached and refreshed in the background (hourly, and on unknown key ids).
@@ -72,6 +82,7 @@ func loadAudience() string {
 			err = json.Unmarshal(content, &config)
 			if err == nil && config.ProjectId != "" {
 				shared.Logger.Info("token audience loaded: project %s", config.ProjectId)
+				mcpClientId = config.McpClientId
 				return config.ProjectId
 			}
 			if err == nil {
