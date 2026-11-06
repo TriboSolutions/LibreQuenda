@@ -190,6 +190,8 @@
     },
     "tagsEmpty": "Encara no hi ha etiquetes: demana-les a un superadministrador.",
     "tagsNone": "Cap",
+    "tagsSearch": "Cerca a {{category}}",
+    "tagsNoMatch": "Cap etiqueta no coincideix.",
     "tagsClear": "Treu-les totes",
     "tabDetails": "Dades",
     "tabCheckin": "Entrada",

@@ -190,6 +190,8 @@
     },
     "tagsEmpty": "Aún no hay etiquetas: pídeselas a un superadministrador.",
     "tagsNone": "Ninguna",
+    "tagsSearch": "Buscar en {{category}}",
+    "tagsNoMatch": "Ninguna etiqueta coincide.",
     "tagsClear": "Quitar todas",
     "tabDetails": "Datos",
     "tabCheckin": "Entrada",

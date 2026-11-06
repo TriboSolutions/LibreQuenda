@@ -190,6 +190,8 @@
     },
     "tagsEmpty": "There are no tags yet: ask a superadministrator.",
     "tagsNone": "None",
+    "tagsSearch": "Search {{category}}",
+    "tagsNoMatch": "No tag matches.",
     "tagsClear": "Clear all",
     "tabDetails": "Details",
     "tabCheckin": "Check-in",

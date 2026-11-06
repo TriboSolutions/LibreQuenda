@@ -299,6 +299,23 @@ for (const theme of ['light', 'dark'] as const) {
       await expectAccessible(page)
     })
 
+    test('facility editor, searching a tag category', async ({ page }) => {
+      await open(page, '/lugo/admin/facilities/f1', { theme })
+      await page.getByRole('button', { name: /^Deportes/ }).click()
+      const search = page.getByRole('searchbox', { name: 'Buscar en Deportes' })
+      await expect(search).toBeFocused()
+      await search.fill('natacion') // without the accent
+      await expect(page.getByRole('checkbox', { name: 'Natación' })).toBeVisible()
+      await expect(page.getByRole('checkbox', { name: 'Pádel' })).toBeHidden()
+      await search.press('Enter') // picks the first match
+      await expect(page.getByRole('checkbox', { name: 'Natación' })).toBeChecked()
+      await page.mouse.move(0, 0) // the button just clicked would be scanned in its hover colour
+      await expectAccessible(page)
+      await search.fill('xadrez')
+      await expect(page.getByText('Ningunha etiqueta coincide.')).toBeVisible()
+      await expectAccessible(page)
+    })
+
     test('check-in at the door, the answer and the offer to book', async ({ page, context }) => {
       await context.grantPermissions(['geolocation'])
       await context.setGeolocation({ latitude: 43.0097, longitude: -7.5568, accuracy: 10 })
