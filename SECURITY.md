@@ -5,9 +5,9 @@ their census data. If you find a vulnerability, please tell us privately first.
 
 ## Reporting a vulnerability
 
-Use GitHub's private reporting: **Security → Report a vulnerability** on this
-repository. Please include what is affected, how to reproduce it, and the impact
-you see. Do not open a public issue, and do not test against an installation you
+Use GitHub's private reporting (**Security → Report a vulnerability** on this
+repository) or write to **contact@tribosolutions.es**. Please include what is
+affected, how to reproduce it, and the impact you see. Do not open a public issue, and do not test against an installation you
 do not run yourself.
 
 We answer within a week, and publish a fix and an advisory once installations can
