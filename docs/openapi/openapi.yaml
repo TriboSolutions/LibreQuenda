@@ -30,7 +30,7 @@ servers:
   description: An installation.
   variables:
     domain:
-      default: example.org
+      default: reservas.concello.gal
       description: The installation's domain.
 tags:
 - name: Public
