@@ -11,6 +11,7 @@ import (
 	"librequenda/schedule"
 	"librequenda/shared"
 	"net/http"
+	"slices"
 	"sort"
 	"time"
 
@@ -117,6 +118,11 @@ func (s *tenantsService) Recommendations(ctx context.Context, session auth.Sessi
 	}
 	var today = s.today(ctx)
 	var out = append(recommend(patterns, today, now), publicBookings(public, patterns, today, position)...)
+	// a resident of one council is not offered another's residents-only facilities
+	var eligible = eligibilityOf(ctx, s.db, session.Subject)
+	out = slices.DeleteFunc(out, func(r RecommendationDto) bool {
+		return !eligible.allows(r.Facility.Council.Slug, r.Facility.ResidentsOnly)
+	})
 	if len(out) > maxRecommendations {
 		out = out[:maxRecommendations]
 	}

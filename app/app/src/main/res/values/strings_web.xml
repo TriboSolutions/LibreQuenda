@@ -103,6 +103,10 @@
     <string name="image_uploading">Subindo…</string>
     <string name="image_hint">JPG, PNG ou WebP, ata 5 MB.</string>
     <string name="image_too_large">A imaxe supera os 5 MB.</string>
+    <string name="resident_of_title">Veciño verificado</string>
+    <string name="resident_of_help">Os concellos que comprobaron que es veciño. Algunhas instalacións son só para os seus veciños verificados.</string>
+    <string name="resident_of_none">Ningún concello verificou a túa conta. Se unha instalación é só para veciños, pide no concello que te verifiquen co correo desta conta.</string>
+    <string name="resident_of_since">Verificado desde o %1$s</string>
     <string name="image_wrong_type">Só imaxes JPG, PNG ou WebP.</string>
     <string name="text_count">%1$s / %2$s caracteres</string>
     <string name="bookings_title">As miñas reservas</string>

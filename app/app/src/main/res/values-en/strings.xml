@@ -115,6 +115,7 @@
     <string name="residents_only_badge">Residents only</string>
     <string name="resident_not_verified">This facility is only for residents of %1$s verified by the council, and your account is not verified yet.</string>
     <string name="resident_request_row">Ask to be verified as a resident</string>
+    <string name="resident_request_sent">Request sent</string>
     <string name="resident_request_row_help">Call the council or send a request from here</string>
     <string name="resident_request_pending">Request sent on %1$s, pending review</string>
     <string name="resident_request_pending_help">Tap to see or withdraw it</string>
@@ -141,9 +142,11 @@
     <string name="notification_resident_requested">Resident request</string>
     <string name="notification_resident_verified">Resident verified</string>
     <string name="notification_resident_rejected">Resident not verified</string>
+    <string name="notification_resident_revoked">No longer a verified resident</string>
     <string name="notif_resident_requested">%5$s wants to be a resident of %4$s.</string>
     <string name="notif_resident_verified">%4$s verified you as a resident.</string>
     <string name="notif_resident_rejected">%4$s could not verify you as a resident. Call the council if you think this is a mistake.</string>
+    <string name="notif_resident_revoked">%4$s took back your verification as a resident: what you had booked at its residents-only facilities was cancelled.</string>
 
     <!-- the first-run tour -->
     <string name="tour_skip">Skip</string>

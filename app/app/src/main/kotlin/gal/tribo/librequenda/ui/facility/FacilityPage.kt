@@ -184,11 +184,7 @@ fun FacilityPage(
                                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).fillMaxWidth().clip(RoundedCornerShape(12.dp))
                                     .background(Lq.colors.pillNeutralBg).padding(14.dp),
                             )
-                            // ask to be verified, or the request already waiting for the council
-                            if (asking && me != null && actions != null) {
-                                ResidentRequestRow(Council(d.councilSlug, d.councilName, d.councilPhone), me, actions)
-                                HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = Lq.colors.border)
-                            }
+                            // asking to be verified (or the request waiting) is the button at the foot, in place of booking
                         }
                         // free turns to book, and other people's public bookings to join (green, with their spots left)
                         val free = d.slots.filter { it.free }
@@ -286,6 +282,9 @@ fun FacilityPage(
             Box(Modifier.navigationBarsPadding().padding(16.dp)) {
                 when {
                     !signedIn -> PrimaryButton(stringResource(R.string.sign_in_to_book), onSignIn, Modifier.fillMaxWidth())
+                    // residents only and not one of them: booking would be refused, so ask to be one instead
+                    d != null && d.details.residentsOnly && d.councilSlug !in residentOf && me != null && actions != null ->
+                        ResidentRequestButton(Council(d.councilSlug, d.councilName, d.councilPhone), me, actions, Modifier.fillMaxWidth())
                     turn != null && !turn.startsAt.isAfter(now) -> PrimaryButton(stringResource(R.string.public_started), {}, Modifier.fillMaxWidth(), enabled = false)
                     turn != null && turn.spotsLeft <= 0 -> PrimaryButton(stringResource(R.string.public_full), {}, Modifier.fillMaxWidth(), enabled = false)
                     turn != null -> PrimaryButton("${stringResource(R.string.join)} · ${time(turn.startsAt)}", { if (d != null) onCheckout(Checkout(d, turn.startsAt, turn.endsAt, turn)) }, Modifier.fillMaxWidth())

@@ -132,6 +132,7 @@ data class Me(
     val showRecommendations: Boolean,
     val rating: RatingSummary? = null, // what others gave them after public bookings; null until someone did
     val residentOf: Set<String> = emptySet(), // slugs of the councils that verified them as their resident
+    val residentCouncils: List<ResidentCouncil> = emptyList(), // the same, with their names, for the profile
     val residentRequests: List<ResidentRequest> = emptyList(), // asked to be verified, not decided yet
 ) {
     /** Their pending request to [councilSlug], if they sent one. */
@@ -161,6 +162,9 @@ internal fun JSONObject.toMe() = Me(
     showRecommendations = optBoolean("show_recommendations"),
     rating = ratingSummary("rating"),
     residentOf = optJSONArray("resident_of")?.let { a -> List(a.length()) { a.getJSONObject(it).optString("tenant_slug") }.toSet() } ?: emptySet(),
+    residentCouncils = optJSONArray("resident_of")?.let { a ->
+        List(a.length()) { a.getJSONObject(it) }.map { c -> ResidentCouncil(c.optString("tenant_slug"), c.optString("tenant_name"), c.optString("verified_at").take(10)) }
+    } ?: emptyList(),
     residentRequests = optJSONArray("resident_requests")?.let { a ->
         List(a.length()) { a.getJSONObject(it) }.map { r ->
             ResidentRequest(

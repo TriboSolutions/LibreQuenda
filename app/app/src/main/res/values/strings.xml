@@ -127,6 +127,7 @@
     <string name="residents_only_badge">Instalación só para veciños</string>
     <string name="resident_not_verified">Esta instalación é só para veciños de %1$s verificados polo concello, e a túa conta aínda non o está.</string>
     <string name="resident_request_row">Pedir ser veciño</string>
+    <string name="resident_request_sent">Petición enviada</string>
     <string name="resident_request_row_help">Chama ao concello ou envía a petición desde aquí</string>
     <string name="resident_request_pending">Petición enviada o %1$s, pendente de revisión</string>
     <string name="resident_request_pending_help">Toca para vela ou retirala</string>
@@ -153,9 +154,11 @@
     <string name="notification_resident_requested">Petición de veciño</string>
     <string name="notification_resident_verified">Veciño verificado</string>
     <string name="notification_resident_rejected">Veciño sen verificar</string>
+    <string name="notification_resident_revoked">Veciño xa non verificado</string>
     <string name="notif_resident_requested">%5$s quere ser veciño de %4$s.</string>
     <string name="notif_resident_verified">%4$s verificoute como veciño.</string>
     <string name="notif_resident_rejected">%4$s non puido verificarte como veciño. Chama ao concello se cres que é un erro.</string>
+    <string name="notif_resident_revoked">%4$s retirou a túa verificación como veciño: cancelouse o que tiñas reservado nas súas instalacións só para veciños.</string>
 
     <!-- the first-run tour -->
     <string name="tour_skip">Omitir</string>

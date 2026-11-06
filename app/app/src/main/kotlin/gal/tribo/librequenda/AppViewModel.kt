@@ -264,6 +264,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application), Pr
         const val TAG = "LibreQuenda"
         const val KEY_WELCOME_SEEN = "welcome_seen"
         const val KEY_TOUR_SEEN = "tour_seen"
-        val RESIDENT_DECISIONS = setOf("resident_verified", "resident_rejected")
+        val RESIDENT_DECISIONS = setOf("resident_verified", "resident_rejected", "resident_revoked")
     }
 }

@@ -211,6 +211,8 @@
     "guest_residents_only": "Aquesta instal·lació és només per a veïns verificats per l’ajuntament: per unir-t’hi, inicia la sessió amb un compte verificat.",
     "resident_user_not_found": "No hi ha cap compte amb aquest correu verificat. La persona ha d’iniciar la sessió una vegada abans.",
     "resident_already_verified": "Aquesta persona ja està verificada en aquest ajuntament.",
+    "resident_of_another_council": "Aquesta persona ja és veïna d’un altre ajuntament: només es pot ser veí d’un ajuntament.",
+    "resident_elsewhere": "Ja ets veí de {{0}}: només es pot ser veí d’un ajuntament.",
     "resident_not_found": "Aquesta persona no està verificada en aquest ajuntament.",
     "resident_save_failed": "No s’ha pogut desar la verificació.",
     "residents_load_failed": "No s’han pogut carregar els veïns verificats.",
@@ -313,6 +315,13 @@
       "intro": "{{0}} no t’ha pogut verificar com a veí amb el seu padró. Si creus que és un error, truca a l’ajuntament.",
       "manage": "Veure l’ajuntament",
       "phone": "Telèfon de l’ajuntament: {{0}}"
+    },
+    "resident_revoked": {
+      "subject": "Ja no ets veí verificat de {{0}}",
+      "intro": "{{0}} ha retirat la teva verificació com a veí: ja no pots reservar ni unir-te a les seves instal·lacions només per a veïns.",
+      "manage": "Veure l’ajuntament",
+      "cancelled": "S’ha cancel·lat el que hi tenies reservat: {{0}} reserves. Si creus que és un error, truca a l’ajuntament.",
+      "footer": "Reps aquest correu perquè eres veí verificat d’un ajuntament a {{0}}."
     },
     "resident_footer": "Reps aquest correu perquè has demanat ser veí d’un ajuntament a {{0}}. Les dades de la petició ja s’han esborrat."
   }

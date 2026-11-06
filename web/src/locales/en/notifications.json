@@ -22,7 +22,8 @@
     "rating_requested_public": "How was {{facility}}? Rate it, and the people who played with you.",
     "resident_requested": "{{name}} wants to be a resident of {{council}}.",
     "resident_verified": "{{council}} verified you as a resident: you can now book its residents-only facilities.",
-    "resident_rejected": "{{council}} could not verify you as a resident. Phone the council if you think this is a mistake."
+    "resident_rejected": "{{council}} could not verify you as a resident. Phone the council if you think this is a mistake.",
+    "resident_revoked": "{{council}} took back your verification as a resident: what you had booked at its residents-only facilities was cancelled."
   },
   "reason": "Reason: {{reason}}",
   "councilNote": "Note from the council: {{reason}}",

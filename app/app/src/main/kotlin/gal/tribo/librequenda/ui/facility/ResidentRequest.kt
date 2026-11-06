@@ -61,33 +61,27 @@ private val ZONE = ZoneId.of("Europe/Madrid")
 data class Council(val slug: String, val name: String, val phone: String)
 
 /**
- * Signed in and not verified by the facility's council: a row to ask to be
- * verified (a sheet with the council's phone and the request form), or, once
- * asked, the request waiting for review, which can be withdrawn.
+ * At the foot of a residents-only facility, for someone signed in and not verified
+ * there: in place of booking, ask to be a resident (a sheet with the council's phone
+ * and the request form), or, once asked, the request waiting for review, which can
+ * be withdrawn.
  */
 @Composable
-fun ResidentRequestRow(council: Council, me: Me, actions: ProfileActions) {
+fun ResidentRequestButton(council: Council, me: Me, actions: ProfileActions, modifier: Modifier = Modifier) = ResidentRequestOpener(council, me, actions) { pending, open ->
+    gal.tribo.librequenda.ui.components.PrimaryButton(
+        stringResource(if (pending != null) R.string.resident_request_sent else R.string.resident_request_row),
+        open,
+        modifier,
+    )
+}
+
+/** What opens the request: the sheet to send it, or the pending one's (to withdraw it). */
+@Composable
+private fun ResidentRequestOpener(council: Council, me: Me, actions: ProfileActions, content: @Composable (pending: ResidentRequest?, open: () -> Unit) -> Unit) {
     var sheet by remember { mutableStateOf<Sheet?>(null) } // which, chosen on the tap: it stays while /me reloads
     var withdrawing by remember { mutableStateOf(false) }
     val pending = me.residentRequest(council.slug)
-    Row(
-        Modifier.fillMaxWidth().heightIn(min = 56.dp).clickable(role = Role.Button) { sheet = if (pending != null) Sheet.Pending else Sheet.Request }.padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Icon(painterResource(if (pending != null) R.drawable.ic_clock else R.drawable.ic_home), contentDescription = null, tint = Lq.colors.foreground, modifier = Modifier.size(22.dp))
-        Spacer(Modifier.size(16.dp))
-        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(
-                if (pending != null) stringResource(R.string.resident_request_pending, requestedOn(pending)) else stringResource(R.string.resident_request_row),
-                style = MaterialTheme.typography.bodyLarge, color = Lq.colors.foreground,
-            )
-            Text(
-                stringResource(if (pending != null) R.string.resident_request_pending_help else R.string.resident_request_row_help),
-                style = MaterialTheme.typography.bodySmall, color = Lq.colors.mutedForeground,
-            )
-        }
-        Icon(painterResource(R.drawable.ic_chevron_right), contentDescription = null, tint = Lq.colors.mutedForeground, modifier = Modifier.size(20.dp))
-    }
+    content(pending) { sheet = if (pending != null) Sheet.Pending else Sheet.Request }
     when (sheet) {
         Sheet.Pending -> if (pending != null) PendingSheet(council, pending, onWithdraw = { sheet = null; withdrawing = true }, onDismiss = { sheet = null })
         Sheet.Request -> RequestSheet(council, me, actions, onDismiss = { sheet = null })

@@ -3,6 +3,9 @@ package gal.tribo.librequenda.data
 import org.json.JSONObject
 import java.time.Instant
 
+/** A council that counts the person as its resident (GET /me, resident_of); since: YYYY-MM-DD. */
+data class ResidentCouncil(val slug: String, val name: String, val since: String)
+
 /** A request to be verified as a council's resident, not decided yet (GET /me, resident_requests). */
 data class ResidentRequest(val tenantSlug: String, val tenantName: String, val requestedAt: Instant?)
 

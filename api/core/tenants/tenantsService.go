@@ -108,7 +108,7 @@ func (s *tenantsService) GetFacilities(ctx context.Context, near *Near, filters 
 				open = []string{}
 			}
 			slices.Sort(open) // "event" before "public", whatever the database's order
-			if !near.within(km) || !filters.matches(f.Name, day.Tenant.Slug, day.Tenant.Name, f.Sport, f.Tags, names) || !filters.joinable(open) {
+			if !near.within(km) || !filters.Eligible.allows(day.Tenant.Slug, f.ResidentsOnly) || !filters.matches(f.Name, day.Tenant.Slug, day.Tenant.Name, f.Sport, f.Tags, names) || !filters.joinable(open) {
 				continue
 			}
 			response.Facilities = append(response.Facilities, FacilityCardDto{
@@ -169,7 +169,7 @@ func (s *tenantsService) GetFacilitiesDay(ctx context.Context, dateParam string,
 		response.Date = day.Date
 		for _, f := range day.Facilities {
 			var km = distanceKm(near, f.Latitude, f.Longitude)
-			if !near.within(km) || !filters.matches(f.Name, day.Tenant.Slug, day.Tenant.Name, f.Sport, f.Tags, names) {
+			if !near.within(km) || !filters.Eligible.allows(day.Tenant.Slug, f.ResidentsOnly) || !filters.matches(f.Name, day.Tenant.Slug, day.Tenant.Name, f.Sport, f.Tags, names) {
 				continue
 			}
 			var kept, any = filters.narrowDay(f, loc, now)

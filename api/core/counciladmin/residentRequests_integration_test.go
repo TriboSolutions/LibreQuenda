@@ -97,9 +97,33 @@ func TestResidentRequestFlow(t *testing.T) {
 	if _, problem = people.RequestResidency(ctx, session, "lalin", input); problem == nil || problem.Message != "errors.resident_already_verified_self" {
 		t.Fatalf("request once verified: %+v", problem)
 	}
-	// and the verification can be taken back
+	// a resident of one council only: another council can neither be asked nor verify her
+	var cambre = uuid.MustParse("00000000-0000-7000-8000-000000000002")
+	var pista = uuid.MustParse("00000000-0000-7000-8000-0000000000f1")
+	for _, statement := range []string{
+		`INSERT INTO tenant (id, slug, name) VALUES ('` + cambre.String() + `', 'cambre', 'Concello de Cambre')`,
+		`INSERT INTO facility (id, tenant_id, slug, name, residents_only) VALUES ('` + pista.String() + `', '` + tenant.String() + `', 'pista', 'Pista', TRUE)`,
+		`INSERT INTO booking (facility_id, user_id, starts_at, ends_at) VALUES ('` + pista.String() + `', '` + ana.String() + `', NOW() + INTERVAL '1 day', NOW() + INTERVAL '1 day 1 hour')`,
+	} {
+		if _, err = conn.ExecContext(ctx, statement); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if _, problem = people.RequestResidency(ctx, session, "cambre", input); problem == nil || problem.Message != "errors.resident_elsewhere" {
+		t.Fatalf("request to a second council: %+v", problem)
+	}
+	if _, err = model.New(conn).AddTenantResident(ctx, model.AddTenantResidentParams{TenantID: cambre, UserID: ana}); !isUniqueViolation(err) {
+		t.Fatalf("verified by a second council: %v", err)
+	}
+	// and the verification can be taken back: her bookings at the residents-only facilities go with it, and she is told
 	if problem = staff.RemoveResident(ctx, tenant, ana); problem != nil {
 		t.Fatalf("unverify: %+v", problem)
+	}
+	var cancelled, revoked int
+	_ = conn.QueryRowContext(ctx, `SELECT COUNT(*) FROM booking WHERE user_id = $1 AND status = 'cancelled' AND cancelled_by = 'council'`, ana).Scan(&cancelled)
+	_ = conn.QueryRowContext(ctx, `SELECT COUNT(*) FROM notification WHERE user_id = $1 AND type = 'resident_revoked' AND (payload->>'cancelled')::INT = 1`, ana).Scan(&revoked)
+	if cancelled != 1 || revoked != 1 {
+		t.Fatalf("after unverifying: %d cancelled, %d revoked notices", cancelled, revoked)
 	}
 	_ = conn.QueryRowContext(ctx, `SELECT COUNT(*) FROM notification WHERE user_id = $1 AND type = 'resident_verified'`, ana).Scan(&notices)
 	if notices != 1 {
@@ -107,21 +131,21 @@ func TestResidentRequestFlow(t *testing.T) {
 	}
 
 	// administrators of the council, and superadministrators, are verified by their role
-	var queries = model.New(conn)
-	if ok, _ := queries.IsTenantResident(ctx, model.IsTenantResidentParams{TenantID: tenant, UserID: admin}); !ok {
+	var q = model.New(conn)
+	if ok, _ := q.IsTenantResident(ctx, model.IsTenantResidentParams{TenantID: tenant, UserID: admin}); !ok {
 		t.Fatal("the council's administrator is not taken as a resident")
 	}
 	if _, problem = people.RequestResidency(ctx, auth.Session{Subject: "rr-admin"}, "lalin", input); problem == nil || problem.Message != "errors.resident_already_verified_self" {
 		t.Fatalf("administrator's request: %+v", problem)
 	}
-	if ok, _ := queries.IsTenantResident(ctx, model.IsTenantResidentParams{TenantID: tenant, UserID: ana}); ok {
+	if ok, _ := q.IsTenantResident(ctx, model.IsTenantResidentParams{TenantID: tenant, UserID: ana}); ok {
 		t.Fatal("unverified Ana taken as a resident")
 	}
 	if _, err = conn.ExecContext(ctx, `INSERT INTO platform_admin (user_id) VALUES ($1)`, ana); err != nil {
 		t.Fatal(err)
 	}
-	var councils, _ = queries.ListResidentCouncilsByUser(ctx, ana)
-	if ok, _ := queries.IsTenantResident(ctx, model.IsTenantResidentParams{TenantID: tenant, UserID: ana}); !ok || len(councils) != 1 || councils[0].Slug != "lalin" {
+	var councils, _ = q.ListResidentCouncilsByUser(ctx, ana)
+	if ok, _ := q.IsTenantResident(ctx, model.IsTenantResidentParams{TenantID: tenant, UserID: ana}); !ok || len(councils) != 2 { // every active council: Cambre and Lalín
 		t.Fatalf("superadministrator not taken as a resident: %+v", councils)
 	}
 }

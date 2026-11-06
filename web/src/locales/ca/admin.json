@@ -975,7 +975,7 @@
     "addHelp": "La persona ha d’iniciar la sessió una vegada amb el correu verificat.",
     "add": "Verificar",
     "added": "{{email}} ja està verificada com a veïna.",
-    "removed": "S’ha retirat la verificació de {{name}}. Les seves reserves es mantenen.",
+    "removed": "S’ha retirat la verificació de {{name}}. S’han cancel·lat les seves reserves a les instal·lacions només per a veïns i se li ha avisat per correu.",
     "remove": "Treure la verificació",
     "search": "Cerca per nom o correu",
     "searchAction": "Cercar",
@@ -993,7 +993,7 @@
     "previous": "Anterior",
     "next": "Següent",
     "removeTitle": "Treure la verificació de {{name}}?",
-    "removeBody": "Deixarà de poder reservar i unir-se a les instal·lacions només per a veïns. Les reserves que ja té es mantenen.",
+    "removeBody": "Deixarà de poder reservar i unir-se a les instal·lacions només per a veïns. Les seves properes reserves s’hi cancel·len, surt de les partides a què s’hi va unir i se l’avisa per correu.",
     "removeCancel": "Cancel·lar",
     "requests": {
       "title": "Peticions pendents",

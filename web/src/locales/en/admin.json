@@ -975,7 +975,7 @@
     "addHelp": "The person must have signed in once with that email verified.",
     "add": "Verify",
     "added": "{{email}} is now verified as a resident.",
-    "removed": "{{name}} is no longer verified. Their bookings stay.",
+    "removed": "{{name}} is no longer verified. Their bookings at the residents-only facilities were cancelled and they were told by email.",
     "remove": "Remove verification",
     "search": "Search by name or email",
     "searchAction": "Search",
@@ -993,7 +993,7 @@
     "previous": "Previous",
     "next": "Next",
     "removeTitle": "Remove the verification of {{name}}?",
-    "removeBody": "They will no longer book or join at residents-only facilities. The bookings they already have stay.",
+    "removeBody": "They will no longer be able to book or join at the residents-only facilities. Their upcoming bookings there are cancelled, they leave the games they joined there, and they are told by email.",
     "removeCancel": "Cancel",
     "requests": {
       "title": "Pending requests",

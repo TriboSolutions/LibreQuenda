@@ -211,6 +211,8 @@
     "guest_residents_only": "Esta instalación é só para veciños verificados polo concello: para unirte, inicia sesión cunha conta verificada.",
     "resident_user_not_found": "Non hai ningunha conta con ese correo verificado. A persoa ten que iniciar sesión unha vez antes.",
     "resident_already_verified": "Esa persoa xa está verificada neste concello.",
+    "resident_of_another_council": "Esa persoa xa é veciña doutro concello: só se pode ser veciño dun concello.",
+    "resident_elsewhere": "Xa es veciño de {{0}}: só se pode ser veciño dun concello.",
     "resident_not_found": "Esa persoa non está verificada neste concello.",
     "resident_save_failed": "Non se puido gardar a verificación.",
     "residents_load_failed": "Non se puideron cargar os veciños verificados.",
@@ -313,6 +315,13 @@
       "intro": "{{0}} non puido verificarte como veciño co seu padrón. Se cres que é un erro, chama ao concello.",
       "manage": "Ver o concello",
       "phone": "Teléfono do concello: {{0}}"
+    },
+    "resident_revoked": {
+      "subject": "Xa non es veciño verificado de {{0}}",
+      "intro": "{{0}} retirou a túa verificación como veciño: xa non podes reservar nin unirte nas súas instalacións só para veciños.",
+      "manage": "Ver o concello",
+      "cancelled": "Cancelouse o que tiñas reservado nelas: {{0}} reservas. Se cres que é un erro, chama ao concello.",
+      "footer": "Recibes este correo porque eras veciño verificado dun concello en {{0}}."
     },
     "resident_footer": "Recibes este correo porque pediches ser veciño dun concello en {{0}}. Os datos da petición xa se borraron."
   }

@@ -17,7 +17,8 @@ import (
 
 // SendResidentEmails: the council's administrators learn by email that
 // someone asks to be verified as a resident (never with the DNI or address:
-// those are seen in the Veciños tab), and the person learns how it decided.
+// those are seen in the Veciños tab), and the person learns how it decided,
+// or that it took the verification back (and how many bookings went with it).
 func SendResidentEmails(ctx context.Context, db *sql.DB) (int, error) {
 	var queries = model.New(db)
 	var _, envRelay = mailer.EnvRelay()
@@ -56,7 +57,8 @@ func residentEmail(row model.ListPendingResidentEmailsRow, brand branding.Email)
 	}
 	var kind = string(row.Type)
 	var notice struct {
-		Name string `json:"name"`
+		Name      string `json:"name"`
+		Cancelled int    `json:"cancelled"` // resident_revoked: the bookings that went with it
 	}
 	_ = json.Unmarshal(row.Payload, &notice)
 	if notice.Name == "" {
@@ -72,6 +74,12 @@ func residentEmail(row model.ListPendingResidentEmailsRow, brand branding.Email)
 	if row.Type == model.NotificationTypeResidentRequested {
 		view.ManageURL = shared.PUBLIC_URL + "/" + row.TenantSlug + "/admin?vista=vecinos"
 		view.Footer = t("issue_reported.footer", appName)
+	}
+	if row.Type == model.NotificationTypeResidentRevoked {
+		view.Footer = t("resident_revoked.footer", appName)
+		if notice.Cancelled > 0 {
+			view.Reason = t("resident_revoked.cancelled", notice.Cancelled)
+		}
 	}
 	if row.Type == model.NotificationTypeResidentRejected && row.TenantPhone.String != "" {
 		view.Reason = t("resident_rejected.phone", row.TenantPhone.String)

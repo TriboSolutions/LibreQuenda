@@ -62,6 +62,7 @@ func (h *tenantsHandler) GetFacilities(w http.ResponseWriter, r *http.Request) {
 		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_query_params")
 		return
 	}
+	filters.Eligible = eligibilityFromRequest(r, h.db)
 	var response, err = GetTenantsService(h.db).GetFacilities(r.Context(), near, filters, page)
 	if err != nil {
 		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
@@ -80,6 +81,7 @@ func (h *tenantsHandler) GetFacilitiesDay(w http.ResponseWriter, r *http.Request
 		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_query_params")
 		return
 	}
+	filters.Eligible = eligibilityFromRequest(r, h.db)
 	var response, err = GetTenantsService(h.db).GetFacilitiesDay(r.Context(), r.URL.Query().Get("date"), near, filters, page)
 	if err != nil {
 		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)

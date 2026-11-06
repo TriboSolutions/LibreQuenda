@@ -140,6 +140,7 @@ object Notifier {
             "resident_requested" -> R.string.notification_resident_requested // to the council's administrators
             "resident_verified" -> R.string.notification_resident_verified
             "resident_rejected" -> R.string.notification_resident_rejected
+            "resident_revoked" -> R.string.notification_resident_revoked
             else -> null
         }?.let(context::getString)
             ?: if (type == "council_admin_granted") context.getString(R.string.notification_council_admin_granted, n.tenantName)
@@ -173,6 +174,7 @@ object Notifier {
         "resident_requested" -> R.string.notif_resident_requested
         "resident_verified" -> R.string.notif_resident_verified
         "resident_rejected" -> R.string.notif_resident_rejected
+        "resident_revoked" -> R.string.notif_resident_revoked
         else -> null
     }
 

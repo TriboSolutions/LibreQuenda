@@ -211,6 +211,8 @@
     "guest_residents_only": "This facility is only for residents verified by the council: to join, sign in with a verified account.",
     "resident_user_not_found": "There is no account with that email verified. The person must sign in once first.",
     "resident_already_verified": "That person is already verified in this council.",
+    "resident_of_another_council": "That person is already a resident of another council: a person is a resident of one council only.",
+    "resident_elsewhere": "You are already a resident of {{0}}: a person is a resident of one council only.",
     "resident_not_found": "That person is not verified in this council.",
     "resident_save_failed": "The verification could not be saved.",
     "residents_load_failed": "The verified residents could not be loaded.",
@@ -313,6 +315,13 @@
       "intro": "{{0}} could not verify you as a resident from its census. If you think this is a mistake, phone the council.",
       "manage": "See the council",
       "phone": "Council phone: {{0}}"
+    },
+    "resident_revoked": {
+      "subject": "You are no longer a verified resident of {{0}}",
+      "intro": "{{0}} took back your verification as a resident: you can no longer book or join at its residents-only facilities.",
+      "manage": "See the council",
+      "cancelled": "What you had booked there was cancelled: {{0}} bookings. If you think this is a mistake, call the council.",
+      "footer": "You get this email because you were a verified resident of a council on {{0}}."
     },
     "resident_footer": "You get this email because you asked a council to verify you as a resident on {{0}}. The request's details have been deleted."
   }

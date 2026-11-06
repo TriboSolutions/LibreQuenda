@@ -543,6 +543,7 @@ export type NotificationType =
   | 'resident_requested' // to the council's administrators: someone asks to be verified
   | 'resident_verified' // the council verified the person as its resident
   | 'resident_rejected' // …or could not, from its census
+  | 'resident_revoked' // the council took the verification back (and cancelled the bookings at its residents-only facilities)
 
 export type AppNotification = {
   id: string

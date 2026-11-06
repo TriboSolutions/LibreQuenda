@@ -3,7 +3,9 @@ package counciladmin
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
+	"librequenda/db"
 	"librequenda/model"
 	"librequenda/shared"
 	"librequenda/validate"
@@ -74,6 +76,9 @@ func (s *counciladminService) AddResident(ctx context.Context, tenantId uuid.UUI
 		UserID:     user.ID,
 		VerifiedBy: uuid.NullUUID{UUID: staffId, Valid: true},
 	})
+	if isUniqueViolation(err) { // verified by another council: one council per person
+		return uuid.Nil, &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.resident_of_another_council"}
+	}
 	if err != nil {
 		return uuid.Nil, failed("errors.resident_save_failed")
 	}
@@ -84,13 +89,59 @@ func (s *counciladminService) AddResident(ctx context.Context, tenantId uuid.UUI
 	if err = queries.DeleteResidentRequestOfUser(ctx, model.DeleteResidentRequestOfUserParams{TenantID: tenantId, UserID: user.ID}); err != nil {
 		return user.ID, failed("errors.resident_save_failed")
 	}
+	// told like a request accepted (bell, the app and email), whether or not they had sent one
+	if err = queries.NotifyResidentRequestDecided(ctx, model.NotifyResidentRequestDecidedParams{UserID: user.ID, Type: model.NotificationTypeResidentVerified, TenantID: tenantId}); err != nil {
+		return user.ID, failed("errors.resident_save_failed")
+	}
 	return user.ID, nil
 }
 
-// RemoveResident takes the verification back. Their bookings stay: staff
-// cancel them from the calendar if they must.
+// RemoveResident takes the verification back. A person is a resident of one
+// council only, so their upcoming bookings at its residents-only facilities go
+// too (those who had joined them are told), they leave the games they joined
+// there, and they are told by notice and email how many bookings were cancelled.
 func (s *counciladminService) RemoveResident(ctx context.Context, tenantId uuid.UUID, userId uuid.UUID) *shared.ErrorResponse {
-	var removed, err = model.New(s.db).RemoveTenantResident(ctx, model.RemoveTenantResidentParams{TenantID: tenantId, UserID: userId})
+	var removed int64
+	var err = db.WithTenant(ctx, s.db, tenantId, func(queries *model.Queries) error {
+		var removeErr error
+		if removed, removeErr = queries.RemoveTenantResident(ctx, model.RemoveTenantResidentParams{TenantID: tenantId, UserID: userId}); removeErr != nil || removed == 0 {
+			return removeErr
+		}
+		var cancelled, cancelErr = queries.CancelBookingsOfFormerResident(ctx, model.CancelBookingsOfFormerResidentParams{TenantID: tenantId, UserID: uuid.NullUUID{UUID: userId, Valid: true}})
+		if cancelErr != nil {
+			return cancelErr
+		}
+		for _, booking := range cancelled {
+			var payload, _ = json.Marshal(map[string]any{
+				"facility_id":   booking.FacilityID,
+				"facility_name": booking.FacilityName,
+				"tenant_slug":   booking.TenantSlug,
+				"tenant_name":   booking.TenantName,
+				"starts_at":     booking.StartsAt,
+				"ends_at":       booking.EndsAt,
+				"by_staff":      true, // one booking, not a closure
+				"title":         booking.Title,
+			})
+			var joined, listErr = queries.ListParticipantAccounts(ctx, booking.ID)
+			if listErr != nil {
+				return listErr
+			}
+			for _, user := range joined {
+				if notifyErr := queries.CreateNotification(ctx, model.CreateNotificationParams{
+					UserID:    user.UUID,
+					BookingID: uuid.NullUUID{UUID: booking.ID, Valid: true},
+					Type:      model.NotificationTypeBookingCancelledByCouncil,
+					Payload:   payload,
+				}); notifyErr != nil {
+					return notifyErr
+				}
+			}
+		}
+		if _, leaveErr := queries.LeaveGamesOfFormerResident(ctx, model.LeaveGamesOfFormerResidentParams{TenantID: tenantId, UserID: uuid.NullUUID{UUID: userId, Valid: true}}); leaveErr != nil {
+			return leaveErr
+		}
+		return queries.NotifyResidentRevoked(ctx, model.NotifyResidentRevokedParams{UserID: userId, TenantID: tenantId, Cancelled: int32(len(cancelled))})
+	})
 	if err != nil {
 		return failed("errors.resident_save_failed")
 	}

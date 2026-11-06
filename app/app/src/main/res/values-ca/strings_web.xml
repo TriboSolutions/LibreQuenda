@@ -103,6 +103,10 @@
     <string name="image_uploading">Pujant…</string>
     <string name="image_hint">JPG, PNG o WebP, fins a 5 MB.</string>
     <string name="image_too_large">La imatge supera els 5 MB.</string>
+    <string name="resident_of_title">Veí verificat</string>
+    <string name="resident_of_help">Els ajuntaments que han comprovat que hi ets veí. Algunes instal·lacions són només per als seus veïns verificats.</string>
+    <string name="resident_of_none">Cap ajuntament ha verificat el teu compte. Si una instal·lació és només per a veïns, demana a l’ajuntament que et verifiquin amb el correu d’aquest compte.</string>
+    <string name="resident_of_since">Verificat des del %1$s</string>
     <string name="image_wrong_type">Només imatges JPG, PNG o WebP.</string>
     <string name="text_count">%1$s / %2$s caràcters</string>
     <string name="bookings_title">Les meves reserves</string>

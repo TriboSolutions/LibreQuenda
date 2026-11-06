@@ -117,6 +117,12 @@ func (s *meService) RequestResidency(ctx context.Context, session auth.Session, 
 	if verified {
 		return nil, &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.resident_already_verified_self"}
 	}
+	// a resident of one council only: verified by another, they cannot ask this one
+	if other, otherErr := queries.GetResidentCouncil(ctx, userId); otherErr == nil {
+		return nil, &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.resident_elsewhere", Args: []any{other.Name}}
+	} else if !errors.Is(otherErr, sql.ErrNoRows) {
+		return nil, failed
+	}
 	// one a week, across councils: a pending one answers first (409 below)
 	var _, claimErr = queries.ClaimWeeklyResidentRequest(ctx, userId)
 	var limited = errors.Is(claimErr, sql.ErrNoRows)

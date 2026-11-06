@@ -336,6 +336,7 @@ const (
 	NotificationTypeResidentRequested         NotificationType = "resident_requested"
 	NotificationTypeResidentVerified          NotificationType = "resident_verified"
 	NotificationTypeResidentRejected          NotificationType = "resident_rejected"
+	NotificationTypeResidentRevoked           NotificationType = "resident_revoked"
 )
 
 func (e *NotificationType) Scan(src interface{}) error {

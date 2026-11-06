@@ -975,7 +975,7 @@
     "addHelp": "La persona tiene que iniciar sesión una vez con el correo verificado.",
     "add": "Verificar",
     "added": "{{email}} ya está verificada como vecina.",
-    "removed": "Se retiró la verificación de {{name}}. Sus reservas siguen en pie.",
+    "removed": "Se retiró la verificación de {{name}}. Se cancelaron sus reservas en las instalaciones solo para vecinos y se le avisó por correo.",
     "remove": "Quitar la verificación",
     "search": "Buscar por nombre o correo",
     "searchAction": "Buscar",
@@ -993,7 +993,7 @@
     "previous": "Anterior",
     "next": "Siguiente",
     "removeTitle": "¿Quitar la verificación de {{name}}?",
-    "removeBody": "Dejará de poder reservar y unirse en las instalaciones solo para vecinos. Las reservas que ya tiene se mantienen.",
+    "removeBody": "Dejará de poder reservar y unirse en las instalaciones solo para vecinos. Sus próximas reservas en ellas se cancelan, sale de las partidas a las que se unió allí y se le avisa por correo.",
     "removeCancel": "Cancelar",
     "requests": {
       "title": "Peticiones pendientes",

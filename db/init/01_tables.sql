@@ -50,7 +50,8 @@ CREATE TYPE notification_type AS ENUM (
     'rating_requested',             -- a booking ended: rate the facility (and, if it was public, the others who played)
     'resident_requested',           -- someone asks the council administrators to verify them as a resident
     'resident_verified',            -- the council verified the person as its resident
-    'resident_rejected'             -- …or could not, from its own census
+    'resident_rejected',            -- …or could not, from its own census
+    'resident_revoked'              -- the council took the verification back (payload: cancelled, how many bookings it cancelled)
 );
 
 -- A problem a resident reports at a facility, in the council's maintenance list.
@@ -179,13 +180,15 @@ CREATE TABLE tenant_membership (
 -- People a council's administrators (or a superadministrator) verified as its
 -- residents: they book and join at its residents_only facilities. A row means
 -- verified; removing it takes the verification back, without touching the
--- bookings already made. Gone with the account or the council.
+-- bookings already made. Gone with the account or the council. A person is a
+-- resident of one council only (UNIQUE user_id).
 CREATE TABLE tenant_resident (
     tenant_id   UUID        NOT NULL REFERENCES tenant(id)   ON DELETE CASCADE,
     user_id     UUID        NOT NULL REFERENCES app_user(id) ON DELETE CASCADE,
     verified_by UUID        NULL REFERENCES app_user(id) ON DELETE SET NULL,
     verified_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (tenant_id, user_id)
+    PRIMARY KEY (tenant_id, user_id),
+    UNIQUE (user_id)
 );
 
 -- Someone asking the council to verify them as its resident (for its

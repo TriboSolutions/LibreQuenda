@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
 
 const addTenantResident = `-- name: AddTenantResident :one
@@ -37,6 +38,83 @@ func (q *Queries) AddTenantResident(ctx context.Context, arg AddTenantResidentPa
 	var added bool
 	err := row.Scan(&added)
 	return added, err
+}
+
+const cancelBookingsOfFormerResident = `-- name: CancelBookingsOfFormerResident :many
+UPDATE booking b
+SET
+    status       = 'cancelled',
+    cancelled_at = NOW(),
+    cancelled_by = 'council'
+FROM
+    facility f
+    JOIN tenant t ON t.id = f.tenant_id
+WHERE
+    b.facility_id = f.id
+    AND f.tenant_id = $1
+    AND f.residents_only = TRUE
+    AND b.user_id = $2
+    AND b.status = 'confirmed'
+    AND b.starts_at > NOW()
+RETURNING
+    b.id,
+    b.facility_id,
+    f.name AS facility_name,
+    t.slug AS tenant_slug,
+    t.name AS tenant_name,
+    b.starts_at,
+    b.ends_at,
+    COALESCE(b.title, '')::TEXT AS title
+`
+
+type CancelBookingsOfFormerResidentParams struct {
+	TenantID uuid.UUID     `json:"tenant_id"`
+	UserID   uuid.NullUUID `json:"user_id"`
+}
+
+type CancelBookingsOfFormerResidentRow struct {
+	ID           uuid.UUID `json:"id"`
+	FacilityID   uuid.UUID `json:"facility_id"`
+	FacilityName string    `json:"facility_name"`
+	TenantSlug   string    `json:"tenant_slug"`
+	TenantName   string    `json:"tenant_name"`
+	StartsAt     time.Time `json:"starts_at"`
+	EndsAt       time.Time `json:"ends_at"`
+	Title        string    `json:"title"`
+}
+
+// No longer a resident: their own upcoming bookings at the council's residents-only
+// facilities are cancelled by the council (what each notice to those who joined says).
+func (q *Queries) CancelBookingsOfFormerResident(ctx context.Context, arg CancelBookingsOfFormerResidentParams) ([]CancelBookingsOfFormerResidentRow, error) {
+	rows, err := q.db.QueryContext(ctx, cancelBookingsOfFormerResident, arg.TenantID, arg.UserID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []CancelBookingsOfFormerResidentRow
+	for rows.Next() {
+		var i CancelBookingsOfFormerResidentRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.FacilityID,
+			&i.FacilityName,
+			&i.TenantSlug,
+			&i.TenantName,
+			&i.StartsAt,
+			&i.EndsAt,
+			&i.Title,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const claimWeeklyResidentRequest = `-- name: ClaimWeeklyResidentRequest :one
@@ -156,6 +234,30 @@ func (q *Queries) DeleteResidentRequestOfUser(ctx context.Context, arg DeleteRes
 	return err
 }
 
+const getResidentCouncil = `-- name: GetResidentCouncil :one
+SELECT
+    t.slug,
+    t.name
+FROM
+    tenant_resident r
+    JOIN tenant t ON t.id = r.tenant_id
+WHERE
+    r.user_id = $1
+`
+
+type GetResidentCouncilRow struct {
+	Slug string `json:"slug"`
+	Name string `json:"name"`
+}
+
+// The one council that verified the person as its resident, if any.
+func (q *Queries) GetResidentCouncil(ctx context.Context, userID uuid.UUID) (GetResidentCouncilRow, error) {
+	row := q.db.QueryRowContext(ctx, getResidentCouncil, userID)
+	var i GetResidentCouncilRow
+	err := row.Scan(&i.Slug, &i.Name)
+	return i, err
+}
+
 const getResidentRequestedAt = `-- name: GetResidentRequestedAt :one
 SELECT
     resident_requested_at
@@ -194,6 +296,35 @@ func (q *Queries) IsTenantResident(ctx context.Context, arg IsTenantResidentPara
 	return verified, err
 }
 
+const leaveGamesOfFormerResident = `-- name: LeaveGamesOfFormerResident :execrows
+DELETE FROM booking_participant p
+USING
+    booking b,
+    facility f
+WHERE
+    p.booking_id = b.id
+    AND b.facility_id = f.id
+    AND f.tenant_id = $1
+    AND f.residents_only = TRUE
+    AND p.user_id = $2
+    AND b.status = 'confirmed'
+    AND b.starts_at > NOW()
+`
+
+type LeaveGamesOfFormerResidentParams struct {
+	TenantID uuid.UUID     `json:"tenant_id"`
+	UserID   uuid.NullUUID `json:"user_id"`
+}
+
+// …and they leave the upcoming public bookings and events they had joined there.
+func (q *Queries) LeaveGamesOfFormerResident(ctx context.Context, arg LeaveGamesOfFormerResidentParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, leaveGamesOfFormerResident, arg.TenantID, arg.UserID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
 const listPendingResidentEmails = `-- name: ListPendingResidentEmails :many
 SELECT
     n.id,
@@ -215,7 +346,7 @@ FROM
     LEFT JOIN tenant_smtp s ON s.tenant_id = t.id
 WHERE
     n.emailed_at IS NULL
-    AND n.type IN ('resident_requested', 'resident_verified', 'resident_rejected')
+    AND n.type IN ('resident_requested', 'resident_verified', 'resident_rejected', 'resident_revoked')
     AND ($1::BOOLEAN OR s.tenant_id IS NOT NULL)
 ORDER BY
     n.created_at ASC
@@ -590,6 +721,26 @@ func (q *Queries) NotifyResidentRequestDecided(ctx context.Context, arg NotifyRe
 	return err
 }
 
+const notifyResidentRevoked = `-- name: NotifyResidentRevoked :exec
+INSERT INTO notification (user_id, type, payload)
+SELECT $1, 'resident_revoked', jsonb_build_object('tenant_name', t.name, 'tenant_slug', t.slug, 'cancelled', $2::INT)
+FROM tenant t
+WHERE t.id = $3
+`
+
+type NotifyResidentRevokedParams struct {
+	UserID    uuid.UUID `json:"user_id"`
+	Cancelled int32     `json:"cancelled"`
+	TenantID  uuid.UUID `json:"tenant_id"`
+}
+
+// Tells the person (bell and email) that the council took the verification back,
+// and how many of their bookings went with it.
+func (q *Queries) NotifyResidentRevoked(ctx context.Context, arg NotifyResidentRevokedParams) error {
+	_, err := q.db.ExecContext(ctx, notifyResidentRevoked, arg.UserID, arg.Cancelled, arg.TenantID)
+	return err
+}
+
 const purgeResidentRequests = `-- name: PurgeResidentRequests :execrows
 DELETE FROM resident_request
 WHERE
@@ -623,6 +774,38 @@ func (q *Queries) RemoveTenantResident(ctx context.Context, arg RemoveTenantResi
 		return 0, err
 	}
 	return result.RowsAffected()
+}
+
+const residentCouncilsBySubject = `-- name: ResidentCouncilsBySubject :one
+SELECT
+    (EXISTS (SELECT 1 FROM tenant_resident r WHERE r.user_id = u.id)
+     AND NOT EXISTS (SELECT 1 FROM platform_admin p WHERE p.user_id = u.id))::BOOLEAN AS restricted,
+    ARRAY(
+        SELECT t.slug FROM tenant_resident r JOIN tenant t ON t.id = r.tenant_id WHERE r.user_id = u.id
+        UNION
+        SELECT t.slug FROM tenant_membership m JOIN tenant t ON t.id = m.tenant_id WHERE m.user_id = u.id AND m.role = 'admin'
+    )::TEXT[] AS councils
+FROM
+    app_user u
+WHERE
+    u.idp_subject = $1
+`
+
+type ResidentCouncilsBySubjectRow struct {
+	Restricted bool     `json:"restricted"`
+	Councils   []string `json:"councils"`
+}
+
+// For the facility lists of someone signed in: a verified resident of one council
+// cannot ask any other, so other councils' residents-only facilities are left
+// out. restricted is false for anyone not verified anywhere and for a
+// superadministrator; councils are where they book residents-only all the same
+// (theirs, and those they administer, as IsTenantResident).
+func (q *Queries) ResidentCouncilsBySubject(ctx context.Context, idpSubject string) (ResidentCouncilsBySubjectRow, error) {
+	row := q.db.QueryRowContext(ctx, residentCouncilsBySubject, idpSubject)
+	var i ResidentCouncilsBySubjectRow
+	err := row.Scan(&i.Restricted, pq.Array(&i.Councils))
+	return i, err
 }
 
 const takeResidentRequest = `-- name: TakeResidentRequest :one

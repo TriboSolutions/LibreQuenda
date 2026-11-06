@@ -211,6 +211,8 @@
     "guest_residents_only": "Esta instalación es solo para vecinos verificados por el ayuntamiento: para unirte, inicia sesión con una cuenta verificada.",
     "resident_user_not_found": "No hay ninguna cuenta con ese correo verificado. La persona tiene que iniciar sesión una vez antes.",
     "resident_already_verified": "Esa persona ya está verificada en este ayuntamiento.",
+    "resident_of_another_council": "Esa persona ya es vecina de otro ayuntamiento: solo se puede ser vecino de un ayuntamiento.",
+    "resident_elsewhere": "Ya eres vecino de {{0}}: solo se puede ser vecino de un ayuntamiento.",
     "resident_not_found": "Esa persona no está verificada en este ayuntamiento.",
     "resident_save_failed": "No se pudo guardar la verificación.",
     "residents_load_failed": "No se pudieron cargar los vecinos verificados.",
@@ -313,6 +315,13 @@
       "intro": "{{0}} no pudo verificarte como vecino con su padrón. Si crees que es un error, llama al ayuntamiento.",
       "manage": "Ver el ayuntamiento",
       "phone": "Teléfono del ayuntamiento: {{0}}"
+    },
+    "resident_revoked": {
+      "subject": "Ya no eres vecino verificado de {{0}}",
+      "intro": "{{0}} retiró tu verificación como vecino: ya no puedes reservar ni unirte en sus instalaciones solo para vecinos.",
+      "manage": "Ver el ayuntamiento",
+      "cancelled": "Se canceló lo que tenías reservado en ellas: {{0}} reservas. Si crees que es un error, llama al ayuntamiento.",
+      "footer": "Recibes este correo porque eras vecino verificado de un ayuntamiento en {{0}}."
     },
     "resident_footer": "Recibes este correo porque pediste ser vecino de un ayuntamiento en {{0}}. Los datos de la petición ya se borraron."
   }

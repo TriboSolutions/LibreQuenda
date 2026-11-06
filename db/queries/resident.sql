@@ -221,8 +221,89 @@ FROM
     LEFT JOIN tenant_smtp s ON s.tenant_id = t.id
 WHERE
     n.emailed_at IS NULL
-    AND n.type IN ('resident_requested', 'resident_verified', 'resident_rejected')
+    AND n.type IN ('resident_requested', 'resident_verified', 'resident_rejected', 'resident_revoked')
     AND (sqlc.arg('env_relay')::BOOLEAN OR s.tenant_id IS NOT NULL)
 ORDER BY
     n.created_at ASC
 LIMIT sqlc.arg('max_rows');
+
+-- name: ResidentCouncilsBySubject :one
+-- For the facility lists of someone signed in: a verified resident of one council
+-- cannot ask any other, so other councils' residents-only facilities are left
+-- out. restricted is false for anyone not verified anywhere and for a
+-- superadministrator; councils are where they book residents-only all the same
+-- (theirs, and those they administer, as IsTenantResident).
+SELECT
+    (EXISTS (SELECT 1 FROM tenant_resident r WHERE r.user_id = u.id)
+     AND NOT EXISTS (SELECT 1 FROM platform_admin p WHERE p.user_id = u.id))::BOOLEAN AS restricted,
+    ARRAY(
+        SELECT t.slug FROM tenant_resident r JOIN tenant t ON t.id = r.tenant_id WHERE r.user_id = u.id
+        UNION
+        SELECT t.slug FROM tenant_membership m JOIN tenant t ON t.id = m.tenant_id WHERE m.user_id = u.id AND m.role = 'admin'
+    )::TEXT[] AS councils
+FROM
+    app_user u
+WHERE
+    u.idp_subject = sqlc.arg('idp_subject');
+
+-- name: GetResidentCouncil :one
+-- The one council that verified the person as its resident, if any.
+SELECT
+    t.slug,
+    t.name
+FROM
+    tenant_resident r
+    JOIN tenant t ON t.id = r.tenant_id
+WHERE
+    r.user_id = sqlc.arg('user_id');
+
+-- name: CancelBookingsOfFormerResident :many
+-- No longer a resident: their own upcoming bookings at the council's residents-only
+-- facilities are cancelled by the council (what each notice to those who joined says).
+UPDATE booking b
+SET
+    status       = 'cancelled',
+    cancelled_at = NOW(),
+    cancelled_by = 'council'
+FROM
+    facility f
+    JOIN tenant t ON t.id = f.tenant_id
+WHERE
+    b.facility_id = f.id
+    AND f.tenant_id = sqlc.arg('tenant_id')
+    AND f.residents_only = TRUE
+    AND b.user_id = sqlc.arg('user_id')
+    AND b.status = 'confirmed'
+    AND b.starts_at > NOW()
+RETURNING
+    b.id,
+    b.facility_id,
+    f.name AS facility_name,
+    t.slug AS tenant_slug,
+    t.name AS tenant_name,
+    b.starts_at,
+    b.ends_at,
+    COALESCE(b.title, '')::TEXT AS title;
+
+-- name: LeaveGamesOfFormerResident :execrows
+-- …and they leave the upcoming public bookings and events they had joined there.
+DELETE FROM booking_participant p
+USING
+    booking b,
+    facility f
+WHERE
+    p.booking_id = b.id
+    AND b.facility_id = f.id
+    AND f.tenant_id = sqlc.arg('tenant_id')
+    AND f.residents_only = TRUE
+    AND p.user_id = sqlc.arg('user_id')
+    AND b.status = 'confirmed'
+    AND b.starts_at > NOW();
+
+-- name: NotifyResidentRevoked :exec
+-- Tells the person (bell and email) that the council took the verification back,
+-- and how many of their bookings went with it.
+INSERT INTO notification (user_id, type, payload)
+SELECT sqlc.arg('user_id'), 'resident_revoked', jsonb_build_object('tenant_name', t.name, 'tenant_slug', t.slug, 'cancelled', sqlc.arg('cancelled')::INT)
+FROM tenant t
+WHERE t.id = sqlc.arg('tenant_id');

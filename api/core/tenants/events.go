@@ -36,7 +36,7 @@ func (h *tenantsHandler) GetEvents(w http.ResponseWriter, r *http.Request) {
 		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_query_params")
 		return
 	}
-	var response, err = GetTenantsService(h.db).UpcomingEvents(r.Context(), near)
+	var response, err = GetTenantsService(h.db).UpcomingEvents(r.Context(), near, eligibilityFromRequest(r, h.db))
 	if err != nil {
 		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
 		return
@@ -44,13 +44,16 @@ func (h *tenantsHandler) GetEvents(w http.ResponseWriter, r *http.Request) {
 	helpers.SendSuccessResponse(w, response)
 }
 
-func (s *tenantsService) UpcomingEvents(ctx context.Context, near *Near) (*UpcomingEventsResponse, *shared.ErrorResponse) {
+func (s *tenantsService) UpcomingEvents(ctx context.Context, near *Near, eligible eligibility) (*UpcomingEventsResponse, *shared.ErrorResponse) {
 	var rows, err = model.New(s.db).ListUpcomingEvents(ctx)
 	if err != nil {
 		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.events_load_failed"}
 	}
 	var response = &UpcomingEventsResponse{Events: make([]UpcomingEventDto, 0, len(rows))}
 	for _, row := range rows {
+		if !eligible.allows(row.TenantSlug, row.ResidentsOnly) {
+			continue // a resident of another council cannot join it
+		}
 		response.Events = append(response.Events, mapUpcomingEvent(row, near))
 	}
 	return response, nil

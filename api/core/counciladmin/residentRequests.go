@@ -111,7 +111,9 @@ func (s *counciladminService) DecideResidentRequest(ctx context.Context, tenantI
 			TenantID:   tenantId,
 			UserID:     userId,
 			VerifiedBy: uuid.NullUUID{UUID: staffId, Valid: true},
-		}); err != nil {
+		}); isUniqueViolation(err) { // verified by another council meanwhile: one council per person
+			return uuid.Nil, &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.resident_of_another_council"}
+		} else if err != nil {
 			return uuid.Nil, failed("errors.resident_save_failed")
 		}
 	}

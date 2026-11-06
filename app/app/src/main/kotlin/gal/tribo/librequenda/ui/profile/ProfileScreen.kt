@@ -131,6 +131,8 @@ fun ProfileScreen(
                 }
                 Box(pad) { DetailsSection(me, actions) }
                 SectionDivider()
+                Box(pad) { ResidentSection(me) }
+                SectionDivider()
                 Box(pad) { AccountSection(actions) }
                 SectionDivider()
                 Box(pad) { CalendarSection(actions) }
@@ -254,6 +256,27 @@ private fun DetailsSection(me: Me, actions: ProfileActions) {
             onSelect = { birthDate = it.toString() },
             onDismiss = { picking = false },
         )
+    }
+}
+
+// --- the council they are a resident of -------------------------------------------
+
+/** As the web's /perfil: the council that verified them as its resident (one at most), or how to be verified. */
+@Composable
+private fun ResidentSection(me: Me) {
+    SettingsSection(stringResource(R.string.resident_of_title), stringResource(R.string.resident_of_help)) {
+        if (me.residentCouncils.isEmpty()) {
+            Text(stringResource(R.string.resident_of_none), style = MaterialTheme.typography.bodyMedium, color = Lq.colors.mutedForeground)
+        } else {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                me.residentCouncils.forEach { c ->
+                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Text(c.name, style = MaterialTheme.typography.bodyLarge, color = Lq.colors.foreground)
+                        Text(stringResource(R.string.resident_of_since, formatDate(c.since)), style = MaterialTheme.typography.bodySmall, color = Lq.colors.mutedForeground)
+                    }
+                }
+            }
+        }
     }
 }
 

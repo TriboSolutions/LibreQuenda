@@ -26,6 +26,8 @@ type Filters struct {
 	// /facilities/day only
 	From, Until string // ?from=HH:MM&until=HH:MM: turns starting in [from, until), the council's time
 	Public      bool   // ?public=true: someone's public booking with spots left, instead of free turns
+	// not from the query: whoever is signed in, when they are a verified resident (eligibility)
+	Eligible eligibility
 }
 
 var slugPattern = regexp.MustCompile(`^[a-z0-9]+(?:-[a-z0-9]+)*$`)
