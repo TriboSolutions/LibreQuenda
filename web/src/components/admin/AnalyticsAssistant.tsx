@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Skeleton } from '@/components/ui/skeleton'
-import type { AnalyticsAnswer } from '@/lib/api'
+import { ApiError, type AnalyticsAnswer } from '@/lib/api'
 
 // the charts library loads only when an answer brings a chart
 const AnswerChart = lazy(() => import('@/components/admin/AnswerChart').then((m) => ({ default: m.AnswerChart })))
@@ -19,7 +19,8 @@ type Props = {
   ask: (question: string) => Promise<AnalyticsAnswer>
 }
 
-type Exchange = { question: string; answer?: AnalyticsAnswer; error?: string }
+// declined: the API's own words for a question it does not take (off topic, too long), said as a reply, not as a failure
+type Exchange = { question: string; answer?: AnalyticsAnswer; error?: string; declined?: string }
 
 /**
  * «Talk to the data»: questions in the person's words, one after another; a language
@@ -53,10 +54,7 @@ export function AnalyticsAssistant({ ask }: Props) {
     try {
       outcome = { question: asked, answer: await ask(asked) }
     } catch (e) {
-      outcome = {
-        question: asked,
-        error: e instanceof Error ? e.message : String(e),
-      }
+      outcome = e instanceof ApiError && e.status === 422 ? { question: asked, declined: e.message } : { question: asked, error: e instanceof Error ? e.message : String(e) }
     }
     setExchanges((list) => [...list.slice(0, -1), outcome])
     setBusy(false)
@@ -78,12 +76,13 @@ export function AnalyticsAssistant({ ask }: Props) {
               </span>
               <div className="grid min-w-0 flex-1 gap-3">
                 <span className="sr-only">{t('analytics.assistant')}: </span>
-                {!exchange.answer && !exchange.error && <p className="text-muted-foreground">{t('analytics.thinking')}</p>}
+                {!exchange.answer && !exchange.error && !exchange.declined && <p className="text-muted-foreground">{t('analytics.thinking')}</p>}
                 {exchange.error && (
                   <Alert variant="destructive">
                     <AlertDescription>{exchange.error}</AlertDescription>
                   </Alert>
                 )}
+                {exchange.declined && <p className="text-muted-foreground">{exchange.declined}</p>}
                 {exchange.answer && <Answer answer={exchange.answer} />}
               </div>
             </div>
@@ -136,8 +135,8 @@ function Answer({ answer }: { answer: AnalyticsAnswer }) {
   )
 }
 
-// what the answer may use; links and images are left out (their text stays), raw HTML is never read
-const MARKDOWN_ELEMENTS = ['p', 'strong', 'em', 'del', 'ul', 'ol', 'li', 'code', 'pre', 'blockquote', 'h1', 'h2', 'h3', 'h4', 'hr', 'br', 'table', 'thead', 'tbody', 'tr', 'th', 'td']
+// what the answer may use; links, images and code are left out (their text stays: the API refuses answers with code), raw HTML is never read
+const MARKDOWN_ELEMENTS = ['p', 'strong', 'em', 'del', 'ul', 'ol', 'li', 'blockquote', 'h1', 'h2', 'h3', 'h4', 'hr', 'br', 'table', 'thead', 'tbody', 'tr', 'th', 'td']
 
 const MARKDOWN: Components = {
   h1: ({ children }) => <p className="text-lg font-semibold">{children}</p>,
@@ -148,8 +147,6 @@ const MARKDOWN: Components = {
   ul: ({ children }) => <ul className="grid list-disc gap-1 pl-5">{children}</ul>,
   ol: ({ children }) => <ol className="grid list-decimal gap-1 pl-5">{children}</ol>,
   blockquote: ({ children }) => <blockquote className="border-l-2 pl-3 text-muted-foreground">{children}</blockquote>,
-  code: ({ children }) => <code className="rounded bg-muted px-1 py-0.5 text-[0.9em]">{children}</code>,
-  pre: ({ children }) => <pre className="overflow-x-auto rounded-md bg-muted p-2 text-xs [&_code]:bg-transparent [&_code]:p-0">{children}</pre>,
   hr: () => <hr className="border-border" />,
   table: ({ children }) => (
     <div className="overflow-x-auto">

@@ -2631,7 +2631,7 @@ paths:
       tags:
       - Council admin
       summary: Ask the data of this council
-      description: "The council's administrators, and superadministrators inside this council (analytics are always one council's). Audited. A language model writes read-only SQL on the analytics views (no personal data or free text), limited to this council's rows by the database, and answers; every query it ran comes with its result. 409 while no model is set."
+      description: "The council's administrators, and superadministrators inside this council (analytics are always one council's). Audited. A language model writes read-only SQL on the analytics views (no personal data or free text), limited to this council's rows by the database, and answers; every query it ran comes with its result. 409 while no model is set; 422 errors.ai_off_topic for a question not about the council's data (the model declines it with its off_topic tool, or the API refuses an answer with code, or a long one backed by no query)."
       security:
       - bearerAuth: []
       parameters:

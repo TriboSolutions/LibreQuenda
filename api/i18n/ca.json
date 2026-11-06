@@ -66,6 +66,7 @@
     "ai_settings_failed": "No s’ha pogut desar o llegir la configuració del model.",
     "ai_not_configured": "L’assistent de dades està desactivat: una persona superadministradora ha de configurar el model de llenguatge.",
     "ai_question": "Escriu una pregunta, de fins a 1000 caràcters.",
+    "ai_off_topic": "Només responc preguntes sobre les dades de l’ajuntament: reserves, ocupació, cancel·lacions, esdeveniments, incidències, valoracions…",
     "analytics_disabled": "Les consultes de dades no estan configurades en aquesta instal·lació (ANALYTICS_DB_PASSWORD).",
     "invalid_coordinates": "La ubicació del mapa no és vàlida.",
     "invalid_capacity": "L’aforament ha d’estar entre 1 i 100000.",
