@@ -66,6 +66,7 @@
     "ai_settings_failed": "The model's settings could not be saved or read.",
     "ai_not_configured": "The data assistant is off: a superadministrator has to set its language model.",
     "ai_question": "Write a question, up to 1000 characters.",
+    "ai_off_topic": "I only answer questions about the council's data: bookings, occupancy, cancellations, events, problems, ratings…",
     "analytics_disabled": "Data queries are not set up on this installation (ANALYTICS_DB_PASSWORD).",
     "invalid_coordinates": "The map location is not valid.",
     "invalid_capacity": "Capacity must be between 1 and 100000.",

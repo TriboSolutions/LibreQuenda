@@ -45,6 +45,9 @@ The guarantees are PostgreSQL's, not a check of the SQL the model writes:
   whatever the SQL says. Nothing that belongs to no council is in the views.
 - **One statement**: the SQL runs wrapped as a subquery (no second statement can follow),
   with at most 500 rows and an 8-second limit, on a connection that is closed afterwards.
+- **Only about the data**: a question about anything else (code, general knowledge, writing…) is
+  declined with a fixed message: the model has an `off_topic` tool that ends the conversation,
+  and the API itself refuses an answer with code, or a long one that no query backs.
 - **Recorded**: every question is in the activity log, and every query the assistant
   ran in the API's log.
 

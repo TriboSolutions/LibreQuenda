@@ -28,6 +28,8 @@ func Answering(ctx context.Context, db *sql.DB, scope Scope, who string, userId 
 		return answer, nil
 	case errors.Is(err, ErrQuestion):
 		return nil, &shared.ErrorResponse{Code: http.StatusUnprocessableEntity, Message: "errors.ai_question"}
+	case errors.Is(err, ErrOffTopic):
+		return nil, &shared.ErrorResponse{Code: http.StatusUnprocessableEntity, Message: "errors.ai_off_topic"}
 	case errors.Is(err, ErrNotConfigured):
 		return nil, &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.ai_not_configured"}
 	case errors.Is(err, ErrDisabled):

@@ -1159,6 +1159,20 @@ test.describe('keyboard', () => {
     await expect(page.getByRole('link', { name: 'Fala cos datos' })).toHaveCount(0) // not on its own page
   })
 
+  test('a question that is not about the data is declined as a reply', async ({ page }) => {
+    await open(page, '/datos')
+    await page.route('**/api/me', (route) => route.fulfill({ json: { ...ME_COUNCIL_ADMIN, analytics_enabled: true } }))
+    await page.reload()
+    await page.route('**/api/tenants/lugo/admin/analytics/ask', (route) =>
+      route.fulfill({ status: 422, json: { error: 'Só respondo preguntas sobre os datos do concello: reservas, ocupación, cancelacións, eventos, incidencias, valoracións…' } }),
+    )
+    await page.getByLabel('A túa pregunta').fill('dame un compoñente todo en React')
+    await page.getByRole('button', { name: 'Preguntar' }).click()
+    const conversation = page.getByRole('list', { name: 'Fala cos datos' })
+    await expect(conversation.getByText(/Só respondo preguntas sobre os datos do concello/)).toBeVisible()
+    await expect(conversation.getByRole('alert')).toHaveCount(0) // a reply, not a failure
+  })
+
   test('a superadministrator talks to the data only inside a council', async ({ page }) => {
     await open(page, '/')
     await page.route('**/api/me', (route) => route.fulfill({ json: { ...ME_SUPERADMIN_ONLY, analytics_enabled: true } }))

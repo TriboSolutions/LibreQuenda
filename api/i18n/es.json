@@ -66,6 +66,7 @@
     "ai_settings_failed": "No se pudo guardar o leer la configuración del modelo.",
     "ai_not_configured": "El asistente de datos está desactivado: una persona superadministradora tiene que configurar el modelo de lenguaje.",
     "ai_question": "Escribe una pregunta, de hasta 1000 caracteres.",
+    "ai_off_topic": "Solo respondo preguntas sobre los datos del ayuntamiento: reservas, ocupación, cancelaciones, eventos, incidencias, valoraciones…",
     "analytics_disabled": "Las consultas de datos no están configuradas en esta instalación (ANALYTICS_DB_PASSWORD).",
     "invalid_coordinates": "La ubicación del mapa no es válida.",
     "invalid_capacity": "El aforo tiene que estar entre 1 y 100000.",
