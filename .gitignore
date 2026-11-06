@@ -85,3 +85,6 @@ docs/certame/
 
 # W3C's WCAG 2.1 (https://www.w3.org/TR/WCAG21/), downloaded for reference: not redistributed
 docs/wcag/
+
+# --- Claude Code skills installed locally ---
+skills-lock.json

@@ -108,3 +108,8 @@ kept in the app's private storage and renewed with the refresh token; signing ou
 also ends the session at Zitadel.
 
 Not on the Play Store yet: the release APK is installed by hand (or through another store).
+
+## Third-party
+
+The app's typeface, DM Sans (`app/src/main/res/font/dm_sans.ttf`), is under the SIL Open Font
+License 1.1: see [third-party/DM-Sans-OFL.txt](third-party/DM-Sans-OFL.txt).
