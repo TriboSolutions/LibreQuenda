@@ -1155,7 +1155,7 @@ test.describe('keyboard', () => {
       asked = route.request().postDataJSON()
       await route.fulfill({
         json: {
-          answer: 'Pista de pádel 1 tivo 12 cancelacións en outubro. <b>non é HTML</b>',
+          answer: 'Pista de pádel 1 tivo **12 cancelacións** en outubro. <b>non é HTML</b> [ligazón](https://example.com) ![imaxe](https://example.com/x.png)',
           steps: [{ sql: "SELECT count(*) FROM booking WHERE status = 'cancelled'", result: { columns: ['count'], rows: [[12]], truncated: false } }],
         },
       })
@@ -1163,7 +1163,11 @@ test.describe('keyboard', () => {
     await page.getByLabel('A túa pregunta').fill('Cantas cancelacións houbo en outubro?')
     await page.getByRole('button', { name: 'Preguntar' }).click()
     const conversation = page.getByRole('list', { name: 'Fala cos datos' })
-    await expect(conversation.getByText('Pista de pádel 1 tivo 12 cancelacións en outubro. <b>non é HTML</b>')).toBeVisible() // plain text
+    await expect(conversation.locator('strong', { hasText: '12 cancelacións' })).toBeVisible() // Markdown
+    await expect(conversation.getByText('<b>non é HTML</b>', { exact: false })).toBeVisible() // never HTML
+    await expect(conversation.getByText('ligazón')).toBeVisible() // a link's text, not the link
+    await expect(conversation.getByRole('link')).toHaveCount(0)
+    await expect(conversation.getByRole('img')).toHaveCount(0)
     expect(asked).toEqual({ question: 'Cantas cancelacións houbo en outubro?' })
     await conversation.getByText('1 consulta').click()
     await expect(conversation.getByRole('cell', { name: '12' })).toBeVisible()

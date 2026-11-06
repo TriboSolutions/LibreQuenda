@@ -1,6 +1,8 @@
 import { Sparkles } from 'lucide-react'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
+import ReactMarkdown, { type Components } from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -20,7 +22,9 @@ type Exchange = { question: string; answer?: AnalyticsAnswer; error?: string }
  * «Talk to the data»: questions in the person's words, one after another; a language
  * model writes SQL on the read-only analytics views and answers each. Every query it
  * ran shows under its answer with what it returned, so each figure can be checked.
- * Answers are plain text: nothing the model writes is read as markup. Each question
+ * Answers are Markdown (bold, lists, tables…), never HTML, and without links or images:
+ * the model reads data people wrote, so nothing it writes may send the reader, or the
+ * data, anywhere (an image URL would be fetched on its own). Each question
  * is answered on its own (the model does not see the earlier ones).
  */
 export function AnalyticsAssistant({ ask }: Props) {
@@ -115,7 +119,11 @@ function Answer({ answer }: { answer: AnalyticsAnswer }) {
   const { t } = useTranslation('admin')
   return (
     <>
-      <p className="whitespace-pre-wrap">{answer.answer}</p>
+      <div className="grid gap-3 leading-relaxed">
+        <ReactMarkdown remarkPlugins={[remarkGfm]} allowedElements={MARKDOWN_ELEMENTS} unwrapDisallowed components={MARKDOWN}>
+          {answer.answer}
+        </ReactMarkdown>
+      </div>
       {answer.steps.length > 0 && (
         <details className="rounded-md border p-3">
           <summary className="cursor-pointer text-sm font-medium">{t('analytics.queries', { count: answer.steps.length })}</summary>
@@ -128,6 +136,34 @@ function Answer({ answer }: { answer: AnalyticsAnswer }) {
       )}
     </>
   )
+}
+
+// what the answer may use; links and images are left out (their text stays), raw HTML is never read
+const MARKDOWN_ELEMENTS = ['p', 'strong', 'em', 'del', 'ul', 'ol', 'li', 'code', 'pre', 'blockquote', 'h1', 'h2', 'h3', 'h4', 'hr', 'br', 'table', 'thead', 'tbody', 'tr', 'th', 'td']
+
+const MARKDOWN: Components = {
+  h1: ({ children }) => <p className="text-lg font-semibold">{children}</p>,
+  h2: ({ children }) => <p className="text-lg font-semibold">{children}</p>,
+  h3: ({ children }) => <p className="font-semibold">{children}</p>,
+  h4: ({ children }) => <p className="font-semibold">{children}</p>,
+  strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+  ul: ({ children }) => <ul className="grid list-disc gap-1 pl-5">{children}</ul>,
+  ol: ({ children }) => <ol className="grid list-decimal gap-1 pl-5">{children}</ol>,
+  blockquote: ({ children }) => <blockquote className="border-l-2 pl-3 text-muted-foreground">{children}</blockquote>,
+  code: ({ children }) => <code className="rounded bg-muted px-1 py-0.5 text-[0.9em]">{children}</code>,
+  pre: ({ children }) => <pre className="overflow-x-auto rounded-md bg-muted p-2 text-xs [&_code]:bg-transparent [&_code]:p-0">{children}</pre>,
+  hr: () => <hr className="border-border" />,
+  table: ({ children }) => (
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm">{children}</table>
+    </div>
+  ),
+  th: ({ children }) => (
+    <th scope="col" className="py-1 pr-4 text-left font-medium">
+      {children}
+    </th>
+  ),
+  td: ({ children }) => <td className="num border-t py-1 pr-4">{children}</td>,
 }
 
 function StepResult({ step }: { step: AnalyticsStep }) {
