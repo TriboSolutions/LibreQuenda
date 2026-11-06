@@ -134,6 +134,14 @@ Na porta do rocódromo: localiza a instalación, escríbese o código, e a reser
 |:-:|:-:|:-:|:-:|
 | <img src="../screenshots/android/vecino/flash/06-code-at-door.webp" width="200"> | <img src="../screenshots/android/vecino/flash/07-booked-and-in.webp" width="200"> | <img src="../screenshots/android/vecino/flash/08-flash-booking.webp" width="200"> | <img src="../screenshots/android/vecino/flash/09-refused-with-reason.webp" width="200"> |
 
+**Na web.** Desde o menú da conta, «Reserva flash» abre as mesmas formas: o QR persoal para o lector, o código, o QR da porta, a etiqueta NFC e o persoal. Se non se pode reservar, di por que.
+
+| QR persoal | Código na porta |
+|:-:|:-:|
+| <img src="../screenshots/web/vecino/flash/02-reader-qr.webp" width="420"> | <img src="../screenshots/web/vecino/flash/03-code-at-door.webp" width="420"> |
+| **Non se pode: xa ten reservas noutro concello** | **Reservado e dentro** |
+| <img src="../screenshots/web/vecino/flash/07-refused-other-council.webp" width="420"> | <img src="../screenshots/web/vecino/flash/08-booked-and-in.webp" width="420"> |
+
 ## Participación
 
 Ao rematar cada reserva, valoración anónima da instalación de 1 a 5 estrelas e, despois dunha partida pública, das outras persoas. Comunicación de incidencias con categoría, foto e urxencia, con aviso cando o concello as resolve.
