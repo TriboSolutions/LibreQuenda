@@ -211,6 +211,38 @@ fun entranceMessages(): Map<String, String> = mapOf(
     "refused" to stringResource(R.string.entrance_refused),
 )
 
+/** Why no turn could be booked at the door (not_booked's reason), in words (the web's reader.json). */
+@Composable
+fun notBookedReasons(): Map<String, String> = mapOf(
+    "no_turn_soon" to stringResource(R.string.reason_no_turn_soon),
+    "slot_booked" to stringResource(R.string.reason_slot_booked),
+    "slot_closed" to stringResource(R.string.reason_slot_closed),
+    "slot_too_far" to stringResource(R.string.reason_slot_too_far),
+    "profile_incomplete" to stringResource(R.string.reason_profile_incomplete),
+    "age_restricted" to stringResource(R.string.reason_age_restricted),
+    "booking_limit_reached" to stringResource(R.string.reason_booking_limit_reached),
+    "booking_overlaps" to stringResource(R.string.reason_booking_overlaps),
+    "facility_not_found" to stringResource(R.string.reason_facility_not_found),
+    "other" to stringResource(R.string.reason_other),
+    "use_booking_qr" to stringResource(R.string.reason_use_booking_qr),
+    "flash_off" to stringResource(R.string.reason_flash_off),
+    "daily_limit_reached" to stringResource(R.string.reason_daily_limit_reached),
+    "turns_in_a_row_limit" to stringResource(R.string.reason_turns_in_a_row_limit),
+    "no_show_blocked" to stringResource(R.string.reason_no_show_blocked),
+    "weekly_limit_reached" to stringResource(R.string.reason_weekly_limit_reached),
+    "other_council_booking" to stringResource(R.string.reason_other_council_booking),
+    "council_limit_reached" to stringResource(R.string.reason_council_limit_reached),
+    "email_unverified" to stringResource(R.string.reason_email_unverified),
+    "residents_only" to stringResource(R.string.reason_residents_only),
+)
+
+/** The entrance's answer in words: what happened and, when no turn could be booked, why («Esta quenda xa está reservada.»). */
+fun entranceWords(result: EntranceResult, messages: Map<String, String>, reasons: Map<String, String>): String {
+    val words = messages[result.result] ?: messages["refused"].orEmpty()
+    if (result.result != "not_booked" || result.reason == null) return words
+    return words + ". " + (reasons[result.reason] ?: reasons["other"].orEmpty())
+}
+
 /**
  * Going in at the door: asks for the precise location (once), finds where the
  * phone is, sends the proof and says what the entrance answered. A way in in
@@ -245,6 +277,7 @@ fun rememberDoorAttempt(actions: ProfileActions, key: Any? = null, onGranted: (m
     val scope = rememberCoroutineScope()
     val texts = Texts.current()
     val messages = entranceMessages()
+    val reasons = notBookedReasons()
     val deniedText = stringResource(R.string.loc_denied)
     val unavailableText = stringResource(R.string.loc_unavailable)
     val granted by rememberUpdatedState(onGranted)
@@ -258,8 +291,8 @@ fun rememberDoorAttempt(actions: ProfileActions, key: Any? = null, onGranted: (m
             attempt.locating = false
             val result = actions.authed { proof(it, position) }
             attempt.granted = result.granted
-            val words = messages[result.result] ?: messages["refused"]
-            if (result.granted) granted(words.orEmpty(), result.bookingId) else attempt.answer = words
+            val words = entranceWords(result, messages, reasons)
+            if (result.granted) granted(words, result.bookingId) else attempt.answer = words
         } catch (c: CancellationException) { throw c } catch (e: LocationException) {
             attempt.granted = false; attempt.answer = if (e.denied) deniedText else unavailableText
         } catch (e: Exception) {
