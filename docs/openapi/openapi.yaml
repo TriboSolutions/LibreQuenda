@@ -171,6 +171,7 @@ paths:
       - $ref: '#/components/parameters/Lat'
       - $ref: '#/components/parameters/Lon'
       - $ref: '#/components/parameters/RadiusKm'
+      - $ref: '#/components/parameters/MinRating'
       - $ref: '#/components/parameters/Page'
       - $ref: '#/components/parameters/PageSize'
       responses:
@@ -233,6 +234,7 @@ paths:
       - $ref: '#/components/parameters/Lat'
       - $ref: '#/components/parameters/Lon'
       - $ref: '#/components/parameters/RadiusKm'
+      - $ref: '#/components/parameters/MinRating'
       - $ref: '#/components/parameters/Page'
       - $ref: '#/components/parameters/PageSize'
       responses:
@@ -4733,6 +4735,16 @@ components:
         format: double
         exclusiveMinimum: 0
         maximum: 500
+    MinRating:
+      name: min_rating
+      in: query
+      required: false
+      description: Only facilities residents rated at least this on average (the average shown, one decimal); a facility nobody rated is left out.
+      schema:
+        type: number
+        format: double
+        minimum: 1
+        maximum: 5
     Q:
       name: q
       in: query
@@ -5271,6 +5283,11 @@ components:
           - 'null'
           format: double
           description: 'With ?lat=&lon=: from there, in km (0.1); null without a pin or a position.'
+        rating:
+          oneOf:
+          - $ref: '#/components/schemas/RatingSummary'
+          - type: 'null'
+          description: Residents' stars after their bookings; null until someone rated.
       required:
       - id
       - slug
@@ -5564,6 +5581,11 @@ components:
             - number
             - 'null'
             format: double
+          rating:
+            oneOf:
+            - $ref: '#/components/schemas/RatingSummary'
+            - type: 'null'
+            description: Residents' stars after their bookings; null until someone rated.
         required:
         - council
         - distance_km

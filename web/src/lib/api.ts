@@ -89,6 +89,7 @@ export type FacilityCard = {
   residents_only?: boolean // only the council's verified residents book or join there (also its events)
   joinable?: JoinableKind[] // upcoming, with spots left: residents' public bookings, the council's events
   distance_km?: number | null // with a position: how far, by the API (which also sorts by it)
+  rating?: RatingSummary | null // residents' stars after their bookings; null until someone rated
 }
 
 /** What can be joined at a facility: a resident's public booking, or the council's event. */
@@ -1074,8 +1075,9 @@ export const api = {
   branding: () => request<Branding>('/branding'),
   // near: nearest first and each one's distance_km (the API sorts); radiusKm keeps those within it.
   // The map shows them all, so every page is fetched, in the API's order.
-  facilities: async (near?: { latitude: number; longitude: number } | null, radiusKm = 0) => {
-    const query = near ? `&lat=${near.latitude}&lon=${near.longitude}${radiusKm > 0 ? `&radius_km=${radiusKm}` : ''}` : ''
+  // nearest first within the radius, and only the ones rated at least minRating: the API does it
+  facilities: async (near?: { latitude: number; longitude: number } | null, radiusKm = 0, minRating = 0) => {
+    const query = (near ? `&lat=${near.latitude}&lon=${near.longitude}${radiusKm > 0 ? `&radius_km=${radiusKm}` : ''}` : '') + (minRating > 0 ? `&min_rating=${minRating}` : '')
     const facilities: FacilityCard[] = []
     for (let page = 1; ; page++) {
       const answer = await request<{ facilities: FacilityCard[]; pagination: Pagination }>(`/facilities?page=${page}${query}`)

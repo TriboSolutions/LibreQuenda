@@ -89,6 +89,10 @@ func (s *tenantsService) GetFacilities(ctx context.Context, near *Near, filters 
 	for _, row := range kinds {
 		joinable[row.FacilityID.String()] = append(joinable[row.FacilityID.String()], string(row.Kind))
 	}
+	var stars, starsErr = s.ratings(ctx)
+	if starsErr != nil {
+		return nil, starsErr
+	}
 	var response = &FacilitiesResponse{Facilities: []FacilityCardDto{}}
 	for _, tenant := range tenants {
 		var day, _, _, dayErr = s.loadDay(ctx, tenant.Slug, "")
@@ -108,7 +112,7 @@ func (s *tenantsService) GetFacilities(ctx context.Context, near *Near, filters 
 				open = []string{}
 			}
 			slices.Sort(open) // "event" before "public", whatever the database's order
-			if !near.within(km) || !filters.Eligible.allows(day.Tenant.Slug, f.ResidentsOnly) || !filters.matches(f.Name, day.Tenant.Slug, day.Tenant.Name, f.Sport, f.Tags, names) || !filters.joinable(open) {
+			if !near.within(km) || !filters.Eligible.allows(day.Tenant.Slug, f.ResidentsOnly) || !filters.rated(stars[f.Id]) || !filters.matches(f.Name, day.Tenant.Slug, day.Tenant.Name, f.Sport, f.Tags, names) || !filters.joinable(open) {
 				continue
 			}
 			response.Facilities = append(response.Facilities, FacilityCardDto{
@@ -122,6 +126,7 @@ func (s *tenantsService) GetFacilities(ctx context.Context, near *Near, filters 
 				Latitude:      f.Latitude,
 				Longitude:     f.Longitude,
 				FreeToday:     free,
+				Rating:        stars[f.Id],
 				Council:       day.Tenant,
 				ResidentsOnly: f.ResidentsOnly,
 				Joinable:      open,
@@ -157,6 +162,10 @@ func (s *tenantsService) GetFacilitiesDay(ctx context.Context, dateParam string,
 	}
 	var names = s.tagNames(ctx)
 	var now = time.Now()
+	var stars, starsErr = s.ratings(ctx)
+	if starsErr != nil {
+		return nil, starsErr
+	}
 	var response = &FacilitiesDayResponse{Facilities: []FacilityAnyDayDto{}}
 	for _, tenant := range tenants {
 		var day, _, loc, dayErr = s.loadDay(ctx, tenant.Slug, dateParam)
@@ -169,7 +178,7 @@ func (s *tenantsService) GetFacilitiesDay(ctx context.Context, dateParam string,
 		response.Date = day.Date
 		for _, f := range day.Facilities {
 			var km = distanceKm(near, f.Latitude, f.Longitude)
-			if !near.within(km) || !filters.Eligible.allows(day.Tenant.Slug, f.ResidentsOnly) || !filters.matches(f.Name, day.Tenant.Slug, day.Tenant.Name, f.Sport, f.Tags, names) {
+			if !near.within(km) || !filters.Eligible.allows(day.Tenant.Slug, f.ResidentsOnly) || !filters.rated(stars[f.Id]) || !filters.matches(f.Name, day.Tenant.Slug, day.Tenant.Name, f.Sport, f.Tags, names) {
 				continue
 			}
 			var kept, any = filters.narrowDay(f, loc, now)
@@ -181,6 +190,7 @@ func (s *tenantsService) GetFacilitiesDay(ctx context.Context, dateParam string,
 				FacilityDayDto: f,
 				Council:        day.Tenant,
 				DistanceKm:     km,
+				Rating:         stars[f.Id],
 			})
 		}
 	}
@@ -410,4 +420,17 @@ func weeklyOpening(on bool, weekday int16, minute int32) *WeeklyOpeningDto {
 		return nil
 	}
 	return &WeeklyOpeningDto{Weekday: weekday, At: fmt.Sprintf("%02d:%02d", minute/60, minute%60)}
+}
+
+// ratings: every rated facility's stars, by its id, for the lists (one query).
+func (s *tenantsService) ratings(ctx context.Context) (map[string]*rating.Summary, *shared.ErrorResponse) {
+	var rows, err = model.New(s.db).ListFacilityRatingSummaries(ctx)
+	if err != nil {
+		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.tenants_load_failed"}
+	}
+	var out = make(map[string]*rating.Summary, len(rows))
+	for _, row := range rows {
+		out[row.FacilityID.String()] = rating.Of(row.Average, row.Count)
+	}
+	return out, nil
 }

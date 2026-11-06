@@ -1091,6 +1091,17 @@ test.describe('keyboard', () => {
     await expect.poll(() => removed).toMatch(/^DELETE \/api\/me\/bookings\/[^/]+\/participants\/p1$/)
   })
 
+  test('the facilities are filtered by rating in the API', async ({ page }) => {
+    await open(page, '/')
+    const asked = page.waitForRequest((r) => r.url().includes('/api/facilities?') && r.url().includes('min_rating=4'))
+    await page.getByRole('button', { name: 'Valoración' }).click()
+    await page.getByRole('menuitemradio', { name: '4 ou máis' }).click()
+    await asked
+    await expect(page.getByRole('button', { name: /^4 ou máis\s*, Valoración/ })).toBeVisible()
+    await page.mouse.move(0, 0)
+    await expectAccessible(page)
+  })
+
   test('a council administrator reaches its administration from the account menu on any page', async ({ page }) => {
     await open(page, '/') // the home page is about no council
     await page.route('**/api/me', (route) => route.fulfill({ json: ME_COUNCIL_ADMIN }))

@@ -108,6 +108,9 @@
     <string name="resident_of_none">Cap ajuntament ha verificat el teu compte. Si una instal·lació és només per a veïns, demana a l’ajuntament que et verifiquin amb el correu d’aquest compte.</string>
     <string name="resident_of_since">Verificat des del %1$s</string>
     <string name="image_wrong_type">Només imatges JPG, PNG o WebP.</string>
+    <string name="rating_filter">Valoració</string>
+    <string name="rating_any">Qualsevol</string>
+    <string name="rating_at_least">%1$s o més</string>
     <string name="invite_people">Qui ve</string>
     <string name="invite_you">Tu</string>
     <string name="invite_owner">qui ha reservat</string>

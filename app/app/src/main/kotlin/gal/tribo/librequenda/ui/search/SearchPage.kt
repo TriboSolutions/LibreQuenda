@@ -123,6 +123,7 @@ data class SearchFilters(
     val date: String = LocalDate.now(ZONE).toString(),
     val time: TimeRange = TimeRange.Any,
     val publicOnly: Boolean = false, // the public bookings to join, not the free turns
+    val minRating: Double? = null, // residents' average at least this (the API filters)
 ) {
     val day: LocalDate get() = LocalDate.parse(date)
 }
@@ -301,7 +302,7 @@ private fun SearchFilters.toQuery(near: GeoPoint?): DayQuery {
         TimeRange.Now -> java.time.ZonedDateTime.now(ZONE).format(clock).takeIf { day == LocalDate.now(ZONE) } to null
         else -> time.from?.format(clock) to time.until?.format(clock)
     }
-    return DayQuery(day, near, query, council, sport, tags, from, until, publicOnly)
+    return DayQuery(day, near, query, council, sport, tags, from, until, publicOnly, minRating)
 }
 
 @Composable
@@ -330,6 +331,17 @@ private fun SearchBox(value: String, onChange: (String) -> Unit) {
     }
 }
 
+/** The minimum averages offered (null: any), as the web's rating filter. */
+private val RATING_MINIMUMS = listOf<Double?>(null, 3.0, 4.0, 4.5)
+
+/** «4 or more», «4,5 or more»: the stars in the phone's language. */
+@Composable
+private fun ratingLabel(min: Double): String {
+    val locale = LocalConfiguration.current.locales[0]
+    val stars = if (min % 1.0 == 0.0) min.toInt().toString() else String.format(locale, "%.1f", min)
+    return stringResource(R.string.rating_at_least, stars)
+}
+
 /** Which chip's sheet is open. */
 private sealed interface ChipSheet {
     data object Day : ChipSheet
@@ -337,6 +349,7 @@ private sealed interface ChipSheet {
     data object Mode : ChipSheet
     data object Sport : ChipSheet
     data object Council : ChipSheet
+    data object Rating : ChipSheet
     data class Category(val category: TagCategory) : ChipSheet
 }
 
@@ -370,6 +383,7 @@ private fun ChipsRow(
         if (f.publicOnly) item { Chip(stringResource(R.string.public_title), R.drawable.ic_users) { open = ChipSheet.Mode } }
         f.sport?.let { slug -> item { Chip(sports.firstOrNull { it.slug == slug }?.name ?: slug) { open = ChipSheet.Sport } } }
         f.council?.let { slug -> item { Chip(councils.firstOrNull { it.first == slug }?.second ?: slug) { open = ChipSheet.Council } } }
+        f.minRating?.let { min -> item { Chip(ratingLabel(min)) { open = ChipSheet.Rating } } }
         others.forEach { category ->
             val chosen = category.tags.filter { it.slug in f.tags }
             if (chosen.isNotEmpty()) item(key = category.name) { Chip(chosen.joinToString(", ") { it.name }) { open = ChipSheet.Category(category) } }
@@ -393,6 +407,11 @@ private fun ChipsRow(
             stringResource(R.string.sport),
             listOf<Pair<String?, String>>(null to stringResource(R.string.any_sport)) + sports.map { it.slug to it.name },
             f.sport, { onFilters(f.copy(sport = it)) }, { open = null },
+        )
+        ChipSheet.Rating -> SingleChoiceSheet(
+            stringResource(R.string.rating_filter),
+            RATING_MINIMUMS.map { it to (it?.let { min -> ratingLabel(min) } ?: stringResource(R.string.rating_any)) },
+            f.minRating, { onFilters(f.copy(minRating = it)) }, { open = null },
         )
         ChipSheet.Council -> SingleChoiceSheet(
             stringResource(R.string.council),
@@ -476,12 +495,16 @@ private fun ResultRow(f: DayFacility, filters: SearchFilters, onOpen: () -> Unit
         }
         // how far, as the API worked it out
         val distance = f.distanceKm?.let { km -> stringResource(R.string.distance_km, if (km < 10) String.format(locale, "%.1f", km) else km.toInt().toString()) }
-        Text(
-            listOfNotNull(distance, f.councilName).joinToString(" · "),
-            style = MaterialTheme.typography.bodyMedium,
-            color = Lq.colors.mutedForeground,
-            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 10.dp),
-        )
+        Row(Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 10.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text(
+                listOfNotNull(distance, f.councilName).joinToString(" · "),
+                style = MaterialTheme.typography.bodyMedium,
+                color = Lq.colors.mutedForeground,
+                modifier = Modifier.weight(1f, fill = false),
+            )
+            // the residents' stars; nothing until someone rated
+            gal.tribo.librequenda.ui.components.RatingBadge(f.rating)
+        }
         if (filters.publicOnly) {
             LazyRow(contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(games, key = { it.id }) { game ->
@@ -550,6 +573,11 @@ private fun FiltersSheet(
                 Toggle(stringResource(R.string.all_councils), f.council == null) { f = f.copy(council = null) }
                 councils.forEach { (slug, name) -> Toggle(name, f.council == slug) { f = f.copy(council = if (f.council == slug) null else slug) } }
             }
+            Group(stringResource(R.string.rating_filter)) {
+                RATING_MINIMUMS.forEach { min ->
+                    Toggle(min?.let { ratingLabel(it) } ?: stringResource(R.string.rating_any), f.minRating == min) { f = f.copy(minRating = min) }
+                }
+            }
             catalogue.drop(1).forEach { category ->
                 Group(category.name) {
                     category.tags.forEach { tag ->
@@ -558,7 +586,7 @@ private fun FiltersSheet(
                 }
             }
             Row(Modifier.fillMaxWidth().padding(vertical = 16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                SecondaryButton(stringResource(R.string.clear_filters), { f = f.copy(tags = emptySet(), council = null, sport = null, publicOnly = false) }, Modifier.weight(1f))
+                SecondaryButton(stringResource(R.string.clear_filters), { f = f.copy(tags = emptySet(), council = null, sport = null, publicOnly = false, minRating = null) }, Modifier.weight(1f))
                 PrimaryButton(stringResource(R.string.apply), { onApply(f) }, Modifier.weight(1f))
             }
         }

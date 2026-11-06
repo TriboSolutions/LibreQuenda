@@ -1,10 +1,13 @@
 package tenants
 
 import (
+	"librequenda/core/rating"
+	"math"
 	"net/http"
 	"net/url"
 	"regexp"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 	"unicode"
@@ -25,8 +28,9 @@ type Filters struct {
 	Tags    []string // ?sport= and ?tags=a,b: the facility has them all
 	Booking []string // ?booking=public,event: it has any of these to join (FacilityCardDto.Joinable); /facilities only
 	// /facilities/day only
-	From, Until string // ?from=HH:MM&until=HH:MM: turns starting in [from, until), the council's time
-	Public      bool   // ?public=true: someone's public booking with spots left, instead of free turns
+	From, Until string  // ?from=HH:MM&until=HH:MM: turns starting in [from, until), the council's time
+	Public      bool    // ?public=true: someone's public booking with spots left, instead of free turns
+	MinRating   float64 // ?min_rating=1..5: residents' average at least this (one decimal); a facility nobody rated is left out
 	// not from the query: whoever is signed in, when they are a verified resident (eligibility)
 	Eligible eligibility
 }
@@ -114,7 +118,19 @@ func FiltersFromValues(q url.Values, withDay bool) (Filters, bool) {
 	default:
 		return f, false
 	}
+	if text := q.Get("min_rating"); text != "" {
+		var stars, err = strconv.ParseFloat(text, 64)
+		if err != nil || math.IsNaN(stars) || stars < 1 || stars > 5 {
+			return f, false
+		}
+		f.MinRating = stars
+	}
 	return f, true
+}
+
+// rated: the facility passes ?min_rating= (any, without one).
+func (f Filters) rated(stars *rating.Summary) bool {
+	return f.MinRating == 0 || (stars != nil && stars.Average >= f.MinRating)
 }
 
 func validSlug(s string) bool { return len(s) <= 64 && slugPattern.MatchString(s) }

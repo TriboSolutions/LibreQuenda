@@ -108,6 +108,9 @@
     <string name="resident_of_none">Ningún concello verificou a túa conta. Se unha instalación é só para veciños, pide no concello que te verifiquen co correo desta conta.</string>
     <string name="resident_of_since">Verificado desde o %1$s</string>
     <string name="image_wrong_type">Só imaxes JPG, PNG ou WebP.</string>
+    <string name="rating_filter">Valoración</string>
+    <string name="rating_any">Calquera</string>
+    <string name="rating_at_least">%1$s ou máis</string>
     <string name="invite_people">Quen vén</string>
     <string name="invite_you">Ti</string>
     <string name="invite_owner">quen reservou</string>

@@ -194,3 +194,15 @@ WHERE
     r.rater_id = sqlc.arg('user_id')
 ORDER BY
     r.updated_at DESC;
+
+-- name: ListFacilityRatingSummaries :many
+-- Every rated facility's average and how many rated it, for the lists and their
+-- ?min_rating= filter (one query for the whole list, never who rated).
+SELECT
+    facility_id,
+    AVG(stars)::FLOAT8 AS average,
+    COUNT(*) AS count
+FROM
+    facility_rating
+GROUP BY
+    facility_id;

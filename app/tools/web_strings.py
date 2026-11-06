@@ -47,6 +47,7 @@ KEYS = {
  'image_uploading': (C,'imagePicker.uploading'), 'image_hint': (C,'imagePicker.hint'), 'image_too_large': (C,'imagePicker.tooLarge'),
  'resident_of_title': (P,'resident.title'), 'resident_of_help': (P,'resident.help'), 'resident_of_none': (P,'resident.none'), 'resident_of_since': (P,'resident.since'),
  'image_wrong_type': (C,'imagePicker.wrongType'),
+ 'rating_filter': (H,'rating.title'), 'rating_any': (H,'rating.any'), 'rating_at_least': (H,'rating.atLeast'),
  # the owner's «who is coming», as the web's invite dialog
  'invite_people': (I,'dialog.people'), 'invite_you': (I,'dialog.you'), 'invite_owner': (I,'dialog.owner'), 'invite_guest_age': (I,'dialog.guestAge'),
  'invite_nobody': (I,'dialog.nobody'), 'invite_remove': (I,'dialog.remove'), 'invite_remove_confirm': (I,'dialog.removeConfirm'),

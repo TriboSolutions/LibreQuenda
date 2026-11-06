@@ -81,5 +81,10 @@
     "title": "Tipo de reserva",
     "public": "Reservas públicas",
     "event": "Eventos"
+  },
+  "rating": {
+    "title": "Valoración",
+    "any": "Cualquiera",
+    "atLeast": "{{stars}} o más"
   }
 }

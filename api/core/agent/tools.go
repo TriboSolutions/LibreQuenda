@@ -46,6 +46,7 @@ type SearchIn struct {
 	Latitude  *float64 `json:"latitude,omitempty" jsonschema:"the person's position, to sort by distance (with longitude)"`
 	Longitude *float64 `json:"longitude,omitempty"`
 	RadiusKm  *float64 `json:"radius_km,omitempty" jsonschema:"only facilities within this distance of the position"`
+	MinRating *float64 `json:"min_rating,omitempty" jsonschema:"only facilities residents rated at least this on average, 1 to 5 (one nobody rated is left out)"`
 }
 
 type Turn struct {
@@ -72,6 +73,8 @@ type FacilityFound struct {
 	Sport         string   `json:"sport,omitempty"`
 	Address       string   `json:"address,omitempty"`
 	DistanceKm    *float64 `json:"distance_km,omitempty"`
+	Rating        *float64 `json:"rating,omitempty" jsonschema:"residents' average stars, 1 to 5"`
+	RatingCount   int64    `json:"rating_count,omitempty"`
 	ResidentsOnly bool     `json:"residents_only" jsonschema:"only the council's verified residents book or join"`
 	MinAge        *int32   `json:"min_age,omitempty"`
 	FreeTurns     []Turn   `json:"free_turns"`
@@ -111,6 +114,9 @@ func (a *agent) search(ctx context.Context, req *mcp.CallToolRequest, in SearchI
 			values.Set(key, value)
 		}
 	}
+	if in.MinRating != nil {
+		values.Set("min_rating", strconv.FormatFloat(*in.MinRating, 'f', -1, 64))
+	}
 	if in.Latitude != nil && in.Longitude != nil {
 		values.Set("lat", strconv.FormatFloat(*in.Latitude, 'f', -1, 64))
 		values.Set("lon", strconv.FormatFloat(*in.Longitude, 'f', -1, 64))
@@ -134,11 +140,15 @@ func (a *agent) search(ctx context.Context, req *mcp.CallToolRequest, in SearchI
 	var now = time.Now()
 	var out = SearchOut{Date: day.Date, Facilities: []FacilityFound{}}
 	for _, f := range day.Facilities {
-		out.Facilities = append(out.Facilities, FacilityFound{
+		var found = FacilityFound{
 			FacilityId: f.Id, Council: f.Council.Slug, CouncilName: f.Council.Name, Facility: f.Slug, Name: f.Name, Sport: f.Sport,
 			Address: f.Address, DistanceKm: f.DistanceKm, ResidentsOnly: f.ResidentsOnly, MinAge: f.MinAge,
 			FreeTurns: freeTurns(f.Slots), PublicGames: games(f.PublicBookings, now),
-		})
+		}
+		if f.Rating != nil {
+			found.Rating, found.RatingCount = &f.Rating.Average, f.Rating.Count
+		}
+		out.Facilities = append(out.Facilities, found)
 	}
 	return nil, out, nil
 }

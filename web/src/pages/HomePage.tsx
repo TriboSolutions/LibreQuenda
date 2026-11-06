@@ -8,6 +8,8 @@ import { Mark } from '@/components/Mark'
 import { SiteFooter } from '@/components/SiteFooter'
 import { TagFilters } from '@/components/TagFilters'
 import { BookingKindFilter } from '@/components/BookingKindFilter'
+import { RatingFilter } from '@/components/RatingFilter'
+import { RatingBadge } from '@/components/Stars'
 import { TopBar } from '@/components/TopBar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -48,12 +50,13 @@ export function HomePage() {
   const [kinds, setKinds] = useState<JoinableKind[]>([])
   const [position, setPosition] = useState<Position>({ state: 'off' })
   const [radius, setRadius] = useState(0)
+  const [minRating, setMinRating] = useState(0)
   // nearest first, within the radius, is the API's job: it gets where the person is
   const near = position.state === 'on' ? position.point : null
   const me = near
   const facilities = useAsync(
-    () => api.facilities(near, radius),
-    `facilities:${near ? `${near.latitude.toFixed(4)},${near.longitude.toFixed(4)}` : ''}:${radius}`,
+    () => api.facilities(near, radius, minRating),
+    `facilities:${near ? `${near.latitude.toFixed(4)},${near.longitude.toFixed(4)}` : ''}:${radius}:${minRating}`,
   )
   const [highlighted, setHighlighted] = useState<string | null>(null)
   const [view, setView] = useState<MapView | null>(null)
@@ -107,7 +110,7 @@ export function HomePage() {
         return pin !== null && inView(view, pin)
       })
     : shown
-  const filtering = query !== '' || council !== '' || tags.length > 0 || kinds.length > 0 || radius > 0
+  const filtering = query !== '' || council !== '' || tags.length > 0 || kinds.length > 0 || radius > 0 || minRating > 0
 
   const clear = () => {
     setQuery('')
@@ -115,6 +118,7 @@ export function HomePage() {
     setTags([])
     setKinds([])
     setRadius(0)
+    setMinRating(0)
   }
 
   return (
@@ -155,6 +159,7 @@ export function HomePage() {
             )}
             <TagFilters groups={catalogue.grouped(all.flatMap((f) => f.tags))} chosen={tags} onChange={setTags} clearAll={false} />
             <BookingKindFilter chosen={kinds} onChange={setKinds} />
+            <RatingFilter min={minRating} onChange={setMinRating} />
             <Button variant={me ? 'default' : 'outline'} aria-pressed={me !== null} disabled={position.state === 'locating'} onClick={locate}>
               {position.state === 'locating' ? <LoaderCircle className="animate-spin" /> : <LocateFixed />}
               {position.state === 'locating' ? t('councils:locating') : t('councils:nearMe')}
@@ -277,6 +282,7 @@ function FacilityRow({ facility: f, km, active, labels }: RowProps) {
           </Link>
         </p>
         {labels.length > 0 && <p className="line-clamp-1 text-xs text-muted-foreground">{labels.join(' · ')}</p>}
+        <RatingBadge rating={f.rating} />
         <p className="mt-1 flex flex-wrap gap-1.5">
           <span
             className={cn(
