@@ -90,6 +90,10 @@
     "zoom": "Apropa",
     "cropCancel": "Cancel·la",
     "cropUse": "Fes servir aquesta foto",
+    "cropLogoTitle": "Enquadra l’escut o logotip",
+    "cropLogoHelp": "Arrossega’l o fes servir les fletxes per moure’l, i el control lliscant o + i − per apropar-lo. Es desa el que es veu dins del quadrat; el que quedi buit, transparent.",
+    "cropLogoFrame": "Escut o logotip per enquadrar",
+    "cropLogoUse": "Fes servir aquest logotip",
     "cropFailed": "No s’ha pogut obrir aquesta imatge."
   },
   "createAccount": "Crea un compte",

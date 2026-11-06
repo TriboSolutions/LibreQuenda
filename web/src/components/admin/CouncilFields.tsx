@@ -49,7 +49,7 @@ export function CouncilFields({ form, set, logo, setLogo, creating, councilSlug,
       </div>
 
       {/* each council's files live in its own storage: the logo comes once it exists, from its settings */}
-      {councilSlug && <ImagePicker label={t('form.logo')} folder="councils" owner={{ council: councilSlug }} value={logo} onChange={setLogo} />}
+      {councilSlug && <ImagePicker label={t('form.logo')} folder="councils" owner={{ council: councilSlug }} value={logo} onChange={setLogo} crop />}
 
       <div className="grid gap-2">
         <Label htmlFor="council-timezone">{t('form.timezone')}</Label>

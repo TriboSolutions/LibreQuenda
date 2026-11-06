@@ -90,6 +90,10 @@
     "zoom": "Acercar",
     "cropCancel": "Cancelar",
     "cropUse": "Usar esta foto",
+    "cropLogoTitle": "Encuadra el escudo o logotipo",
+    "cropLogoHelp": "Arrástralo o usa las flechas para moverlo, y el control o + y − para acercarlo. Se guarda lo que se ve en el cuadrado; lo que quede vacío, transparente.",
+    "cropLogoFrame": "Escudo o logotipo para encuadrar",
+    "cropLogoUse": "Usar este logotipo",
     "cropFailed": "No se pudo abrir esta imagen."
   },
   "createAccount": "Crear cuenta",

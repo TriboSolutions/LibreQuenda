@@ -2,7 +2,7 @@ import { Crop, ImageIcon, Loader2 } from 'lucide-react'
 import { useId, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
-import { AvatarCropDialog } from '@/components/AvatarCropDialog'
+import { ImageCropDialog } from '@/components/ImageCropDialog'
 import { Button } from '@/components/ui/button'
 import { api, type MediaFolder, type MediaOwner, type StoredImage } from '@/lib/api'
 import { cn } from '@/lib/utils'
@@ -18,15 +18,17 @@ type Props = {
   onChange: (value: StoredImage | null) => void
   shape?: 'square' | 'wide' | 'large' | 'avatar' // large: full width, as tall as a map; avatar: a 96px circle
   hideLabel?: boolean // when the card's heading already names it
+  crop?: boolean // framed before uploading, and reframable later; always for an avatar
 }
 
 /**
  * Picks an image, uploads it to the storage (POST /media) and hands back
  * { ref, url }. Forms save the ref; the url is only ever used to show it.
- * An avatar is framed in a circle first (AvatarCropDialog), and can be
- * reframed later, so what is stored is what the circle shows.
+ * With crop (always for an avatar) the image is framed first (ImageCropDialog):
+ * an avatar in a circle, anything else in a square (a council's crest), and it
+ * can be reframed later, so what is stored is what the frame shows.
  */
-export function ImagePicker({ label, folder, owner, value, onChange, shape = 'square', hideLabel = false }: Props) {
+export function ImagePicker({ label, folder, owner, value, onChange, shape = 'square', hideLabel = false, crop = false }: Props) {
   const { t } = useTranslation()
   const auth = useAuth()
   const id = useId()
@@ -34,7 +36,8 @@ export function ImagePicker({ label, folder, owner, value, onChange, shape = 'sq
   const [uploading, setUploading] = useState(false)
   const [dragging, setDragging] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  // the avatar being framed: a picked file (an object URL, revoked after) or the stored photo
+  const framed = crop || shape === 'avatar'
+  // the image being framed: a picked file (an object URL, revoked after) or the stored one
   const [cropping, setCropping] = useState<{ url: string; picked: boolean } | null>(null)
 
   const closeCrop = () => {
@@ -48,7 +51,7 @@ export function ImagePicker({ label, folder, owner, value, onChange, shape = 'sq
     setError(null)
     if (!TYPES.includes(file.type)) return setError(t('imagePicker.wrongType'))
     if (file.size > MAX_SIZE) return setError(t('imagePicker.tooLarge'))
-    if (shape === 'avatar') setCropping({ url: URL.createObjectURL(file), picked: true })
+    if (framed) setCropping({ url: URL.createObjectURL(file), picked: true })
     else void upload(file)
   }
 
@@ -115,8 +118,8 @@ export function ImagePicker({ label, folder, owner, value, onChange, shape = 'sq
             <Button type="button" variant="outline" size="sm" disabled={uploading} onClick={() => input.current?.click()}>
               {uploading ? t('imagePicker.uploading') : value ? t('imagePicker.change') : t('imagePicker.upload')}
             </Button>
-            {/* the stored photo can be reframed; one from the sign-in account (no ref) cannot be read back */}
-            {shape === 'avatar' && value?.ref && !uploading && (
+            {/* the stored image can be reframed; a photo from the sign-in account (no ref) cannot be read back */}
+            {framed && value?.ref && !uploading && (
               <Button type="button" variant="ghost" size="sm" onClick={() => setCropping({ url: value.url, picked: false })}>
                 <Crop aria-hidden />
                 {t('imagePicker.crop')}
@@ -139,8 +142,9 @@ export function ImagePicker({ label, folder, owner, value, onChange, shape = 'sq
         </p>
       )}
       {cropping && (
-        <AvatarCropDialog
+        <ImageCropDialog
           source={cropping.url}
+          frame={shape === 'avatar' ? 'circle' : 'square'}
           onCancel={closeCrop}
           onCrop={(photo) => {
             closeCrop()

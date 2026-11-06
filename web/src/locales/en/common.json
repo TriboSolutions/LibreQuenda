@@ -90,6 +90,10 @@
     "zoom": "Zoom",
     "cropCancel": "Cancel",
     "cropUse": "Use this photo",
+    "cropLogoTitle": "Frame the crest or logo",
+    "cropLogoHelp": "Drag it or use the arrow keys to move it, and the slider or + and − to zoom. What the square shows is saved; any empty space stays transparent.",
+    "cropLogoFrame": "Crest or logo to frame",
+    "cropLogoUse": "Use this logo",
     "cropFailed": "This image could not be opened."
   },
   "createAccount": "Create account",
