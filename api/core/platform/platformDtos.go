@@ -5,6 +5,7 @@ import (
 	"librequenda/validate"
 	"strings"
 	"time"
+	"unicode/utf8"
 )
 
 // Paths the web app already uses at the root: a council slug may not take them.
@@ -41,7 +42,7 @@ func (in *TenantInput) normalise() {
 // validate returns the i18n key of the first invalid field, or "".
 func (in *TenantInput) validate(creating bool) string {
 	switch {
-	case in.Name == "" || len(in.Name) > 255:
+	case in.Name == "" || utf8.RuneCountInString(in.Name) > 255:
 		return "errors.invalid_name"
 	case !validate.Slug(in.Slug):
 		return "errors.invalid_slug"

@@ -32,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
@@ -74,7 +75,10 @@ fun SettingsCard(title: String? = null, content: @Composable ColumnScope.() -> U
     }
 }
 
-/** A labelled text field, with an optional help line under it. */
+/**
+ * A labelled text field, with an optional help line under it. With a maxLength it
+ * takes no more than that, and says how many characters are used of how many.
+ */
 @Composable
 fun LqTextField(
     label: String,
@@ -87,12 +91,13 @@ fun LqTextField(
     error: String? = null,
     enabled: Boolean = true,
     minLines: Int = 1, // more: a text of several lines
+    maxLength: Int? = null,
 ) {
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Text(label, style = MaterialTheme.typography.labelLarge, color = Lq.colors.foreground)
         OutlinedTextField(
             value = value,
-            onValueChange = onValueChange,
+            onValueChange = { if (maxLength == null || it.length <= maxLength) onValueChange(it) else onValueChange(it.take(maxLength)) },
             singleLine = minLines == 1,
             minLines = minLines,
             enabled = enabled,
@@ -111,6 +116,12 @@ fun LqTextField(
         )
         if (error != null) Text(error, style = MaterialTheme.typography.bodySmall, color = Lq.colors.destructive)
         else if (help != null) Text(help, style = MaterialTheme.typography.bodySmall, color = Lq.colors.mutedForeground)
+        if (maxLength != null) Text(
+            stringResource(R.string.text_count, value.length.toString(), maxLength.toString()),
+            style = MaterialTheme.typography.bodySmall,
+            color = if (value.length >= maxLength) Lq.colors.foreground else Lq.colors.mutedForeground,
+            modifier = Modifier.align(Alignment.End),
+        )
     }
 }
 

@@ -47,8 +47,10 @@ func (d *StaffBookingInput) validate() string {
 
 // StaffCancelInput: why staff cancel, told to the resident if they have an account.
 type StaffCancelInput struct {
-	Reason string `json:"reason"`
+	Reason string `json:"reason"` // optional, up to maxCancelReason characters
 }
+
+const maxCancelReason = 255
 
 // StaffDayDto: one facility's turns on one day, and who holds each booking.
 type StaffDayDto struct {

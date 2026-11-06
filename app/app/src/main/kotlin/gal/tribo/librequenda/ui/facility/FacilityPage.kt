@@ -60,6 +60,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import gal.tribo.librequenda.R
+import gal.tribo.librequenda.data.MAX_PUBLIC_DESCRIPTION
 import gal.tribo.librequenda.data.FacilityDay
 import gal.tribo.librequenda.data.PublicTurn
 import gal.tribo.librequenda.data.Slot
@@ -417,7 +418,7 @@ fun ConfirmBookingPage(choice: Checkout?, actions: ProfileActions, onBack: () ->
                         Spacer(Modifier.size(12.dp))
                         Switch(public, null, colors = SwitchDefaults.colors(checkedTrackColor = Lq.colors.primary, checkedThumbColor = Lq.colors.primaryForeground))
                     }
-                    if (public) LqTextField(stringResource(R.string.public_description), description, { if (it.length <= 280) description = it }, help = stringResource(R.string.public_description_help))
+                    if (public) LqTextField(stringResource(R.string.public_description), description, { description = it }, help = stringResource(R.string.public_description_help), minLines = 3, maxLength = MAX_PUBLIC_DESCRIPTION)
                 }
                 Notice(error, error = true)
                 Spacer(Modifier.height(8.dp))

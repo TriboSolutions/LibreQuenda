@@ -132,5 +132,8 @@
     "summary_other": "Valoración de {{average}} sobre 5, de {{count}} persoas",
     "stars_one": "{{count}} estrela",
     "stars_other": "{{count}} estrelas"
+  },
+  "textarea": {
+    "count": "{{used}} / {{max}} caracteres"
   }
 }

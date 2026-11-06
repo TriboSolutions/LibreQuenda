@@ -3,6 +3,9 @@ package gal.tribo.librequenda.data
 import org.json.JSONObject
 import java.time.Instant
 
+/** The longest description of a public booking, in characters, as the API takes it. */
+const val MAX_PUBLIC_DESCRIPTION = 1000
+
 /** One of their bookings, made or joined (GET /me/bookings), as the web's /reservas shows it. */
 data class Booking(
     val id: String,

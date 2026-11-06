@@ -23,6 +23,7 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.semantics.Role
+import gal.tribo.librequenda.data.MAX_PUBLIC_DESCRIPTION
 import gal.tribo.librequenda.data.inviteUrl
 import gal.tribo.librequenda.data.leaveBooking
 import gal.tribo.librequenda.data.setPublic
@@ -317,7 +318,7 @@ fun BookingPage(bookingId: String?, state: BookingsState, actions: ProfileAction
                 errorOf = { it.userMessage(texts) },
                 danger = false,
             ) {
-                LqTextField(stringResource(R.string.public_description), description, { if (it.length <= 280) description = it }, help = stringResource(R.string.public_description_help))
+                LqTextField(stringResource(R.string.public_description), description, { description = it }, help = stringResource(R.string.public_description_help), minLines = 3, maxLength = MAX_PUBLIC_DESCRIPTION)
             }
         }
 

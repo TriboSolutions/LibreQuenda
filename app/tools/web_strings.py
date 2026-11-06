@@ -45,7 +45,7 @@ KEYS = {
  'retry': (C,'retry'), 'rate_limited': (C,'rateLimited'),
  'image_upload': (C,'imagePicker.upload'), 'image_change': (C,'imagePicker.change'), 'image_remove': (C,'imagePicker.remove'),
  'image_uploading': (C,'imagePicker.uploading'), 'image_hint': (C,'imagePicker.hint'), 'image_too_large': (C,'imagePicker.tooLarge'),
- 'image_wrong_type': (C,'imagePicker.wrongType'),
+ 'image_wrong_type': (C,'imagePicker.wrongType'), 'text_count': (C,'textarea.count'),
  # my bookings
  'bookings_title': (I,'myBookings.title'), 'bookings_subtitle': (I,'myBookings.subtitle'),
  'bookings_history': (I,'myBookings.history'), 'bookings_empty_upcoming': (I,'myBookings.emptyUpcoming'),

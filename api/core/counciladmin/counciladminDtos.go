@@ -6,6 +6,7 @@ import (
 	"sort"
 	"strings"
 	"time"
+	"unicode/utf8"
 )
 
 // Paths under /<council>/ the web app uses itself.
@@ -50,7 +51,7 @@ func (in *FacilityInput) normalise() {
 // validate returns the i18n key of the first invalid field, or "".
 func (in *FacilityInput) validate() string {
 	switch {
-	case in.Name == "" || len(in.Name) > 255:
+	case in.Name == "" || utf8.RuneCountInString(in.Name) > 255:
 		return "errors.invalid_facility_name"
 	case !validate.Slug(in.Slug):
 		return "errors.invalid_slug"
@@ -58,7 +59,7 @@ func (in *FacilityInput) validate() string {
 		return "errors.slug_reserved"
 	case !validTags(in.Tags):
 		return "errors.invalid_tags"
-	case len(in.Address) > 500 || len(in.Description) > 5000 || len(in.UsageRules) > 5000 || len(in.AccessibilityInfo) > 2000:
+	case utf8.RuneCountInString(in.Address) > 500 || utf8.RuneCountInString(in.Description) > 5000 || utf8.RuneCountInString(in.UsageRules) > 5000 || utf8.RuneCountInString(in.AccessibilityInfo) > 2000: // characters, as the forms count them
 		return "errors.invalid_text_length"
 	case len(in.ContactPhone) > 50:
 		return "errors.invalid_phone"
@@ -222,7 +223,7 @@ type DeviceInput struct {
 // validate returns the i18n key of the first invalid field, or "".
 func (in *DeviceInput) validate() string {
 	in.Name = strings.TrimSpace(in.Name)
-	if in.Name == "" || len(in.Name) > 80 {
+	if in.Name == "" || utf8.RuneCountInString(in.Name) > 80 {
 		return "errors.invalid_device_name"
 	}
 	return ""

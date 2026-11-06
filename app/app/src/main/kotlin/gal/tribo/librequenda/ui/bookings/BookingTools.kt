@@ -169,8 +169,8 @@ fun ReportIssuePage(booking: Booking?, actions: ProfileActions, onBack: () -> Un
                     }
                 }
                 LqTextField(
-                    stringResource(R.string.issue_what), description, { if (it.length <= MAX_DESCRIPTION) description = it },
-                    help = stringResource(R.string.issue_what_help), minLines = 4,
+                    stringResource(R.string.issue_what), description, { description = it },
+                    help = stringResource(R.string.issue_what_help), minLines = 4, maxLength = MAX_DESCRIPTION,
                 )
                 // a photo, if it helps
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {

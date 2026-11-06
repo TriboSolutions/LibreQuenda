@@ -9,7 +9,9 @@ import (
 	"librequenda/model"
 	"librequenda/shared"
 	"net/http"
+	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/google/uuid"
 	"github.com/lib/pq"
@@ -215,6 +217,10 @@ func (s *bookingsService) insertStaffBooking(ctx context.Context, params model.C
 // account is told, with the reason if staff gave one, and so is everyone who
 // joined it; it counts as cancelled by the council.
 func (s *bookingsService) StaffCancel(ctx context.Context, tenantId uuid.UUID, bookingId uuid.UUID, input StaffCancelInput) *shared.ErrorResponse {
+	input.Reason = strings.TrimSpace(input.Reason)
+	if utf8.RuneCountInString(input.Reason) > maxCancelReason {
+		return &shared.ErrorResponse{Code: http.StatusBadRequest, Message: "errors.invalid_text_length"}
+	}
 	var failed = &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.cancel_failed"}
 	var queries = model.New(s.db)
 	var booking, err = queries.GetBookingForCouncil(ctx, model.GetBookingForCouncilParams{ID: bookingId, TenantID: tenantId})

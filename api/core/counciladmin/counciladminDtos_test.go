@@ -1,6 +1,9 @@
 package counciladmin
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func TestScheduleParse(t *testing.T) {
 	var cases = []struct {
@@ -49,6 +52,10 @@ func TestFacilityInputValidate(t *testing.T) {
 		{"min age 16", func(in *FacilityInput) { var age int32 = 16; in.MinAge = &age }, ""},
 		{"min age 0", func(in *FacilityInput) { var age int32 = 0; in.MinAge = &age }, "errors.invalid_min_age"},
 		{"min age 81", func(in *FacilityInput) { var age int32 = 81; in.MinAge = &age }, "errors.invalid_min_age"},
+		// counted in characters, as the forms count them: accents take two bytes
+		{"rules at the limit, accented", func(in *FacilityInput) { in.UsageRules = strings.Repeat("ñ", 5000) }, ""},
+		{"rules over the limit", func(in *FacilityInput) { in.UsageRules = strings.Repeat("a", 5001) }, "errors.invalid_text_length"},
+		{"description at the limit, accented", func(in *FacilityInput) { in.Description = strings.Repeat("á", 5000) }, ""},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {

@@ -104,6 +104,7 @@
     <string name="image_hint">JPG, PNG ou WebP, ata 5 MB.</string>
     <string name="image_too_large">A imaxe supera os 5 MB.</string>
     <string name="image_wrong_type">Só imaxes JPG, PNG ou WebP.</string>
+    <string name="text_count">%1$s / %2$s caracteres</string>
     <string name="bookings_title">As miñas reservas</string>
     <string name="bookings_subtitle">As túas próximas reservas, as que te convidaron e o teu historial.</string>
     <string name="bookings_history">Historial</string>
