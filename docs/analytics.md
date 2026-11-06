@@ -4,9 +4,8 @@ Council administrators ask questions about their council's data in their own wor
 «which facility had the most cancellations
 last month?», «which hours are booked most on Saturdays?». Analytics are always by council:
 a superadministrator, who sets the model, asks inside one council, never about all of
-them at once. While it is switched on, council administrators
-see a «Fala cos datos» bubble in the bottom right corner of every page, which opens the
-conversation (`/datos`; from a council's administration, on that council's data). A language model writes SQL,
+them at once. While it is switched on, a «Fala cos datos» bubble in the bottom right corner of a
+council's **Indicators** opens the conversation on that council's data (`/datos`). A language model writes SQL,
 LibreQuenda runs it read-only and the model answers, in Markdown and, when a chart is asked for or helps, with charts (bars, stacked or horizontal bars, lines, pies, heatmaps: the model picks the kind and the SQL of its data, and the chart shows what that SQL returned, never numbers the model wrote). The SQL is not shown to the person (each chart
 has its table); the API logs every query, per person.
 
