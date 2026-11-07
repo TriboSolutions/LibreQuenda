@@ -96,6 +96,7 @@ const jsonLd = JSON.stringify({ "@context": "https://schema.org", "@graph": grap
     <meta name="robots" content={indexable ? "index, follow, max-image-preview:large, max-snippet:-1" : "noindex, follow"} />
     <meta name="author" content={ORG.name} />
     <meta name="application-name" content="LibreQuenda" />
+    <meta name="google-site-verification" content="-ZllA27lA55OYlwz_5Pw6Pduh502l5478lgEokaftxg" />
     <meta name="generator" content={Astro.generator} />
     {indexable && <link rel="canonical" href={canonical} />}
     {indexable && LANGS.map((l) => <link rel="alternate" hreflang={l} href={abs(swapLang(path, l))} />)}
