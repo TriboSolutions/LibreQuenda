@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton'
 import { Textarea } from '@/components/ui/textarea'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
-import { useAsync } from '@/hooks/useAsync'
+import { FILTER_DEBOUNCE_MS, useAsync } from '@/hooks/useAsync'
 import { Pager } from '@/components/Pager'
 import { api, type AdminFacilitySummary, type CouncilIssue, type IssueStatus } from '@/lib/api'
 import { formatDateTime } from '@/lib/time'
@@ -40,6 +40,7 @@ export function IssuesPanel({ slug, facilities, onChanged }: Props) {
   const issues = useAsync(
     () => api.council.issues(token, slug, { facility: facility === ALL ? '' : facility, status: status === ALL ? '' : status, page }),
     `issues:${slug}:${facility}:${status}:${page}`,
+    { debounceMs: FILTER_DEBOUNCE_MS },
   )
   const list = issues.data?.issues ?? []
 

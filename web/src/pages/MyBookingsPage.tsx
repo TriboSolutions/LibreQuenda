@@ -24,7 +24,7 @@ import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
-import { useAsync } from '@/hooks/useAsync'
+import { FILTER_DEBOUNCE_MS, useAsync } from '@/hooks/useAsync'
 import { useLogin } from '@/hooks/useLogin'
 import { useMe } from '@/hooks/useMe'
 import { useNow } from '@/hooks/useNow'
@@ -56,7 +56,7 @@ export function MyBookingsPage() {
   // GET /me (MeProvider) first creates the user's row; the bookings load after it
   // the history a page at a time (the upcoming ones always come whole)
   const [historyPage, setHistoryPage] = useState(1)
-  const bookings = useAsync(token && me.me ? () => api.myBookings(token, historyPage) : null, `bookings:${me.me?.id}:${historyPage}`)
+  const bookings = useAsync(token && me.me ? () => api.myBookings(token, historyPage) : null, `bookings:${me.me?.id}:${historyPage}`, { debounceMs: FILTER_DEBOUNCE_MS })
 
   const [now] = useState(() => new Date().toISOString())
   const today = localDate(now, TIME_ZONE)

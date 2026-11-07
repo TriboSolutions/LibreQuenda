@@ -9,7 +9,7 @@ import { TopBar } from '@/components/TopBar'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useAsync } from '@/hooks/useAsync'
+import { FILTER_DEBOUNCE_MS, useAsync } from '@/hooks/useAsync'
 import { useLogin } from '@/hooks/useLogin'
 import { useMe } from '@/hooks/useMe'
 import { usePageTitle } from '@/hooks/usePageTitle'
@@ -28,7 +28,7 @@ export function PollsPage() {
   const [params] = useSearchParams()
   const token = auth.user?.access_token
   const [page, setPage] = useState(1)
-  const polls = useAsync(token && me ? () => api.myPolls(token, page) : null, `polls:${me?.id}:${page}`)
+  const polls = useAsync(token && me ? () => api.myPolls(token, page) : null, `polls:${me?.id}:${page}`, { debounceMs: FILTER_DEBOUNCE_MS })
   usePageTitle(t('home:polls.title'))
 
   let body

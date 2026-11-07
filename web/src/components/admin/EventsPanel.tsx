@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Textarea } from '@/components/ui/textarea'
-import { useAsync } from '@/hooks/useAsync'
+import { FILTER_DEBOUNCE_MS, useAsync } from '@/hooks/useAsync'
 import { api, type AdminFacilitySummary, type CouncilEvent } from '@/lib/api'
 import { formatDateTime, formatTime, localDate } from '@/lib/time'
 
@@ -34,7 +34,7 @@ export function EventsPanel({ slug, facilities }: Props) {
   // the upcoming ones, or the history (ended or cancelled), a page at a time
   const [history, setHistory] = useState(false)
   const [page, setPage] = useState(1)
-  const events = useAsync(() => api.council.events(token, slug, history, page), `council-events:${slug}:${history}:${page}`)
+  const events = useAsync(() => api.council.events(token, slug, history, page), `council-events:${slug}:${history}:${page}`, { debounceMs: FILTER_DEBOUNCE_MS })
   const [cancelling, setCancelling] = useState<CouncilEvent | null>(null)
   const [seeing, setSeeing] = useState<CouncilEvent | null>(null) // whose people are open
   // what the editor page saved, handed over on the way back

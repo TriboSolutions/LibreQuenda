@@ -16,7 +16,7 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
-import { useAsync } from '@/hooks/useAsync'
+import { FILTER_DEBOUNCE_MS, useAsync } from '@/hooks/useAsync'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { useTags } from '@/hooks/useTags'
 import { api, type FacilityCard, type FacilityFilters, type GeoPoint, type JoinableKind } from '@/lib/api'
@@ -53,9 +53,9 @@ export function HomePage() {
   const [fitKey, setFitKey] = useState(0)
   usePageTitle(t('councils:title'))
 
-  // the API filters and sorts: the words once typing stops, the rest at once
-  const words = useDebounced(query, 300)
-  const filters: FacilityFilters = { q: words, council, tags, booking: kinds, near, radiusKm: radius, minRating }
+  // the API filters and sorts, once the filters settle: ticking several sports in a row,
+  // or typing, asks it once for the last of them
+  const filters = useDebounced<FacilityFilters>({ q: query, council, tags, booking: kinds, near, radiusKm: radius, minRating }, FILTER_DEBOUNCE_MS)
   const filtersKey = JSON.stringify(filters)
   // the map: every match, only where it is; and every facility, for the count and the tag filters
   const pins = useAsync(() => api.facilityPins(filters), `pins:${filtersKey}`)

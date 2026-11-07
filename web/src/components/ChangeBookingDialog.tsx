@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useAsync } from '@/hooks/useAsync'
+import { FILTER_DEBOUNCE_MS, useAsync } from '@/hooks/useAsync'
 import { api, ApiError, type Booking, type Slot } from '@/lib/api'
 import { addDays, formatBookingDay, formatDateTime, formatTime, localDate } from '@/lib/time'
 
@@ -36,7 +36,7 @@ function ChangeBookingDialogOpen({ booking, timeZone, today, onClose, onChanged,
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const page = useAsync(() => api.facilityPage(booking.tenant_slug, booking.facility_slug, date), `change:${booking.id}:${date}`)
+  const page = useAsync(() => api.facilityPage(booking.tenant_slug, booking.facility_slug, date), `change:${booking.id}:${date}`, { debounceMs: FILTER_DEBOUNCE_MS })
   const invite = useAsync(token && booking.capacity > 0 ? () => api.invites.get(token, booking.id) : null, `invite:${booking.id}`)
 
   const facility = page.data?.facility

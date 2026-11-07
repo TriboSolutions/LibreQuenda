@@ -19,7 +19,7 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { WeatherStrip } from '@/components/Weather'
 import { useNow } from '@/hooks/useNow'
-import { useAsync } from '@/hooks/useAsync'
+import { FILTER_DEBOUNCE_MS, useAsync } from '@/hooks/useAsync'
 import { useForecast } from '@/hooks/useForecast'
 import { useLogin } from '@/hooks/useLogin'
 import { useMe } from '@/hooks/useMe'
@@ -49,7 +49,7 @@ export function FacilityPage() {
   const key = `${slug}/${facilitySlug}`
   const date = picked?.key === key ? picked.date : DATE.test(linked) ? linked : undefined
   const token = auth.user?.access_token
-  const page = useAsync(() => api.facilityPage(slug, facilitySlug, date, token), `facility:${key}:${date ?? 'today'}:${token ? 'in' : 'out'}`)
+  const page = useAsync(() => api.facilityPage(slug, facilitySlug, date, token), `facility:${key}:${date ?? 'today'}:${token ? 'in' : 'out'}`, { debounceMs: FILTER_DEBOUNCE_MS })
   const [pick, setPick] = useState<{ facility: Facility; slot: Slot } | null>(null)
   const [publicPick, setPublicPick] = useState<PublicTurn | null>(null)
   const [notice, setNotice] = useState<string | null>(null)

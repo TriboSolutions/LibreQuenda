@@ -727,6 +727,23 @@ test.describe('keyboard', () => {
     await expect(page.getByText('45 instalacións')).toBeVisible()
   })
 
+  test('filters changed in a row ask the API once, for the last of them', async ({ page }) => {
+    await open(page, '/')
+    const asked: string[] = []
+    page.on('request', (r) => {
+      if (/\/api\/facilities(\/map)?\?/.test(r.url())) asked.push(new URL(r.url()).search)
+    })
+    await page.getByRole('button', { name: 'Tipo de reserva' }).click()
+    await page.getByRole('menuitemcheckbox', { name: 'Eventos' }).click()
+    await page.getByRole('menuitemcheckbox', { name: 'Reservas públicas' }).click()
+    await page.getByRole('menuitemcheckbox', { name: 'Eventos' }).click()
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(1000)
+    // the list and the map, once each, with only the last choice
+    expect(asked).toHaveLength(2)
+    expect(asked.every((q) => q.includes('booking=public') && !q.includes('event'))).toBe(true)
+  })
+
   test('the facilities list filters by the type of booking to join', async ({ page }) => {
     await open(page, '/')
     // the list beside the map («For you» links to facilities too)

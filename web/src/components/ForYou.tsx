@@ -6,7 +6,7 @@ import { CalendarClock, ChevronDown, EyeOff, PartyPopper, Repeat, Sparkles, User
 import { RatingBadge } from '@/components/Stars'
 import { Mark } from '@/components/Mark'
 import { Button } from '@/components/ui/button'
-import { useAsync } from '@/hooks/useAsync'
+import { FILTER_DEBOUNCE_MS, useAsync } from '@/hooks/useAsync'
 import { useMe } from '@/hooks/useMe'
 import { useTags } from '@/hooks/useTags'
 import { api, type Recommendation } from '@/lib/api'
@@ -35,7 +35,7 @@ export function ForYou({ near }: { near?: { latitude: number; longitude: number 
   // GET /me (MeProvider) first creates the user's row
   const on = !!me?.show_recommendations
   const nearKey = near ? `${near.latitude.toFixed(3)},${near.longitude.toFixed(3)}` : ''
-  const recommendations = useAsync(token && me && on ? () => api.recommendations(token, near) : null, `recommendations:${me?.id}:${on}:${nearKey}`)
+  const recommendations = useAsync(token && me && on ? () => api.recommendations(token, near) : null, `recommendations:${me?.id}:${on}:${nearKey}`, { debounceMs: FILTER_DEBOUNCE_MS })
   const items = recommendations.data?.recommendations ?? []
   const [all, setAll] = useState(false)
   if (!on || items.length === 0) return null

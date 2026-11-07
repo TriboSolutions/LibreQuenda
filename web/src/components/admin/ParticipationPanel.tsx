@@ -16,7 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { HistoryToggle } from '@/components/admin/HistoryToggle'
 import { Pager } from '@/components/Pager'
-import { useAsync } from '@/hooks/useAsync'
+import { FILTER_DEBOUNCE_MS, useAsync } from '@/hooks/useAsync'
 import { api, type AdminFacilitySummary, type AdminNotice, type AdminPoll } from '@/lib/api'
 import { addDays, formatDateTime, formatLongDate, localDate } from '@/lib/time'
 
@@ -85,7 +85,7 @@ function NoticesSection({ slug, facilities, history, onHistory, onDone }: Sectio
     setShownHistory(history)
     setPage(1)
   }
-  const notices = useAsync(() => api.council.notices(token, slug, history, page), `council-notices:${slug}:${history}:${page}`)
+  const notices = useAsync(() => api.council.notices(token, slug, history, page), `council-notices:${slug}:${history}:${page}`, { debounceMs: FILTER_DEBOUNCE_MS })
   const [creating, setCreating] = useState(false)
   const [withdrawing, setWithdrawing] = useState<AdminNotice | null>(null)
   const zone = notices.data?.timezone ?? ZONE
@@ -185,7 +185,7 @@ function PollsSection({ slug, facilities, history, onHistory, onDone }: SectionP
     setShownHistory(history)
     setPage(1)
   }
-  const polls = useAsync(() => api.council.polls(token, slug, history, page), `council-polls:${slug}:${history}:${page}`)
+  const polls = useAsync(() => api.council.polls(token, slug, history, page), `council-polls:${slug}:${history}:${page}`, { debounceMs: FILTER_DEBOUNCE_MS })
   const [creating, setCreating] = useState(false)
   const [closing, setClosing] = useState<AdminPoll | null>(null)
   const [deleting, setDeleting] = useState<AdminPoll | null>(null)
