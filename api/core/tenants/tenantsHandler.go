@@ -71,6 +71,24 @@ func (h *tenantsHandler) GetFacilities(w http.ResponseWriter, r *http.Request) {
 	helpers.SendSuccessResponse(w, response)
 }
 
+// GetFacilityPins: GET /facilities/map, the same filters as /facilities (but bbox),
+// every match with a pin and only what the map needs.
+func (h *tenantsHandler) GetFacilityPins(w http.ResponseWriter, r *http.Request) {
+	var near, ok = nearFromQuery(r)
+	var filters, filtersOk = filtersFromQuery(r, false)
+	if !ok || !filtersOk || filters.BBox != nil {
+		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_query_params")
+		return
+	}
+	filters.Eligible = eligibilityFromRequest(r, h.db)
+	var response, err = GetTenantsService(h.db).GetFacilityPins(r.Context(), near, filters)
+	if err != nil {
+		helpers.SendI18NErrorResponse(w, r, err.Code, err.Message, err.Args...)
+		return
+	}
+	helpers.SendSuccessResponse(w, response)
+}
+
 // GetFacilitiesDay: GET /facilities/day?date=YYYY-MM-DD&lat=&lon=, every council's
 // facilities with their turns that day, nearest first when the position is given.
 func (h *tenantsHandler) GetFacilitiesDay(w http.ResponseWriter, r *http.Request) {

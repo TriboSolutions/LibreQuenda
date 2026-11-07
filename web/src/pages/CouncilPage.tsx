@@ -11,10 +11,11 @@ import { MyBookings } from '@/components/MyBookings'
 import { TagFilters } from '@/components/TagFilters'
 import { CouncilContact } from '@/components/CouncilContact'
 import { CouncilHeading } from '@/components/CouncilHeading'
+import { CouncilNotices } from '@/components/CouncilNotices'
 import { TopBar } from '@/components/TopBar'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useAsync } from '@/hooks/useAsync'
+import { FILTER_DEBOUNCE_MS, useAsync } from '@/hooks/useAsync'
 import { useLogin } from '@/hooks/useLogin'
 import { useMe } from '@/hooks/useMe'
 import { useTags } from '@/hooks/useTags'
@@ -65,7 +66,9 @@ export function CouncilPage() {
   const [picked, setPicked] = useState<{ slug: string; date: string } | null>(null)
   const date = picked?.slug === tenantSlug ? picked.date : undefined
   const setDate = (value: string) => setPicked({ slug: tenantSlug, date: value })
-  const day = useAsync(() => api.day(tenantSlug, date), `day:${tenantSlug}:${date ?? 'today'}`)
+  const day = useAsync(() => api.day(tenantSlug, date), `day:${tenantSlug}:${date ?? 'today'}`, { debounceMs: FILTER_DEBOUNCE_MS })
+  // the council's current announcements
+  const council = useAsync(() => api.tenant(tenantSlug), `tenant:${tenantSlug}`)
   usePageTitle(t('home:title'), day.data?.tenant.name)
 
   // GET /me (MeProvider) first creates the user's row; the bookings load after it
@@ -163,6 +166,12 @@ export function CouncilPage() {
           </div>
           {day.data && <DayPicker today={today} value={selectedDate} onChange={setDate} />}
         </div>
+
+        {!!council.data?.notices.length && (
+          <div className="mt-6">
+            <CouncilNotices notices={council.data.notices} timeZone={timeZone} tenantSlug={tenantSlug} />
+          </div>
+        )}
 
         {groups.length > 0 && (
           <div role="group" aria-label={t('home:tags.label')} className="mt-6 flex flex-wrap items-center gap-2">

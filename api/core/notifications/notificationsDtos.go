@@ -13,6 +13,7 @@ type NotificationDto struct {
 	Name         string     `json:"name"`
 	Id           string     `json:"id"`
 	BookingId    string     `json:"booking_id"` // "" for notices about no booking
+	PollId       string     `json:"poll_id"`    // poll_opened: the poll to vote in
 	IsPublic     bool       `json:"is_public"`  // rating_requested: the others can be rated too
 	Type         string     `json:"type"`       // booking_confirmed, booking_reminder, booking_cancelled, booking_cancelled_by_council…
 	FacilityName string     `json:"facility_name"`
@@ -64,6 +65,7 @@ func MapNotifications(rows []model.ListNotificationsByUserRow, unread int64) *No
 		response.Notifications = append(response.Notifications, NotificationDto{
 			Id:           row.ID.String(),
 			BookingId:    bookingId(row.BookingID),
+			PollId:       bookingId(row.PollID),
 			IsPublic:     data.IsPublic,
 			Name:         data.Name,
 			Type:         string(row.Type),

@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/angelbarreiros/Penguin/router/helpers"
 	"github.com/google/uuid"
 )
 
@@ -39,7 +40,8 @@ type IssueDto struct {
 }
 
 type IssuesResponse struct {
-	Issues []IssueDto `json:"issues"`
+	Issues     []IssueDto     `json:"issues"`
+	Pagination shared.PageDto `json:"pagination"`
 }
 
 type IssueCountDto struct {
@@ -73,8 +75,9 @@ func mapIssue(row model.ListCouncilIssuesRow) IssueDto {
 }
 
 // ListIssues: newest first; facility and status ("" for all) narrow it.
-func (s *counciladminService) ListIssues(ctx context.Context, tenantId uuid.UUID, facility string, status string) (*IssuesResponse, *shared.ErrorResponse) {
-	var params = model.ListCouncilIssuesParams{TenantID: tenantId}
+func (s *counciladminService) ListIssues(ctx context.Context, tenantId uuid.UUID, facility string, status string, page helpers.PaginationParams) (*IssuesResponse, *shared.ErrorResponse) {
+	var limit, skip = shared.Rows(page)
+	var params = model.ListCouncilIssuesParams{TenantID: tenantId, MaxRows: limit, Skip: skip}
 	if facility != "" {
 		var id, err = uuid.Parse(facility)
 		if err != nil {
@@ -92,7 +95,10 @@ func (s *counciladminService) ListIssues(ctx context.Context, tenantId uuid.UUID
 	if err != nil {
 		return nil, failed("errors.issue_failed")
 	}
-	var response = &IssuesResponse{Issues: make([]IssueDto, 0, len(rows))}
+	var response = &IssuesResponse{Issues: make([]IssueDto, 0, len(rows)), Pagination: shared.NewPageDto(page, 0)}
+	if len(rows) > 0 {
+		response.Pagination = shared.NewPageDto(page, rows[0].Total)
+	}
 	for _, row := range rows {
 		response.Issues = append(response.Issues, mapIssue(row))
 	}
@@ -153,7 +159,9 @@ func (s *counciladminService) ChangeIssue(ctx context.Context, tenantId, staffId
 	if err != nil {
 		return nil, failed("errors.issue_failed")
 	}
-	var list, listErr = model.New(s.db).ListCouncilIssues(ctx, model.ListCouncilIssuesParams{TenantID: tenantId})
+	var list, listErr = model.New(s.db).ListCouncilIssues(ctx, model.ListCouncilIssuesParams{
+		TenantID: tenantId, IssueID: uuid.NullUUID{UUID: issueId, Valid: true}, MaxRows: 1,
+	})
 	if listErr != nil {
 		return nil, failed("errors.issue_failed")
 	}

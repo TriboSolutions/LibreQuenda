@@ -4,7 +4,7 @@ O que pode facer calquera persoa desde a app Android ou desde a web, unha interf
 
 [← Volver á wiki](README.md) · [Concello](concello.md) · [Superadministración](superadmin.md)
 
-**Índice:** [Primeiros pasos](#primeiros-pasos) · [Atopar onde xogar](#atopar-onde-xogar) · [Reserva en liña](#reserva-en-liña) · [Convidados sen conta](#convidados-sen-conta) · [As miñas reservas](#as-miñas-reservas) · [Entrada na instalación](#entrada-na-instalación) · [Reserva flash](#reserva-flash) · [Participación](#participación) · [Predición meteorolóxica](#predición-meteorolóxica) · [Conta e privacidade](#conta-e-privacidade)
+**Índice:** [Primeiros pasos](#primeiros-pasos) · [Atopar onde xogar](#atopar-onde-xogar) · [Reserva en liña](#reserva-en-liña) · [Convidados sen conta](#convidados-sen-conta) · [As miñas reservas](#as-miñas-reservas) · [Entrada na instalación](#entrada-na-instalación) · [Reserva flash](#reserva-flash) · [Participación](#participación) · [O concello informa e pregunta](#o-concello-informa-e-pregunta) · [Predición meteorolóxica](#predición-meteorolóxica) · [Conta e privacidade](#conta-e-privacidade)
 
 ---
 
@@ -161,6 +161,34 @@ Ao rematar cada reserva, valoración anónima da instalación de 1 a 5 estrelas 
 | Valorar | Avisar dun problema | Avisos |
 |:-:|:-:|:-:|
 | <img src="../screenshots/web/vecino/participation/01-rate.webp" width="280"> | <img src="../screenshots/web/vecino/participation/02-report-issue.webp" width="280"> | <img src="../screenshots/web/vecino/participation/03-notices.webp" width="280"> |
+
+## O concello informa e pregunta
+
+**Comunicados.** Obras, cambios de horario, novidades: o concello publícaos na páxina da instalación (ou en todas as do concello) ata a data que escolla e, se quere, chegan tamén á campá, ás notificacións da app e ao correo de quen reserva alí.
+
+**Estado da instalación.** Na páxina de cada instalación, os problemas que xa avisou alguén e aínda non se arranxaron (para non avisar dúas veces), o arranxado nos últimos 30 días e canto tarda de media o concello. Só a categoría e as datas: nunca o que escribiu a persoa nin quen foi.
+
+| Comunicados na instalación | Estado da instalación | Os avisos na campá |
+|:-:|:-:|:-:|
+| <img src="../screenshots/android/vecino/participation/07-facility-notices.webp" width="230"> | <img src="../screenshots/android/vecino/participation/08-facility-status.webp" width="230"> | <img src="../screenshots/android/vecino/participation/09-notices-polls.webp" width="230"> |
+
+**Enquisas.** O concello pregunta («Que horario preferides os sábados?») e a pregunta chega como aviso: na campá, como notificación e por correo. Ao tocalo ábrese a enquisa; cada conta cun correo verificado vota unha vez e pode cambiar o voto mentres está aberta. Os resultados vense cando pecha, e chega outro aviso para velos. No menú da conta, «Enquisas» garda todas, abertas e pechadas, para votar ou seguir os resultados; as máis antigas cárganse ao chegar ao final da lista.
+
+| Desde o aviso | Voto gardado | Resultados | No menú |
+|:-:|:-:|:-:|:-:|
+| <img src="../screenshots/android/vecino/participation/10-poll-from-notice.webp" width="200"> | <img src="../screenshots/android/vecino/participation/11-poll-voted.webp" width="200"> | <img src="../screenshots/android/vecino/participation/12-poll-results.webp" width="200"> | <img src="../screenshots/android/vecino/participation/13-menu-polls.webp" width="200"> |
+
+**Na web.** Os mesmos comunicados e o mesmo estado na páxina da instalación e na do concello; as enquisas en `/enquisas`, desde a campá, o menú da conta ou o perfil.
+
+| Comunicados e instalación | Estado da instalación | Na páxina do concello |
+|:-:|:-:|:-:|
+| <img src="../screenshots/web/vecino/participation/04-facility-notices.webp" width="280"> | <img src="../screenshots/web/vecino/participation/05-facility-status.webp" width="280"> | <img src="../screenshots/web/vecino/participation/06-council-notices.webp" width="280"> |
+
+| Os avisos | Enquisas |
+|:-:|:-:|
+| <img src="../screenshots/web/vecino/participation/07-notices-polls.webp" width="420"> | <img src="../screenshots/web/vecino/participation/08-polls.webp" width="420"> |
+
+O lado do concello está en [Participación](concello.md#participación).
 
 ## Predición meteorolóxica
 

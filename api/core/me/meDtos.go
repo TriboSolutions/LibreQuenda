@@ -51,6 +51,9 @@ type ResidentOfDto struct {
 	TenantName string    `json:"tenant_name"`
 	TenantSlug string    `json:"tenant_slug"`
 	VerifiedAt time.Time `json:"verified_at"`
+	// only as its administrator or a superadministrator: they book there as residents,
+	// but the profile shows only the council that verified them (one at most)
+	ByRole bool `json:"by_role"`
 }
 
 type PendingInvitationDto struct {
@@ -117,7 +120,7 @@ func mapRoles(roles []model.GetUserTenantRolesRow) []TenantRoleDto {
 func mapResidentOf(rows []model.ListResidentCouncilsByUserRow) []ResidentOfDto {
 	var out = make([]ResidentOfDto, 0, len(rows))
 	for _, r := range rows {
-		out = append(out, ResidentOfDto{TenantName: r.Name, TenantSlug: r.Slug, VerifiedAt: r.VerifiedAt})
+		out = append(out, ResidentOfDto{TenantName: r.Name, TenantSlug: r.Slug, VerifiedAt: r.VerifiedAt, ByRole: r.ByRole})
 	}
 	return out
 }

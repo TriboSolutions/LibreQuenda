@@ -219,6 +219,8 @@ FROM
     LEFT JOIN app_user u ON u.id = b.user_id
 WHERE
     p.user_id = sqlc.arg('user_id')
+    -- the upcoming ones and the page of the history asked for, as ListBookingsByUser
+    AND ((b.status = 'confirmed' AND b.ends_at > NOW()) OR b.id = ANY(sqlc.arg('history_ids')::UUID[]))
 ORDER BY
     b.starts_at DESC;
 

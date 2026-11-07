@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"github.com/google/uuid"
 	"html/template"
 	"librequenda/branding"
 	"librequenda/core/checkin"
@@ -77,19 +78,37 @@ func (j *notificationEmailJob) Execute() []any {
 		return []any{err}
 	}
 	sent += residents
+	var notices int
+	notices, err = SendNoticeEmails(ctx, j.db)
+	if err != nil {
+		log.Printf("failed to send notice emails: %v", err)
+		return []any{err}
+	}
+	sent += notices
+	var polls int
+	polls, err = SendPollEmails(ctx, j.db)
+	if err != nil {
+		log.Printf("failed to send poll emails: %v", err)
+		return []any{err}
+	}
+	sent += polls
 	if sent > 0 {
 		log.Printf("sent %d notification emails", sent)
 	}
 	return []any{sent}
 }
 
-// send goes through the council's relay, or else the environment's.
-func send(council *mailer.Relay, councilErr error, message mailer.Message) error {
+// send goes through the council's relay, or else the environment's; kind and
+// tenant go in the email registry, where an email that cannot be sent is written down too.
+func send(council *mailer.Relay, councilErr error, kind string, tenantId uuid.UUID, message mailer.Message) error {
+	message.Kind, message.TenantID = kind, tenantId
 	if councilErr != nil {
+		mailer.Record(mailer.Relay{}, message, councilErr)
 		return councilErr
 	}
 	var relay, err = mailer.Pick(council)
 	if err != nil {
+		mailer.Record(mailer.Relay{}, message, err)
 		return err
 	}
 	return mailer.Send(relay, message)
@@ -114,7 +133,7 @@ func SendNotificationEmails(ctx context.Context, db *sql.DB) (int, error) {
 			var message, buildErr = notificationEmail(row, brand, now)
 			if buildErr == nil {
 				var council, councilErr = mailer.OpenRelay(row.SmtpConfig, row.TenantID)
-				buildErr = send(council, councilErr, message)
+				buildErr = send(council, councilErr, string(row.Type), row.TenantID, message)
 			}
 			if buildErr != nil {
 				log.Printf("notification email %s: %v", row.ID, buildErr)
@@ -177,6 +196,7 @@ func waysIn(row model.ListPendingEmailsRow) []model.CheckinMethod {
 
 type emailView struct {
 	Greeting, Intro, Reason, WaysTitle, Window, Address, Directions, Manage, ManageURL, Footer string
+	Heading, Body                                                                              string // a council announcement's own title and text
 	DirectionsURL                                                                              string
 	Ways                                                                                       []emailWay
 	Contacts                                                                                   []emailContact
@@ -293,6 +313,8 @@ var emailTemplate = template.Must(template.New("notification").Parse(`<!doctype 
 <p style="margin:0 0 12px">{{.Greeting}}</p>
 <p style="margin:0 0 16px">{{.Intro}}</p>
 {{if .Reason}}<p style="margin:0 0 16px">{{.Reason}}</p>{{end}}
+{{if .Heading}}<p style="margin:0 0 8px;font-size:17px;line-height:24px;font-weight:700">{{.Heading}}</p>{{end}}
+{{if .Body}}<p style="margin:0 0 16px;white-space:pre-line">{{.Body}}</p>{{end}}
 {{if .Ways}}<p style="margin:0 0 8px;font-weight:600">{{.WaysTitle}}</p>
 <ul style="margin:0 0 12px;padding-left:20px">{{range .Ways}}<li style="margin:0 0 8px">{{.Text}}{{if .LinkURL}} <a href="{{.LinkURL}}" style="color:#0a6fb0">{{.Link}}</a>{{end}}{{if .HasQR}}<br><img src="cid:booking-qr" width="200" height="200" alt="QR" style="display:block;margin:8px 0 0">{{end}}</li>{{end}}</ul>
 <p style="margin:0 0 16px;color:#5b6573">{{.Window}}</p>{{end}}
@@ -477,7 +499,7 @@ func SendInvitationEmails(ctx context.Context, db *sql.DB) (int, error) {
 	var brand = branding.ForEmail(ctx, db)
 	for _, row := range rows {
 		var council, councilErr = mailer.OpenRelay(row.SmtpConfig, row.TenantID)
-		if err = send(council, councilErr, invitationEmail(row, brand)); err != nil {
+		if err = send(council, councilErr, "invitation", row.TenantID, invitationEmail(row, brand)); err != nil {
 			log.Printf("invitation email %s: %v", row.ID, err)
 			continue
 		}

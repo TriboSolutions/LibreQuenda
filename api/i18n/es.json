@@ -238,7 +238,20 @@
     "resident_already_verified_self": "El ayuntamiento ya te verificó como vecino.",
     "resident_request_failed": "No se pudo enviar la petición.",
     "resident_requests_load_failed": "No se pudieron cargar las peticiones.",
-    "resident_request_weekly": "Solo puedes enviar una petición de vecino a la semana. Podrás enviar otra a partir del {{0}}."
+    "resident_request_weekly": "Solo puedes enviar una petición de vecino a la semana. Podrás enviar otra a partir del {{0}}.",
+    "participation_failed": "No pudimos guardar los comunicados ni las encuestas. Inténtalo de nuevo.",
+    "notice_title_invalid": "Escribe un título de hasta 120 caracteres.",
+    "notice_body_invalid": "Escribe el texto del comunicado, de hasta 2000 caracteres.",
+    "notice_expiry_invalid": "Elige hasta qué día se muestra: desde hoy y hasta dentro de un año.",
+    "notice_not_found": "No encontramos ese comunicado.",
+    "poll_question_invalid": "Escribe la pregunta, de hasta 200 caracteres.",
+    "poll_options_invalid": "Pon entre 2 y 6 respuestas distintas, de hasta 120 caracteres cada una.",
+    "poll_close_invalid": "Elige el día de cierre: desde hoy y hasta dentro de 90 días.",
+    "poll_not_found": "No encontramos esa encuesta.",
+    "poll_closed": "Esta encuesta ya está cerrada.",
+    "poll_residents_only": "En esta encuesta solo votan las personas verificadas como vecinas del ayuntamiento.",
+    "poll_option_not_found": "Esa respuesta no es de esta encuesta.",
+    "poll_closed_keep": "Una encuesta cerrada no se puede borrar: sus resultados quedan en el historial."
   },
   "email": {
     "greeting": "Hola {{0}}:",
@@ -349,6 +362,27 @@
       "cancelled": "Se canceló lo que tenías reservado en ellas: {{0}} reservas. Si crees que es un error, llama al ayuntamiento.",
       "footer": "Recibes este correo porque eras vecino verificado de un ayuntamiento en {{0}}."
     },
-    "resident_footer": "Recibes este correo porque pediste ser vecino de un ayuntamiento en {{0}}. Los datos de la petición ya se borraron."
+    "resident_footer": "Recibes este correo porque pediste ser vecino de un ayuntamiento en {{0}}. Los datos de la petición ya se borraron.",
+    "council_notice": {
+      "subject": "{{0}}: {{1}}",
+      "intro": "{{0}} ha publicado este comunicado:",
+      "intro_facility": "{{0}} ha publicado este comunicado sobre {{1}}:",
+      "manage": "Verlo en la web",
+      "footer": "Recibes este correo de {{0}} porque has reservado en {{1}}. Puedes desactivar los avisos por correo en tus preferencias."
+    },
+    "poll_opened": {
+      "subject": "{{0}} pregunta: {{1}}",
+      "intro": "{{0}} quiere saber tu opinión:",
+      "intro_facility": "{{0}} quiere saber tu opinión sobre {{1}}:",
+      "closes": "Puedes votar hasta el {{0}}. Los resultados se ven al cerrar.",
+      "manage": "Votar",
+      "footer": "Recibes este correo de {{0}} porque formas parte de {{1}}. Puedes desactivar los avisos por correo en tus preferencias."
+    },
+    "poll_closed": {
+      "subject": "Resultados: {{0}}",
+      "intro": "Se ha cerrado la encuesta de {{0}}:",
+      "body": "Gracias a todas las personas que habéis votado. Ya puedes ver los resultados.",
+      "manage": "Ver los resultados"
+    }
   }
 }

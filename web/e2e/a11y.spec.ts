@@ -66,6 +66,9 @@ const pages: { name: string; path: string; signedIn?: boolean }[] = [
   { name: 'free-turns widget', path: '/lugo/widget', signedIn: false },
   { name: 'free-turns widget, one facility, dark', path: '/lugo/widget/padel-1?theme=dark&lang=es', signedIn: false },
   { name: 'council administration, maintenance', path: '/lugo/admin?vista=incidencias' },
+  { name: 'council administration, participation', path: '/lugo/admin?vista=participacion' },
+  { name: 'council administration, past polls', path: '/lugo/admin?vista=participacion&parte=enquisas&historial=1' },
+  { name: 'polls, from a notice', path: '/enquisas?enquisa=p1' },
   { name: 'facility editor, booking window', path: '/lugo/admin/facilities/f1?vista=reserva' },
   { name: 'entry code to print, in braille', path: '/lugo/admin/facilities/f1/imprimir?que=codigo&braille=1' },
   { name: 'check-in at the door, printed QR', path: '/lugo/padel-1/entrada?c=9a1f6c2e-3b4d-4e5f-8a7b-1c2d3e4f5a6b' },
@@ -189,6 +192,57 @@ for (const theme of ['light', 'dark'] as const) {
       await page.getByRole('dialog').getByRole('radio', { name: '4 estrelas' }).first().focus()
       await page.keyboard.press('ArrowRight')
       await expect(page.getByRole('dialog').getByRole('radio', { name: '5 estrelas' }).first()).toBeChecked()
+    })
+
+    test('the events history: ended and cancelled ones, out of the upcoming list', async ({ page }) => {
+      await open(page, '/lugo/admin?vista=eventos', { theme })
+      await expect(page.getByText('Torneo de pádel de outono')).toBeVisible()
+      await expect(page.getByText('Torneo de verán')).toBeHidden()
+      await page.getByRole('radio', { name: 'Historial' }).click()
+      await expect(page.getByText('Torneo de verán')).toBeVisible()
+      await expect(page.getByRole('listitem').filter({ hasText: 'Clase aberta' })).toContainText('Cancelado')
+      await expect(page.getByRole('button', { name: 'Editar' })).toHaveCount(0)
+      await page.waitForTimeout(300)
+      await expectAccessible(page)
+    })
+
+    test('a new announcement and a new poll, their dialogs', async ({ page }) => {
+      await open(page, '/lugo/admin?vista=participacion', { theme })
+      await expect(page.getByText('Avisouse a 132 persoas')).toBeVisible()
+      await page.getByRole('button', { name: 'Novo comunicado' }).click()
+      await expect(page.getByRole('dialog', { name: 'Novo comunicado' })).toBeVisible()
+      await page.waitForTimeout(300)
+      await expectAccessible(page, { overlay: true })
+      await page.keyboard.press('Escape')
+      // the history holds the expired ones, out of the current list
+      await page.getByRole('radio', { name: 'Historial' }).click()
+      await expect(page.getByText('Redes novas')).toBeVisible()
+      await expect(page.getByText('Cambio de horario en decembro')).toBeHidden()
+      await page.getByRole('tab', { name: 'Enquisas' }).click()
+      await expect(page).toHaveURL(/parte=enquisas/)
+      await expect(page.getByText('Que horario preferides')).toBeVisible()
+      await page.getByRole('button', { name: 'Nova enquisa' }).click()
+      const dialog = page.getByRole('dialog', { name: 'Nova enquisa' })
+      await dialog.getByRole('button', { name: 'Engadir resposta' }).click()
+      await expect(dialog.getByRole('textbox', { name: 'Resposta 3' })).toBeVisible()
+      await page.waitForTimeout(300)
+      await expectAccessible(page, { overlay: true })
+    })
+
+    test('the polls page: vote, and the results of a closed one', async ({ page }) => {
+      let voted: unknown = null
+      await open(page, '/enquisas?enquisa=p1', { theme })
+      await page.route('**/api/me/polls/p1/vote', (route) => {
+        voted = route.request().postDataJSON()
+        return route.fulfill({ status: 204 })
+      })
+      const poll = page.getByRole('listitem').filter({ hasText: 'Que horario preferides' })
+      await poll.getByRole('radio', { name: 'Pola tarde' }).check()
+      await poll.getByRole('button', { name: 'Votar' }).click()
+      await expect(poll.getByText('Gardouse o teu voto.')).toBeVisible()
+      expect(voted).toEqual({ option_id: 'o2' })
+      await expect(page.getByRole('listitem').filter({ hasText: 'Que deporte botades' })).toContainText('50% · 15 votos')
+      await expectAccessible(page)
     })
 
     test('notifications menu', async ({ page }) => {
@@ -368,6 +422,22 @@ for (const theme of ['light', 'dark'] as const) {
       await open(page, '/admin', { theme })
       await page.getByRole('tab', { name: 'Rexistro' }).click()
       await expect(page.getByRole('table', { name: 'Rexistro de actividade, máis recente primeiro' })).toBeVisible()
+      await page.waitForTimeout(300)
+      await expectAccessible(page)
+    })
+
+    test('platform admin, emails tab', async ({ page }) => {
+      await open(page, '/admin', { theme })
+      await page.getByRole('tab', { name: 'Correos' }).click()
+      await expect(page.getByRole('table', { name: 'Correos enviados, máis recente primeiro' })).toBeVisible()
+      await page.waitForTimeout(300)
+      await expectAccessible(page)
+    })
+
+    test('platform admin, API logs tab', async ({ page }) => {
+      await open(page, '/admin', { theme })
+      await page.getByRole('tab', { name: 'Logs da API' }).click()
+      await expect(page.getByRole('list', { name: 'Liñas do log da API, máis recente primeiro' })).toBeVisible()
       await page.waitForTimeout(300)
       await expectAccessible(page)
     })
@@ -632,6 +702,68 @@ test.describe('keyboard', () => {
     await joined
   })
 
+  test('the facilities list loads 20 at a time as it scrolls, and asks the API to filter', async ({ page }) => {
+    const asked: string[] = []
+    await open(page, '/')
+    // 45 facilities: the API pages them; the general mock answers the map
+    await page.route(/\/api\/facilities\?/, (route) => {
+      const url = new URL(route.request().url())
+      asked.push(url.search)
+      const pageNo = Number(url.searchParams.get('page'))
+      const size = Number(url.searchParams.get('pageSize'))
+      const all = Array.from({ length: 45 }, (_, i) => ({ id: `x${i}`, slug: `x${i}`, name: `Instalación ${i + 1}`, sport: 'Pádel', tags: ['padel'], image_url: '', address: '', latitude: null, longitude: null, free_today: 1, council: { slug: 'lugo', name: 'Concello de Lugo', logo_url: '', contact_email: '', contact_phone: '' }, joinable: [] }))
+      return route.fulfill({ json: { facilities: all.slice((pageNo - 1) * size, pageNo * size), pagination: { page: pageNo, page_size: size, total: 45, has_more: pageNo * size < 45 } } })
+    })
+    await page.getByRole('searchbox', { name: 'Buscar instalación, concello, deporte…' }).fill('padel')
+    const list = page.locator('section[aria-labelledby="facilities-title"]')
+    await expect(list.getByRole('link', { name: 'Instalación 20', exact: true })).toBeVisible()
+    await expect(list.getByRole('link', { name: 'Instalación 21', exact: true })).toHaveCount(0)
+    expect(asked.at(-1)).toContain('q=padel')
+    expect(asked.at(-1)).toContain('pageSize=20')
+    await list.getByRole('link', { name: 'Instalación 20', exact: true }).scrollIntoViewIfNeeded()
+    await expect(list.getByRole('link', { name: 'Instalación 40', exact: true })).toBeAttached()
+    await list.getByRole('link', { name: 'Instalación 40', exact: true }).scrollIntoViewIfNeeded()
+    await expect(list.getByRole('link', { name: 'Instalación 45', exact: true })).toBeAttached()
+    await expect(page.getByText('45 instalacións')).toBeVisible()
+  })
+
+  test('filters changed in a row ask the API once, for the last of them', async ({ page }) => {
+    await open(page, '/')
+    const asked: string[] = []
+    page.on('request', (r) => {
+      if (/\/api\/facilities(\/map)?\?/.test(r.url())) asked.push(new URL(r.url()).search)
+    })
+    await page.getByRole('button', { name: 'Tipo de reserva' }).click()
+    await page.getByRole('menuitemcheckbox', { name: 'Eventos' }).click()
+    await page.getByRole('menuitemcheckbox', { name: 'Reservas públicas' }).click()
+    await page.getByRole('menuitemcheckbox', { name: 'Eventos' }).click()
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(1000)
+    // the list and the map, once each, with only the last choice
+    expect(asked).toHaveLength(2)
+    expect(asked.every((q) => q.includes('booking=public') && !q.includes('event'))).toBe(true)
+  })
+
+  test('while new filters load, the last results stay on screen, dimmed, instead of flashing empty', async ({ page }) => {
+    await open(page, '/')
+    const list = page.locator('section[aria-labelledby="facilities-title"]')
+    await expect(list.getByRole('link', { name: /Piscina municipal/ }).first()).toBeVisible()
+    // the next answer takes a while
+    let release: () => void = () => {}
+    const held = new Promise<void>((resolve) => (release = resolve))
+    await page.route(/\/api\/facilities\?/, async (route) => {
+      await held
+      await route.fallback()
+    })
+    await page.getByRole('searchbox', { name: 'Buscar instalación, concello, deporte…' }).fill('padel')
+    await expect(list.getByRole('list')).toHaveAttribute('aria-busy', 'true')
+    await expect(list.getByRole('link', { name: /Piscina municipal/ }).first()).toBeVisible()
+    await expect(list.getByText('Actualizando…')).toBeAttached()
+    release()
+    await expect(list.getByRole('link', { name: /Piscina municipal/ })).toHaveCount(0)
+    await expect(list.getByRole('list')).toHaveAttribute('aria-busy', 'false')
+  })
+
   test('the facilities list filters by the type of booking to join', async ({ page }) => {
     await open(page, '/')
     // the list beside the map («For you» links to facilities too)
@@ -820,6 +952,38 @@ test.describe('keyboard', () => {
     await more
   })
 
+  test('the email log searches, filters and pages', async ({ page }) => {
+    await open(page, '/admin')
+    await page.getByRole('tab', { name: 'Correos' }).click()
+    const log = page.getByRole('table', { name: 'Correos enviados, máis recente primeiro' })
+    await expect(log).toContainText('ana@example.com')
+    await expect(log).toContainText('535 authentication failed')
+    await expect(page.getByText('Últimas 24 horas: 1 enviados, 1 fallaron.')).toBeVisible()
+    const searched = page.waitForRequest((r) => r.url().includes('/admin/email-log?') && new URL(r.url()).searchParams.get('q') === 'pepe')
+    await page.getByLabel('Buscar').fill('pepe')
+    await searched
+    const failed = page.waitForRequest((r) => r.url().includes('/admin/email-log?') && new URL(r.url()).searchParams.get('status') === 'failed')
+    await page.getByLabel('Estado').click()
+    await page.getByRole('option', { name: 'Fallou' }).click()
+    await failed
+    const more = page.waitForRequest((r) => r.url().includes('/admin/email-log?') && r.url().includes('before='))
+    await page.getByRole('button', { name: 'Ver máis' }).click()
+    await more
+  })
+
+  test('the API log filters by level and text', async ({ page }) => {
+    await open(page, '/admin')
+    await page.getByRole('tab', { name: 'Logs da API' }).click()
+    await expect(page.getByText('database connection established successfully')).toBeVisible()
+    const levels = page.waitForRequest((r) => r.url().includes('/admin/api-log?') && new URL(r.url()).searchParams.get('level') === 'WARN,ERROR')
+    await page.getByRole('button', { name: 'WARN' }).click()
+    await page.getByRole('button', { name: 'ERROR' }).click()
+    await levels
+    const older = page.waitForRequest((r) => r.url().includes('/admin/api-log?') && r.url().includes('before='))
+    await page.getByRole('button', { name: 'Ver anteriores' }).click()
+    await older
+  })
+
   test('the widget lists free turns that open LibreQuenda in a new tab', async ({ page }) => {
     await open(page, '/lugo/widget/padel-1?theme=dark', { signedIn: false })
     await expect(page.locator('html')).toHaveClass(/dark/)
@@ -863,8 +1027,7 @@ test.describe('keyboard', () => {
     await expect(page).toHaveURL(/vista=incidencias/)
     const item = page.getByRole('listitem', { name: /Pista de pádel 1/ })
     await expect(item.getByRole('link', { name: 'lucia@example.org' })).toBeVisible()
-    await item.getByLabel('Estado').click()
-    await page.getByRole('option', { name: 'Arranxado' }).click()
+    await item.getByRole('radio', { name: 'Arranxado' }).click()
     await item.getByLabel('Nota para quen avisou').fill('Rede nova colocada.')
     const saved = page.waitForRequest((r) => r.method() === 'PUT' && r.url().endsWith('/admin/issues/i1'))
     await item.getByRole('button', { name: 'Gardar' }).click()

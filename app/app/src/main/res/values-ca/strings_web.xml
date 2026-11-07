@@ -348,6 +348,39 @@
     <string name="notif_issue_reported">Nova incidència a %1$s.</string>
     <string name="notif_rating_requested">Què tal %1$s? Valora-la d’1 a 5 estrelles.</string>
     <string name="notif_rating_requested_public">Què tal %1$s? Valora-la, i també qui ha jugat amb tu.</string>
+    <string name="notif_council_notice">%4$s ha publicat un comunicat: «%8$s».</string>
+    <string name="notif_council_notice_facility">%4$s ha publicat un comunicat sobre %1$s: «%8$s».</string>
+    <string name="notif_poll_opened">%4$s pregunta: «%8$s». Vota!</string>
+    <string name="notif_poll_opened_facility">%4$s pregunta sobre %1$s: «%8$s». Vota!</string>
+    <string name="notif_poll_closed">Ja hi ha els resultats de «%8$s».</string>
+    <string name="notices_title">Comunicats de l’ajuntament</string>
+    <string name="notices_label">Comunicat de l’ajuntament</string>
+    <string name="notices_published">Publicat el %1$s</string>
+    <string name="notices_until">fins al %1$s</string>
+    <string name="state_title">Estat de la instal·lació</string>
+    <string name="state_no_known">No hi ha problemes avisats per arreglar.</string>
+    <string name="state_known">Problemes ja avisats</string>
+    <string name="state_already_known">L’ajuntament ja ho sap: no cal tornar-ho a avisar.</string>
+    <string name="state_reported">Avisat</string>
+    <string name="state_in_progress">L’ajuntament ja s’hi ha posat</string>
+    <string name="state_since">des del %1$s</string>
+    <string name="state_solved">Arreglat fa poc</string>
+    <string name="state_solved_on">Arreglat el %1$s</string>
+    <string name="polls_title">El teu ajuntament pregunta</string>
+    <string name="polls_help">Un vot per persona, que pots canviar mentre l’enquesta és oberta. Els resultats es veuen en tancar-la.</string>
+    <string name="polls_closes">Es tanca el %1$s</string>
+    <string name="polls_closed">Es va tancar el %1$s</string>
+    <string name="polls_residents_only">Només veïnat verificat</string>
+    <string name="polls_vote">Vota</string>
+    <string name="polls_change">Canvia el vot</string>
+    <string name="polls_saved">S’ha desat el teu vot.</string>
+    <string name="polls_results_later">Veuràs els resultats quan es tanqui.</string>
+    <string name="polls_verify_email">Per votar, primer verifica el teu correu.</string>
+    <string name="polls_yours">el teu vot</string>
+    <string name="polls_empty">Ara mateix no hi ha enquestes dels teus ajuntaments. Quan l’ajuntament pregunti alguna cosa, et arribarà un avís.</string>
+    <string name="polls_menu">Enquestes</string>
+    <string name="polls_menu_sub">Les preguntes dels teus ajuntaments: vota a les obertes i mira els resultats de les tancades.</string>
+    <string name="polls_results">Resultats de l’enquesta</string>
     <string name="council">Ajuntament</string>
     <string name="slots_full">Complet</string>
     <string name="status_cancelled">Cancel·lada</string>
@@ -408,5 +441,25 @@
         <item quantity="one">%1$d estrella</item>
         <item quantity="many">%1$d estrelles</item>
         <item quantity="other">%1$d estrelles</item>
+    </plurals>
+    <plurals name="state_reports">
+        <item quantity="one">%1$d avís</item>
+        <item quantity="many">%1$d avisos</item>
+        <item quantity="other">%1$d avisos</item>
+    </plurals>
+    <plurals name="state_average">
+        <item quantity="one">%1$s arregla els problemes que avisa el veïnat en %2$s dies de mitjana (%3$d arreglat els últims 6 mesos).</item>
+        <item quantity="many">%1$s arregla els problemes que avisa el veïnat en %2$s dies de mitjana (%3$d arreglats els últims 6 mesos).</item>
+        <item quantity="other">%1$s arregla els problemes que avisa el veïnat en %2$s dies de mitjana (%3$d arreglats els últims 6 mesos).</item>
+    </plurals>
+    <plurals name="polls_votes">
+        <item quantity="one">%1$d vot</item>
+        <item quantity="many">%1$d vots</item>
+        <item quantity="other">%1$d vots</item>
+    </plurals>
+    <plurals name="polls_total">
+        <item quantity="one">%1$d vot en total</item>
+        <item quantity="many">%1$d vots en total</item>
+        <item quantity="other">%1$d vots en total</item>
     </plurals>
 </resources>

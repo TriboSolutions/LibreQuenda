@@ -338,6 +338,9 @@ const (
 	NotificationTypeResidentRejected          NotificationType = "resident_rejected"
 	NotificationTypeResidentRevoked           NotificationType = "resident_revoked"
 	NotificationTypeParticipantRemoved        NotificationType = "participant_removed"
+	NotificationTypeCouncilNotice             NotificationType = "council_notice"
+	NotificationTypePollOpened                NotificationType = "poll_opened"
+	NotificationTypePollClosed                NotificationType = "poll_closed"
 )
 
 func (e *NotificationType) Scan(src interface{}) error {
@@ -530,6 +533,32 @@ type Closure struct {
 	CreatedAt  time.Time      `json:"created_at"`
 }
 
+type CouncilNotice struct {
+	ID         uuid.UUID     `json:"id"`
+	TenantID   uuid.UUID     `json:"tenant_id"`
+	FacilityID uuid.NullUUID `json:"facility_id"`
+	Title      string        `json:"title"`
+	Body       string        `json:"body"`
+	ExpiresAt  time.Time     `json:"expires_at"`
+	Notify     bool          `json:"notify"`
+	Recipients int32         `json:"recipients"`
+	CreatedBy  uuid.NullUUID `json:"created_by"`
+	CreatedAt  time.Time     `json:"created_at"`
+}
+
+type EmailLog struct {
+	ID        uuid.UUID     `json:"id"`
+	At        time.Time     `json:"at"`
+	Status    string        `json:"status"`
+	Kind      string        `json:"kind"`
+	TenantID  uuid.NullUUID `json:"tenant_id"`
+	Recipient string        `json:"recipient"`
+	Subject   string        `json:"subject"`
+	Sender    string        `json:"sender"`
+	Relay     string        `json:"relay"`
+	Error     string        `json:"error"`
+}
+
 type Facility struct {
 	ID                       uuid.UUID       `json:"id"`
 	TenantID                 uuid.UUID       `json:"tenant_id"`
@@ -630,6 +659,8 @@ type Notification struct {
 	UserID    uuid.UUID        `json:"user_id"`
 	BookingID uuid.NullUUID    `json:"booking_id"`
 	IssueID   uuid.NullUUID    `json:"issue_id"`
+	NoticeID  uuid.NullUUID    `json:"notice_id"`
+	PollID    uuid.NullUUID    `json:"poll_id"`
 	Type      NotificationType `json:"type"`
 	Payload   json.RawMessage  `json:"payload"`
 	CreatedAt time.Time        `json:"created_at"`
@@ -648,6 +679,36 @@ type OpeningHour struct {
 type PlatformAdmin struct {
 	UserID    uuid.UUID `json:"user_id"`
 	CreatedAt time.Time `json:"created_at"`
+}
+
+type Poll struct {
+	ID            uuid.UUID     `json:"id"`
+	TenantID      uuid.UUID     `json:"tenant_id"`
+	FacilityID    uuid.NullUUID `json:"facility_id"`
+	Question      string        `json:"question"`
+	ResidentsOnly bool          `json:"residents_only"`
+	ClosesAt      time.Time     `json:"closes_at"`
+	ClosedAt      sql.NullTime  `json:"closed_at"`
+	Recipients    int32         `json:"recipients"`
+	ResultsSentAt sql.NullTime  `json:"results_sent_at"`
+	CreatedBy     uuid.NullUUID `json:"created_by"`
+	CreatedAt     time.Time     `json:"created_at"`
+}
+
+type PollOption struct {
+	ID       uuid.UUID `json:"id"`
+	PollID   uuid.UUID `json:"poll_id"`
+	Position int16     `json:"position"`
+	Label    string    `json:"label"`
+}
+
+type PollVote struct {
+	ID        uuid.UUID     `json:"id"`
+	PollID    uuid.UUID     `json:"poll_id"`
+	OptionID  uuid.UUID     `json:"option_id"`
+	UserID    uuid.NullUUID `json:"user_id"`
+	CreatedAt time.Time     `json:"created_at"`
+	UpdatedAt time.Time     `json:"updated_at"`
 }
 
 type ResidentRequest struct {

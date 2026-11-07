@@ -20,7 +20,7 @@ import {
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useAsync } from '@/hooks/useAsync'
+import { FILTER_DEBOUNCE_MS, useAsync } from '@/hooks/useAsync'
 import { type AdminFacilitySummary, api, type Indicators, type IndicatorsCompare, type IndicatorsExport, type IndicatorsQuery } from '@/lib/api'
 import { addDays, formatShortDate, formatTime } from '@/lib/time'
 import { cn } from '@/lib/utils'
@@ -234,6 +234,7 @@ export function IndicatorsPanel({ slug, facilities }: { slug: string; facilities
   const indicators = useAsync(
     rangeValid ? () => api.council.indicators(token, slug, query) : null,
     `indicators:${slug}:${period}:${from}:${to}:${compare}:${facility}`,
+    { debounceMs: FILTER_DEBOUNCE_MS },
   )
   useAutoRefresh(indicators.reload, Number(refresh))
   const { setTarget: setDashboard, full: dashboardFull, toggle: toggleDashboard, supported: canFullscreen } = useFullscreen<HTMLElement>()

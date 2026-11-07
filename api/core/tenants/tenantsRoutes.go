@@ -48,6 +48,13 @@ func (r *tenantsRoutes) RegisterRoutes() {
 		AdditionalMethods: []router.HTTPMethod{router.HEAD, router.OPTIONS},
 		Handler:           middlewares.VersionMiddleware(h.GetFacilities),
 	})
+	// the home page's map: every facility the filters keep, only where it is
+	r.router.NewRoute(router.Route{
+		Path:              "/facilities/map",
+		Method:            http.MethodGet,
+		AdditionalMethods: []router.HTTPMethod{router.HEAD, router.OPTIONS},
+		Handler:           middlewares.VersionMiddleware(h.GetFacilityPins),
+	})
 	// the app's home: every council's upcoming events, soonest first
 	r.router.NewRoute(router.Route{
 		Path:              "/events",

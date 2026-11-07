@@ -8,7 +8,7 @@ import { formatDateWithYear } from '@/lib/time'
 /** On /perfil: the councils that verified the person as their resident, so they book at their residents-only facilities. */
 export function ResidentOf({ me }: { me: Me }) {
   const { t } = useTranslation('profile')
-  const councils = me.resident_of ?? []
+  const councils = (me.resident_of ?? []).filter((c) => !c.by_role) // verified by the council, not by a role
   return (
     <SettingsRow id="sec-resident" title={t('resident.title')} description={t('resident.help')}>
       <div className="grid gap-3 rounded-lg border bg-card p-5">

@@ -1,5 +1,5 @@
 import { noticeKey } from '@/lib/notices'
-import { AlarmClock, BadgeCheck, Bell, CalendarCheck, CalendarClock, CalendarX, House, ShieldCheck, Star, UserPlus, Wrench } from 'lucide-react'
+import { AlarmClock, BadgeCheck, Bell, CalendarCheck, CalendarClock, CalendarX, House, Megaphone, ShieldCheck, Star, UserPlus, Vote, Wrench } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
@@ -36,6 +36,9 @@ const icons: Record<NotificationType, typeof Bell> = {
   resident_rejected: House,
   resident_revoked: House,
   participant_removed: CalendarX,
+  council_notice: Megaphone,
+  poll_opened: Vote,
+  poll_closed: Vote,
 }
 
 /** Where a notice leads: the council's administration, the facility of a reported problem, the rating dialog, or My bookings. */
@@ -45,6 +48,8 @@ function target(n: AppNotification) {
   if (n.type === 'resident_requested') return `/${n.tenant_slug}/admin?vista=vecinos`
   if (n.type === 'resident_verified' || n.type === 'resident_rejected' || n.type === 'resident_revoked') return `/${n.tenant_slug}`
   if (n.type === 'council_admin_granted') return `/${n.tenant_slug}/admin`
+  if (n.type === 'poll_opened' || n.type === 'poll_closed') return `/enquisas?enquisa=${encodeURIComponent(n.poll_id)}`
+  if (n.type === 'council_notice') return n.facility_slug ? `/${n.tenant_slug}/${n.facility_slug}` : `/${n.tenant_slug}`
   if ((n.type === 'issue_solved' || n.type === 'issue_rejected') && n.facility_slug) return `/${n.tenant_slug}/${n.facility_slug}`
   return '/reservas'
 }

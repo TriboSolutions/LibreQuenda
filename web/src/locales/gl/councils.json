@@ -51,5 +51,6 @@
     "book": "Reservar {{facility}} ás {{time}}, abre unha nova lapela",
     "newTab": "abre unha nova lapela",
     "bookIn": "Reservar en {{app}}"
-  }
+  },
+  "updating": "Actualizando…"
 }

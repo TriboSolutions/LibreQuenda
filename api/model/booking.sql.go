@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
 
 const cancelBooking = `-- name: CancelBooking :one
@@ -413,9 +414,16 @@ FROM
     LEFT JOIN facility_checkin c ON c.facility_id = f.id
 WHERE
     b.user_id = $1
+    -- the upcoming ones (all of them) and the page of the history asked for (ListHistoryPageByUser)
+    AND ((b.status = 'confirmed' AND b.ends_at > NOW()) OR b.id = ANY($2::UUID[]))
 ORDER BY
     b.starts_at DESC
 `
+
+type ListBookingsByUserParams struct {
+	UserID     uuid.NullUUID `json:"user_id"`
+	HistoryIds []uuid.UUID   `json:"history_ids"`
+}
 
 type ListBookingsByUserRow struct {
 	ID                uuid.UUID       `json:"id"`
@@ -449,8 +457,8 @@ type ListBookingsByUserRow struct {
 
 // checkin_at_start: the facility took check-ins when the turn began, so a
 // missing check-in means the person did not show up.
-func (q *Queries) ListBookingsByUser(ctx context.Context, userID uuid.NullUUID) ([]ListBookingsByUserRow, error) {
-	rows, err := q.db.QueryContext(ctx, listBookingsByUser, userID)
+func (q *Queries) ListBookingsByUser(ctx context.Context, arg ListBookingsByUserParams) ([]ListBookingsByUserRow, error) {
+	rows, err := q.db.QueryContext(ctx, listBookingsByUser, arg.UserID, pq.Array(arg.HistoryIds))
 	if err != nil {
 		return nil, err
 	}
@@ -647,6 +655,64 @@ func (q *Queries) ListConfirmedBookingsInRange(ctx context.Context, arg ListConf
 	for rows.Next() {
 		var i ListConfirmedBookingsInRangeRow
 		if err := rows.Scan(&i.StartsAt, &i.EndsAt); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listHistoryPageByUser = `-- name: ListHistoryPageByUser :many
+WITH mine AS (
+    SELECT b.id, b.starts_at
+    FROM booking b
+    WHERE b.user_id = $3 AND (b.status <> 'confirmed' OR b.ends_at <= NOW())
+    UNION
+    SELECT b.id, b.starts_at
+    FROM booking_participant p JOIN booking b ON b.id = p.booking_id
+    WHERE p.user_id = $3 AND (b.status <> 'confirmed' OR b.ends_at <= NOW())
+)
+SELECT
+    id,
+    COUNT(*) OVER ()::BIGINT AS total
+FROM
+    mine
+ORDER BY
+    starts_at DESC,
+    id
+LIMIT $2
+OFFSET $1
+`
+
+type ListHistoryPageByUserParams struct {
+	Skip    int32         `json:"skip"`
+	MaxRows int32         `json:"max_rows"`
+	UserID  uuid.NullUUID `json:"user_id"`
+}
+
+type ListHistoryPageByUserRow struct {
+	ID    uuid.UUID `json:"id"`
+	Total int64     `json:"total"`
+}
+
+// A page of the person's history, most recent first: the bookings they made or
+// joined that ended or were cancelled, with how many there are in all.
+func (q *Queries) ListHistoryPageByUser(ctx context.Context, arg ListHistoryPageByUserParams) ([]ListHistoryPageByUserRow, error) {
+	rows, err := q.db.QueryContext(ctx, listHistoryPageByUser, arg.Skip, arg.MaxRows, arg.UserID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListHistoryPageByUserRow
+	for rows.Next() {
+		var i ListHistoryPageByUserRow
+		if err := rows.Scan(&i.ID, &i.Total); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

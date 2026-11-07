@@ -33,6 +33,9 @@ data class HomeState(
     val facilities: List<FacilityCard> = emptyList(),
     val events: List<gal.tribo.librequenda.data.UpcomingEvent> = emptyList(), // not started, soonest first
     val recommendations: List<Recommendation> = emptyList(),
+    val polls: List<gal.tribo.librequenda.data.Poll> = emptyList(), // the councils' polls, signed in: the pages loaded so far
+    val pollsPage: Int = 1,
+    val pollsHasMore: Boolean = false,
     val location: GeoPoint? = null, // shared by the person, for distances; never stored
     val loading: Boolean = true,
     val today: List<gal.tribo.librequenda.data.DayFacility> = emptyList(), // every facility's day: the public bookings to join
@@ -121,6 +124,43 @@ class AppViewModel(application: Application) : AndroidViewModel(application), Pr
                 // keeps what it had
             }
         }
+        refreshPolls()
+    }
+
+    /** The councils' polls: shown whatever the «For you» preference, as on the web. */
+    fun refreshPolls() {
+        if (!sessionState.value.signedIn) return
+        viewModelScope.launch {
+            try {
+                val token = auth.accessToken() ?: return@launch
+                // again from the first page (a vote, or the page opened)
+                val first = gal.tribo.librequenda.data.fetchPolls(token)
+                homeState.update { it.copy(polls = first.polls, pollsPage = 1, pollsHasMore = first.hasMore) }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                // keeps what it had
+            }
+        }
+    }
+
+    /** The next page of the polls, after those shown. */
+    fun morePolls() {
+        if (!sessionState.value.signedIn || !homeState.value.pollsHasMore) return
+        viewModelScope.launch {
+            try {
+                val token = auth.accessToken() ?: return@launch
+                val next = homeState.value.pollsPage + 1
+                val more = gal.tribo.librequenda.data.fetchPolls(token, next)
+                homeState.update { state ->
+                    state.copy(polls = (state.polls + more.polls).distinctBy { it.id }, pollsPage = next, pollsHasMore = more.hasMore)
+                }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                // keeps what it had
+            }
+        }
     }
 
     /** The intent that opens Zitadel's sign-in; null (with the error shown) when the server can't be reached. */
@@ -176,7 +216,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application), Pr
         val endSession = auth.signOut()
         forgetNotifications()
         sessionState.update { it.copy(signedIn = false, me = null, notifications = null) }
-        homeState.update { it.copy(recommendations = emptyList()) }
+        homeState.update { it.copy(recommendations = emptyList(), polls = emptyList()) }
         return endSession
     }
 
@@ -241,7 +281,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application), Pr
         auth.clear()
         forgetNotifications()
         sessionState.update { it.copy(signedIn = false, me = null, notifications = null, accountDeleted = true) }
-        homeState.update { it.copy(recommendations = emptyList()) }
+        homeState.update { it.copy(recommendations = emptyList(), polls = emptyList()) }
     }
 
     /** No reminders or notices of this account left on the phone. */

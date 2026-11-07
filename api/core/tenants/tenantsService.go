@@ -55,7 +55,7 @@ func (s *tenantsService) GetTenants(ctx context.Context) (*TenantsResponse, *sha
 }
 
 // GetTenant is one active council, for the pages about it.
-func (s *tenantsService) GetTenant(ctx context.Context, slug string) (*TenantDto, *shared.ErrorResponse) {
+func (s *tenantsService) GetTenant(ctx context.Context, slug string) (*CouncilPageDto, *shared.ErrorResponse) {
 	var row, err = model.New(s.db).GetTenantBySlug(ctx, slug)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, &shared.ErrorResponse{Code: http.StatusNotFound, Message: "errors.tenant_not_found"}
@@ -63,37 +63,69 @@ func (s *tenantsService) GetTenant(ctx context.Context, slug string) (*TenantDto
 	if err != nil {
 		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.tenants_load_failed"}
 	}
-	return &TenantDto{
-		Slug:         row.Slug,
-		Name:         row.Name,
-		LogoUrl:      storage.URL(row.LogoRef.String),
-		ContactEmail: row.ContactEmail.String,
-		ContactPhone: row.ContactPhone.String,
+	var notices, noticesErr = s.councilNotices(ctx, row.ID)
+	if noticesErr != nil {
+		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.tenants_load_failed"}
+	}
+	return &CouncilPageDto{
+		TenantDto: TenantDto{
+			Slug:         row.Slug,
+			Name:         row.Name,
+			LogoUrl:      storage.URL(row.LogoRef.String),
+			ContactEmail: row.ContactEmail.String,
+			ContactPhone: row.ContactPhone.String,
+		},
+		Notices: notices,
 	}, nil
 }
 
 // GetFacilities is every active facility of every active council, for the home
 // page's list and map. It reuses the day view, a few queries per
 // council; a council that fails to load is left out rather than failing the page.
-func (s *tenantsService) GetFacilities(ctx context.Context, near *Near, filters Filters, page helpers.PaginationParams) (*FacilitiesResponse, *shared.ErrorResponse) {
+// facilityCard: a card with what filtering needs that the card does not show.
+type facilityCard struct {
+	FacilityCardDto
+	tenantSlug, tenantName string
+}
+
+// cardsTTL: how long every council's cards (and their free turns today) are kept
+// between requests. The list is read a page at a time, and the map beside it, so
+// they are worked out once for all of them, not for every page.
+const cardsTTL = 30 * time.Second
+
+var cardsCache struct {
+	sync.Mutex
+	at    time.Time
+	cards []facilityCard
+	names map[string]string
+}
+
+// allCards: every active facility of every active council, unfiltered, without
+// distances, at most cardsTTL old.
+func (s *tenantsService) allCards(ctx context.Context) ([]facilityCard, map[string]string, *shared.ErrorResponse) {
+	cardsCache.Lock()
+	defer cardsCache.Unlock()
+	if cardsCache.cards != nil && time.Since(cardsCache.at) < cardsTTL {
+		return cardsCache.cards, cardsCache.names, nil
+	}
 	var tenants, err = model.New(s.db).ListTenants(ctx)
 	if err != nil {
-		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.tenants_load_failed"}
+		return nil, nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.tenants_load_failed"}
 	}
 	var names = s.tagNames(ctx)
 	var joinable = map[string][]string{}
 	var kinds, kindsErr = model.New(s.db).ListJoinableKindsByFacility(ctx)
 	if kindsErr != nil {
-		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.tenants_load_failed"}
+		return nil, nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.tenants_load_failed"}
 	}
 	for _, row := range kinds {
 		joinable[row.FacilityID.String()] = append(joinable[row.FacilityID.String()], string(row.Kind))
 	}
 	var stars, starsErr = s.ratings(ctx)
 	if starsErr != nil {
-		return nil, starsErr
+		return nil, nil, starsErr
 	}
-	var response = &FacilitiesResponse{Facilities: []FacilityCardDto{}}
+	var cards = []facilityCard{}
 	for _, tenant := range tenants {
 		var day, _, _, dayErr = s.loadDay(ctx, tenant.Slug, "")
 		if dayErr != nil {
@@ -106,39 +138,91 @@ func (s *tenantsService) GetFacilities(ctx context.Context, near *Near, filters 
 					free++
 				}
 			}
-			var km = distanceKm(near, f.Latitude, f.Longitude)
 			var open = joinable[f.Id]
 			if open == nil {
 				open = []string{}
 			}
 			slices.Sort(open) // "event" before "public", whatever the database's order
-			if !near.within(km) || !filters.Eligible.allows(day.Tenant.Slug, f.ResidentsOnly) || !filters.rated(stars[f.Id]) || !filters.matches(f.Name, day.Tenant.Slug, day.Tenant.Name, f.Sport, f.Tags, names) || !filters.joinable(open) {
-				continue
-			}
-			response.Facilities = append(response.Facilities, FacilityCardDto{
-				Id:            f.Id,
-				Slug:          f.Slug,
-				Name:          f.Name,
-				Sport:         f.Sport,
-				Tags:          f.Tags,
-				ImageUrl:      f.ImageUrl,
-				Address:       f.Address,
-				Latitude:      f.Latitude,
-				Longitude:     f.Longitude,
-				FreeToday:     free,
-				Rating:        stars[f.Id],
-				Council:       day.Tenant,
-				ResidentsOnly: f.ResidentsOnly,
-				Joinable:      open,
-				DistanceKm:    km,
+			cards = append(cards, facilityCard{
+				FacilityCardDto: FacilityCardDto{
+					Id: f.Id, Slug: f.Slug, Name: f.Name, Sport: f.Sport, Tags: f.Tags, ImageUrl: f.ImageUrl, Address: f.Address,
+					Latitude: f.Latitude, Longitude: f.Longitude, FreeToday: free, Rating: stars[f.Id], Council: day.Tenant,
+					ResidentsOnly: f.ResidentsOnly, Joinable: open,
+				},
+				tenantSlug: day.Tenant.Slug, tenantName: day.Tenant.Name,
 			})
 		}
 	}
-	if near != nil {
-		byDistance(response.Facilities, func(f FacilityCardDto) *float64 { return f.DistanceKm })
+	cardsCache.at, cardsCache.cards, cardsCache.names = time.Now(), cards, names
+	return cards, names, nil
+}
+
+// matchingCards: the cards the filters keep, with their distance, nearest first when near.
+func (s *tenantsService) matchingCards(ctx context.Context, near *Near, filters Filters) ([]FacilityCardDto, *shared.ErrorResponse) {
+	var cards, names, err = s.allCards(ctx)
+	if err != nil {
+		return nil, err
 	}
-	response.Pagination = shared.NewPageDto(page, int64(len(response.Facilities)))
-	response.Facilities = shared.Slice(response.Facilities, page)
+	var out = []FacilityCardDto{}
+	for _, card := range cards {
+		var km = distanceKm(near, card.Latitude, card.Longitude)
+		if !near.within(km) || !filters.Eligible.allows(card.tenantSlug, card.ResidentsOnly) || !filters.rated(card.Rating) ||
+			!filters.matches(card.Name, card.tenantSlug, card.tenantName, card.Sport, card.Tags, names) || !filters.joinable(card.Joinable) ||
+			!filters.inside(card.Latitude, card.Longitude) {
+			continue
+		}
+		var dto = card.FacilityCardDto
+		dto.DistanceKm = km
+		out = append(out, dto)
+	}
+	if near != nil {
+		byDistance(out, func(f FacilityCardDto) *float64 { return f.DistanceKm })
+	}
+	return out, nil
+}
+
+// GetFacilities: the facilities the filters keep, a page at a time, nearest first when near.
+func (s *tenantsService) GetFacilities(ctx context.Context, near *Near, filters Filters, page helpers.PaginationParams) (*FacilitiesResponse, *shared.ErrorResponse) {
+	var matching, err = s.matchingCards(ctx, near, filters)
+	if err != nil {
+		return nil, err
+	}
+	return &FacilitiesResponse{Pagination: shared.NewPageDto(page, int64(len(matching))), Facilities: shared.Slice(matching, page)}, nil
+}
+
+// FacilityPinDto: a facility on the home page's map: where it is and what its popup says.
+type FacilityPinDto struct {
+	Id        string    `json:"id"`
+	Slug      string    `json:"slug"`
+	Name      string    `json:"name"`
+	Latitude  float64   `json:"latitude"`
+	Longitude float64   `json:"longitude"`
+	FreeToday int       `json:"free_today"`
+	Tags      []string  `json:"tags"` // for the tag filters the page offers
+	Council   TenantDto `json:"council"`
+}
+
+type FacilityPinsResponse struct {
+	Pins []FacilityPinDto `json:"pins"`
+}
+
+// GetFacilityPins: every facility the filters keep that has a pin, all of them
+// (the map shows them all) but only what the map needs.
+func (s *tenantsService) GetFacilityPins(ctx context.Context, near *Near, filters Filters) (*FacilityPinsResponse, *shared.ErrorResponse) {
+	var matching, err = s.matchingCards(ctx, near, filters)
+	if err != nil {
+		return nil, err
+	}
+	var response = &FacilityPinsResponse{Pins: make([]FacilityPinDto, 0, len(matching))}
+	for _, f := range matching {
+		if f.Latitude == nil || f.Longitude == nil {
+			continue
+		}
+		response.Pins = append(response.Pins, FacilityPinDto{
+			Id: f.Id, Slug: f.Slug, Name: f.Name, Latitude: *f.Latitude, Longitude: *f.Longitude, FreeToday: f.FreeToday, Tags: f.Tags,
+			Council: TenantDto{Slug: f.Council.Slug, Name: f.Council.Name},
+		})
+	}
 	return response, nil
 }
 
@@ -373,7 +457,7 @@ func (s *tenantsService) loadDay(ctx context.Context, slug string, dateParam str
 
 // GetFacilityPage is one active facility of the council with its slots for the day and its weekly schedule.
 func (s *tenantsService) GetFacilityPage(ctx context.Context, slug string, facilitySlug string, dateParam string) (*FacilityPageResponse, *shared.ErrorResponse) {
-	var day, _, _, err = s.loadDay(ctx, slug, dateParam)
+	var day, tenantId, _, err = s.loadDay(ctx, slug, dateParam)
 	if err != nil {
 		return nil, err
 	}
@@ -394,7 +478,17 @@ func (s *tenantsService) GetFacilityPage(ctx context.Context, slug string, facil
 		if starsErr != nil {
 			return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.day_load_failed"}
 		}
+		var notices, noticesErr = s.facilityNotices(ctx, tenantId, id)
+		if noticesErr != nil {
+			return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.day_load_failed"}
+		}
+		var issues, issuesErr = s.issuesSummary(ctx, tenantId, id)
+		if issuesErr != nil {
+			return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.day_load_failed"}
+		}
 		return &FacilityPageResponse{
+			Notices:  notices,
+			Issues:   issues,
 			Rating:   rating.Of(stars.Average, stars.Count),
 			Tenant:   day.Tenant,
 			Timezone: day.Timezone,

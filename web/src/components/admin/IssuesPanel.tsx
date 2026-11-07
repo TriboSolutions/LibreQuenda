@@ -9,7 +9,9 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Textarea } from '@/components/ui/textarea'
-import { useAsync } from '@/hooks/useAsync'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import { FILTER_DEBOUNCE_MS, useAsync } from '@/hooks/useAsync'
+import { Pager } from '@/components/Pager'
 import { api, type AdminFacilitySummary, type CouncilIssue, type IssueStatus } from '@/lib/api'
 import { formatDateTime } from '@/lib/time'
 
@@ -34,9 +36,11 @@ export function IssuesPanel({ slug, facilities, onChanged }: Props) {
   const token = auth.user?.access_token ?? ''
   const [facility, setFacility] = useState(ALL)
   const [status, setStatus] = useState<IssueStatus | typeof ALL>('new')
+  const [page, setPage] = useState(1)
   const issues = useAsync(
-    () => api.council.issues(token, slug, { facility: facility === ALL ? '' : facility, status: status === ALL ? '' : status }),
-    `issues:${slug}:${facility}:${status}`,
+    () => api.council.issues(token, slug, { facility: facility === ALL ? '' : facility, status: status === ALL ? '' : status, page }),
+    `issues:${slug}:${facility}:${status}:${page}`,
+    { debounceMs: FILTER_DEBOUNCE_MS },
   )
   const list = issues.data?.issues ?? []
 
@@ -51,7 +55,7 @@ export function IssuesPanel({ slug, facilities, onChanged }: Props) {
       <div className="flex flex-wrap gap-3">
         <div className="grid min-w-0 max-w-full gap-1.5">
           <Label htmlFor="issues-facility">{t('issues.facility')}</Label>
-          <Select value={facility} onValueChange={setFacility}>
+          <Select value={facility} onValueChange={(value) => { setFacility(value); setPage(1) }}>
             <SelectTrigger id="issues-facility" className="w-64 max-w-full">
               <SelectValue />
             </SelectTrigger>
@@ -67,7 +71,7 @@ export function IssuesPanel({ slug, facilities, onChanged }: Props) {
         </div>
         <div className="grid min-w-0 max-w-full gap-1.5">
           <Label htmlFor="issues-status">{t('issues.status')}</Label>
-          <Select value={status} onValueChange={(value) => setStatus(value as IssueStatus | typeof ALL)}>
+          <Select value={status} onValueChange={(value) => { setStatus(value as IssueStatus | typeof ALL); setPage(1) }}>
             <SelectTrigger id="issues-status" className="w-48 max-w-full">
               <SelectValue />
             </SelectTrigger>
@@ -105,6 +109,7 @@ export function IssuesPanel({ slug, facilities, onChanged }: Props) {
           ))}
         </ul>
       )}
+      <Pager pagination={issues.data?.pagination} onChange={setPage} label={t('issues.pages')} />
     </section>
   )
 }
@@ -135,26 +140,27 @@ function IssueItem({ slug, token, issue, onSaved }: { slug: string; token: strin
 
   const titleId = `issue-${issue.id}`
   return (
-    <li aria-labelledby={titleId} className="grid gap-3 rounded-md border p-4">
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div className="flex min-w-0 w-full items-start gap-3 sm:w-auto sm:flex-1">
-          {issue.facility_image_url && (
-            <img src={issue.facility_image_url} alt="" className="h-16 w-20 shrink-0 rounded-md object-cover sm:h-20 sm:w-32" loading="lazy" />
-          )}
-          <div className="grid min-w-0 gap-1">
-            <h3 id={titleId} className="font-semibold">
-              {issue.facility_name} · {t(`facility:issue.categories.${issue.category}`)}
-            </h3>
-            <p className="num text-sm text-muted-foreground">
-              {t('admin:issues.reported', {
-                date: formatDateTime(issue.created_at, TIME_ZONE),
-                name: issue.reporter_name || t('admin:issues.someone'),
-              })}
-              {issue.booking_starts_at && ` · ${t('admin:issues.booking', { date: formatDateTime(issue.booking_starts_at, TIME_ZONE) })}`}
-            </p>
-          </div>
+    <li aria-labelledby={`${titleId} ${titleId}-where`} className="grid gap-4 rounded-md border p-4">
+      {/* what and where, and its state */}
+      <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3">
+        {issue.facility_image_url ? (
+          <img src={issue.facility_image_url} alt="" className="size-12 rounded-md object-cover" loading="lazy" />
+        ) : (
+          <span aria-hidden className="size-12 rounded-md bg-muted" />
+        )}
+        <div className="grid min-w-0 gap-0.5">
+          <h3 id={titleId} className="font-semibold break-words">
+            {t(`facility:issue.categories.${issue.category}`)}
+          </h3>
+          <p id={`${titleId}-where`} className="num text-sm text-muted-foreground">
+            {issue.facility_name} ·{' '}
+            {t('admin:issues.reported', {
+              date: formatDateTime(issue.created_at, TIME_ZONE),
+              name: issue.reporter_name || t('admin:issues.someone'),
+            })}
+          </p>
         </div>
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap justify-end gap-1.5">
           {issue.urgent && (
             <span className="inline-flex items-center gap-1 rounded-full bg-pill-negative-bg px-2 py-0.5 text-xs font-medium text-pill-negative-ink">
               <TriangleAlert className="size-3" aria-hidden />
@@ -164,47 +170,56 @@ function IssueItem({ slug, token, issue, onSaved }: { slug: string; token: strin
           <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusPill[issue.status]}`}>{t(`admin:issues.statuses.${issue.status}`)}</span>
         </div>
       </div>
-      <p className="whitespace-pre-line">{issue.description}</p>
-      {issue.photo_url && (
-        <a href={issue.photo_url} target="_blank" rel="noopener noreferrer" className="w-fit">
-          <img src={issue.photo_url} alt={t('admin:issues.photo')} className="max-h-48 rounded-md object-contain" />
-        </a>
-      )}
-      {issue.reporter_email && (
-        <p className="flex items-center gap-1.5 text-sm">
-          <Mail className="size-4 text-muted-foreground" aria-hidden />
-          <a href={`mailto:${issue.reporter_email}`} className="underline underline-offset-4">
-            {issue.reporter_email}
-          </a>
-        </p>
-      )}
 
-      {issue.reporter_phone && (
-        <p className="flex items-center gap-1.5 text-sm">
-          <Phone className="size-4 text-muted-foreground" aria-hidden />
-          <a href={`tel:${issue.reporter_phone.replace(/\s/g, '')}`} className="underline underline-offset-4">
-            {issue.reporter_phone}
+      {/* what the resident wrote, their photo and, if they shared it, how to reach them */}
+      <div className="grid gap-2">
+        <p className="whitespace-pre-line">{issue.description}</p>
+        {issue.photo_url && (
+          <a href={issue.photo_url} target="_blank" rel="noopener noreferrer" className="w-fit">
+            <img src={issue.photo_url} alt={t('admin:issues.photo')} className="max-h-40 rounded-md object-contain" />
           </a>
-        </p>
-      )}
+        )}
+        {(issue.booking_starts_at || issue.reporter_email || issue.reporter_phone) && (
+          <p className="num flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+            {issue.booking_starts_at && <span>{t('admin:issues.booking', { date: formatDateTime(issue.booking_starts_at, TIME_ZONE) })}</span>}
+            {issue.reporter_email && (
+              <a href={`mailto:${issue.reporter_email}`} className="inline-flex items-center gap-1.5 text-foreground underline underline-offset-4">
+                <Mail className="size-4 text-muted-foreground" aria-hidden />
+                {issue.reporter_email}
+              </a>
+            )}
+            {issue.reporter_phone && (
+              <a href={`tel:${issue.reporter_phone.replace(/\s/g, '')}`} className="inline-flex items-center gap-1.5 text-foreground underline underline-offset-4">
+                <Phone className="size-4 text-muted-foreground" aria-hidden />
+                {issue.reporter_phone}
+              </a>
+            )}
+          </p>
+        )}
+      </div>
 
-      <form onSubmit={(e) => void save(e)} className="grid gap-3 border-t pt-3 sm:grid-cols-[12rem_1fr_auto] sm:items-end">
-        <div className="grid min-w-0 max-w-full gap-1.5">
-          <Label htmlFor={`${titleId}-status`}>{t('admin:issues.status')}</Label>
-          <Select value={status} onValueChange={(value) => setStatus(value as IssueStatus)}>
-            <SelectTrigger id={`${titleId}-status`} className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {STATUSES.map((s) => (
-                <SelectItem key={s} value={s}>
-                  {t(`admin:issues.statuses.${s}`)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      {/* the answer: a state and a note for who reported it, saved together */}
+      <form onSubmit={(e) => void save(e)} className="grid gap-3 border-t pt-4">
+        <div className="grid gap-1.5">
+          <span id={`${titleId}-status`} className="text-sm leading-none font-medium">
+            {t('admin:issues.status')}
+          </span>
+          <ToggleGroup
+            type="single"
+            variant="outline"
+            value={status}
+            onValueChange={(value) => value && setStatus(value as IssueStatus)}
+            aria-labelledby={`${titleId}-status`}
+            className="w-full flex-wrap bg-card sm:w-fit"
+          >
+            {STATUSES.map((s) => (
+              <ToggleGroupItem key={s} value={s} className="h-10 flex-1 px-3 data-[state=on]:bg-accent data-[state=on]:text-accent-foreground sm:flex-none">
+                {t(`admin:issues.statuses.${s}`)}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
         </div>
-        <div className="grid min-w-0 max-w-full gap-1.5">
+        <div className="grid gap-1.5">
           <Label htmlFor={`${titleId}-note`}>{t('admin:issues.note')}</Label>
           <Textarea
             id={`${titleId}-note`}
@@ -218,24 +233,24 @@ function IssueItem({ slug, token, issue, onSaved }: { slug: string; token: strin
             {t('admin:issues.noteHelp')}
           </p>
         </div>
-        <Button type="submit" disabled={busy || !dirty}>
-          {busy ? t('admin:issues.saving') : t('admin:issues.save')}
-        </Button>
+        <div aria-live="polite" className="empty:hidden">
+          {error && (
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          {saved && !error && <p className="text-sm text-muted-foreground">{t('admin:issues.saved')}</p>}
+        </div>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <Link to={`/${slug}/admin/facilities/${issue.facility_id}`} className="inline-flex items-center gap-1.5 text-sm text-primary underline-offset-4 hover:underline">
+            <CalendarX className="size-4" aria-hidden />
+            {t('admin:issues.close')}
+          </Link>
+          <Button type="submit" className="ml-auto" disabled={busy || !dirty}>
+            {busy ? t('admin:issues.saving') : t('admin:issues.save')}
+          </Button>
+        </div>
       </form>
-      <div aria-live="polite" className="empty:hidden">
-        {error && (
-          <Alert variant="destructive">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-        {saved && !error && <p className="text-sm text-muted-foreground">{t('admin:issues.saved')}</p>}
-      </div>
-      <p>
-        <Link to={`/${slug}/admin/facilities/${issue.facility_id}`} className="inline-flex items-center gap-1.5 text-sm text-primary underline-offset-4 hover:underline">
-          <CalendarX className="size-4" aria-hidden />
-          {t('admin:issues.close')}
-        </Link>
-      </p>
     </li>
   )
 }

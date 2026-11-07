@@ -258,6 +258,105 @@ func (q *Queries) ListClosuresInTheWay(ctx context.Context, arg ListClosuresInTh
 	return items, nil
 }
 
+const listCouncilEvents = `-- name: ListCouncilEvents :many
+SELECT
+    b.id,
+    b.facility_id,
+    f.name AS facility_name,
+    b.starts_at,
+    b.ends_at,
+    b.status,
+    b.title,
+    b.public_description,
+    b.event_capacity,
+    COALESCE(b.event_capacity, f.capacity) AS capacity,
+    (SELECT COUNT(*) FROM booking_participant p WHERE p.booking_id = b.id) AS participant_count,
+    t.timezone,
+    COUNT(*) OVER ()::BIGINT AS total
+FROM
+    booking b
+    JOIN facility f ON f.id = b.facility_id
+    JOIN tenant   t ON t.id = f.tenant_id
+WHERE
+    f.tenant_id = $1
+    AND b.kind = 'event'
+    AND (b.status = 'cancelled' OR b.ends_at <= NOW()) = $2::BOOLEAN
+ORDER BY
+    CASE WHEN $2::BOOLEAN THEN b.starts_at END DESC,
+    b.starts_at,
+    b.id
+LIMIT $4
+OFFSET $3
+`
+
+type ListCouncilEventsParams struct {
+	TenantID uuid.UUID `json:"tenant_id"`
+	Past     bool      `json:"past"`
+	Skip     int32     `json:"skip"`
+	MaxRows  int32     `json:"max_rows"`
+}
+
+type ListCouncilEventsRow struct {
+	ID                uuid.UUID      `json:"id"`
+	FacilityID        uuid.UUID      `json:"facility_id"`
+	FacilityName      string         `json:"facility_name"`
+	StartsAt          time.Time      `json:"starts_at"`
+	EndsAt            time.Time      `json:"ends_at"`
+	Status            BookingStatus  `json:"status"`
+	Title             sql.NullString `json:"title"`
+	PublicDescription string         `json:"public_description"`
+	EventCapacity     sql.NullInt32  `json:"event_capacity"`
+	Capacity          sql.NullInt32  `json:"capacity"`
+	ParticipantCount  int64          `json:"participant_count"`
+	Timezone          string         `json:"timezone"`
+	Total             int64          `json:"total"`
+}
+
+// The council's events for its administrators, a page at a time: those that
+// have not ended (soonest first), or the history (past: ended or cancelled,
+// the latest first).
+func (q *Queries) ListCouncilEvents(ctx context.Context, arg ListCouncilEventsParams) ([]ListCouncilEventsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listCouncilEvents,
+		arg.TenantID,
+		arg.Past,
+		arg.Skip,
+		arg.MaxRows,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListCouncilEventsRow
+	for rows.Next() {
+		var i ListCouncilEventsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.FacilityID,
+			&i.FacilityName,
+			&i.StartsAt,
+			&i.EndsAt,
+			&i.Status,
+			&i.Title,
+			&i.PublicDescription,
+			&i.EventCapacity,
+			&i.Capacity,
+			&i.ParticipantCount,
+			&i.Timezone,
+			&i.Total,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listEventPeople = `-- name: ListEventPeople :many
 SELECT
     p.id,
@@ -325,86 +424,6 @@ func (q *Queries) ListEventPeople(ctx context.Context, arg ListEventPeopleParams
 			&i.RatingAverage,
 			&i.RatingCount,
 			&i.IsResident,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listEventsByTenant = `-- name: ListEventsByTenant :many
-SELECT
-    b.id,
-    b.facility_id,
-    f.name AS facility_name,
-    b.starts_at,
-    b.ends_at,
-    b.status,
-    b.title,
-    b.public_description,
-    b.event_capacity,
-    COALESCE(b.event_capacity, f.capacity) AS capacity,
-    (SELECT COUNT(*) FROM booking_participant p WHERE p.booking_id = b.id) AS participant_count,
-    t.timezone
-FROM
-    booking b
-    JOIN facility f ON f.id = b.facility_id
-    JOIN tenant   t ON t.id = f.tenant_id
-WHERE
-    f.tenant_id = $1
-    AND b.kind = 'event'
-    AND b.status = 'confirmed'
-    AND b.ends_at > NOW()
-ORDER BY
-    b.starts_at,
-    b.id
-`
-
-type ListEventsByTenantRow struct {
-	ID                uuid.UUID      `json:"id"`
-	FacilityID        uuid.UUID      `json:"facility_id"`
-	FacilityName      string         `json:"facility_name"`
-	StartsAt          time.Time      `json:"starts_at"`
-	EndsAt            time.Time      `json:"ends_at"`
-	Status            BookingStatus  `json:"status"`
-	Title             sql.NullString `json:"title"`
-	PublicDescription string         `json:"public_description"`
-	EventCapacity     sql.NullInt32  `json:"event_capacity"`
-	Capacity          sql.NullInt32  `json:"capacity"`
-	ParticipantCount  int64          `json:"participant_count"`
-	Timezone          string         `json:"timezone"`
-}
-
-// The council's confirmed events that have not ended, by start.
-func (q *Queries) ListEventsByTenant(ctx context.Context, tenantID uuid.UUID) ([]ListEventsByTenantRow, error) {
-	rows, err := q.db.QueryContext(ctx, listEventsByTenant, tenantID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []ListEventsByTenantRow
-	for rows.Next() {
-		var i ListEventsByTenantRow
-		if err := rows.Scan(
-			&i.ID,
-			&i.FacilityID,
-			&i.FacilityName,
-			&i.StartsAt,
-			&i.EndsAt,
-			&i.Status,
-			&i.Title,
-			&i.PublicDescription,
-			&i.EventCapacity,
-			&i.Capacity,
-			&i.ParticipantCount,
-			&i.Timezone,
 		); err != nil {
 			return nil, err
 		}

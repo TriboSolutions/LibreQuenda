@@ -6,8 +6,8 @@ Esta wiki ensina o que se pode facer, pantalla a pantalla, segundo quen usa a ap
 
 | | Quen | Onde | Que fai |
 |---|---|---|---|
-| 🏃 | [**Veciñanza**](vecinanza.md) | App Android e web | Atopa onde xogar, reserva, entra na instalación sen chaves, valora e avisa de problemas |
-| 🏛️ | [**Concello**](concello.md) | Web, en `/<concello>/admin` | Dá de alta as instalacións, os horarios e as normas, verifica a veciñanza, organiza eventos e mide o uso |
+| 🏃 | [**Veciñanza**](vecinanza.md) | App Android e web | Atopa onde xogar, reserva, entra na instalación sen chaves, valora, avisa de problemas e responde ás enquisas do concello |
+| 🏛️ | [**Concello**](concello.md) | Web, en `/<concello>/admin` | Dá de alta as instalacións, os horarios e as normas, verifica a veciñanza, organiza eventos, publica comunicados e enquisas e mide o uso |
 | 🛠️ | [**Superadministración**](superadmin.md) | Web, en `/admin` | Crea os concellos, mantén o catálogo de etiquetas e a imaxe da plataforma, e revisa o rexistro |
 
 <p align="center">

@@ -169,5 +169,26 @@
     "pending": "Petición enviada o {{date}}, pendente de revisión.",
     "withdraw": "Retirar a petición",
     "close": "Pechar"
+  },
+  "notices": {
+    "title": "Comunicados do concello",
+    "label": "Comunicado do concello",
+    "published": "Publicado o {{date}}",
+    "until": "ata o {{date}}"
+  },
+  "state": {
+    "title": "Estado da instalación",
+    "noKnown": "Non hai problemas avisados sen arranxar.",
+    "known": "Problemas xa avisados",
+    "alreadyKnown": "O concello xa o sabe: non fai falta avisar outra vez.",
+    "reported": "Avisado",
+    "inProgress": "O concello xa está nel",
+    "since": "desde o {{date}}",
+    "reports_one": "{{count}} aviso",
+    "reports_other": "{{count}} avisos",
+    "solved": "Arranxado recentemente",
+    "solvedOn": "Arranxado o {{date}}",
+    "average_one": "{{council}} arranxa os problemas que avisa a veciñanza en {{days}} días de media ({{count}} arranxado nos últimos 6 meses).",
+    "average_other": "{{council}} arranxa os problemas que avisa a veciñanza en {{days}} días de media ({{count}} arranxados nos últimos 6 meses)."
   }
 }

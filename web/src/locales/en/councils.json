@@ -51,5 +51,6 @@
     "book": "Book {{facility}} at {{time}}, opens a new tab",
     "newTab": "opens a new tab",
     "bookIn": "Book on {{app}}"
-  }
+  },
+  "updating": "Updating…"
 }

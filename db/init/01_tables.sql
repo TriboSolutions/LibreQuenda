@@ -52,7 +52,10 @@ CREATE TYPE notification_type AS ENUM (
     'resident_verified',            -- the council verified the person as its resident
     'resident_rejected',            -- …or could not, from its own census
     'resident_revoked',             -- the council took the verification back (payload: cancelled, how many bookings it cancelled)
-    'participant_removed'           -- the owner of a public booking took the person out of it (they cannot join it again)
+    'participant_removed',          -- the owner of a public booking took the person out of it (they cannot join it again)
+    'council_notice',               -- the council's own announcement, to who books there (notice_id)
+    'poll_opened',                  -- the council asks its people (poll_id): vote
+    'poll_closed'                   -- …and, once it closed, tells them the results are out
 );
 
 -- A problem a resident reports at a facility, in the council's maintenance list.
@@ -554,6 +557,67 @@ CREATE TABLE user_rating (
 
 
 -- ============================================================
+--  PARTICIPATION (comunicados e enquisas)
+-- ============================================================
+
+-- The council's own announcements («Pechamos a piscina polas obras»): on the
+-- facility's page (facility_id) or every page of the council (NULL) until
+-- expires_at, and, when notify, in the bell and the inbox of who books there
+-- (recipients: how many were told).
+CREATE TABLE council_notice (
+    id          UUID          PRIMARY KEY DEFAULT uuidv7(),
+    tenant_id   UUID          NOT NULL REFERENCES tenant(id)   ON DELETE CASCADE,
+    facility_id UUID          NULL REFERENCES facility(id)     ON DELETE CASCADE,
+    title       VARCHAR(120)  NOT NULL,
+    body        VARCHAR(2000) NOT NULL,
+    expires_at  TIMESTAMPTZ   NOT NULL,
+    notify      BOOLEAN       NOT NULL DEFAULT TRUE,
+    recipients  INT           NOT NULL DEFAULT 0,
+    created_by  UUID          NULL REFERENCES app_user(id)     ON DELETE SET NULL,
+    created_at  TIMESTAMPTZ   NOT NULL DEFAULT NOW()
+);
+
+-- A quick question from the council («Que horario preferides os sábados?»),
+-- open until closes_at (or closed_at, when it closed early). One vote per
+-- account with a verified email (residents_only: a verified resident of the
+-- council), which can be changed while it is open; the results are shown once
+-- it closes. Its people are asked in the bell and by email when it opens.
+-- facility_id: what it is about, when it is one facility.
+CREATE TABLE poll (
+    id             UUID          PRIMARY KEY DEFAULT uuidv7(),
+    tenant_id      UUID          NOT NULL REFERENCES tenant(id)   ON DELETE CASCADE,
+    facility_id    UUID          NULL REFERENCES facility(id)     ON DELETE SET NULL,
+    question       VARCHAR(200)  NOT NULL,
+    residents_only BOOLEAN       NOT NULL DEFAULT FALSE,
+    closes_at      TIMESTAMPTZ   NOT NULL,
+    closed_at      TIMESTAMPTZ   NULL,
+    recipients     INT           NOT NULL DEFAULT 0, -- how many were asked, in the bell and by email
+    results_sent_at TIMESTAMPTZ  NULL,               -- who was asked was told the results (NotifyPollResults)
+    created_by     UUID          NULL REFERENCES app_user(id)     ON DELETE SET NULL,
+    created_at     TIMESTAMPTZ   NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE poll_option (
+    id       UUID         PRIMARY KEY DEFAULT uuidv7(),
+    poll_id  UUID         NOT NULL REFERENCES poll(id) ON DELETE CASCADE,
+    position SMALLINT     NOT NULL,
+    label    VARCHAR(120) NOT NULL,
+    UNIQUE (poll_id, position)
+);
+
+-- Nobody sees who voted what: only the counts. An erased account's vote stays, anonymous.
+CREATE TABLE poll_vote (
+    id         UUID        PRIMARY KEY DEFAULT uuidv7(),
+    poll_id    UUID        NOT NULL REFERENCES poll(id)        ON DELETE CASCADE,
+    option_id  UUID        NOT NULL REFERENCES poll_option(id) ON DELETE CASCADE,
+    user_id    UUID        NULL REFERENCES app_user(id)        ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE (poll_id, user_id)
+);
+
+
+-- ============================================================
 --  NOTIFICATIONS (avisos)
 -- ============================================================
 
@@ -583,6 +647,8 @@ CREATE TABLE notification (
     user_id    UUID              NOT NULL REFERENCES app_user(id) ON DELETE CASCADE,
     booking_id UUID              NULL REFERENCES booking(id) ON DELETE SET NULL,
     issue_id   UUID              NULL REFERENCES facility_issue(id) ON DELETE SET NULL, -- issue_solved / issue_rejected
+    notice_id  UUID              NULL REFERENCES council_notice(id) ON DELETE CASCADE,  -- council_notice: withdrawn, gone from the bell
+    poll_id    UUID              NULL REFERENCES poll(id) ON DELETE CASCADE,            -- poll_opened: deleted, gone from the bell
     type       notification_type NOT NULL,
     payload    JSONB             NOT NULL DEFAULT '{}',
     created_at TIMESTAMPTZ       NOT NULL DEFAULT NOW(),
@@ -614,4 +680,26 @@ CREATE TABLE audit_log (
     target_user_id UUID         NULL REFERENCES app_user(id) ON DELETE SET NULL, -- when the target is a person
     target_label   VARCHAR(255) NULL,                 -- a non-personal name then (a facility's, a tag's)
     summary        TEXT         NOT NULL DEFAULT ''   -- what changed, without personal data or free text
+);
+
+
+-- ============================================================
+--  EMAIL LOG (correos enviados)
+-- ============================================================
+
+-- Every email LibreQuenda tried to send (Zitadel sends its own, not here): to
+-- whom, what about, through which relay, and whether it went. Only the
+-- superadministrators read it (05_row_security.sql); never the body. Append-only
+-- for the API, purged after EMAIL_LOG_RETENTION_DAYS by purge_email_log().
+CREATE TABLE email_log (
+    id         UUID         PRIMARY KEY DEFAULT uuidv7(),
+    at         TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    status     VARCHAR(10)  NOT NULL CHECK (status IN ('sent', 'failed')),
+    kind       VARCHAR(64)  NOT NULL DEFAULT '',  -- booking_reminder, invitation, issue, notice, poll, smtp_test, …
+    tenant_id  UUID         NULL,                 -- the council it was sent for; no FK: kept after the council is deleted
+    recipient  VARCHAR(320) NOT NULL,
+    subject    TEXT         NOT NULL DEFAULT '',
+    sender     VARCHAR(320) NOT NULL DEFAULT '',  -- the From address
+    relay      VARCHAR(255) NOT NULL DEFAULT '',  -- host:port; empty when no relay could be used
+    error      TEXT         NOT NULL DEFAULT ''   -- why it failed
 );

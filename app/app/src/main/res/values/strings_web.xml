@@ -348,6 +348,39 @@
     <string name="notif_issue_reported">Nova incidencia en %1$s.</string>
     <string name="notif_rating_requested">Que tal %1$s? Valóraa de 1 a 5 estrelas.</string>
     <string name="notif_rating_requested_public">Que tal %1$s? Valóraa, e tamén a quen xogou contigo.</string>
+    <string name="notif_council_notice">%4$s publicou un comunicado: «%8$s».</string>
+    <string name="notif_council_notice_facility">%4$s publicou un comunicado sobre %1$s: «%8$s».</string>
+    <string name="notif_poll_opened">%4$s pregunta: «%8$s». Vota!</string>
+    <string name="notif_poll_opened_facility">%4$s pregunta sobre %1$s: «%8$s». Vota!</string>
+    <string name="notif_poll_closed">Xa están os resultados de «%8$s».</string>
+    <string name="notices_title">Comunicados do concello</string>
+    <string name="notices_label">Comunicado do concello</string>
+    <string name="notices_published">Publicado o %1$s</string>
+    <string name="notices_until">ata o %1$s</string>
+    <string name="state_title">Estado da instalación</string>
+    <string name="state_no_known">Non hai problemas avisados sen arranxar.</string>
+    <string name="state_known">Problemas xa avisados</string>
+    <string name="state_already_known">O concello xa o sabe: non fai falta avisar outra vez.</string>
+    <string name="state_reported">Avisado</string>
+    <string name="state_in_progress">O concello xa está nel</string>
+    <string name="state_since">desde o %1$s</string>
+    <string name="state_solved">Arranxado recentemente</string>
+    <string name="state_solved_on">Arranxado o %1$s</string>
+    <string name="polls_title">O teu concello pregunta</string>
+    <string name="polls_help">Un voto por persoa, que podes cambiar mentres a enquisa estea aberta. Os resultados vense ao pechar.</string>
+    <string name="polls_closes">Pecha o %1$s</string>
+    <string name="polls_closed">Pechou o %1$s</string>
+    <string name="polls_residents_only">Só veciñanza verificada</string>
+    <string name="polls_vote">Votar</string>
+    <string name="polls_change">Cambiar o voto</string>
+    <string name="polls_saved">Gardouse o teu voto.</string>
+    <string name="polls_results_later">Verás os resultados cando peche.</string>
+    <string name="polls_verify_email">Para votar, verifica primeiro o teu correo.</string>
+    <string name="polls_yours">o teu voto</string>
+    <string name="polls_empty">Agora mesmo non hai enquisas dos teus concellos. Cando o concello pregunte algo, chegarache un aviso.</string>
+    <string name="polls_menu">Enquisas</string>
+    <string name="polls_menu_sub">As preguntas dos teus concellos: vota nas abertas e mira os resultados das pechadas.</string>
+    <string name="polls_results">Resultados da enquisa</string>
     <string name="council">Concello</string>
     <string name="slots_full">Completo</string>
     <string name="status_cancelled">Cancelada</string>
@@ -401,5 +434,21 @@
     <plurals name="rating_stars">
         <item quantity="one">%1$d estrela</item>
         <item quantity="other">%1$d estrelas</item>
+    </plurals>
+    <plurals name="state_reports">
+        <item quantity="one">%1$d aviso</item>
+        <item quantity="other">%1$d avisos</item>
+    </plurals>
+    <plurals name="state_average">
+        <item quantity="one">%1$s arranxa os problemas que avisa a veciñanza en %2$s días de media (%3$d arranxado nos últimos 6 meses).</item>
+        <item quantity="other">%1$s arranxa os problemas que avisa a veciñanza en %2$s días de media (%3$d arranxados nos últimos 6 meses).</item>
+    </plurals>
+    <plurals name="polls_votes">
+        <item quantity="one">%1$d voto</item>
+        <item quantity="other">%1$d votos</item>
+    </plurals>
+    <plurals name="polls_total">
+        <item quantity="one">%1$d voto en total</item>
+        <item quantity="other">%1$d votos en total</item>
     </plurals>
 </resources>

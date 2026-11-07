@@ -101,6 +101,8 @@ class MainActivity : ComponentActivity() {
                         onSignOut = { model.signOut()?.let(endSessionLauncher::launch) },
                         actions = model,
                         onMarkRead = model::markNotificationsRead,
+                        onRefreshPolls = model::refreshPolls,
+                        onMorePolls = model::morePolls,
                         opening = opening.value,
                         onOpened = { opening.value = null },
                         onTour = { tourAgain = true },

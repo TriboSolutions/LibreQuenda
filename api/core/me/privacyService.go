@@ -62,6 +62,10 @@ func (s *meService) Export(ctx context.Context, session auth.Session) (*ExportRe
 	if issues, err = queries.ListIssuesByReporter(ctx, owner); err != nil {
 		return nil, failed
 	}
+	var votes []model.ListVotesByUserRow
+	if votes, err = queries.ListVotesByUser(ctx, owner); err != nil {
+		return nil, failed
+	}
 	var facilityRatings []model.ExportFacilityRatingsByUserRow
 	if facilityRatings, err = queries.ExportFacilityRatingsByUser(ctx, owner); err != nil {
 		return nil, failed
@@ -87,6 +91,7 @@ func (s *meService) Export(ctx context.Context, session auth.Session) (*ExportRe
 		Notifications:    mapExportNotifications(notifications),
 		Issues:           mapExportIssues(issues),
 		Ratings:          mapExportRatings(facilityRatings, peopleRatings, received),
+		Votes:            mapExportVotes(votes),
 	}, nil
 }
 

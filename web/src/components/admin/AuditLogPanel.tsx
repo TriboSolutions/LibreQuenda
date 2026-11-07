@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import { FILTER_DEBOUNCE_MS } from '@/hooks/useAsync'
+import { useDebounced } from '@/hooks/useFacilityPages'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { Download } from 'lucide-react'
@@ -15,7 +17,7 @@ const TIME_ZONE = 'Europe/Madrid'
 const ANY = '_any'
 
 // the action families to filter by: the first part of the codes
-const FAMILIES = ['facility', 'closure', 'checkin', 'reader', 'booking_window', 'booking_policy', 'issue', 'staff', 'council', 'admin', 'superadmin', 'tag', 'tag_category', 'branding', 'smtp', 'indicators', 'resident', 'account', 'other']
+const FAMILIES = ['facility', 'closure', 'checkin', 'reader', 'booking_window', 'booking_policy', 'issue', 'staff', 'council', 'admin', 'superadmin', 'tag', 'tag_category', 'branding', 'smtp', 'indicators', 'resident', 'notice', 'poll', 'account', 'other']
 
 type Props = {
   load: (filters: AuditFilters) => Promise<AuditPage>
@@ -46,11 +48,12 @@ export function AuditLogPanel({ load, download, councils }: Props) {
     }
   }
 
-  // a new set of filters starts from the newest entries
+  // a new set of filters starts from the newest entries, once they settle
+  const settled = useDebounced(filters, FILTER_DEBOUNCE_MS)
   useEffect(() => {
-    void fetchPage(filters)
+    void fetchPage(settled)
     // eslint-disable-next-line react-hooks/exhaustive-deps -- once per set of filters
-  }, [filters])
+  }, [settled])
 
   const set = (key: keyof AuditFilters, value: string) => setFilters((f) => ({ ...f, [key]: value === ANY ? '' : value }))
 

@@ -27,6 +27,23 @@ type ExportResponse struct {
 	Notifications    []ExportNotification    `json:"notifications"`
 	Issues           []ExportIssue           `json:"issues"` // problems the user reported at facilities
 	Ratings          ExportRatings           `json:"ratings"`
+	Votes            []ExportVote            `json:"votes"` // answers the user gave in the councils' polls
+}
+
+type ExportVote struct {
+	Council   string    `json:"council"`
+	Question  string    `json:"question"`
+	Answer    string    `json:"answer"`
+	VotedAt   time.Time `json:"voted_at"`
+	ChangedAt time.Time `json:"changed_at"`
+}
+
+func mapExportVotes(rows []model.ListVotesByUserRow) []ExportVote {
+	var votes = make([]ExportVote, 0, len(rows))
+	for _, v := range rows {
+		votes = append(votes, ExportVote{Council: v.TenantName, Question: v.Question, Answer: v.Label, VotedAt: v.CreatedAt, ChangedAt: v.UpdatedAt})
+	}
+	return votes
 }
 
 // ExportResidentRequest: a request to be verified, until the council decides
@@ -324,6 +341,13 @@ func writeExportCSV(w io.Writer, data *ExportResponse) error {
 	out.Write([]string{"id", "facility", "category", "description", "urgent", "share_contact", "status", "staff_note", "created_at", "resolved_at"})
 	for _, i := range data.Issues {
 		out.Write([]string{i.Id, i.Facility, i.Category, i.Description, strconv.FormatBool(i.Urgent), strconv.FormatBool(i.ShareContact), i.Status, i.StaffNote, csvTime(i.CreatedAt), csvOptionalTime(i.ResolvedAt)})
+	}
+
+	out.Write(nil)
+	out.Write([]string{"votes"})
+	out.Write([]string{"council", "question", "answer", "voted_at", "changed_at"})
+	for _, v := range data.Votes {
+		out.Write([]string{v.Council, v.Question, v.Answer, csvTime(v.VotedAt), csvTime(v.ChangedAt)})
 	}
 	out.Flush()
 	return out.Error()

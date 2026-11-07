@@ -31,6 +31,7 @@ type Filters struct {
 	From, Until string  // ?from=HH:MM&until=HH:MM: turns starting in [from, until), the council's time
 	Public      bool    // ?public=true: someone's public booking with spots left, instead of free turns
 	MinRating   float64 // ?min_rating=1..5: residents' average at least this (one decimal); a facility nobody rated is left out
+	BBox        *BBox   // ?bbox=west,south,east,north: only facilities with a pin inside (the map's view); /facilities only
 	// not from the query: whoever is signed in, when they are a verified resident (eligibility)
 	Eligible eligibility
 }
@@ -118,6 +119,13 @@ func FiltersFromValues(q url.Values, withDay bool) (Filters, bool) {
 	default:
 		return f, false
 	}
+	if text := q.Get("bbox"); text != "" {
+		var box, ok = parseBBox(text)
+		if !ok || withDay {
+			return f, false
+		}
+		f.BBox = &box
+	}
 	if text := q.Get("min_rating"); text != "" {
 		var stars, err = strconv.ParseFloat(text, 64)
 		if err != nil || math.IsNaN(stars) || stars < 1 || stars > 5 {
@@ -126,6 +134,38 @@ func FiltersFromValues(q url.Values, withDay bool) (Filters, bool) {
 		f.MinRating = stars
 	}
 	return f, true
+}
+
+// BBox: the map's view, in degrees.
+type BBox struct{ West, South, East, North float64 }
+
+// parseBBox: "west,south,east,north", within the world and west of east, south of north.
+func parseBBox(text string) (BBox, bool) {
+	var parts = strings.Split(text, ",")
+	if len(parts) != 4 {
+		return BBox{}, false
+	}
+	var v [4]float64
+	for i, part := range parts {
+		var n, err = strconv.ParseFloat(strings.TrimSpace(part), 64)
+		if err != nil || math.IsNaN(n) || math.IsInf(n, 0) {
+			return BBox{}, false
+		}
+		v[i] = n
+	}
+	var box = BBox{West: v[0], South: v[1], East: v[2], North: v[3]}
+	if box.West < -180 || box.East > 180 || box.South < -90 || box.North > 90 || box.West >= box.East || box.South >= box.North {
+		return BBox{}, false
+	}
+	return box, true
+}
+
+// inside: the facility's pin is in the box (any, without a box; never, without a pin).
+func (f Filters) inside(lat, lon *float64) bool {
+	if f.BBox == nil {
+		return true
+	}
+	return lat != nil && lon != nil && *lat >= f.BBox.South && *lat <= f.BBox.North && *lon >= f.BBox.West && *lon <= f.BBox.East
 }
 
 // rated: the facility passes ?min_rating= (any, without one).

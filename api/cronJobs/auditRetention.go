@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"librequenda/audit"
+	"librequenda/emaillog"
 	"librequenda/model"
 	"log"
 	"os"
@@ -45,5 +46,14 @@ func (j *auditRetentionJob) Execute() []any {
 	if purged > 0 {
 		log.Printf("purged %d audit log entries past the retention period", purged)
 	}
-	return []any{purged}
+	// the email log too: EMAIL_LOG_RETENTION_DAYS (a year by default)
+	var emails int64
+	if emails, err = model.New(j.db).PurgeEmailLog(ctx, int32(emaillog.Retention(os.Getenv("EMAIL_LOG_RETENTION_DAYS")))); err != nil {
+		log.Printf("failed to purge the email log: %v", err)
+		return []any{err}
+	}
+	if emails > 0 {
+		log.Printf("purged %d email log entries past the retention period", emails)
+	}
+	return []any{purged, emails}
 }

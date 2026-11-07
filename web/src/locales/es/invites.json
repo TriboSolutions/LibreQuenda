@@ -9,7 +9,8 @@
     "emptyUpcoming": "No tienes reservas próximas.",
     "emptyHistory": "Aún no tienes reservas pasadas.",
     "signIn": "Inicia sesión para ver tus reservas.",
-    "bookNow": "Reservar ahora"
+    "bookNow": "Reservar ahora",
+    "historyPages": "Páginas del historial"
   },
   "role": {
     "owner": "Tuya",

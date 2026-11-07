@@ -135,5 +135,10 @@
   },
   "textarea": {
     "count": "{{used}} / {{max}} characters"
+  },
+  "pager": {
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page {{page}} of {{pages}}"
   }
 }

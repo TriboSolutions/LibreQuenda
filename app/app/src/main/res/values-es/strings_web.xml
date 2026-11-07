@@ -348,6 +348,39 @@
     <string name="notif_issue_reported">Nueva incidencia en %1$s.</string>
     <string name="notif_rating_requested">¿Qué tal %1$s? Valórala de 1 a 5 estrellas.</string>
     <string name="notif_rating_requested_public">¿Qué tal %1$s? Valórala, y también a quien jugó contigo.</string>
+    <string name="notif_council_notice">%4$s ha publicado un comunicado: «%8$s».</string>
+    <string name="notif_council_notice_facility">%4$s ha publicado un comunicado sobre %1$s: «%8$s».</string>
+    <string name="notif_poll_opened">%4$s pregunta: «%8$s». ¡Vota!</string>
+    <string name="notif_poll_opened_facility">%4$s pregunta sobre %1$s: «%8$s». ¡Vota!</string>
+    <string name="notif_poll_closed">Ya están los resultados de «%8$s».</string>
+    <string name="notices_title">Comunicados del ayuntamiento</string>
+    <string name="notices_label">Comunicado del ayuntamiento</string>
+    <string name="notices_published">Publicado el %1$s</string>
+    <string name="notices_until">hasta el %1$s</string>
+    <string name="state_title">Estado de la instalación</string>
+    <string name="state_no_known">No hay problemas avisados sin arreglar.</string>
+    <string name="state_known">Problemas ya avisados</string>
+    <string name="state_already_known">El ayuntamiento ya lo sabe: no hace falta avisar otra vez.</string>
+    <string name="state_reported">Avisado</string>
+    <string name="state_in_progress">El ayuntamiento ya está en ello</string>
+    <string name="state_since">desde el %1$s</string>
+    <string name="state_solved">Arreglado recientemente</string>
+    <string name="state_solved_on">Arreglado el %1$s</string>
+    <string name="polls_title">Tu ayuntamiento pregunta</string>
+    <string name="polls_help">Un voto por persona, que puedes cambiar mientras la encuesta esté abierta. Los resultados se ven al cerrar.</string>
+    <string name="polls_closes">Cierra el %1$s</string>
+    <string name="polls_closed">Cerró el %1$s</string>
+    <string name="polls_residents_only">Solo vecindario verificado</string>
+    <string name="polls_vote">Votar</string>
+    <string name="polls_change">Cambiar el voto</string>
+    <string name="polls_saved">Se ha guardado tu voto.</string>
+    <string name="polls_results_later">Verás los resultados cuando cierre.</string>
+    <string name="polls_verify_email">Para votar, verifica primero tu correo.</string>
+    <string name="polls_yours">tu voto</string>
+    <string name="polls_empty">Ahora mismo no hay encuestas de tus ayuntamientos. Cuando el ayuntamiento pregunte algo, te llegará un aviso.</string>
+    <string name="polls_menu">Encuestas</string>
+    <string name="polls_menu_sub">Las preguntas de tus ayuntamientos: vota en las abiertas y mira los resultados de las cerradas.</string>
+    <string name="polls_results">Resultados de la encuesta</string>
     <string name="council">Ayuntamiento</string>
     <string name="slots_full">Completo</string>
     <string name="status_cancelled">Cancelada</string>
@@ -408,5 +441,25 @@
         <item quantity="one">%1$d estrella</item>
         <item quantity="many">%1$d estrellas</item>
         <item quantity="other">%1$d estrellas</item>
+    </plurals>
+    <plurals name="state_reports">
+        <item quantity="one">%1$d aviso</item>
+        <item quantity="many">%1$d avisos</item>
+        <item quantity="other">%1$d avisos</item>
+    </plurals>
+    <plurals name="state_average">
+        <item quantity="one">%1$s arregla los problemas que avisa el vecindario en %2$s días de media (%3$d arreglado en los últimos 6 meses).</item>
+        <item quantity="many">%1$s arregla los problemas que avisa el vecindario en %2$s días de media (%3$d arreglados en los últimos 6 meses).</item>
+        <item quantity="other">%1$s arregla los problemas que avisa el vecindario en %2$s días de media (%3$d arreglados en los últimos 6 meses).</item>
+    </plurals>
+    <plurals name="polls_votes">
+        <item quantity="one">%1$d voto</item>
+        <item quantity="many">%1$d votos</item>
+        <item quantity="other">%1$d votos</item>
+    </plurals>
+    <plurals name="polls_total">
+        <item quantity="one">%1$d voto en total</item>
+        <item quantity="many">%1$d votos en total</item>
+        <item quantity="other">%1$d votos en total</item>
     </plurals>
 </resources>

@@ -28,6 +28,9 @@ Estado: **feito** · **en curso** (traballo aberto) · **idea** (sen comezar).
 | Os teus datos nun ficheiro (JSON e CSV) e borrado da conta (reservas anonimizadas, conta de acceso borrada) | feito |
 | Instalacións só para a veciñanza marcadas «Só para veciños» na súa páxina, nas súas tarxetas e nos seus eventos; quen non está verificado alí pode pedilo: chamar ao concello ou enviar unha solicitude (DNI ou NIE, nome, código postal, rúa), unha á semana como máximo, e retirala mentres está pendente; recibe aviso e correo cando o concello decide | feito |
 | Avisar dun problema nunha instalación (rede rota, sen luz, vestiarios sucios…) desde unha reserva ou desde a páxina da instalación, cunha categoría, unha foto e se é urxente; recibe aviso e correo cando o concello o arranxa ou o rexeita | feito |
+| Comunicados do concello na páxina da instalación (ou en todas as do concello) ata a data que escolla, e na campá, nas notificacións da app e no correo de quen reserva alí | feito |
+| Estado da instalación: os problemas xa avisados e sen arranxar e o arranxado nos últimos 30 días (só a categoría e as datas, nunca o que alguén escribiu nin quen avisou), e canto tarda de media o concello en arranxar o que avisa a veciñanza | feito |
+| Enquisas do concello: chegan como aviso (campá, notificación e correo) a quen forma parte del, un voto por conta cun correo verificado que se pode cambiar mentres está aberta, só para a veciñanza verificada se o concello quere, e outro aviso cos resultados cando pecha; todas, abertas e pechadas, na páxina Enquisas (menú da conta e perfil) | feito |
 | Páxinas de condicións de uso e de política de privacidade; contacto de soporte no pé de páxina | feito |
 | Catro idiomas (galego, castelán, inglés, catalán), tema claro e escuro | feito |
 
@@ -41,6 +44,7 @@ Estado: **feito** · **en curso** (traballo aberto) · **idea** (sen comezar).
 | Reserva flash desde a app, tamén cunha etiqueta NFC | feito |
 | Avisos sen push (comprobación en segundo plano), recordatorios locais, notificacións de Android para valorar unha reserva cando remata | feito |
 | Perfil, preferencias, idioma, soporte e textos legais; textos xerados a partir das traducións da web | feito |
+| Comunicados e estado da instalación na súa páxina; enquisas desde o aviso ou o menú (votar, cambiar o voto, ver os resultados) | feito |
 | Instalacións só para a veciñanza marcadas «Só para veciños» (páxina da instalación, tarxetas, eventos e partidas públicas), e petición de verificación desde unha folla inferior: chamar ao concello ou enviar a solicitude, vela pendente e retirala (a xestión segue na web) | feito |
 
 ## Rexistro de entrada na porta
@@ -67,12 +71,13 @@ Estado: **feito** · **en curso** (traballo aberto) · **idea** (sen comezar).
 | Formas de rexistrar a entrada por instalación (lapela Entrada) e follas imprimibles co QR e o código | feito |
 | Ventá de reserva por concello, herdada polas súas instalacións ou substituída na lapela Reserva de cada unha: con canta antelación (horas ou días) ou apertura da semana seguinte a unha hora fixa (p. ex., domingo ás 20:00), canto antes do comezo se pode reservar desde a app, prazo para cancelar e cambiar, reservas próximas, reservas por día e por semana, quendas seguidas, penalización opcional por non presentarse | feito |
 | Un límite para todo o concello das reservas próximas de cada persoa en todas as súas instalacións; un só concello á vez por conta (axuste da plataforma, activado por defecto); ninguén pode ter dúas reservas á mesma hora | feito |
-| Eventos (lapela Eventos): un tipo de reserva que só crean as persoas administradoras, cun título, aforo opcional, calquera inicio e fin e sen límites por persoa; amosa as reservas ou peches que coinciden, que o persoal cancela antes; movelo ou cancelalo avisa a quen se apuntou | feito |
+| Eventos (lapela Eventos, cos próximos e o historial dos rematados e cancelados): un tipo de reserva que só crean as persoas administradoras, cun título, aforo opcional, calquera inicio e fin e sen límites por persoa; amosa as reservas ou peches que coinciden, que o persoal cancela antes; movelo ou cancelalo avisa a quen se apuntou | feito |
 | Reserva do persoal por teléfono ou no mostrador, para unha conta ou só cun nome e un teléfono; cancelar calquera reserva; imprimir o QR de entrada | feito |
 | Indicadores: reservas, ocupación, cancelacións, non presentacións (contando todas as formas de rexistrar a entrada), días e horas con máis reservas, valoracións (media, reparto de 1 a 5, evolución), comparación con outro período, por instalación; exportación a CSV e Excel | feito |
 | As non presentacións lembran cando estaba desactivado o rexistro de entrada (historial das formas de rexistrar a entrada da instalación) | feito |
 | Widget de quendas libres para incrustar na propia web do concello (`/<council>/widget`, todas as instalacións ou unha, claro ou escuro, en calquera dos catro idiomas), co código para pegar e unha vista previa nos axustes do concello | feito |
 | Lista de mantemento (lapela Incidencias): avisos da veciñanza cun distintivo para os novos, filtros por instalación e estado, estado e nota para quen avisou, o correo de quen avisou só se o compartiu | feito |
+| Participación (lapela Participación, en dúas partes, cada unha co actual e o seu historial): publicar e retirar comunicados, con ou sen aviso a quen reserva; crear enquisas de 2 a 6 respostas, pechalas antes de tempo e borralas mentres están abertas (as pechadas quedan no historial cos seus resultados), cos votos de cada resposta en todo momento | feito |
 | Páxina de axustes do concello: datos, persoas administradoras (invitar, retirar), ventá de reserva, servidor de correo propio (SMTP) con correo de proba, descarga completa dos datos (CSV + datapackage de Frictionless + imaxes, opcionalmente cos datos persoais da veciñanza) | feito |
 
 ## Plataforma
@@ -89,7 +94,7 @@ Estado: **feito** · **en curso** (traballo aberto) · **idea** (sen comezar).
 | Tokens de acceso de curta duración (10 min, renovados en segundo plano), segundo factor obrigatorio para as persoas administradoras, arranque de Zitadel co mínimo privilexio | feito |
 | Límite de peticións no rexistro e no acceso, no proxy (sen captcha: o login de Zitadel non ten) | feito |
 | Rexistro de actividade de todos os cambios administrativos, para a superadministración (todos) e para as persoas administradoras de cada concello (os seus), só de engadir e cun período de conservación, descargable en CSV | feito |
-| API: ordenación, filtrado e paxinación no backend, con parámetros de consulta validados | feito |
+| API: ordenación, filtrado e paxinación no backend, con parámetros de consulta validados; as listas e historiais da administración (eventos, comunicados, enquisas, incidencias, veciñanza) e as enquisas da veciñanza, unha páxina de cada vez, con scroll infinito na app | feito |
 | Despregamento de demostración, kit de produción (`deploy/`), especificación OpenAPI | idea (ver todo.md) |
 
 ## Ideas para máis adiante

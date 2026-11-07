@@ -14,6 +14,7 @@ import { FacilityEditorPage } from '@/pages/FacilityEditorPage'
 import { FacilityPage } from '@/pages/FacilityPage'
 import { InvitePage } from '@/pages/InvitePage'
 import { MyBookingsPage } from '@/pages/MyBookingsPage'
+import { PollsPage } from '@/pages/PollsPage'
 import { ProfilePage } from '@/pages/ProfilePage'
 import { ReaderPage } from '@/pages/ReaderPage'
 import { PlatformAdmin } from '@/pages/PlatformAdmin'
@@ -33,6 +34,7 @@ function App() {
         <Route path="/perfil" element={<ProfilePage />} />
         <Route path="/lector" element={<ReaderPage />} />
         <Route path="/reservas" element={<MyBookingsPage />} />
+        <Route path="/enquisas" element={<PollsPage />} />
         <Route path="/accesibilidade" element={<AccessibilityPage />} />
         <Route path="/condicions" element={<LegalPage which="terms" />} />
         <Route path="/privacidade" element={<LegalPage which="privacy" />} />

@@ -132,7 +132,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Tenant'
+                $ref: '#/components/schemas/CouncilPage'
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
@@ -149,7 +149,7 @@ paths:
       tags:
       - Public
       summary: Todas as instalacións activas de todos os concellos
-      description: 'Pública. Un token bearer válido é opcional: coa sesión iniciada como persoa veciña verificada, quedan fóra as instalacións só para veciños doutros concellos. Con ?lat=&lon=, as máis próximas primeiro e a distance_km de cada unha. Os filtros só de día (from, until, public) son un 400 aquí.'
+      description: 'Pública. Un token bearer válido é opcional: coa sesión iniciada como persoa veciña verificada, quedan fóra as instalacións só para veciños doutros concellos. Con ?lat=&lon=, as máis próximas primeiro e a distance_km de cada unha. Os filtros só de día (from, until, public) son un 400 aquí. As tarxetas e as súas quendas libres de hoxe calcúlanse unha vez para todas e gárdanse 30 segundos, así que ler a lista páxina a páxina e o mapa xunto non repite o traballo.'
       security:
       - {}
       - bearerAuth: []
@@ -169,6 +169,13 @@ paths:
       - $ref: '#/components/parameters/Lon'
       - $ref: '#/components/parameters/RadiusKm'
       - $ref: '#/components/parameters/MinRating'
+      - name: bbox
+        in: query
+        required: false
+        description: 'oeste,sur,leste,norte en graos: só as instalacións cun punto no mapa dentro (a vista do mapa da páxina de inicio).'
+        schema:
+          type: string
+          example: -9.3,41.8,-6.7,43.8
       - $ref: '#/components/parameters/Page'
       - $ref: '#/components/parameters/PageSize'
       responses:
@@ -178,6 +185,74 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/FacilitiesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /facilities/map:
+    get:
+      operationId: listFacilityPins
+      tags:
+      - Public
+      summary: As instalacións no mapa da páxina de inicio
+      description: 'Pública, cos mesmos filtros ca /facilities (bbox é un 400 aquí): todas as que teñen punto no mapa, sen paxinar, e só o que precisa o mapa. A lista ao seu carón lese páxina a páxina en /facilities.'
+      security:
+      - {}
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/Q'
+      - $ref: '#/components/parameters/Council'
+      - $ref: '#/components/parameters/Sport'
+      - $ref: '#/components/parameters/Tags'
+      - name: booking
+        in: query
+        required: false
+        description: 'Separadas por comas: só instalacións con algunha destas á que unirse.'
+        schema:
+          type: string
+          pattern: ^(public|event)(,(public|event))*$
+      - $ref: '#/components/parameters/Lat'
+      - $ref: '#/components/parameters/Lon'
+      - $ref: '#/components/parameters/RadiusKm'
+      - $ref: '#/components/parameters/MinRating'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pins:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                        slug:
+                          type: string
+                        name:
+                          type: string
+                        latitude:
+                          type: number
+                        longitude:
+                          type: number
+                        free_today:
+                          type: integer
+                        tags:
+                          type: array
+                          items:
+                            type: string
+                        council:
+                          $ref: '#/components/schemas/Tenant'
+                      required: [id, slug, name, latitude, longitude, free_today, tags, council]
+                required: [pins]
         '400':
           $ref: '#/components/responses/BadRequest'
         '409':
@@ -984,7 +1059,7 @@ paths:
       tags:
       - Bookings
       summary: As reservas da persoa usuaria
-      description: 'As que fixo e ás que se uniu: as próximas enteiras, o historial paxinado. Tamén responde a HEAD.'
+      description: 'As que fixo e ás que se uniu: as próximas enteiras, o historial paxinado no SQL (20 por páxina por defecto, pageSize ata 100), o máis recente primeiro. Tamén responde a HEAD.'
       security:
       - bearerAuth: []
       parameters:
@@ -1357,6 +1432,79 @@ paths:
           description: Unida.
         '400':
           $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /me/polls:
+    get:
+      operationId: listMyPolls
+      tags:
+      - Me
+      summary: As enquisas para min
+      description: |-
+        Unha páxina de cada vez: 20 por defecto (pageSize, ata 100).
+
+        As dos concellos dos que a persoa forma parte (veciñanza verificada, administración, ou reservou alí no último ano), mentres están abertas e ata un ano despois de pechar, para seguir os resultados; as só para a veciñanza, só a quen pode votar. Os votos (votes) son null mentres está aberta.
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MyPollsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /me/polls/{pollId}/vote:
+    put:
+      operationId: votePoll
+      tags:
+      - Me
+      summary: Votar nunha enquisa
+      description: |-
+        Un voto por conta, que se pode cambiar mentres está aberta. Precisa o correo verificado (409 errors.email_unverified); nas só para a veciñanza, ser veciña verificada (403). 409 errors.poll_closed se xa pechou.
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: pollId
+        in: path
+        required: true
+        description: A enquisa.
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VoteInput'
+      responses:
+        '204':
+          description: Feito (corpo baleiro).
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
         '404':
@@ -2461,6 +2609,118 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /admin/email-log:
+    get:
+      operationId: platformGetEmailLog
+      tags:
+      - Platform
+      summary: Os correos que LibreQuenda intentou enviar
+      description: 'Só a superadministración, coa sesión iniciada cun segundo factor (cando REQUIRE_ADMIN_MFA está activado). Cada correo, enviado ou non: destinatario, asunto, tipo, concello, remitente, servidor SMTP e o erro se fallou (nunca o corpo). Os máis recentes primeiro, 50 por páxina (?before= para a seguinte); ?format=csv para o ficheiro. Un valor non válido nun filtro é coma non filtrar. Cache-Control: no-store.'
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: q
+        in: query
+        required: false
+        description: Parte do enderezo, do asunto ou do erro (sen distinguir maiúsculas).
+        schema:
+          type: string
+          maxLength: 100
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          enum: [sent, failed]
+      - name: kind
+        in: query
+        required: false
+        description: O tipo de correo (booking_reminder, invitation, issue, notice, poll, smtp_test…); os que hai veñen en kinds.
+        schema:
+          type: string
+          pattern: ^[a-z_]{1,64}$
+      - name: council
+        in: query
+        required: false
+        description: Só os correos deste concello (404 se non existe).
+        schema:
+          type: string
+          pattern: ^[a-z0-9]+(-[a-z0-9]+)*$
+          maxLength: 64
+      - $ref: '#/components/parameters/AuditFrom'
+      - $ref: '#/components/parameters/AuditTo'
+      - $ref: '#/components/parameters/AuditBefore'
+      - $ref: '#/components/parameters/AuditFormat'
+      responses:
+        '200':
+          description: Unha páxina do rexistro, ou o ficheiro CSV (attachment; filename="email-log.csv").
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailLogResponse'
+            text/csv:
+              schema:
+                type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /admin/api-log:
+    get:
+      operationId: platformGetApiLog
+      tags:
+      - Platform
+      summary: O rexistro da API (os seus ficheiros de log)
+      description: 'Só a superadministración, coa sesión iniciada cun segundo factor (cando REQUIRE_ADMIN_MFA está activado). As liñas de LOG_DIR/api.log e dos ficheiros rotados, as máis recentes primeiro, 200 por páxina (?before= para as anteriores). enabled é false se a API non escribe ficheiros (sen LOG_DIR). Cache-Control: no-store.'
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: level
+        in: query
+        required: false
+        description: Niveis separados por comas (DEBUG, INFO, WARN, ERROR, FATAL); sen el, todos.
+        schema:
+          type: string
+          maxLength: 40
+      - name: q
+        in: query
+        required: false
+        description: Parte do texto ou do ficheiro de orixe (sen distinguir maiúsculas).
+        schema:
+          type: string
+          maxLength: 100
+      - name: before
+        in: query
+        required: false
+        description: Só as liñas anteriores a este momento, como o devolve next (AAAA-MM-DD hh:mm:ss.mmm).
+        schema:
+          type: string
+          pattern: ^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}$
+      responses:
+        '200':
+          description: Unha páxina de liñas.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiLogPage'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '409':
           $ref: '#/components/responses/Conflict'
         '429':
@@ -3655,11 +3915,23 @@ paths:
       tags:
       - Council admin
       summary: Os eventos do concello (a lapela «Eventos»)
-      description: 'Administración do concello: a persoa usuaria con sesión iniciada ten que ser administradora deste concello ou superadministradora, coa sesión iniciada cun segundo factor (cando REQUIRE_ADMIN_MFA está activado).'
+      description: |-
+        Unha páxina de cada vez: 20 por defecto (pageSize, ata 100).
+
+        Administración do concello: a persoa usuaria con sesión iniciada ten que ser administradora deste concello ou superadministradora, coa sesión iniciada cun segundo factor (cando REQUIRE_ADMIN_MFA está activado).
       security:
       - bearerAuth: []
       parameters:
       - $ref: '#/components/parameters/TenantSlug'
+      - name: state
+        in: query
+        required: false
+        description: upcoming (os que non remataron, por defecto) ou past (o historial, os rematados e os cancelados, o último primeiro).
+        schema:
+          type: string
+          enum: [upcoming, past]
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/PageSize'
       responses:
         '200':
           description: OK
@@ -3771,6 +4043,38 @@ paths:
         '500':
           $ref: '#/components/responses/InternalError'
   /tenants/{slug}/admin/events/{bookingId}:
+    get:
+      operationId: adminGetEvent
+      tags:
+      - Council admin
+      summary: Un evento do concello, para o seu editor
+      description: 'Administración do concello: a persoa usuaria con sesión iniciada ten que ser administradora deste concello ou superadministradora, coa sesión iniciada cun segundo factor (cando REQUIRE_ADMIN_MFA está activado).'
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/TenantSlug'
+      - $ref: '#/components/parameters/AdminBookingId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
     put:
       operationId: adminUpdateEvent
       tags:
@@ -4032,6 +4336,296 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
         '500':
           $ref: '#/components/responses/InternalError'
+  /tenants/{slug}/admin/notices:
+    get:
+      operationId: adminListNotices
+      tags:
+      - Council admin
+      summary: Os comunicados do concello
+      description: |-
+        Unha páxina de cada vez: 20 por defecto (pageSize, ata 100).
+
+        Os vixentes, os máis recentes primeiro; con state=past, o historial: os caducados, o último en caducar primeiro.
+
+        Administración do concello: a persoa usuaria con sesión iniciada ten que ser administradora deste concello ou superadministradora, coa sesión iniciada cun segundo factor (cando REQUIRE_ADMIN_MFA está activado).
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/TenantSlug'
+      - name: state
+        in: query
+        required: false
+        description: active (os vixentes, por defecto) ou past (o historial, os caducados).
+        schema:
+          type: string
+          enum: [active, past]
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminNoticesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    post:
+      operationId: adminCreateNotice
+      tags:
+      - Council admin
+      summary: Publicar un comunicado
+      description: |-
+        Na páxina da instalación (facility_id) ou en todas as do concello ata o final de expires_on (hora do concello). Con notify, tamén na campá e por correo a quen reserva alí: nunha instalación, quen tivo unha reserva nos últimos 30 días ou ten unha próxima; en todo o concello, o mesmo en calquera das súas instalacións en 90 días e a súa veciñanza verificada.
+
+        Administración do concello: a persoa usuaria con sesión iniciada ten que ser administradora deste concello ou superadministradora, coa sesión iniciada cun segundo factor (cando REQUIRE_ADMIN_MFA está activado).
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/TenantSlug'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NoticeInput'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminNotice'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+  /tenants/{slug}/admin/notices/{noticeId}:
+    delete:
+      operationId: adminDeleteNotice
+      tags:
+      - Council admin
+      summary: Retirar un comunicado
+      description: |-
+        Sae das páxinas e das campás; os correos xa enviados quedan enviados.
+
+        Administración do concello: a persoa usuaria con sesión iniciada ten que ser administradora deste concello ou superadministradora, coa sesión iniciada cun segundo factor (cando REQUIRE_ADMIN_MFA está activado).
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/TenantSlug'
+      - name: noticeId
+        in: path
+        required: true
+        description: O comunicado.
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '204':
+          description: Feito (corpo baleiro).
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /tenants/{slug}/admin/polls:
+    get:
+      operationId: adminListPolls
+      tags:
+      - Council admin
+      summary: As enquisas do concello
+      description: |-
+        Unha páxina de cada vez: 20 por defecto (pageSize, ata 100).
+
+        As abertas, a que pecha antes primeiro; con state=past, o historial: as pechadas, a última en pechar primeiro. As administradoras ven os votos de cada resposta en todo momento; a veciñanza, só cando a enquisa pecha.
+
+        Administración do concello: a persoa usuaria con sesión iniciada ten que ser administradora deste concello ou superadministradora, coa sesión iniciada cun segundo factor (cando REQUIRE_ADMIN_MFA está activado).
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/TenantSlug'
+      - name: state
+        in: query
+        required: false
+        description: open (as abertas, por defecto) ou past (o historial, as pechadas).
+        schema:
+          type: string
+          enum: [open, past]
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminPollsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    post:
+      operationId: adminCreatePoll
+      tags:
+      - Council admin
+      summary: Crear unha enquisa
+      description: |-
+        Unha pregunta con 2 a 6 respostas distintas, aberta ata o final de closes_on (hora do concello, ata 90 días). Con residents_only só vota a veciñanza verificada do concello. Pregúntaselle na campá e por correo á súa xente (veciñanza verificada, administración e, se non é só para a veciñanza, quen reservou alí no último ano); cando pecha, avísaselle de que xa hai resultados.
+
+        Administración do concello: a persoa usuaria con sesión iniciada ten que ser administradora deste concello ou superadministradora, coa sesión iniciada cun segundo factor (cando REQUIRE_ADMIN_MFA está activado).
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/TenantSlug'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PollInput'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminPoll'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+  /tenants/{slug}/admin/polls/{pollId}/close:
+    post:
+      operationId: adminClosePoll
+      tags:
+      - Council admin
+      summary: Pechar unha enquisa xa
+      description: |-
+        Os resultados vense desde agora. 409 se xa estaba pechada.
+
+        Administración do concello: a persoa usuaria con sesión iniciada ten que ser administradora deste concello ou superadministradora, coa sesión iniciada cun segundo factor (cando REQUIRE_ADMIN_MFA está activado).
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/TenantSlug'
+      - name: pollId
+        in: path
+        required: true
+        description: A enquisa.
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '204':
+          description: Feito (corpo baleiro).
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /tenants/{slug}/admin/polls/{pollId}:
+    delete:
+      operationId: adminDeletePoll
+      tags:
+      - Council admin
+      summary: Borrar unha enquisa
+      description: |-
+        Só mentres está aberta (un erro, por exemplo), cos seus votos. Unha pechada queda no historial cos seus resultados: 409 errors.poll_closed_keep.
+
+        Administración do concello: a persoa usuaria con sesión iniciada ten que ser administradora deste concello ou superadministradora, coa sesión iniciada cun segundo factor (cando REQUIRE_ADMIN_MFA está activado).
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/TenantSlug'
+      - name: pollId
+        in: path
+        required: true
+        description: A enquisa.
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '204':
+          description: Feito (corpo baleiro).
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
   /tenants/{slug}/admin/issues:
     get:
       operationId: adminListIssues
@@ -4039,6 +4633,8 @@ paths:
       - Council admin
       summary: A lista de mantemento
       description: |-
+        Unha páxina de cada vez: 20 por defecto (pageSize, ata 100).
+
         As máis recentes primeiro.
 
         Administración do concello: a persoa usuaria con sesión iniciada ten que ser administradora deste concello ou superadministradora, coa sesión iniciada cun segundo factor (cando REQUIRE_ADMIN_MFA está activado).
@@ -4059,6 +4655,8 @@ paths:
         description: Só este estado.
         schema:
           $ref: '#/components/schemas/IssueStatus'
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/PageSize'
       responses:
         '200':
           description: OK
@@ -5149,6 +5747,9 @@ components:
       - resident_rejected
       - resident_revoked
       - participant_removed
+      - council_notice
+      - poll_opened
+      - poll_closed
     TenantRole:
       type: string
       enum:
@@ -5398,6 +5999,282 @@ components:
       - logo_url
       - contact_email
       - contact_phone
+    CouncilPage:
+      description: Un concello e os seus comunicados vixentes.
+      allOf:
+      - $ref: '#/components/schemas/Tenant'
+      - type: object
+        properties:
+          notices:
+            type: array
+            items:
+              $ref: '#/components/schemas/PublicNotice'
+        required:
+        - notices
+    PublicNotice:
+      type: object
+      description: Un comunicado do concello, nas súas páxinas ata que caduca.
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        body:
+          type: string
+        facility_name:
+          type: string
+          description: '"" se é para todo o concello. Só na páxina do concello.'
+        facility_slug:
+          type: string
+        expires_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+      required: [id, title, body, facility_name, facility_slug, expires_at, created_at]
+    IssuesSummary:
+      type: object
+      description: A parte pública da lista de mantemento dunha instalación, sen o que alguén escribiu nin quen avisou.
+      properties:
+        open:
+          type: array
+          description: Problemas avisados e sen arranxar, un por categoría, os máis antigos primeiro.
+          items:
+            type: object
+            properties:
+              category:
+                $ref: '#/components/schemas/IssueCategory'
+              reports:
+                type: integer
+              first_reported_at:
+                type: string
+                format: date-time
+              in_progress:
+                type: boolean
+                description: O concello xa está nel.
+              urgent:
+                type: boolean
+            required: [category, reports, first_reported_at, in_progress, urgent]
+        recently_solved:
+          type: array
+          description: O arranxado nos últimos 30 días, un por categoría, o máis recente primeiro.
+          items:
+            type: object
+            properties:
+              category:
+                $ref: '#/components/schemas/IssueCategory'
+              reports:
+                type: integer
+              solved_at:
+                type: string
+                format: date-time
+            required: [category, reports, solved_at]
+        average_days_to_solve:
+          type: [number, 'null']
+          description: Os días que tarda de media o concello en arranxar o que avisa a veciñanza (en 180 días, cun decimal); null antes de arranxar ningún.
+        solved_count:
+          type: integer
+          description: Cantos arranxou o concello neses 180 días.
+      required: [open, recently_solved, average_days_to_solve, solved_count]
+    AdminNotice:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        facility_id:
+          type: string
+          description: '"" para todo o concello.'
+        facility_name:
+          type: string
+        title:
+          type: string
+        body:
+          type: string
+        expires_at:
+          type: string
+          format: date-time
+        active:
+          type: boolean
+          description: Aínda se amosa nas páxinas.
+        notify:
+          type: boolean
+        recipients:
+          type: integer
+          description: A cantas persoas se lle enviou na campá e por correo.
+        created_at:
+          type: string
+          format: date-time
+      required: [id, facility_id, facility_name, title, body, expires_at, active, notify, recipients, created_at]
+    AdminNoticesResponse:
+      type: object
+      properties:
+        timezone:
+          type: string
+        notices:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminNotice'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      required: [timezone, notices, pagination]
+    NoticeInput:
+      type: object
+      properties:
+        facility_id:
+          type: string
+          description: '"" para todo o concello.'
+        title:
+          type: string
+          maxLength: 120
+        body:
+          type: string
+          maxLength: 2000
+        expires_on:
+          type: string
+          format: date
+          description: O último día que se amosa (hora do concello), desde hoxe e ata dentro dun ano.
+        notify:
+          type: boolean
+          description: Tamén na campá e por correo a quen reserva alí.
+      required: [title, body, expires_on]
+    PollOption:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        label:
+          type: string
+        votes:
+          type: [integer, 'null']
+          description: null para a veciñanza mentres a enquisa está aberta.
+      required: [id, label, votes]
+    AdminPoll:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        facility_id:
+          type: string
+        facility_name:
+          type: string
+        question:
+          type: string
+        residents_only:
+          type: boolean
+        closes_at:
+          type: string
+          format: date-time
+        closed_at:
+          type: [string, 'null']
+          format: date-time
+          description: Pechada antes de tempo.
+        open:
+          type: boolean
+        votes:
+          type: integer
+        recipients:
+          type: integer
+          description: A cantas persoas se lle preguntou na campá e por correo ao abrila.
+        options:
+          type: array
+          items:
+            $ref: '#/components/schemas/PollOption'
+        created_at:
+          type: string
+          format: date-time
+      required: [id, facility_id, facility_name, question, residents_only, closes_at, closed_at, open, votes, recipients, options, created_at]
+    AdminPollsResponse:
+      type: object
+      properties:
+        timezone:
+          type: string
+        polls:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminPoll'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      required: [timezone, polls, pagination]
+    PollInput:
+      type: object
+      properties:
+        facility_id:
+          type: string
+          description: '"" para todo o concello.'
+        question:
+          type: string
+          maxLength: 200
+        options:
+          type: array
+          minItems: 2
+          maxItems: 6
+          items:
+            type: string
+            maxLength: 120
+        residents_only:
+          type: boolean
+        closes_on:
+          type: string
+          format: date
+          description: O último día aberta (hora do concello), desde hoxe e ata dentro de 90 días.
+      required: [question, options, closes_on]
+    MyPoll:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        question:
+          type: string
+        tenant_name:
+          type: string
+        tenant_slug:
+          type: string
+        facility_name:
+          type: string
+        facility_slug:
+          type: string
+        residents_only:
+          type: boolean
+        open:
+          type: boolean
+        closes_at:
+          type: string
+          format: date-time
+          description: Cando pecha, ou cando pechou se foi antes de tempo.
+        my_option:
+          type: string
+          description: O voto da persoa; "" antes de votar.
+        votes:
+          type: [integer, 'null']
+          description: null mentres está aberta.
+        options:
+          type: array
+          items:
+            $ref: '#/components/schemas/PollOption'
+      required: [id, question, tenant_name, tenant_slug, facility_name, facility_slug, residents_only, open, closes_at, my_option, votes, options]
+    MyPollsResponse:
+      type: object
+      properties:
+        polls:
+          type: array
+          items:
+            $ref: '#/components/schemas/MyPoll'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      required: [polls, pagination]
+    VoteInput:
+      type: object
+      properties:
+        option_id:
+          type: string
+          format: uuid
+      required: [option_id]
     TenantsResponse:
       type: object
       properties:
@@ -5852,6 +6729,13 @@ components:
           - $ref: '#/components/schemas/RatingSummary'
           - type: 'null'
           description: As estrelas da veciñanza despois das súas reservas; null ata que alguén valore.
+        notices:
+          type: array
+          description: Os comunicados vixentes do concello para esta instalación e para todo o concello, os máis recentes primeiro.
+          items:
+            $ref: '#/components/schemas/PublicNotice'
+        issues:
+          $ref: '#/components/schemas/IssuesSummary'
       required:
       - tenant
       - timezone
@@ -5860,6 +6744,8 @@ components:
       - facility
       - schedule
       - rating
+      - notices
+      - issues
     PeriodForecast:
       type: object
       properties:
@@ -6259,10 +7145,14 @@ components:
         verified_at:
           type: string
           format: date-time
+        by_role:
+          type: boolean
+          description: Só como administradora do concello ou superadministradora, sen que o concello a verificase. Reserva alí como veciña, pero é veciña dun concello como moito.
       required:
       - tenant_name
       - tenant_slug
       - verified_at
+      - by_role
     PendingResidentRequest:
       type: object
       properties:
@@ -7748,6 +8638,9 @@ components:
         booking_id:
           type: string
           description: '"" para avisos que non son dunha reserva; se non, un UUID.'
+        poll_id:
+          type: string
+          description: 'poll_opened e poll_closed: a enquisa; "" nos demais.'
         is_public:
           type: boolean
           description: 'rating_requested: tamén se pode valorar as outras persoas.'
@@ -8332,6 +9225,81 @@ components:
       - target_name
       - target_exists
       - summary
+    EmailLogResponse:
+      type: object
+      properties:
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmailLogEntry'
+        next:
+          type: string
+          format: date-time
+          nullable: true
+          description: Para ?before= na seguinte páxina; null ao final.
+        kinds:
+          type: array
+          items:
+            type: string
+          description: Os tipos de correo que hai no rexistro, para o filtro.
+        sent_24h:
+          type: integer
+          description: Correos enviados nas últimas 24 horas (sen filtros).
+        failed_24h:
+          type: integer
+          description: Correos que fallaron nas últimas 24 horas (sen filtros).
+    EmailLogEntry:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        at:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [sent, failed]
+        kind:
+          type: string
+        tenant_slug:
+          type: string
+        tenant_name:
+          type: string
+        recipient:
+          type: string
+        subject:
+          type: string
+        sender:
+          type: string
+        relay:
+          type: string
+          description: host:porto do servidor SMTP; baleiro se non se puido usar ningún.
+        error:
+          type: string
+    ApiLogPage:
+      type: object
+      properties:
+        lines:
+          type: array
+          items:
+            type: object
+            properties:
+              at:
+                type: string
+                description: AAAA-MM-DD hh:mm:ss.mmm, na hora do servidor.
+              level:
+                type: string
+                enum: [DEBUG, INFO, WARN, ERROR, FATAL]
+              caller:
+                type: string
+              text:
+                type: string
+        next:
+          type: string
+          description: Para ?before= nas liñas anteriores; baleiro ao final.
+        enabled:
+          type: boolean
     AuditListResponse:
       type: object
       properties:
@@ -9236,6 +10204,9 @@ components:
         can_change:
           type: boolean
           description: Ata que comeza.
+        cancelled:
+          type: boolean
+          description: O concello cancelouno (no historial).
         timezone:
           type: string
           description: O do concello, para amosar e editar as horas nel.
@@ -9251,6 +10222,7 @@ components:
       - capacity
       - participant_count
       - can_change
+      - cancelled
       - timezone
     EventsResponse:
       type: object
@@ -9263,7 +10235,10 @@ components:
           items:
             $ref: '#/components/schemas/Event'
           description: Aínda sen rematar, os máis próximos primeiro.
+        pagination:
+          $ref: '#/components/schemas/Pagination'
       required:
+      - pagination
       - timezone
       - events
     EventInput:
@@ -9696,7 +10671,10 @@ components:
           items:
             $ref: '#/components/schemas/Issue'
           description: As máis recentes primeiro.
+        pagination:
+          $ref: '#/components/schemas/Pagination'
       required:
+      - pagination
       - issues
     IssueCount:
       type: object

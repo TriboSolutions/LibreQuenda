@@ -68,6 +68,80 @@ export type Facility = {
 // contact: where residents send accessibility feedback and complaints (RD 1112/2018); "" when not given
 export type Tenant = { slug: string; name: string; logo_url: string; contact_email: string; contact_phone: string }
 
+/** The council's page: the council and its current announcements. */
+export type CouncilPage = Tenant & { notices: PublicNotice[] }
+
+// --- participation: announcements, the public maintenance list, polls -----------
+
+/** One of the council's announcements, on its pages until it expires. */
+export type PublicNotice = {
+  id: string
+  title: string
+  body: string
+  facility_name: string // "" for the whole council; only on the council's page
+  facility_slug: string
+  expires_at: string
+  created_at: string
+}
+
+/** The public side of a facility's maintenance list: no one's words, no one's name. */
+export type IssuesSummary = {
+  open: { category: IssueCategory; reports: number; first_reported_at: string; in_progress: boolean; urgent: boolean }[]
+  recently_solved: { category: IssueCategory; reports: number; solved_at: string }[] // the last 30 days
+  average_days_to_solve: number | null // the council's average over 180 days; null before it solved any
+  solved_count: number
+}
+
+export type AdminNotice = {
+  id: string
+  facility_id: string // "" for the whole council
+  facility_name: string
+  title: string
+  body: string
+  expires_at: string
+  active: boolean
+  notify: boolean
+  recipients: number // told in the bell and by email
+  created_at: string
+}
+
+export type NoticeInput = { facility_id: string; title: string; body: string; expires_on: string; notify: boolean }
+
+export type PollOption = { id: string; label: string; votes: number | null } // votes: null for residents while open
+
+export type AdminPoll = {
+  id: string
+  facility_id: string
+  facility_name: string
+  question: string
+  residents_only: boolean
+  closes_at: string
+  closed_at: string | null
+  open: boolean
+  votes: number
+  recipients: number // asked in the bell and by email when it opened
+  options: PollOption[]
+  created_at: string
+}
+
+export type PollInput = { facility_id: string; question: string; options: string[]; residents_only: boolean; closes_on: string }
+
+/** A poll as a resident sees it in «For you». */
+export type MyPoll = {
+  id: string
+  question: string
+  tenant_name: string
+  tenant_slug: string
+  facility_name: string
+  facility_slug: string
+  residents_only: boolean
+  open: boolean
+  closes_at: string // or when it closed, if early
+  my_option: string // "" before voting
+  votes: number | null // null while open
+  options: PollOption[]
+}
+
 export type GeoPoint = { latitude: number; longitude: number }
 
 /** Where a page sits in a list the API pages (?page=&pageSize=, 100 by default). */
@@ -157,6 +231,8 @@ export type FacilityPage = {
   facility: Facility
   schedule: WeeklyWindow[]
   rating: RatingSummary | null // residents' stars after their bookings; null until someone rated
+  notices: PublicNotice[] // the council's current announcements for it and for the whole council
+  issues: IssuesSummary
 }
 
 // --- ratings ------------------------------------------------------------------
@@ -335,7 +411,8 @@ export type CouncilEvent = {
   own_capacity: number | null // null: the facility's
   capacity: number // who can join
   participant_count: number
-  can_change: boolean // until it starts
+  can_change: boolean // until it starts, and not cancelled
+  cancelled: boolean // by the council (in the history)
   timezone: string // the council's: the form shows and takes the times in it
 }
 
@@ -579,10 +656,14 @@ export type NotificationType =
   | 'resident_rejected' // …or could not, from its census
   | 'participant_removed' // the owner of a public booking took the person out (they cannot join it again)
   | 'resident_revoked' // the council took the verification back (and cancelled the bookings at its residents-only facilities)
+  | 'council_notice' // the council's announcement (title), about a facility (facility_slug) or the whole council
+  | 'poll_opened' // the council asks (title: the question): vote in poll_id
+  | 'poll_closed' // …and it closed: its results are out
 
 export type AppNotification = {
   id: string
   booking_id: string // "" for notices about no booking
+  poll_id: string // poll_opened, poll_closed
   is_public: boolean // rating_requested: the others can be rated too
   type: NotificationType
   facility_name: string
@@ -691,7 +772,8 @@ export type CouncilIssue = {
   reporter_phone: string // optional profile phone, only when contact sharing was allowed
 }
 
-export type MyBookings = { upcoming: Booking[]; history: Booking[] }
+/** The upcoming bookings whole, and a page of the history (20), most recent first. */
+export type MyBookings = { upcoming: Booking[]; history: Booking[]; history_pagination: Pagination }
 
 export type Me = {
   id: string
@@ -715,7 +797,8 @@ export type Me = {
   // council roles waiting for this person: granted once the email is verified
   pending_invitations?: { tenant_name: string; tenant_slug: string }[]
   // councils that verified this person as their resident: they book at their residents-only facilities
-  resident_of?: { tenant_name: string; tenant_slug: string; verified_at: string }[]
+  // where they book as residents; by_role: as its administrator or a superadministrator, not verified by it
+  resident_of?: { tenant_name: string; tenant_slug: string; verified_at: string; by_role: boolean }[]
   // councils the person asked to verify them, still undecided
   resident_requests?: { tenant_name: string; tenant_slug: string; requested_at: string }[]
 }
@@ -1002,14 +1085,38 @@ export type AuditPage = { entries: AuditEntry[]; next: string | null }
 /** What the log is narrowed to: an action code or prefix, days (YYYY-MM-DD), a council (superadmins), and a page. */
 export type AuditFilters = { action?: string; from?: string; to?: string; council?: string; before?: string }
 
-function auditParams(filters: AuditFilters) {
+function auditParams(filters: AuditFilters | EmailLogFilters | ApiLogFilters) {
   const params = new URLSearchParams()
   for (const [key, value] of Object.entries(filters)) if (value) params.set(key, value)
   return params
 }
 
+/** One email LibreQuenda tried to send (superadministrators): never its body. */
+export type EmailLogEntry = {
+  id: string
+  at: string
+  status: 'sent' | 'failed'
+  kind: string
+  tenant_slug: string
+  tenant_name: string
+  recipient: string
+  subject: string
+  sender: string
+  relay: string // host:port; empty when no relay could be used
+  error: string
+}
+export type EmailLogPage = { entries: EmailLogEntry[]; next: string | null; kinds: string[]; sent_24h: number; failed_24h: number }
+/** Searched (address, subject, error), by status, kind, council and days, and a page. */
+export type EmailLogFilters = { q?: string; status?: string; kind?: string; council?: string; from?: string; to?: string; before?: string }
+
+/** A line of the API's log files, as written (the time is the server's). */
+export type ApiLogLine = { at: string; level: 'DEBUG' | 'INFO' | 'WARN' | 'ERROR' | 'FATAL'; caller: string; text: string }
+export type ApiLogPage = { lines: ApiLogLine[]; next: string; enabled: boolean }
+/** level: comma-separated levels; q: part of the text; before: the next of the last page. */
+export type ApiLogFilters = { level?: string; q?: string; before?: string }
+
 /** The filtered audit log as a CSV, fetched with the token and saved. */
-async function downloadAudit(token: string, path: string, filters: AuditFilters) {
+async function downloadAudit(token: string, path: string, filters: AuditFilters | EmailLogFilters, name = 'audit-log') {
   const params = auditParams(filters)
   params.set('format', 'csv')
   const res = await apiFetch(`/api${path}?${params}`, {
@@ -1019,7 +1126,7 @@ async function downloadAudit(token: string, path: string, filters: AuditFilters)
   const url = URL.createObjectURL(await res.blob())
   const link = document.createElement('a')
   link.href = url
-  link.download = `audit-log-${new Date().toISOString().slice(0, 10)}.csv`
+  link.download = `${name}-${new Date().toISOString().slice(0, 10)}.csv`
   link.click()
   URL.revokeObjectURL(url)
 }
@@ -1099,24 +1206,68 @@ async function uploadImage(token: string, folder: MediaFolder, file: File, owner
   return res.json()
 }
 
+/** The home page's filters, as the API reads them (it filters and sorts). */
+export type FacilityFilters = {
+  q?: string
+  council?: string
+  tags?: string[] // all of them
+  booking?: JoinableKind[] // any of them
+  near?: GeoPoint | null // nearest first, with distance_km
+  radiusKm?: number // with near: within it
+  minRating?: number
+  bbox?: { west: number; south: number; east: number; north: number } // the map's view
+}
+
+/** A facility on the home page's map: where it is and what its popup says. */
+export type FacilityPin = {
+  id: string
+  slug: string
+  name: string
+  latitude: number
+  longitude: number
+  free_today: number
+  tags: string[]
+  council: Tenant
+}
+
+function facilityQuery(filters: FacilityFilters, extra: Record<string, string> = {}) {
+  const query = new URLSearchParams(extra)
+  if (filters.q?.trim()) query.set('q', filters.q.trim())
+  if (filters.council) query.set('council', filters.council)
+  if (filters.tags?.length) query.set('tags', filters.tags.join(','))
+  if (filters.booking?.length) query.set('booking', filters.booking.join(','))
+  if (filters.near) {
+    query.set('lat', String(filters.near.latitude))
+    query.set('lon', String(filters.near.longitude))
+    if (filters.radiusKm) query.set('radius_km', String(filters.radiusKm))
+  }
+  if (filters.minRating) query.set('min_rating', String(filters.minRating))
+  if (filters.bbox) query.set('bbox', [filters.bbox.west, filters.bbox.south, filters.bbox.east, filters.bbox.north].map((n) => n.toFixed(5)).join(','))
+  return query.toString()
+}
+
+/** ?state=past for a history, ?page= after the first: the councils' paged lists. */
+function listQuery(past: boolean, page: number) {
+  const query = new URLSearchParams()
+  if (past) query.set('state', 'past')
+  if (page > 1) query.set('page', String(page))
+  return query.size ? `?${query}` : ''
+}
+
 export const api = {
   uploadImage,
   tenants: () => request<{ tenants: Tenant[] }>('/tenants'),
-  tenant: (slug: string) => request<Tenant>(`/tenants/${encodeURIComponent(slug)}`),
+  tenant: (slug: string) => request<CouncilPage>(`/tenants/${encodeURIComponent(slug)}`),
+  // the councils' polls for the signed-in person; one vote each, changed while open
+  myPolls: (token: string, page = 1) => request<{ polls: MyPoll[]; pagination: Pagination }>(`/me/polls${page > 1 ? `?page=${page}` : ''}`, { token }),
+  vote: (token: string, pollId: string, optionId: string) => request<void>(`/me/polls/${pollId}/vote`, { token, method: 'PUT', body: { option_id: optionId } }),
   tags: () => request<TagCatalogue>('/tags'),
   branding: () => request<Branding>('/branding'),
-  // near: nearest first and each one's distance_km (the API sorts); radiusKm keeps those within it.
-  // The map shows them all, so every page is fetched, in the API's order.
-  // nearest first within the radius, and only the ones rated at least minRating: the API does it
-  facilities: async (near?: { latitude: number; longitude: number } | null, radiusKm = 0, minRating = 0) => {
-    const query = (near ? `&lat=${near.latitude}&lon=${near.longitude}${radiusKm > 0 ? `&radius_km=${radiusKm}` : ''}` : '') + (minRating > 0 ? `&min_rating=${minRating}` : '')
-    const facilities: FacilityCard[] = []
-    for (let page = 1; ; page++) {
-      const answer = await request<{ facilities: FacilityCard[]; pagination: Pagination }>(`/facilities?page=${page}${query}`)
-      facilities.push(...answer.facilities)
-      if (!answer.pagination?.has_more) return { facilities }
-    }
-  },
+  // the home page's list, a page at a time (20 by default), filtered and sorted by the API
+  facilities: (filters: FacilityFilters, page = 1, pageSize = 20) =>
+    request<{ facilities: FacilityCard[]; pagination: Pagination }>(`/facilities?${facilityQuery(filters, { page: String(page), pageSize: String(pageSize) })}`),
+  // …and its map: every facility the same filters keep (without bbox), only where it is
+  facilityPins: (filters: Omit<FacilityFilters, 'bbox'>) => request<{ pins: FacilityPin[] }>(`/facilities/map?${facilityQuery(filters)}`),
   day: (slug: string, date?: string) =>
     request<Day>(`/tenants/${encodeURIComponent(slug)}/day${date ? `?date=${date}` : ''}`),
   me: (token: string) => request<Me>('/me', { token }),
@@ -1143,7 +1294,7 @@ export const api = {
     resendEmailCode: (token: string) => request<void>('/me/account/email/resend', { token, method: 'POST' }),
     verifyEmail: (token: string, code: string) => request<void>('/me/account/email/verify', { token, method: 'POST', body: { code } }),
   },
-  myBookings: (token: string) => request<MyBookings>('/me/bookings', { token }),
+  myBookings: (token: string, historyPage = 1) => request<MyBookings>(`/me/bookings${historyPage > 1 ? `?page=${historyPage}` : ''}`, { token }),
   // asking the council to verify the person as its resident (residents-only facilities), or withdrawing it
   requestResidency: (token: string, slug: string, input: ResidentRequestInput) =>
     request<{ requested_at: string }>(`/tenants/${encodeURIComponent(slug)}/resident-request`, { token, method: 'POST', body: input }),
@@ -1285,7 +1436,10 @@ export const api = {
       request<{ people: EventPerson[] }>(`/tenants/${encodeURIComponent(slug)}/admin/events/${eventId}/people`, { token }),
     removeEventParticipant: (token: string, slug: string, eventId: string, participantId: string) =>
       request<void>(`/tenants/${encodeURIComponent(slug)}/admin/events/${eventId}/people/${participantId}`, { token, method: 'DELETE' }),
-    events: (token: string, slug: string) => request<{ timezone: string; events: CouncilEvent[] }>(`/tenants/${encodeURIComponent(slug)}/admin/events`, { token }),
+    // upcoming (not ended), or the history (ended or cancelled), a page at a time
+    events: (token: string, slug: string, past = false, page = 1) =>
+      request<{ timezone: string; events: CouncilEvent[]; pagination: Pagination }>(`/tenants/${encodeURIComponent(slug)}/admin/events${listQuery(past, page)}`, { token }),
+    event: (token: string, slug: string, id: string) => request<CouncilEvent>(`/tenants/${encodeURIComponent(slug)}/admin/events/${id}`, { token }),
     // except: the event being moved, which is not in its own way
     previewEvent: (token: string, slug: string, input: EventInput, except?: string) =>
       request<EventInTheWay>(`/tenants/${encodeURIComponent(slug)}/admin/events/preview${except ? `?except=${except}` : ''}`, { token, method: 'POST', body: input }),
@@ -1303,11 +1457,12 @@ export const api = {
       request<Indicators>(`/tenants/${encodeURIComponent(slug)}/admin/indicators?${indicatorsParams(query)}`, { token }),
     exportIndicators,
     exportData: exportCouncilData,
-    issues: (token: string, slug: string, filter: { facility?: string; status?: IssueStatus | '' } = {}) => {
+    issues: (token: string, slug: string, filter: { facility?: string; status?: IssueStatus | ''; page?: number } = {}) => {
       const query = new URLSearchParams()
       if (filter.facility) query.set('facility', filter.facility)
       if (filter.status) query.set('status', filter.status)
-      return request<{ issues: CouncilIssue[] }>(`/tenants/${encodeURIComponent(slug)}/admin/issues${query.size ? `?${query}` : ''}`, { token })
+      if (filter.page && filter.page > 1) query.set('page', String(filter.page))
+      return request<{ issues: CouncilIssue[]; pagination: Pagination }>(`/tenants/${encodeURIComponent(slug)}/admin/issues${query.size ? `?${query}` : ''}`, { token })
     },
     residents: (token: string, slug: string, filter: { q?: string; sort?: ResidentSort; page?: number } = {}) => {
       const query = new URLSearchParams()
@@ -1329,6 +1484,19 @@ export const api = {
       request<void>(`/tenants/${encodeURIComponent(slug)}/admin/resident-requests/${id}/verify`, { token, method: 'POST' }),
     discardResidentRequest: (token: string, slug: string, id: string) =>
       request<void>(`/tenants/${encodeURIComponent(slug)}/admin/resident-requests/${id}`, { token, method: 'DELETE' }),
+    // the current ones, or the history (expired)
+    notices: (token: string, slug: string, past = false, page = 1) =>
+      request<{ timezone: string; notices: AdminNotice[]; pagination: Pagination }>(`/tenants/${encodeURIComponent(slug)}/admin/notices${listQuery(past, page)}`, { token }),
+    createNotice: (token: string, slug: string, input: NoticeInput) =>
+      request<AdminNotice>(`/tenants/${encodeURIComponent(slug)}/admin/notices`, { token, method: 'POST', body: input }),
+    deleteNotice: (token: string, slug: string, id: string) => request<void>(`/tenants/${encodeURIComponent(slug)}/admin/notices/${id}`, { token, method: 'DELETE' }),
+    // the open ones, or the history (closed)
+    polls: (token: string, slug: string, past = false, page = 1) =>
+      request<{ timezone: string; polls: AdminPoll[]; pagination: Pagination }>(`/tenants/${encodeURIComponent(slug)}/admin/polls${listQuery(past, page)}`, { token }),
+    createPoll: (token: string, slug: string, input: PollInput) =>
+      request<AdminPoll>(`/tenants/${encodeURIComponent(slug)}/admin/polls`, { token, method: 'POST', body: input }),
+    closePoll: (token: string, slug: string, id: string) => request<void>(`/tenants/${encodeURIComponent(slug)}/admin/polls/${id}/close`, { token, method: 'POST' }),
+    deletePoll: (token: string, slug: string, id: string) => request<void>(`/tenants/${encodeURIComponent(slug)}/admin/polls/${id}`, { token, method: 'DELETE' }),
     newIssueCount: (token: string, slug: string) => request<{ new: number }>(`/tenants/${encodeURIComponent(slug)}/admin/issues/count`, { token }),
     changeIssue: (token: string, slug: string, id: string, input: { status: IssueStatus; staff_note: string }) =>
       request<CouncilIssue>(`/tenants/${encodeURIComponent(slug)}/admin/issues/${id}`, { token, method: 'PUT', body: input }),
@@ -1372,6 +1540,10 @@ export const api = {
   admin: {
     audit: (token: string, filters: AuditFilters) => request<AuditPage>(`/admin/audit?${auditParams(filters)}`, { token }),
     downloadAudit: (token: string, filters: AuditFilters) => downloadAudit(token, '/admin/audit', filters),
+    // every email sent or not, and the API's own log files
+    emailLog: (token: string, filters: EmailLogFilters) => request<EmailLogPage>(`/admin/email-log?${auditParams(filters)}`, { token }),
+    downloadEmailLog: (token: string, filters: EmailLogFilters) => downloadAudit(token, '/admin/email-log', filters, 'email-log'),
+    apiLog: (token: string, filters: ApiLogFilters) => request<ApiLogPage>(`/admin/api-log?${auditParams(filters)}`, { token }),
     // platform-wide booking rules (superadministrators)
     // the analytics assistant: its language model (the key is never sent back), and questions about every council
     aiSettings: (token: string) => request<AISettings>('/admin/ai-settings', { token }),

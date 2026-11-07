@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton'
 import { Textarea } from '@/components/ui/textarea'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
-import { useAsync } from '@/hooks/useAsync'
+import { FILTER_DEBOUNCE_MS, useAsync } from '@/hooks/useAsync'
 import { api, type AdminFacilitySummary, type StaffBooking, type StaffDay, type StaffSlot } from '@/lib/api'
 import { addDays, formatLongDate, formatTime, localDate, minutesOfDay, shortDateParts } from '@/lib/time'
 import { cn } from '@/lib/utils'
@@ -64,7 +64,7 @@ export function StaffBookingsPanel({ slug, facilities, facilityId, onFacilityCha
   const [date, setDate] = useState('') // "" = today, in the council's time zone
   const [view, setView] = useState<View>(() => (narrowScreen() ? 'day' : 'week'))
   const facility = active.find((f) => f.id === facilityId) ?? active[0]
-  const calendar = useAsync(facility ? () => loadCalendar(token, slug, facility.id, date, view) : null, `staff-calendar:${slug}:${facility?.id}:${date}:${view}`)
+  const calendar = useAsync(facility ? () => loadCalendar(token, slug, facility.id, date, view) : null, `staff-calendar:${slug}:${facility?.id}:${date}:${view}`, { debounceMs: FILTER_DEBOUNCE_MS })
   const [booking, setBooking] = useState<{ day: StaffDay; slot: StaffSlot } | null>(null)
   const [details, setDetails] = useState<{ day: StaffDay; booking: StaffBooking } | null>(null)
   const [cancelling, setCancelling] = useState<{ day: StaffDay; booking: StaffBooking } | null>(null)

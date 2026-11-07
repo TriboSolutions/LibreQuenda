@@ -2,7 +2,9 @@ import { Settings } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import { Link } from 'react-router'
+import { ApiLogPanel } from '@/components/admin/ApiLogPanel'
 import { AuditLogPanel } from '@/components/admin/AuditLogPanel'
+import { EmailLogPanel } from '@/components/admin/EmailLogPanel'
 import { BrandingPanel } from '@/components/admin/BrandingPanel'
 import { CouncilsPanel } from '@/components/admin/CouncilsPanel'
 import { SuperadminsPanel } from '@/components/admin/SuperadminsPanel'
@@ -18,7 +20,7 @@ import { usePageTitle } from '@/hooks/usePageTitle'
 import { api } from '@/lib/api'
 import { SiteFooter } from '@/components/SiteFooter'
 
-/** /admin: the superadministrator's area (councils, superadministrators, the facility tag catalogue, the app's name and logo, and the activity log); the gear opens the platform's settings. */
+/** /admin: the superadministrator's area (councils, superadministrators, the facility tag catalogue, the app's name and logo, the activity log, the emails sent and the API's log); the gear opens the platform's settings. */
 export function PlatformAdmin() {
   const { t } = useTranslation(['admin', 'common'])
   const auth = useAuth()
@@ -61,6 +63,8 @@ export function PlatformAdmin() {
             <TabsTrigger value="tags">{t('admin:tabs.tags')}</TabsTrigger>
             <TabsTrigger value="branding">{t('admin:tabs.branding')}</TabsTrigger>
             <TabsTrigger value="audit">{t('admin:tabs.audit')}</TabsTrigger>
+            <TabsTrigger value="emails">{t('admin:tabs.emails')}</TabsTrigger>
+            <TabsTrigger value="apiLog">{t('admin:tabs.apiLog')}</TabsTrigger>
           </TabsList>
           {/* the platform's own settings, like the gear of a council's administration */}
           <Button asChild variant="outline" size="icon">
@@ -83,6 +87,12 @@ export function PlatformAdmin() {
         </TabsContent>
         <TabsContent value="audit">
           <PlatformAudit />
+        </TabsContent>
+        <TabsContent value="emails">
+          <PlatformEmails />
+        </TabsContent>
+        <TabsContent value="apiLog">
+          <PlatformApiLog />
         </TabsContent>
       </Tabs>
     )
@@ -113,4 +123,25 @@ function PlatformAudit() {
       councils={councils.data?.tenants ?? []}
     />
   )
+}
+
+/** Every email LibreQuenda tried to send, from every council. */
+function PlatformEmails() {
+  const auth = useAuth()
+  const token = auth.user?.access_token ?? ''
+  const councils = useAsync(() => api.admin.councils(token), 'email-log-councils')
+  return (
+    <EmailLogPanel
+      load={(filters) => api.admin.emailLog(token, filters)}
+      download={(filters) => api.admin.downloadEmailLog(token, filters)}
+      councils={councils.data?.tenants ?? []}
+    />
+  )
+}
+
+/** The API's own log files. */
+function PlatformApiLog() {
+  const auth = useAuth()
+  const token = auth.user?.access_token ?? ''
+  return <ApiLogPanel load={(filters) => api.admin.apiLog(token, filters)} />
 }

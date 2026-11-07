@@ -56,6 +56,9 @@ func (r *platformRoutes) RegisterRoutes() {
 		{Path: "/admin/ai-settings", Method: http.MethodGet, Handler: h.GetAISettings},
 		{Path: "/admin/ai-settings", Method: http.MethodPut, Handler: h.SaveAISettings},
 		{Path: "/admin/audit", Method: http.MethodGet, Handler: h.GetAudit},
+		// every email sent or not, and the API's own log: superadministrators only
+		{Path: "/admin/email-log", Method: http.MethodGet, Handler: h.GetEmailLog},
+		{Path: "/admin/api-log", Method: http.MethodGet, Handler: h.GetAPILog},
 		{Path: "/admin/booking-policy", Method: http.MethodGet, Handler: h.GetBookingPolicy},
 		{Path: "/admin/booking-policy", Method: http.MethodPut, Handler: h.SaveBookingPolicy},
 	}

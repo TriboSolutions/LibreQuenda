@@ -4,7 +4,7 @@ import { useParams, useSearchParams } from 'react-router'
 import { ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useAsync } from '@/hooks/useAsync'
+import { FILTER_DEBOUNCE_MS, useAsync } from '@/hooks/useAsync'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { useReloadOnNewVersion } from '@/hooks/useNewVersion'
 import { useBranding } from '@/hooks/useBranding'
@@ -28,7 +28,7 @@ export function WidgetPage() {
   const { branding } = useBranding()
   useReloadOnNewVersion()
   const [date, setDate] = useState<string | null>(null)
-  const day = useAsync(() => api.day(slug, date ?? undefined), `widget:${slug}:${date}`)
+  const day = useAsync(() => api.day(slug, date ?? undefined), `widget:${slug}:${date}`, { debounceMs: FILTER_DEBOUNCE_MS })
   const today = day.data && date === null ? day.data.date : null
   const [first, setFirst] = useState<string | null>(null)
   if (today && first === null) setFirst(today)

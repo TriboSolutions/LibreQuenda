@@ -169,5 +169,26 @@
     "pending": "Request sent on {{date}}, pending review.",
     "withdraw": "Withdraw the request",
     "close": "Close"
+  },
+  "notices": {
+    "title": "Announcements from the council",
+    "label": "Announcement from the council",
+    "published": "Published {{date}}",
+    "until": "until {{date}}"
+  },
+  "state": {
+    "title": "Facility status",
+    "noKnown": "No reported problems waiting to be fixed.",
+    "known": "Problems already reported",
+    "alreadyKnown": "The council knows: no need to report it again.",
+    "reported": "Reported",
+    "inProgress": "The council is on it",
+    "since": "since {{date}}",
+    "reports_one": "{{count}} report",
+    "reports_other": "{{count}} reports",
+    "solved": "Fixed lately",
+    "solvedOn": "Fixed on {{date}}",
+    "average_one": "{{council}} fixes what residents report in {{days}} days on average ({{count}} fixed in the last 6 months).",
+    "average_other": "{{council}} fixes what residents report in {{days}} days on average ({{count}} fixed in the last 6 months)."
   }
 }

@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useAsync } from '@/hooks/useAsync'
+import { FILTER_DEBOUNCE_MS, useAsync } from '@/hooks/useAsync'
 import { api, type Resident, type ResidentSort } from '@/lib/api'
 import { formatDateWithYear } from '@/lib/time'
 
@@ -33,7 +33,7 @@ export function ResidentsPanel({ slug, onRequestsChanged }: { slug: string; onRe
   const [removing, setRemoving] = useState<Resident | null>(null)
   const requests = useAsync(() => api.council.residentRequests(token, slug), `resident-requests:${slug}`)
   const pendingRequests = requests.data?.requests ?? []
-  const residents = useAsync(() => api.council.residents(token, slug, { q: query, sort, page }), `residents:${slug}:${query}:${sort}:${page}`)
+  const residents = useAsync(() => api.council.residents(token, slug, { q: query, sort, page }), `residents:${slug}:${query}:${sort}:${page}`, { debounceMs: FILTER_DEBOUNCE_MS })
   const list = residents.data?.residents ?? []
   const total = residents.data?.total ?? 0
   const pages = Math.max(1, Math.ceil(total / (residents.data?.page_size ?? 50)))

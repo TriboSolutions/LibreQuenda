@@ -63,6 +63,7 @@ SQL_PARTS = [
     ("public.sql", "public and shared bookings  (notes, invite links, people and guests who joined)"),
     ("history.sql", "booking history"),
     ("issues.sql", "reported problems  (the councils' maintenance lists)"),
+    ("participation.sql", "announcements and polls  (with votes), and problems fixed lately"),
     ("audit.sql", "audit log"),
     ("notifications.sql", "notifications  (already emailed: nothing goes out)"),
 ]

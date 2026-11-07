@@ -12,6 +12,7 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/angelbarreiros/Penguin/router/helpers"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 )
@@ -91,7 +92,8 @@ type EventDto struct {
 	OwnCapacity      *int32    `json:"own_capacity"` // null: the facility's
 	Capacity         int       `json:"capacity"`     // who can join
 	ParticipantCount int64     `json:"participant_count"`
-	CanChange        bool      `json:"can_change"` // until it starts
+	CanChange        bool      `json:"can_change"` // until it starts, and not cancelled
+	Cancelled        bool      `json:"cancelled"`  // by the council (in the history)
 	Timezone         string    `json:"timezone"`   // the council's, to show and edit the times in
 }
 
@@ -106,7 +108,8 @@ func mapEvent(row model.GetEventRow, now time.Time) EventDto {
 		Description:      row.PublicDescription,
 		Capacity:         Places(row.Capacity, model.BookingKindEvent),
 		ParticipantCount: row.ParticipantCount,
-		CanChange:        row.StartsAt.After(now),
+		CanChange:        row.StartsAt.After(now) && row.Status == model.BookingStatusConfirmed,
+		Cancelled:        row.Status == model.BookingStatusCancelled,
 		Timezone:         row.Timezone,
 	}
 	if row.EventCapacity.Valid {
@@ -116,8 +119,9 @@ func mapEvent(row model.GetEventRow, now time.Time) EventDto {
 }
 
 type EventsResponse struct {
-	Timezone string     `json:"timezone"` // the council's: new events are typed in it
-	Events   []EventDto `json:"events"`   // not ended yet, soonest first
+	Timezone   string         `json:"timezone"` // the council's: new events are typed in it
+	Events     []EventDto     `json:"events"`   // not ended yet, soonest first; or the history, the latest first
+	Pagination shared.PageDto `json:"pagination"`
 }
 
 // InTheWayDto: what stops an event at that time: confirmed bookings, which staff
@@ -145,21 +149,31 @@ func (d *InTheWayDto) empty() bool {
 	return len(d.Bookings) == 0 && len(d.Closures) == 0
 }
 
-func (s *bookingsService) ListEvents(ctx context.Context, tenantId uuid.UUID) (*EventsResponse, *shared.ErrorResponse) {
+// ListEvents: the council's events that have not ended, or the history (past:
+// ended or cancelled), a page at a time.
+func (s *bookingsService) ListEvents(ctx context.Context, tenantId uuid.UUID, past bool, page helpers.PaginationParams) (*EventsResponse, *shared.ErrorResponse) {
 	var failed = &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.events_load_failed"}
 	var queries = model.New(s.db)
 	var zone, err = queries.GetTenantTimezone(ctx, tenantId)
 	if err != nil {
 		return nil, failed
 	}
-	var rows []model.ListEventsByTenantRow
-	if rows, err = queries.ListEventsByTenant(ctx, tenantId); err != nil {
+	var limit, skip = shared.Rows(page)
+	var rows []model.ListCouncilEventsRow
+	if rows, err = queries.ListCouncilEvents(ctx, model.ListCouncilEventsParams{TenantID: tenantId, Past: past, MaxRows: limit, Skip: skip}); err != nil {
 		return nil, failed
 	}
 	var now = time.Now()
-	var response = &EventsResponse{Timezone: zone, Events: make([]EventDto, 0, len(rows))}
+	var response = &EventsResponse{Timezone: zone, Events: make([]EventDto, 0, len(rows)), Pagination: shared.NewPageDto(page, 0)}
+	if len(rows) > 0 {
+		response.Pagination = shared.NewPageDto(page, rows[0].Total)
+	}
 	for _, row := range rows {
-		response.Events = append(response.Events, mapEvent(model.GetEventRow(row), now))
+		response.Events = append(response.Events, mapEvent(model.GetEventRow{
+			ID: row.ID, FacilityID: row.FacilityID, FacilityName: row.FacilityName, StartsAt: row.StartsAt, EndsAt: row.EndsAt,
+			Status: row.Status, Title: row.Title, PublicDescription: row.PublicDescription, EventCapacity: row.EventCapacity,
+			Capacity: row.Capacity, ParticipantCount: row.ParticipantCount, Timezone: row.Timezone,
+		}, now))
 	}
 	return response, nil
 }
@@ -346,6 +360,11 @@ func (s *bookingsService) UpdateEvent(ctx context.Context, tenantId uuid.UUID, e
 			NotificationPayload(dto.FacilityName, dto.StartsAt, dto.EndsAt))
 	}
 	return dto, dtoErr
+}
+
+// Event: one of the council's events, for its editor (whatever page of the list it is on).
+func (s *bookingsService) Event(ctx context.Context, tenantId uuid.UUID, id uuid.UUID) (*EventDto, *shared.ErrorResponse) {
+	return s.event(ctx, tenantId, id)
 }
 
 func (s *bookingsService) event(ctx context.Context, tenantId uuid.UUID, id uuid.UUID) (*EventDto, *shared.ErrorResponse) {

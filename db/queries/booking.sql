@@ -101,8 +101,33 @@ FROM
     LEFT JOIN facility_checkin c ON c.facility_id = f.id
 WHERE
     b.user_id = sqlc.arg('user_id')
+    -- the upcoming ones (all of them) and the page of the history asked for (ListHistoryPageByUser)
+    AND ((b.status = 'confirmed' AND b.ends_at > NOW()) OR b.id = ANY(sqlc.arg('history_ids')::UUID[]))
 ORDER BY
     b.starts_at DESC;
+
+-- name: ListHistoryPageByUser :many
+-- A page of the person's history, most recent first: the bookings they made or
+-- joined that ended or were cancelled, with how many there are in all.
+WITH mine AS (
+    SELECT b.id, b.starts_at
+    FROM booking b
+    WHERE b.user_id = sqlc.arg('user_id') AND (b.status <> 'confirmed' OR b.ends_at <= NOW())
+    UNION
+    SELECT b.id, b.starts_at
+    FROM booking_participant p JOIN booking b ON b.id = p.booking_id
+    WHERE p.user_id = sqlc.arg('user_id') AND (b.status <> 'confirmed' OR b.ends_at <= NOW())
+)
+SELECT
+    id,
+    COUNT(*) OVER ()::BIGINT AS total
+FROM
+    mine
+ORDER BY
+    starts_at DESC,
+    id
+LIMIT sqlc.arg('max_rows')
+OFFSET sqlc.arg('skip');
 
 -- name: ListConfirmedBookingsInRange :many
 -- Used to compute availability.

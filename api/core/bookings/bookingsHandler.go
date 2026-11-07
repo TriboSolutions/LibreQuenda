@@ -36,8 +36,8 @@ func (h *bookingsHandler) GetMyBookings(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// a page of the list (?page=&pageSize=, 100 by default); a bad value is a 400
-	var page, pageErr = shared.Page(r)
+	// a page of the history (?page=&pageSize=, 20 by default); a bad value is a 400
+	var page, pageErr = shared.PageOf(r, shared.ListPageSize) // the history, 20 a page
 	if pageErr != nil {
 		helpers.SendI18NErrorResponse(w, r, pageErr.Code, pageErr.Message)
 		return

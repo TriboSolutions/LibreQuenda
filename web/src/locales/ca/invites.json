@@ -9,7 +9,8 @@
     "emptyUpcoming": "No tens reserves properes.",
     "emptyHistory": "Encara no tens reserves passades.",
     "signIn": "Inicia la sessió per veure les teves reserves.",
-    "bookNow": "Reserva ara"
+    "bookNow": "Reserva ara",
+    "historyPages": "Pàgines de l’historial"
   },
   "role": {
     "owner": "Teva",

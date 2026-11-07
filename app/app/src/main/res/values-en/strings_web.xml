@@ -348,6 +348,39 @@
     <string name="notif_issue_reported">New issue at %1$s.</string>
     <string name="notif_rating_requested">How was %1$s? Rate it with 1 to 5 stars.</string>
     <string name="notif_rating_requested_public">How was %1$s? Rate it, and the people who played with you.</string>
+    <string name="notif_council_notice">%4$s published an announcement: “%8$s”.</string>
+    <string name="notif_council_notice_facility">%4$s published an announcement about %1$s: “%8$s”.</string>
+    <string name="notif_poll_opened">%4$s asks: “%8$s”. Vote!</string>
+    <string name="notif_poll_opened_facility">%4$s asks about %1$s: “%8$s”. Vote!</string>
+    <string name="notif_poll_closed">The results of “%8$s” are out.</string>
+    <string name="notices_title">Announcements from the council</string>
+    <string name="notices_label">Announcement from the council</string>
+    <string name="notices_published">Published %1$s</string>
+    <string name="notices_until">until %1$s</string>
+    <string name="state_title">Facility status</string>
+    <string name="state_no_known">No reported problems waiting to be fixed.</string>
+    <string name="state_known">Problems already reported</string>
+    <string name="state_already_known">The council knows: no need to report it again.</string>
+    <string name="state_reported">Reported</string>
+    <string name="state_in_progress">The council is on it</string>
+    <string name="state_since">since %1$s</string>
+    <string name="state_solved">Fixed lately</string>
+    <string name="state_solved_on">Fixed on %1$s</string>
+    <string name="polls_title">Your council asks</string>
+    <string name="polls_help">One vote per person, which you can change while the poll is open. The results show when it closes.</string>
+    <string name="polls_closes">Closes %1$s</string>
+    <string name="polls_closed">Closed %1$s</string>
+    <string name="polls_residents_only">Verified residents only</string>
+    <string name="polls_vote">Vote</string>
+    <string name="polls_change">Change my vote</string>
+    <string name="polls_saved">Your vote is saved.</string>
+    <string name="polls_results_later">You will see the results when it closes.</string>
+    <string name="polls_verify_email">To vote, verify your email first.</string>
+    <string name="polls_yours">your vote</string>
+    <string name="polls_empty">There are no polls from your councils right now. When the council asks something, you will get a notice.</string>
+    <string name="polls_menu">Polls</string>
+    <string name="polls_menu_sub">Your councils’ questions: vote in the open ones and see the results of the closed ones.</string>
+    <string name="polls_results">Poll results</string>
     <string name="council">Council</string>
     <string name="slots_full">Fully booked</string>
     <string name="status_cancelled">Cancelled</string>
@@ -401,5 +434,21 @@
     <plurals name="rating_stars">
         <item quantity="one">%1$d star</item>
         <item quantity="other">%1$d stars</item>
+    </plurals>
+    <plurals name="state_reports">
+        <item quantity="one">%1$d report</item>
+        <item quantity="other">%1$d reports</item>
+    </plurals>
+    <plurals name="state_average">
+        <item quantity="one">%1$s fixes what residents report in %2$s days on average (%3$d fixed in the last 6 months).</item>
+        <item quantity="other">%1$s fixes what residents report in %2$s days on average (%3$d fixed in the last 6 months).</item>
+    </plurals>
+    <plurals name="polls_votes">
+        <item quantity="one">%1$d vote</item>
+        <item quantity="other">%1$d votes</item>
+    </plurals>
+    <plurals name="polls_total">
+        <item quantity="one">%1$d vote in all</item>
+        <item quantity="other">%1$d votes in all</item>
     </plurals>
 </resources>

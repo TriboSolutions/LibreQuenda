@@ -27,6 +27,7 @@ import { useCouncilAdmin } from "@/hooks/useCouncilAdmin";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import {
   api,
+  ApiError,
   type AdminFacilitySummary,
   type CouncilEvent,
   type EventInTheWay,
@@ -53,19 +54,22 @@ export function EventEditorPage() {
     allowed ? () => api.council.facilities(token, slug) : null,
     `council-admin:${slug}:${allowed}`,
   );
+  // the event itself, whatever page of the list it is on
   const events = useAsync(
-    allowed ? () => api.council.events(token, slug) : null,
-    `council-events:${slug}:${allowed}`,
+    allowed && !creating ? () => api.council.event(token, slug, id) : null,
+    `council-event:${slug}:${id}:${allowed}`,
   );
-  const event = creating ? null : events.data?.events.find((e) => e.id === id);
+  const event = creating ? null : events.data;
   usePageTitle(
     creating ? t("admin:events.createTitle") : t("admin:events.editTitle"),
     tenant.data?.name,
   );
 
   const active = facilities.data?.facilities.filter((f) => f.is_active) ?? [];
-  const failed = facilities.error ?? events.error;
-  const ready = facilities.data && events.data;
+  // an event that is gone (404) says so below, as one that started
+  const missing = events.error instanceof ApiError && events.error.status === 404;
+  const failed = facilities.error ?? (missing ? null : events.error);
+  const ready = facilities.data && (creating || events.data || events.error);
   // an event that has started (or was cancelled) is no longer in the list of ones to change
   const gone = ready && !creating && (!event || !event.can_change);
 

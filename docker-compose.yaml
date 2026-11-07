@@ -38,6 +38,10 @@ services:
       DB_PASSWORD: ${APP_DB_PASSWORD:?set APP_DB_PASSWORD in .env}
       ANALYTICS_DB_PASSWORD: ${ANALYTICS_DB_PASSWORD:?set ANALYTICS_DB_PASSWORD in .env} # the analytics assistant's queries, read-only
       POSTGRES_DB: ${POSTGRES_DB}
+      # log files (api.log, rotated at 20 MB, kept LOG_KEEP_DAYS): the superadministrators read them at /admin
+      LOG_DIR: /app/logs
+      LOG_KEEP_DAYS: ${LOG_KEEP_DAYS:-30}
+      EMAIL_LOG_RETENTION_DAYS: ${EMAIL_LOG_RETENTION_DAYS:-365}
 
       # Token verification: public keys fetched from Zitadel on startup
       OIDC_ISSUER: ${PUBLIC_SCHEME}://${ZITADEL_DOMAIN}
@@ -77,6 +81,7 @@ services:
     volumes:
       - runtime-config:/runtime:ro
       - api-secrets:/secrets:ro
+      - api-logs:/app/logs
 
     depends_on:
       db:
@@ -144,7 +149,7 @@ services:
       ZITADEL_DATABASE_POSTGRES_DSN: postgresql://zitadel:${ZITADEL_DB_PASSWORD}@db:5432/zitadel?sslmode=disable
 
       # First instance admin (only applied on the very first start)
-      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_USERNAME: ${ZITADEL_ADMIN_USERNAME}
+      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_USERNAME: ${ZITADEL_ADMIN_USERNAME:-${ZITADEL_ADMIN_EMAIL}}
       ZITADEL_FIRSTINSTANCE_ORG_HUMAN_FIRSTNAME: ${ZITADEL_ADMIN_FIRSTNAME}
       ZITADEL_FIRSTINSTANCE_ORG_HUMAN_LASTNAME: ${ZITADEL_ADMIN_LASTNAME}
       ZITADEL_FIRSTINSTANCE_ORG_HUMAN_EMAIL_ADDRESS: ${ZITADEL_ADMIN_EMAIL}
@@ -312,5 +317,6 @@ volumes:
   caddy_config:
   runtime-config:
   api-secrets: # tokens for the API only: never mounted by the proxy
+  api-logs: # the API's log files
   garage_meta:
   garage_data:

@@ -35,7 +35,7 @@ func SendIssueEmails(ctx context.Context, db *sql.DB) (int, error) {
 			continue
 		}
 		var council, councilErr = mailer.OpenRelay(row.SmtpConfig, row.TenantID)
-		if err = send(council, councilErr, issueEmail(row, brand)); err != nil {
+		if err = send(council, councilErr, "issue", row.TenantID, issueEmail(row, brand)); err != nil {
 			log.Printf("issue email %s: %v", row.ID, err)
 			continue
 		}

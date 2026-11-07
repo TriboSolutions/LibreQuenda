@@ -182,6 +182,8 @@ fun FacilityPage(
                                 Text(d.description, style = MaterialTheme.typography.bodyMedium, color = Lq.colors.foreground)
                             }
                         }
+                        // the council's announcements, before the turns: «closed for works» matters first
+                        FacilityNotices(d.notices, Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
                         // the turn they chose went to someone else meanwhile: said here, over the turns as they are now
                         if (taken != null) Box(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) { gal.tribo.librequenda.ui.components.Notice(taken, error = true) }
                         // the day and its free turns
@@ -282,6 +284,9 @@ fun FacilityPage(
                                 Bullet(pluralStringResource(R.plurals.rule_cancel, f.minCancelHours, f.minCancelHours))
                                 f.minAge?.let { Bullet(stringResource(R.string.min_age, it)) }
                                 if (f.residentsOnly) Bullet(stringResource(R.string.residents_only_short))
+                            }
+                            d.issues?.let { issues ->
+                                Detail(R.drawable.ic_wrench, stringResource(R.string.state_title)) { FacilityState(issues, d.councilName) }
                             }
                             Detail(R.drawable.ic_scroll_text, stringResource(R.string.usage_rules)) {
                                 Text(f.usageRules.ifBlank { stringResource(R.string.no_rules) }, style = MaterialTheme.typography.bodyMedium, color = Lq.colors.mutedForeground)
