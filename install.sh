@@ -149,9 +149,25 @@ messages() {
 		"LibreQuenda servirà HTTP sense xifrar al port %s a totes les interfícies: al tallafoc, obre'l només per al teu servidor web." \
 		"O LibreQuenda vai servir HTTP sem cifrar na porta %s em todas as interfaces: na firewall, abra-a só para o seu servidor web."
 	m sum_direct "directo, 80 e 443" "directo, 80 y 443" "direct, 80 and 443" "directe, 80 i 443" "direto, 80 e 443"
-	m f_npm "En Nginx Proxy Manager, engade un Proxy Host cos dominios %s e %s:" "En Nginx Proxy Manager, añade un Proxy Host con los dominios %s y %s:" \
-		"In Nginx Proxy Manager, add a Proxy Host with the domains %s and %s:" "A Nginx Proxy Manager, afegeix un Proxy Host amb els dominis %s i %s:" \
-		"No Nginx Proxy Manager, adicione um Proxy Host com os domínios %s e %s:"
+	m q_npm_route "Como chega Nginx Proxy Manager a LibreQuenda?" "¿Cómo llega Nginx Proxy Manager a LibreQuenda?" "How does Nginx Proxy Manager reach LibreQuenda?" \
+		"Com arriba Nginx Proxy Manager a LibreQuenda?" "Como chega o Nginx Proxy Manager ao LibreQuenda?"
+	m npm_join "Entrando na súa rede de Docker, %s (sen portos no servidor)" "Entrando en su red de Docker, %s (sin puertos en el servidor)" \
+		"By joining its Docker network, %s (no ports on the server)" "Entrant a la seva xarxa de Docker, %s (sense ports al servidor)" \
+		"Entrando na rede Docker dele, %s (sem portas no servidor)"
+	m npm_join_other "Entrando noutra rede de Docker…" "Entrando en otra red de Docker…" "By joining another Docker network…" "Entrant a una altra xarxa de Docker…" "Entrando noutra rede Docker…"
+	m npm_bridge "Por un porto no enderezo do bridge de Docker (%s)" "Por un puerto en la dirección del bridge de Docker (%s)" "Through a port on Docker's bridge address (%s)" \
+		"Per un port a l'adreça del bridge de Docker (%s)" "Por uma porta no endereço da bridge do Docker (%s)"
+	m q_net_name "Nome da rede de Docker de Nginx Proxy Manager (docker network ls):" "Nombre de la red de Docker de Nginx Proxy Manager (docker network ls):" \
+		"Name of Nginx Proxy Manager's Docker network (docker network ls):" "Nom de la xarxa de Docker de Nginx Proxy Manager (docker network ls):" \
+		"Nome da rede Docker do Nginx Proxy Manager (docker network ls):"
+	m v_network "Non hai ningunha rede de Docker con ese nome." "No hay ninguna red de Docker con ese nombre." "There is no Docker network with that name." \
+		"No hi ha cap xarxa de Docker amb aquest nom." "Não existe nenhuma rede Docker com esse nome."
+	m override_foreign "%s xa existe e non o escribiu este instalador: non se toca, así que LibreQuenda non pode entrar na rede de Nginx Proxy Manager desde aquí." \
+		"%s ya existe y no lo ha escrito este instalador: no se toca, así que LibreQuenda no puede entrar en la red de Nginx Proxy Manager desde aquí." \
+		"%s already exists and this installer did not write it: it is left alone, so LibreQuenda cannot join Nginx Proxy Manager's network from here." \
+		"%s ja existeix i no l'ha escrit aquest instal·lador: no es toca, així que LibreQuenda no pot entrar a la xarxa de Nginx Proxy Manager des d'aquí." \
+		"%s já existe e não foi escrito por este instalador: não é alterado, por isso o LibreQuenda não pode entrar na rede do Nginx Proxy Manager a partir daqui."
+	m sum_npm_net "Nginx Proxy Manager, rede %s" "Nginx Proxy Manager, red %s" "Nginx Proxy Manager, network %s" "Nginx Proxy Manager, xarxa %s" "Nginx Proxy Manager, rede %s"
 	m sum_proxy "detrás do teu servidor web → %s" "detrás de tu servidor web → %s" "behind your web server → %s" "darrere del teu servidor web → %s" "atrás do seu servidor web → %s"
 
 	# administrator
@@ -281,11 +297,36 @@ messages() {
 		"Desa una còpia de %s en un lloc segur: ZITADEL_MASTERKEY no es pot recuperar, i sense ella no es poden restaurar les còpies de seguretat." \
 		"Guarde uma cópia de %s num lugar seguro: a ZITADEL_MASTERKEY não pode ser recuperada, e sem ela não é possível restaurar as cópias de segurança."
 	m f_update "Para actualizar máis adiante: %s" "Para actualizar más adelante: %s" "Update later: %s" "Per actualitzar més endavant: %s" "Para atualizar mais tarde: %s"
-	m f_proxy "LibreQuenda escoita en http://%s. Configura o teu servidor web para que lle envíe %s e %s, coa cabeceira Host orixinal e X-Forwarded-Proto: https." \
-		"LibreQuenda escucha en http://%s. Configura tu servidor web para que le envíe %s y %s, con la cabecera Host original y X-Forwarded-Proto: https." \
-		"LibreQuenda listens on http://%s. Set up your web server to send it %s and %s, with the original Host header and X-Forwarded-Proto: https." \
-		"LibreQuenda escolta a http://%s. Configura el teu servidor web perquè li enviï %s i %s, amb la capçalera Host original i X-Forwarded-Proto: https." \
-		"O LibreQuenda escuta em http://%s. Configure o seu servidor web para lhe enviar %s e %s, com o cabeçalho Host original e X-Forwarded-Proto: https."
+	m proxy_title "Configura o teu proxy inverso" "Configura tu proxy inverso" "Set up your reverse proxy" "Configura el teu servidor intermediari invers" "Configure o seu proxy inverso"
+	m f_direct "Non tes que facer nada máis: LibreQuenda obtén os certificados HTTPS en canto os dominios apunten a este servidor." \
+		"No tienes que hacer nada más: LibreQuenda obtiene los certificados HTTPS en cuanto los dominios apunten a este servidor." \
+		"Nothing else to do: LibreQuenda gets the HTTPS certificates as soon as the domains point to this server." \
+		"No has de fer res més: LibreQuenda obté els certificats HTTPS tan bon punt els dominis apuntin a aquest servidor." \
+		"Não tem de fazer mais nada: o LibreQuenda obtém os certificados HTTPS assim que os domínios apontarem para este servidor."
+	m proxy_until "Ata que o fagas, LibreQuenda está en marcha pero non se pode abrir desde internet." \
+		"Hasta que lo hagas, LibreQuenda está en marcha pero no se puede abrir desde internet." \
+		"Until you do, LibreQuenda is running but cannot be opened from the internet." \
+		"Fins que ho facis, LibreQuenda està en marxa però no es pot obrir des d'internet." \
+		"Até o fazer, o LibreQuenda está em execução mas não pode ser aberto a partir da internet."
+	m npm_where "En Nginx Proxy Manager: Hosts → Proxy Hosts → Add Proxy Host. Un só Proxy Host cos dous dominios:" \
+		"En Nginx Proxy Manager: Hosts → Proxy Hosts → Add Proxy Host. Un solo Proxy Host con los dos dominios:" \
+		"In Nginx Proxy Manager: Hosts → Proxy Hosts → Add Proxy Host. A single Proxy Host with both domains:" \
+		"A Nginx Proxy Manager: Hosts → Proxy Hosts → Add Proxy Host. Un sol Proxy Host amb els dos dominis:" \
+		"No Nginx Proxy Manager: Hosts → Proxy Hosts → Add Proxy Host. Um só Proxy Host com os dois domínios:"
+	m tab_details "Lapela Details" "Pestaña Details" "Details tab" "Pestanya Details" "Separador Details"
+	m tab_ssl "Lapela SSL" "Pestaña SSL" "SSL tab" "Pestanya SSL" "Separador SSL"
+	m npm_ssl "Request a new SSL Certificate, Force SSL e HTTP/2 Support; acepta as condicións de Let's Encrypt e garda." \
+		"Request a new SSL Certificate, Force SSL y HTTP/2 Support; acepta las condiciones de Let's Encrypt y guarda." \
+		"Request a new SSL Certificate, Force SSL and HTTP/2 Support; agree to Let's Encrypt's terms and save." \
+		"Request a new SSL Certificate, Force SSL i HTTP/2 Support; accepta les condicions de Let's Encrypt i desa." \
+		"Request a new SSL Certificate, Force SSL e HTTP/2 Support; aceite os termos da Let's Encrypt e guarde."
+	m on "activado" "activado" "on" "activat" "ativado"
+	m other_send "Envía os dous dominios, %s e %s, a http://%s:" "Envía los dos dominios, %s y %s, a http://%s:" "Send both domains, %s and %s, to http://%s:" \
+		"Envia els dos dominis, %s i %s, a http://%s:" "Envie os dois domínios, %s e %s, para http://%s:"
+	m other_host "coa cabeceira Host orixinal" "con la cabecera Host original" "with the original Host header" "amb la capçalera Host original" "com o cabeçalho Host original"
+	m other_xfp "coa cabeceira X-Forwarded-Proto: https" "con la cabecera X-Forwarded-Proto: https" "with the header X-Forwarded-Proto: https" "amb la capçalera X-Forwarded-Proto: https" "com o cabeçalho X-Forwarded-Proto: https"
+	m other_tls "co certificado HTTPS dos dous dominios no teu proxy" "con el certificado HTTPS de los dos dominios en tu proxy" "with the HTTPS certificate for both domains on your proxy" \
+		"amb el certificat HTTPS dels dos dominis al teu servidor intermediari" "com o certificado HTTPS dos dois domínios no seu proxy"
 	m f_nginx "Con nginx, a configuración xa está escrita en %s:" "Con nginx, la configuración ya está escrita en %s:" "With nginx, the configuration is already written in %s:" \
 		"Amb nginx, la configuració ja està escrita a %s:" "Com o nginx, a configuração já está escrita em %s:"
 
@@ -617,6 +658,7 @@ section_network() {
 	if [ "$REPLY" = direct ]; then
 		if [ -n "$busy" ] && ! ui_yesno "$busy"$'\n'"$(t net_busy_direct)" n; then section_network; return; fi
 		ENV[CADDY_AUTO_HTTPS]=true ENV[PROXY_HTTP_PORT]=80 ENV[PROXY_HTTPS_PORT]=443
+		PROXY_NETWORK=""
 		return
 	fi
 
@@ -624,8 +666,12 @@ section_network() {
 	local cur=${ENV[PROXY_HTTP_PORT]:-80} bridge kind
 	bridge=$(docker_bridge_ip)
 	case $cur in 127.0.0.1:*) kind=nginx ;; *:*) kind=npm ;; 80) kind=npm ;; *) kind=other ;; esac
+	[ -z "$PROXY_NETWORK" ] || kind=npm
 	ui_menu "$(t q_kind)" "$kind" npm "$(t kind_npm)" nginx "$(t kind_nginx)" other "$(t kind_other)"
 	kind=$REPLY
+	[ -z "$PROXY_NETWORK" ] || OLD_NETWORK=$PROXY_NETWORK
+	PROXY_KIND=$kind PROXY_NETWORK=""
+	if [ "$kind" = npm ] && npm_route; then return; fi
 	port=${cur##*:}
 	[ "$port" != 80 ] || port=$(free_port 8080)
 	ENV[_PORT]=$port
@@ -650,6 +696,80 @@ section_network() {
 		https=$(free_port 8443 "$port")
 	fi
 	ENV[PROXY_HTTPS_PORT]=127.0.0.1:$https
+}
+
+# ---------- Nginx Proxy Manager's network: the proxy joins it through a Compose override ----------
+OVERRIDE_MARK="# Written by install.sh"
+PROXY_NETWORK=""
+OLD_NETWORK=""
+
+override_file() { printf '%s' "$DIR/docker-compose.override.yaml"; }
+override_ours() { [ ! -e "$(override_file)" ] || head -n1 "$(override_file)" | grep -qF "$OVERRIDE_MARK"; }
+override_load() { # the network a previous run joined
+	{ [ -f "$(override_file)" ] && override_ours; } || return 0
+	PROXY_NETWORK=$(awk '$1 == "name:" { print $2; exit }' "$(override_file)")
+}
+override_write() {
+	local f; f=$(override_file)
+	if [ -z "$PROXY_NETWORK" ]; then
+		if [ -f "$f" ] && override_ours; then rm -f "$f"; fi
+		return 0
+	fi
+	cat >"$f" <<EOF
+$OVERRIDE_MARK: LibreQuenda's proxy joins Nginx Proxy Manager's Docker network,
+# which reaches it as librequenda:80, and publishes no ports on the server.
+# Run install.sh again to change it (it deletes this file when no longer needed).
+services:
+  proxy:
+    ports: !reset []
+    networks:
+      default:
+      npm:
+        aliases: [librequenda]
+networks:
+  npm:
+    name: $PROXY_NETWORK
+    external: true
+EOF
+}
+
+npm_networks() { # the user-defined networks of the running Nginx Proxy Manager containers
+	local id
+	docker ps --format '{{.ID}} {{.Image}}' 2>/dev/null | awk '$2 ~ /nginx-proxy-manager/ { print $1 }' | while read -r id; do
+		docker inspect -f '{{range $k, $v := .NetworkSettings.Networks}}{{println $k}}{{end}}' "$id" 2>/dev/null
+	done | grep -vxE 'bridge|host|none|' | sort -u || true
+}
+
+v_network() { docker network inspect "$1" >/dev/null 2>&1 || bad v_network; }
+
+npm_route() { # joins NPM's network (0), or leaves it to a port on the bridge (1)
+	if ! override_ours; then ui_msg "$(t override_foreign "$(override_file)")"; return 1; fi
+	local nets=() n items=() def bridge
+	mapfile -t nets < <(npm_networks)
+	for n in "${nets[@]}"; do items+=("net:$n" "$(t npm_join "$n")"); done
+	bridge=$(docker_bridge_ip)
+	items+=(other "$(t npm_join_other)" bridge "$(t npm_bridge "${bridge:-0.0.0.0}")")
+	def=bridge
+	[ ${#nets[@]} -eq 0 ] || def="net:${nets[0]}"
+	if [ -n "$OLD_NETWORK" ]; then
+		def=other
+		for n in "${nets[@]}"; do [ "$n" != "$OLD_NETWORK" ] || def="net:$n"; done
+	fi
+	ui_menu "$(t q_npm_route)" "$def" "${items[@]}"
+	case $REPLY in
+		bridge) return 1 ;;
+		other)
+			ENV[_NET]=$OLD_NETWORK
+			ask _NET "$(t q_net_name)" "" v_network
+			PROXY_NETWORK=${ENV[_NET]}; unset 'ENV[_NET]'
+			;;
+		net:*) PROXY_NETWORK=${REPLY#net:} ;;
+	esac
+	return 0
+}
+
+server_ip() { # this server's address on its main network
+	ip -4 route get 1.1.1.1 2>/dev/null | awk '{ for (i = 1; i < NF; i++) if ($i == "src") { print $(i + 1); exit } }' || true
 }
 
 docker_bridge_ip() { # the host's address on docker0 (172.17.0.1 by default), "" without it
@@ -700,7 +820,9 @@ review_server() {
 	local net app smtp
 	while true; do
 		TITLE=$(t review_title)
-		if [ "${ENV[CADDY_AUTO_HTTPS]}" = true ]; then net=$(t sum_direct); else net=$(t sum_proxy "${ENV[PROXY_HTTP_PORT]}"); fi
+		if [ "${ENV[CADDY_AUTO_HTTPS]}" = true ]; then net=$(t sum_direct)
+		elif [ -n "$PROXY_NETWORK" ]; then net=$(t sum_npm_net "$PROXY_NETWORK")
+		else net=$(t sum_proxy "${ENV[PROXY_HTTP_PORT]}"); fi
 		if [ "$WANT_APP" = y ]; then app="${APP[APP_NAME]} · ${APP[APP_ID]}"; else app=$(t no); fi
 		smtp="${ENV[SMTP_HOST]}:${ENV[SMTP_PORT]}${ENV[SMTP_USERNAME]:+ · ${ENV[SMTP_USERNAME]}}"
 		ui_menu "$(t review_q)" go \
@@ -740,7 +862,7 @@ start_stack() {
 
 nginx_conf() { # an nginx site for LibreQuenda behind it, next to the .env
 	local upstream=${ENV[PROXY_HTTP_PORT]} file="$DIR/nginx-librequenda.conf"
-	[[ $upstream == *:* ]] || upstream="$(hostname -I 2>/dev/null | awk '{print $1}'):$upstream"
+	[[ $upstream == *:* ]] || upstream="$(server_ip):$upstream"
 	cat >"$file" <<EOF
 # LibreQuenda behind nginx (written by install.sh). Enable it, then let certbot add HTTPS:
 #   sudo cp $file /etc/nginx/sites-available/librequenda
@@ -776,6 +898,7 @@ install_server() {
 
 	local fresh=y
 	if [ -f "$DIR/.env" ]; then fresh=n; env_load "$DIR/.env"; fi
+	override_load
 	local example="$DIR/.env.example"
 	fetch .env.example "$example"
 	# the example's defaults, under what is already set
@@ -821,6 +944,7 @@ install_server() {
 	[ -f "$DIR/.env" ] && cp "$DIR/.env" "$DIR/.env.backup-$(date +%Y%m%d-%H%M%S)"
 	env_write "$example" "$DIR/.env"
 	ok "$(t wrote_env "$DIR/.env")"
+	override_write
 	NGINX_CONF=""
 	[ "${ENV[CADDY_AUTO_HTTPS]}" = true ] || [ "$PROXY_KIND" != nginx ] || nginx_conf
 
@@ -834,32 +958,47 @@ install_server() {
 	if [[ " ${GENERATED[*]} " == *" ZITADEL_ADMIN_PASSWORD "* ]]; then
 		say ""; say "${bold}$(t f_pw "${ENV[ZITADEL_ADMIN_PASSWORD]}")${off}"
 	fi
-	if [ "${ENV[CADDY_AUTO_HTTPS]}" = false ]; then proxy_help; fi
+	if [ "${ENV[CADDY_AUTO_HTTPS]}" = false ]; then proxy_help; else say ""; ok "$(t f_direct)"; fi
 	say ""
 	warn "$(t f_keep "$DIR/.env")"
 	note "$(t f_update "cd $DIR && docker compose pull && docker compose up -d --wait")"
 }
 
-proxy_help() { # what the web server in front needs
-	local host=${ENV[PROXY_HTTP_PORT]%:*} port=${ENV[PROXY_HTTP_PORT]##*:}
-	[[ ${ENV[PROXY_HTTP_PORT]} == *:* ]] || host=$(hostname -I 2>/dev/null | awk '{print $1}')
+proxy_help() { # the configuration the reverse proxy in front needs
+	local host=${ENV[PROXY_HTTP_PORT]%:*} port=${ENV[PROXY_HTTP_PORT]##*:} web=${ENV[WEB_DOMAIN]} auth=${ENV[ZITADEL_DOMAIN]}
+	[[ ${ENV[PROXY_HTTP_PORT]} == *:* ]] || host=$(server_ip)
+	[ -z "$PROXY_NETWORK" ] || { host=librequenda; port=80; }
+	title "$(t proxy_title)"
+	case $PROXY_KIND in
+		npm)
+			say "$(t npm_where)"
+			say ""
+			say "  ${bold}$(t tab_details)${off}"
+			say "    Domain Names            $web, $auth"
+			say "    Scheme                  http"
+			say "    Forward Hostname / IP   ${bold}$host${off}"
+			say "    Forward Port            ${bold}$port${off}"
+			say "    Block Common Exploits   $(t on)"
+			say "  ${bold}$(t tab_ssl)${off}"
+			say "    $(t npm_ssl)"
+			;;
+		nginx)
+			say "$(t f_nginx "$NGINX_CONF")"
+			say ""
+			say "  sudo cp $NGINX_CONF /etc/nginx/sites-available/librequenda"
+			say "  sudo ln -s /etc/nginx/sites-available/librequenda /etc/nginx/sites-enabled/"
+			say "  sudo nginx -t && sudo systemctl reload nginx"
+			say "  sudo certbot --nginx -d $web -d $auth"
+			;;
+		*)
+			say "$(t other_send "$web" "$auth" "$host:$port")"
+			say "  - $(t other_host)"
+			say "  - $(t other_xfp)"
+			say "  - $(t other_tls)"
+			;;
+	esac
 	say ""
-	if [ "$PROXY_KIND" = npm ]; then
-		warn "$(t f_npm "${ENV[WEB_DOMAIN]}" "${ENV[ZITADEL_DOMAIN]}")"
-		say "  Details:  Scheme http · Forward Hostname / IP ${bold}$host${off} · Forward Port ${bold}$port${off}"
-		say "            Block Common Exploits · Websockets Support"
-		say "  SSL:      Request a new SSL Certificate · Force SSL · HTTP/2 Support"
-		return
-	fi
-	warn "$(t f_proxy "$host:$port" "${ENV[WEB_DOMAIN]}" "${ENV[ZITADEL_DOMAIN]}")"
-	if [ -n "$NGINX_CONF" ]; then
-		say "$(t f_nginx "$NGINX_CONF")"
-		say ""
-		say "  sudo cp $NGINX_CONF /etc/nginx/sites-available/librequenda"
-		say "  sudo ln -s /etc/nginx/sites-available/librequenda /etc/nginx/sites-enabled/"
-		say "  sudo nginx -t && sudo systemctl reload nginx"
-		say "  sudo certbot --nginx -d ${ENV[WEB_DOMAIN]} -d ${ENV[ZITADEL_DOMAIN]}"
-	fi
+	note "$(t proxy_until)"
 }
 
 # ============================================================
