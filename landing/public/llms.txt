@@ -1,0 +1,45 @@
+# LibreQuenda
+
+> LibreQuenda is free software (AGPL-3.0) for booking and managing municipal sports facilities, made for Galician councils by Tribo Solutions. Residents find facilities, book free slots, invite others and check in at the door from the web or an Android app; councils manage their facilities, opening hours, rules, events, issues and live indicators from one admin panel. Each council or group of councils hosts it on its own server with Docker: no licence fees, no third-party clouds, no trackers.
+
+Key facts:
+
+- Licence: AGPL-3.0. Source: https://github.com/TriboSolutions/LibreQuenda
+- Apps: web (React) and Android (each installation builds its own branded APK/AAB). iOS is planned.
+- App languages: Galician, Spanish, Catalan, English. This website is also in Portuguese.
+- Stack: Go API, PostgreSQL, Zitadel (OIDC sign-in), Garage (S3-compatible storage), Caddy; prebuilt images on ghcr.io/tribosolutions/librequenda-*.
+- One installation can serve one council or many (multi-tenant, each council isolated in the database).
+- Built-in MCP server at `https://<installation domain>/api/mcp`: AI agents (Claude, ChatGPT, Cursor…) can find facilities and free slots and book, cancel or join public games on a person's behalf.
+- Accessibility: WCAG 2.1 AA plus the applicable AAA criteria, EN 301 549. GDPR: data export and account deletion for every person.
+- Entry for the 1st GOBTEC Free Software Contest (AGASOL, 2026).
+- The project's detailed documentation is written in Galician.
+
+## Website
+
+- [Home (Galician)](https://librequenda.app/): what LibreQuenda does for residents and councils
+- [Home (English)](https://librequenda.app/en/): the same page in English; also /es/, /ca/ and /pt/
+- [Install (English)](https://librequenda.app/en/instalar/): requirements and the three-step installer
+- [Full text for language models](https://librequenda.app/llms-full.txt): everything on this site in one plain-text file
+
+## Docs
+
+- [README](https://raw.githubusercontent.com/TriboSolutions/LibreQuenda/main/README.md): overview, requirements, installation, MCP, licence
+- [Self-hosting](https://raw.githubusercontent.com/TriboSolutions/LibreQuenda/main/docs/self-hosting.md): configuration, backups and restore, sign-in settings, manual install
+- [MCP server](https://raw.githubusercontent.com/TriboSolutions/LibreQuenda/main/docs/mcp.md): booking from an AI agent, tools exposed, how sign-in works
+- [Check-in](https://raw.githubusercontent.com/TriboSolutions/LibreQuenda/main/docs/check-in.md): QR reader at the door, entry codes, flash booking, NFC, staff
+- [Analytics assistant](https://raw.githubusercontent.com/TriboSolutions/LibreQuenda/main/docs/analytics.md): asking a council's data questions in plain language (read-only, aggregates only)
+- [Audit log](https://raw.githubusercontent.com/TriboSolutions/LibreQuenda/main/docs/audit-log.md): how every admin change is recorded
+- [OpenAPI spec](https://raw.githubusercontent.com/TriboSolutions/LibreQuenda/main/docs/openapi/openapi.yaml): the HTTP API
+
+## User guides
+
+- [Residents](https://raw.githubusercontent.com/TriboSolutions/LibreQuenda/main/docs/wiki/vecinanza.md): finding, booking, inviting and checking in
+- [Council admins](https://raw.githubusercontent.com/TriboSolutions/LibreQuenda/main/docs/wiki/concello.md): facilities, hours, rules, events, issues, indicators
+- [Superadmins](https://raw.githubusercontent.com/TriboSolutions/LibreQuenda/main/docs/wiki/superadmin.md): managing councils and their admins
+
+## Optional
+
+- [Development](https://raw.githubusercontent.com/TriboSolutions/LibreQuenda/main/docs/development.md): running the stack locally and contributing
+- [Security policy](https://raw.githubusercontent.com/TriboSolutions/LibreQuenda/main/SECURITY.md): how to report a vulnerability
+- [Licence](https://raw.githubusercontent.com/TriboSolutions/LibreQuenda/main/LICENSE): GNU AGPL-3.0
+- [Releases](https://github.com/TriboSolutions/LibreQuenda/releases)
