@@ -19,9 +19,9 @@ As capturas amosan datos de demostración.
 
 ## Requisitos
 
-- Un servidor Linux con [Docker](https://docs.docker.com/engine/install/) (Compose v2) e `curl`, con 2 GB de RAM (toda a pila usa uns 400 MB en repouso) e algo de disco para a base de datos, as imaxes e as copias de seguridade.
+- Un servidor Linux con [Docker](https://docs.docker.com/engine/install/) (Compose v2), `curl` e `whiptail` (xa vén en Debian e Ubuntu), con 2 GB de RAM (toda a pila usa uns 400 MB en repouso) e algo de disco para a base de datos, as imaxes e as copias de seguridade.
 - Dous nomes de dominio que apunten (DNS A/AAAA) a el: a aplicación web e o inicio de sesión, p. ex. `reservas.concello.gal` e `auth.reservas.concello.gal`.
-- Os portos 80 e 443 abertos (os certificados HTTPS veñen de Let's Encrypt), ou outro proxy diante que se encargue do HTTPS.
+- Os portos 80 e 443 abertos (os certificados HTTPS veñen de Let's Encrypt), ou un servidor web diante que xa faga HTTPS (nginx, Apache…).
 - Unha conta SMTP para enviar correo (confirmacións, recordatorios, códigos de inicio de sesión).
 - Para a túa propia app Android: nada máis, tamén se compila en Docker, pero a compilación precisa uns 4 GB de RAM (no servidor ou en calquera outra máquina).
 
@@ -35,13 +35,13 @@ curl -fsSLO https://raw.githubusercontent.com/TriboSolutions/LibreQuenda/main/in
 bash install.sh
 ```
 
-O instalador pide os dominios, a primeira persoa administradora e a conta SMTP, xera todos os segredos, escribe `.env` e arrinca LibreQuenda a partir das imaxes xa compiladas. Ao final tamén pode compilar **a túa propia app Android** (co teu nome, logotipo e paquete, xa apuntando ao teu servidor) como un APK para instalar directamente e un AAB para Google Play.
+O instalador (en galego, castelán, inglés, catalán ou portugués, con menús que se manexan coas frechas) pide os dominios, como chega o tráfico (directamente polos portos 80 e 443, ou detrás do servidor web que xa teñas: Nginx Proxy Manager, nginx ou outro), a primeira persoa administradora e a conta SMTP, xera todos os segredos, escribe `.env` e arrinca LibreQuenda a partir das imaxes xa compiladas. Ao final tamén pode compilar **a túa propia app Android** (co teu nome, logotipo e paquete, xa apuntando ao teu servidor) como un APK para instalar directamente e un AAB para Google Play.
 
 Despois abre `https://<your domain>/admin`, inicia sesión como persoa administradora e crea o teu concello.
 
 **Garda unha copia de `.env` (e de `android/` se compilaches a app) nun lugar seguro.** `ZITADEL_MASTERKEY` non se pode recuperar, sen ela non se poden restaurar as copias de seguridade, e as actualizacións da app teñen que asinarse coa mesma chave.
 
-Execútao de novo cando queiras para cambiar a configuración (Intro conserva cada valor actual), ou:
+Execútao de novo cando queiras para cambiar a configuración (cada campo trae o valor actual, e antes de gardar podes revisar e cambiar calquera sección), ou:
 
 ```sh
 docker compose pull && docker compose up -d --wait   # update LibreQuenda
