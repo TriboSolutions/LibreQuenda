@@ -172,7 +172,7 @@ Ao rematar cada reserva, valoración anónima da instalación de 1 a 5 estrelas 
 |:-:|:-:|:-:|
 | <img src="../screenshots/android/vecino/participation/07-facility-notices.webp" width="230"> | <img src="../screenshots/android/vecino/participation/08-facility-status.webp" width="230"> | <img src="../screenshots/android/vecino/participation/09-notices-polls.webp" width="230"> |
 
-**Enquisas.** O concello pregunta («Que horario preferides os sábados?») e a pregunta chega como aviso: na campá, como notificación e por correo. Ao tocalo ábrese a enquisa; cada conta cun correo verificado vota unha vez e pode cambiar o voto mentres está aberta. Os resultados vense cando pecha, e chega outro aviso para velos. No menú da conta, «Enquisas» garda todas, abertas e pechadas, para votar ou seguir os resultados.
+**Enquisas.** O concello pregunta («Que horario preferides os sábados?») e a pregunta chega como aviso: na campá, como notificación e por correo. Ao tocalo ábrese a enquisa; cada conta cun correo verificado vota unha vez e pode cambiar o voto mentres está aberta. Os resultados vense cando pecha, e chega outro aviso para velos. No menú da conta, «Enquisas» garda todas, abertas e pechadas, para votar ou seguir os resultados; as máis antigas cárganse ao chegar ao final da lista.
 
 | Desde o aviso | Voto gardado | Resultados | No menú |
 |:-:|:-:|:-:|:-:|
