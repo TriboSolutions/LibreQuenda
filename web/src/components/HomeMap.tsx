@@ -3,13 +3,13 @@ import 'leaflet/dist/leaflet.css'
 import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
-import type { FacilityCard, GeoPoint } from '@/lib/api'
+import type { FacilityPin, GeoPoint } from '@/lib/api'
 import type { MapView } from '@/lib/geo'
 import { DEFAULT_CENTER, TILE_ATTRIBUTION, TILE_URL } from '@/lib/maps'
 import { cn } from '@/lib/utils'
 
 type Props = {
-  facilities: FacilityCard[] // the ones the filters left; those without a pin are not drawn
+  facilities: FacilityPin[] // the ones the filters left, each with its pin
   highlighted: string | null // a facility id, pointed at in the list
   me: GeoPoint | null // the resident, once "near me" is on
   label: string // accessible name of the map
@@ -27,8 +27,8 @@ const pinIcon = (active: boolean) =>
   L.divIcon({ className: cn('lq-pin', active && 'is-active'), html: '<span></span>', iconSize: [28, 28], iconAnchor: [14, 28], popupAnchor: [0, -26] })
 const meIcon = L.divIcon({ className: 'lq-me', html: '<span></span>', iconSize: [16, 16], iconAnchor: [8, 8] })
 
-type Pinned = FacilityCard & { latitude: number; longitude: number }
-const pinned = (f: FacilityCard): f is Pinned => f.latitude !== null && f.longitude !== null
+type Pinned = FacilityPin
+const pinned = (f: FacilityPin): f is Pinned => f.latitude !== null && f.longitude !== null
 
 /**
  * Pins close together would stack their names into an unreadable pile: a name that

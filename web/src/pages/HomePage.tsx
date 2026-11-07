@@ -19,20 +19,14 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { useAsync } from '@/hooks/useAsync'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { useTags } from '@/hooks/useTags'
-import { api, type FacilityCard, type GeoPoint, type JoinableKind } from '@/lib/api'
+import { api, type FacilityCard, type FacilityFilters, type GeoPoint, type JoinableKind } from '@/lib/api'
+import { useDebounced, useFacilityPages } from '@/hooks/useFacilityPages'
 import { inView, type MapView } from '@/lib/geo'
 import { cn } from '@/lib/utils'
 
 // Distances offered once the browser knows where the resident is; 0 = any distance
 const RADII_KM = [0, 5, 10, 25, 50]
 const ANY_COUNCIL = '*' // a select item needs a value, and no council slug is "*"
-
-function normalise(text: string) {
-  return text
-    .normalize('NFD')
-    .replace(/\p{Diacritic}/gu, '')
-    .toLowerCase()
-}
 
 type Position = { state: 'off' } | { state: 'locating' } | { state: 'denied' } | { state: 'on'; point: GeoPoint }
 
@@ -54,17 +48,26 @@ export function HomePage() {
   // nearest first, within the radius, is the API's job: it gets where the person is
   const near = position.state === 'on' ? position.point : null
   const me = near
-  const facilities = useAsync(
-    () => api.facilities(near, radius, minRating),
-    `facilities:${near ? `${near.latitude.toFixed(4)},${near.longitude.toFixed(4)}` : ''}:${radius}:${minRating}`,
-  )
   const [highlighted, setHighlighted] = useState<string | null>(null)
   const [view, setView] = useState<MapView | null>(null)
   const [fitKey, setFitKey] = useState(0)
   usePageTitle(t('councils:title'))
 
-  const all = facilities.data?.facilities ?? []
+  // the API filters and sorts: the words once typing stops, the rest at once
+  const words = useDebounced(query, 300)
+  const filters: FacilityFilters = { q: words, council, tags, booking: kinds, near, radiusKm: radius, minRating }
+  const filtersKey = JSON.stringify(filters)
+  // the map: every match, only where it is; and every facility, for the count and the tag filters
+  const pins = useAsync(() => api.facilityPins(filters), `pins:${filtersKey}`)
+  const everything = useAsync(() => api.facilityPins({}), 'pins:all')
+  const matches = pins.data?.pins ?? []
+  const all = everything.data?.pins ?? []
   const councils = tenants.data?.tenants ?? []
+  // the list follows the map: zoomed or panned in, only what is in view (and then not the
+  // facilities without a pin); while the map frames every match, all of them
+  const zoomedIn = view !== null && matches.some((pin) => !inView(view, pin))
+  const bbox = useDebounced(zoomedIn && view ? view : null, 250)
+  const { sentinel, ...list } = useFacilityPages({ ...filters, bbox: bbox ?? undefined }, `${filtersKey}:${bbox ? JSON.stringify(bbox) : ''}`)
 
   const locate = () => {
     if (position.state === 'on') {
@@ -84,32 +87,6 @@ export function HomePage() {
     )
   }
 
-  // every word has to appear in the facility's name, its council, its sport or its tags
-  const words = normalise(query).split(/\s+/).filter(Boolean)
-  // in the API's order; the words, council and tags only leave some out
-  const shown: { facility: FacilityCard; km: number | null }[] = all.flatMap((facility) => {
-    if (council && facility.council.slug !== council) return []
-    if (!tags.every((tag) => facility.tags.includes(tag))) return []
-    if (kinds.length > 0 && !kinds.some((kind) => facility.joinable?.includes(kind))) return []
-    const text = normalise([facility.name, facility.council.name, facility.sport, ...facility.tags.map(catalogue.label)].join(' '))
-    if (!words.every((word) => text.includes(word))) return []
-    return [{ facility, km: facility.distance_km ?? null }]
-  })
-  // the list follows the map: zoomed or panned in, only what is in view (and then not the
-  // facilities without a pin); while the map frames every match, all of them
-  const pinnedOf = (f: FacilityCard) => (f.latitude !== null && f.longitude !== null ? { latitude: f.latitude, longitude: f.longitude } : null)
-  const zoomedIn =
-    view !== null &&
-    shown.some(({ facility }) => {
-      const pin = pinnedOf(facility)
-      return pin !== null && !inView(view, pin)
-    })
-  const listed = zoomedIn
-    ? shown.filter(({ facility }) => {
-        const pin = pinnedOf(facility)
-        return pin !== null && inView(view, pin)
-      })
-    : shown
   const filtering = query !== '' || council !== '' || tags.length > 0 || kinds.length > 0 || radius > 0 || minRating > 0
 
   const clear = () => {
@@ -129,7 +106,7 @@ export function HomePage() {
 
         <main id="main" tabIndex={-1} className="mx-auto flex w-full max-w-[1440px] flex-1 flex-col px-4 pt-6 pb-6 sm:px-6 lg:min-h-0">
           <h1 className="text-[28px] leading-9 font-bold tracking-[-0.02em] sm:text-[32px] sm:leading-10">{t('councils:title')}</h1>
-          {facilities.data ? (
+          {everything.data ? (
             <p className="mt-1 text-muted-foreground">{t('councils:subtitle', { count: all.length, councils: councils.length })}</p>
           ) : (
             <Skeleton className="mt-2 h-5 w-80 max-w-full" />
@@ -189,26 +166,26 @@ export function HomePage() {
               <h2 id="facilities-title" className="sr-only">
                 {t('councils:listTitle')}
               </h2>
-              {facilities.data && (
+              {list.total !== null && (
                 <div className="mb-3 flex min-h-8 flex-wrap items-center gap-x-3 gap-y-1">
                   <p aria-live="polite" className="text-sm text-muted-foreground">
-                    {zoomedIn ? t('councils:showingInView', { count: listed.length }) : t('councils:showing', { count: shown.length })}
+                    {zoomedIn ? t('councils:showingInView', { count: list.total }) : t('councils:showing', { count: list.total })}
                   </p>
                   {zoomedIn && (
                     <Button variant="link" size="sm" className="h-auto p-0" onClick={() => setFitKey((k) => k + 1)}>
-                      {t('councils:seeAll', { count: shown.length })}
+                      {t('councils:seeAll', { count: matches.length })}
                     </Button>
                   )}
                 </div>
               )}
-              {facilities.error ? (
+              {list.error ? (
                 <div className="flex items-center justify-between gap-4 rounded-md bg-pill-negative-bg px-4 py-3 text-pill-negative-ink">
                   <p>{t('councils:loadError')}</p>
-                  <Button variant="ghost" size="sm" onClick={facilities.reload}>
+                  <Button variant="ghost" size="sm" onClick={list.retry}>
                     {t('common:retry')}
                   </Button>
                 </div>
-              ) : !facilities.data ? (
+              ) : list.total === null ? (
                 <ul className="grid gap-3" aria-busy="true" aria-label={t('councils:loading')}>
                   {Array.from({ length: 5 }, (_, i) => (
                     <li key={i}>
@@ -216,26 +193,30 @@ export function HomePage() {
                     </li>
                   ))}
                 </ul>
-              ) : all.length === 0 ? (
+              ) : everything.data && all.length === 0 ? (
                 <p className="rounded-md border border-dashed px-4 py-3 text-muted-foreground">{t('councils:empty')}</p>
-              ) : shown.length === 0 ? (
-                <p className="rounded-md border border-dashed px-4 py-3 text-muted-foreground">{t('councils:noResults')}</p>
-              ) : listed.length === 0 ? (
-                <p className="rounded-md border border-dashed px-4 py-3 text-muted-foreground">{t('councils:noneInView')}</p>
+              ) : list.total === 0 ? (
+                <p className="rounded-md border border-dashed px-4 py-3 text-muted-foreground">{zoomedIn ? t('councils:noneInView') : t('councils:noResults')}</p>
               ) : (
-                <ul className="grid content-start gap-3 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:pr-1">
-                  {listed.map(({ facility, km }) => (
+                <ul className="grid content-start gap-3 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:pr-1" aria-busy={list.loading}>
+                  {list.items.map((facility) => (
                     <li key={facility.id} onMouseEnter={() => setHighlighted(facility.id)} onMouseLeave={() => setHighlighted(null)}>
-                      <FacilityRow facility={facility} km={km} active={facility.id === highlighted} labels={facility.tags.map(catalogue.label)} />
+                      <FacilityRow facility={facility} km={facility.distance_km ?? null} active={facility.id === highlighted} labels={facility.tags.map(catalogue.label)} />
                     </li>
                   ))}
+                  {/* a page at a time: the next one well before this comes into view */}
+                  {list.hasMore && (
+                    <li ref={sentinel} aria-hidden="true">
+                      <Skeleton className="h-24 w-full rounded-lg" />
+                    </li>
+                  )}
                 </ul>
               )}
             </section>
 
             <div className="order-1 lg:order-2 lg:min-h-0">
               <HomeMap
-                facilities={shown.map(({ facility }) => facility)}
+                facilities={matches}
                 highlighted={highlighted}
                 me={me}
                 label={t('councils:mapLabel')}

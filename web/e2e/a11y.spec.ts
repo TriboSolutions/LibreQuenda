@@ -702,6 +702,31 @@ test.describe('keyboard', () => {
     await joined
   })
 
+  test('the facilities list loads 20 at a time as it scrolls, and asks the API to filter', async ({ page }) => {
+    const asked: string[] = []
+    await open(page, '/')
+    // 45 facilities: the API pages them; the general mock answers the map
+    await page.route(/\/api\/facilities\?/, (route) => {
+      const url = new URL(route.request().url())
+      asked.push(url.search)
+      const pageNo = Number(url.searchParams.get('page'))
+      const size = Number(url.searchParams.get('pageSize'))
+      const all = Array.from({ length: 45 }, (_, i) => ({ id: `x${i}`, slug: `x${i}`, name: `Instalación ${i + 1}`, sport: 'Pádel', tags: ['padel'], image_url: '', address: '', latitude: null, longitude: null, free_today: 1, council: { slug: 'lugo', name: 'Concello de Lugo', logo_url: '', contact_email: '', contact_phone: '' }, joinable: [] }))
+      return route.fulfill({ json: { facilities: all.slice((pageNo - 1) * size, pageNo * size), pagination: { page: pageNo, page_size: size, total: 45, has_more: pageNo * size < 45 } } })
+    })
+    await page.getByRole('searchbox', { name: 'Buscar instalación, concello, deporte…' }).fill('padel')
+    const list = page.locator('section[aria-labelledby="facilities-title"]')
+    await expect(list.getByRole('link', { name: 'Instalación 20', exact: true })).toBeVisible()
+    await expect(list.getByRole('link', { name: 'Instalación 21', exact: true })).toHaveCount(0)
+    expect(asked.at(-1)).toContain('q=padel')
+    expect(asked.at(-1)).toContain('pageSize=20')
+    await list.getByRole('link', { name: 'Instalación 20', exact: true }).scrollIntoViewIfNeeded()
+    await expect(list.getByRole('link', { name: 'Instalación 40', exact: true })).toBeAttached()
+    await list.getByRole('link', { name: 'Instalación 40', exact: true }).scrollIntoViewIfNeeded()
+    await expect(list.getByRole('link', { name: 'Instalación 45', exact: true })).toBeAttached()
+    await expect(page.getByText('45 instalacións')).toBeVisible()
+  })
+
   test('the facilities list filters by the type of booking to join', async ({ page }) => {
     await open(page, '/')
     // the list beside the map («For you» links to facilities too)

@@ -770,7 +770,6 @@ const routes: [RegExp, () => unknown][] = [
   [/^\/tenants$/, () => ({ tenants })],
   [/^\/tenants\/[^/?]+$/, () => ({ ...tenant, notices: councilNotices })],
   [/^\/tags$/, () => tagCatalogue],
-  [/^\/facilities$/, () => ({ facilities: facilityCards })],
   [/^\/tenants\/[^/]+\/day/, () => day],
   [/^\/tenants\/[^/]+\/facilities\/[^/]+\/entrance$/, () => entrance],
   [/^\/tenants\/[^/]+\/facilities\/[^/]+\/weather$/, () => weather],
@@ -843,6 +842,27 @@ export async function mockApp(page: Page, { signedIn = true, theme = 'light', la
       const status = url.searchParams.get('status')
       const facility = url.searchParams.get('facility')
       return fulfil(route, { issues: councilIssues.issues.filter((issue) => (!status || issue.status === status) && (!facility || issue.facility_id === facility)) })
+    }
+    // the home page: the API filters (as tenants/filters.go, simplified) and pages the list; the map gets every match
+    if (route.request().method() === 'GET' && (path === '/facilities' || path === '/facilities/map')) {
+      const q = url.searchParams
+      const fold = (text: string) => text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase()
+      const words = fold(q.get('q') ?? '').split(/\s+/).filter(Boolean)
+      const tags = (q.get('tags') ?? '').split(',').filter(Boolean)
+      const booking = (q.get('booking') ?? '').split(',').filter(Boolean)
+      const matching = facilityCards.filter(
+        (f) =>
+          (!q.get('council') || f.council.slug === q.get('council')) &&
+          tags.every((tag) => f.tags.includes(tag)) &&
+          (booking.length === 0 || booking.some((kind) => f.joinable?.includes(kind as 'public' | 'event'))) &&
+          words.every((word) => fold([f.name, f.council.name, f.sport, ...f.tags].join(' ')).includes(word)),
+      )
+      if (path === '/facilities/map') {
+        return fulfil(route, { pins: matching.filter((f) => f.latitude !== null && f.longitude !== null).map(({ id, slug, name, latitude, longitude, free_today, tags: t, council }) => ({ id, slug, name, latitude, longitude, free_today, tags: t, council })) })
+      }
+      const size = Number(q.get('pageSize') ?? 100)
+      const pageNo = Number(q.get('page') ?? 1)
+      return fulfil(route, { facilities: matching.slice((pageNo - 1) * size, pageNo * size), pagination: { page: pageNo, page_size: size, total: matching.length, has_more: pageNo * size < matching.length } })
     }
     // the council's events: upcoming, or the history (?state=past: ended or cancelled); one, for its editor
     if (route.request().method() === 'GET' && /^\/tenants\/[^/]+\/admin\/events$/.test(path)) {

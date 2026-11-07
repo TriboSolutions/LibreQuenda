@@ -149,7 +149,7 @@ paths:
       tags:
       - Public
       summary: Todas as instalacións activas de todos os concellos
-      description: 'Pública. Un token bearer válido é opcional: coa sesión iniciada como persoa veciña verificada, quedan fóra as instalacións só para veciños doutros concellos. Con ?lat=&lon=, as máis próximas primeiro e a distance_km de cada unha. Os filtros só de día (from, until, public) son un 400 aquí.'
+      description: 'Pública. Un token bearer válido é opcional: coa sesión iniciada como persoa veciña verificada, quedan fóra as instalacións só para veciños doutros concellos. Con ?lat=&lon=, as máis próximas primeiro e a distance_km de cada unha. Os filtros só de día (from, until, public) son un 400 aquí. As tarxetas e as súas quendas libres de hoxe calcúlanse unha vez para todas e gárdanse 30 segundos, así que ler a lista páxina a páxina e o mapa xunto non repite o traballo.'
       security:
       - {}
       - bearerAuth: []
@@ -169,6 +169,13 @@ paths:
       - $ref: '#/components/parameters/Lon'
       - $ref: '#/components/parameters/RadiusKm'
       - $ref: '#/components/parameters/MinRating'
+      - name: bbox
+        in: query
+        required: false
+        description: 'oeste,sur,leste,norte en graos: só as instalacións cun punto no mapa dentro (a vista do mapa da páxina de inicio).'
+        schema:
+          type: string
+          example: -9.3,41.8,-6.7,43.8
       - $ref: '#/components/parameters/Page'
       - $ref: '#/components/parameters/PageSize'
       responses:
@@ -178,6 +185,74 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/FacilitiesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /facilities/map:
+    get:
+      operationId: listFacilityPins
+      tags:
+      - Public
+      summary: As instalacións no mapa da páxina de inicio
+      description: 'Pública, cos mesmos filtros ca /facilities (bbox é un 400 aquí): todas as que teñen punto no mapa, sen paxinar, e só o que precisa o mapa. A lista ao seu carón lese páxina a páxina en /facilities.'
+      security:
+      - {}
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/Q'
+      - $ref: '#/components/parameters/Council'
+      - $ref: '#/components/parameters/Sport'
+      - $ref: '#/components/parameters/Tags'
+      - name: booking
+        in: query
+        required: false
+        description: 'Separadas por comas: só instalacións con algunha destas á que unirse.'
+        schema:
+          type: string
+          pattern: ^(public|event)(,(public|event))*$
+      - $ref: '#/components/parameters/Lat'
+      - $ref: '#/components/parameters/Lon'
+      - $ref: '#/components/parameters/RadiusKm'
+      - $ref: '#/components/parameters/MinRating'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pins:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                        slug:
+                          type: string
+                        name:
+                          type: string
+                        latitude:
+                          type: number
+                        longitude:
+                          type: number
+                        free_today:
+                          type: integer
+                        tags:
+                          type: array
+                          items:
+                            type: string
+                        council:
+                          $ref: '#/components/schemas/Tenant'
+                      required: [id, slug, name, latitude, longitude, free_today, tags, council]
+                required: [pins]
         '400':
           $ref: '#/components/responses/BadRequest'
         '409':

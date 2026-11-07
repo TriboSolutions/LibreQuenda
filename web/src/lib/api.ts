@@ -1205,6 +1205,46 @@ async function uploadImage(token: string, folder: MediaFolder, file: File, owner
   return res.json()
 }
 
+/** The home page's filters, as the API reads them (it filters and sorts). */
+export type FacilityFilters = {
+  q?: string
+  council?: string
+  tags?: string[] // all of them
+  booking?: JoinableKind[] // any of them
+  near?: GeoPoint | null // nearest first, with distance_km
+  radiusKm?: number // with near: within it
+  minRating?: number
+  bbox?: { west: number; south: number; east: number; north: number } // the map's view
+}
+
+/** A facility on the home page's map: where it is and what its popup says. */
+export type FacilityPin = {
+  id: string
+  slug: string
+  name: string
+  latitude: number
+  longitude: number
+  free_today: number
+  tags: string[]
+  council: Tenant
+}
+
+function facilityQuery(filters: FacilityFilters, extra: Record<string, string> = {}) {
+  const query = new URLSearchParams(extra)
+  if (filters.q?.trim()) query.set('q', filters.q.trim())
+  if (filters.council) query.set('council', filters.council)
+  if (filters.tags?.length) query.set('tags', filters.tags.join(','))
+  if (filters.booking?.length) query.set('booking', filters.booking.join(','))
+  if (filters.near) {
+    query.set('lat', String(filters.near.latitude))
+    query.set('lon', String(filters.near.longitude))
+    if (filters.radiusKm) query.set('radius_km', String(filters.radiusKm))
+  }
+  if (filters.minRating) query.set('min_rating', String(filters.minRating))
+  if (filters.bbox) query.set('bbox', [filters.bbox.west, filters.bbox.south, filters.bbox.east, filters.bbox.north].map((n) => n.toFixed(5)).join(','))
+  return query.toString()
+}
+
 /** ?state=past for a history, ?page= after the first: the councils' paged lists. */
 function listQuery(past: boolean, page: number) {
   const query = new URLSearchParams()
@@ -1222,18 +1262,11 @@ export const api = {
   vote: (token: string, pollId: string, optionId: string) => request<void>(`/me/polls/${pollId}/vote`, { token, method: 'PUT', body: { option_id: optionId } }),
   tags: () => request<TagCatalogue>('/tags'),
   branding: () => request<Branding>('/branding'),
-  // near: nearest first and each one's distance_km (the API sorts); radiusKm keeps those within it.
-  // The map shows them all, so every page is fetched, in the API's order.
-  // nearest first within the radius, and only the ones rated at least minRating: the API does it
-  facilities: async (near?: { latitude: number; longitude: number } | null, radiusKm = 0, minRating = 0) => {
-    const query = (near ? `&lat=${near.latitude}&lon=${near.longitude}${radiusKm > 0 ? `&radius_km=${radiusKm}` : ''}` : '') + (minRating > 0 ? `&min_rating=${minRating}` : '')
-    const facilities: FacilityCard[] = []
-    for (let page = 1; ; page++) {
-      const answer = await request<{ facilities: FacilityCard[]; pagination: Pagination }>(`/facilities?page=${page}${query}`)
-      facilities.push(...answer.facilities)
-      if (!answer.pagination?.has_more) return { facilities }
-    }
-  },
+  // the home page's list, a page at a time (20 by default), filtered and sorted by the API
+  facilities: (filters: FacilityFilters, page = 1, pageSize = 20) =>
+    request<{ facilities: FacilityCard[]; pagination: Pagination }>(`/facilities?${facilityQuery(filters, { page: String(page), pageSize: String(pageSize) })}`),
+  // …and its map: every facility the same filters keep (without bbox), only where it is
+  facilityPins: (filters: Omit<FacilityFilters, 'bbox'>) => request<{ pins: FacilityPin[] }>(`/facilities/map?${facilityQuery(filters)}`),
   day: (slug: string, date?: string) =>
     request<Day>(`/tenants/${encodeURIComponent(slug)}/day${date ? `?date=${date}` : ''}`),
   me: (token: string) => request<Me>('/me', { token }),
