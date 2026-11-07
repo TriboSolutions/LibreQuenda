@@ -126,7 +126,7 @@ A lapela **Participación** é a canle propia do concello coa veciñanza, en dú
 |:-:|:-:|:-:|
 | ![Comunicados](../screenshots/web/concello/participation/01-notices.webp) | ![Novo](../screenshots/web/concello/participation/02-new-notice.webp) | ![Historial](../screenshots/web/concello/participation/03-notices-history.webp) |
 
-**Enquisas.** Unha pregunta con 2 a 6 respostas, aberta ata o día que se escolla (como moito 90 días), opcionalmente só para a veciñanza verificada. Ao creala pregúntaselle á xente do concello, na campá e por correo; ao pechar (no seu día ou co botón «Pechar xa»), avísaselle de que xa hai resultados. A administración ve os votos de cada resposta en todo momento; a veciñanza, só ao pechar. Cada voto é anónimo: só se gardan as contas.
+**Enquisas.** Unha pregunta con 2 a 6 respostas, aberta ata o día que se escolla (como moito 90 días), opcionalmente só para a veciñanza verificada. Ao creala pregúntaselle á xente do concello, na campá e por correo; ao pechar (no seu día ou co botón «Pechar xa»), avísaselle de que xa hai resultados. A administración ve os votos de cada resposta en todo momento; a veciñanza, só ao pechar. Unha enquisa aberta pódese borrar (un erro ao creala, por exemplo); unha pechada non: queda no historial cos seus resultados. Cada voto é anónimo: só se gardan as contas.
 
 | Abertas | Nova enquisa | Historial |
 |:-:|:-:|:-:|

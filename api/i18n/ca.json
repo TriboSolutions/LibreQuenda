@@ -250,7 +250,8 @@
     "poll_not_found": "No hem trobat aquesta enquesta.",
     "poll_closed": "Aquesta enquesta ja està tancada.",
     "poll_residents_only": "En aquesta enquesta només voten les persones verificades com a veïnes de l’ajuntament.",
-    "poll_option_not_found": "Aquesta resposta no és d’aquesta enquesta."
+    "poll_option_not_found": "Aquesta resposta no és d’aquesta enquesta.",
+    "poll_closed_keep": "Una enquesta tancada no es pot esborrar: els seus resultats queden a l’historial."
   },
   "email": {
     "greeting": "Hola {{0}},",

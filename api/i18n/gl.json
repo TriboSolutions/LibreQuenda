@@ -250,7 +250,8 @@
     "poll_not_found": "Non atopamos esa enquisa.",
     "poll_closed": "Esta enquisa xa está pechada.",
     "poll_residents_only": "Nesta enquisa só votan as persoas verificadas como veciñas do concello.",
-    "poll_option_not_found": "Esa resposta non é desta enquisa."
+    "poll_option_not_found": "Esa resposta non é desta enquisa.",
+    "poll_closed_keep": "Unha enquisa pechada non se pode borrar: os seus resultados quedan no historial."
   },
   "email": {
     "greeting": "Ola {{0}},",

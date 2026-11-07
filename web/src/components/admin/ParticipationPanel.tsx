@@ -240,17 +240,18 @@ function PollsSection({ slug, facilities, history, onHistory, onDone }: SectionP
                     </p>
                   </div>
                 </div>
-                <div className="flex flex-wrap justify-end gap-2">
-                  {poll.open && (
+                {/* only while open: a closed poll and its results stay in the history */}
+                {poll.open && (
+                  <div className="flex flex-wrap justify-end gap-2">
                     <Button variant="outline" size="sm" onClick={() => setClosing(poll)}>
                       {t('participation.polls.close')}
                     </Button>
-                  )}
-                  <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => setDeleting(poll)} aria-label={t('participation.polls.deleteLabel', { question: poll.question })}>
-                    <Trash2 />
-                    {t('participation.polls.delete')}
-                  </Button>
-                </div>
+                    <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => setDeleting(poll)} aria-label={t('participation.polls.deleteLabel', { question: poll.question })}>
+                      <Trash2 />
+                      {t('participation.polls.delete')}
+                    </Button>
+                  </div>
+                )}
               </div>
               <ul className="grid gap-1.5 sm:pl-8">
                 {poll.options.map((option) => {

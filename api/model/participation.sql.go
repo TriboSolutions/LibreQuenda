@@ -228,6 +228,8 @@ DELETE FROM poll
 WHERE
     id = $1
     AND tenant_id = $2
+    AND closed_at IS NULL
+    AND closes_at > NOW()
 `
 
 type DeletePollParams struct {
@@ -235,6 +237,7 @@ type DeletePollParams struct {
 	TenantID uuid.UUID `json:"tenant_id"`
 }
 
+// Only while open: a closed poll and its results stay, in the history.
 // Row-level security: runs as the council (db.WithTenant).
 func (q *Queries) DeletePoll(ctx context.Context, arg DeletePollParams) (int64, error) {
 	result, err := q.db.ExecContext(ctx, deletePoll, arg.ID, arg.TenantID)

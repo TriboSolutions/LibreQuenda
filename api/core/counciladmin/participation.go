@@ -384,6 +384,7 @@ func (s *counciladminService) ClosePoll(ctx context.Context, tenantId, pollId uu
 	return nil
 }
 
+// DeletePoll: only an open poll (a mistake, say); a closed one stays with its results.
 func (s *counciladminService) DeletePoll(ctx context.Context, tenantId, pollId uuid.UUID) *shared.ErrorResponse {
 	var deleted int64
 	var err = db.WithTenant(ctx, s.db, tenantId, func(q *model.Queries) error {
@@ -395,7 +396,12 @@ func (s *counciladminService) DeletePoll(ctx context.Context, tenantId, pollId u
 		return failed("errors.participation_failed")
 	}
 	if deleted == 0 {
-		return &shared.ErrorResponse{Code: http.StatusNotFound, Message: "errors.poll_not_found"}
+		var _, getErr = model.New(s.db).GetCouncilPoll(ctx, model.GetCouncilPollParams{ID: pollId, TenantID: tenantId})
+		if errors.Is(getErr, sql.ErrNoRows) {
+			return &shared.ErrorResponse{Code: http.StatusNotFound, Message: "errors.poll_not_found"}
+		}
+		// closed: its results are the council's record, kept in the history
+		return &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.poll_closed_keep"}
 	}
 	audit.Target(ctx, "poll", pollId, "")
 	return nil

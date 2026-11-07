@@ -446,11 +446,14 @@ WHERE
     AND closes_at > NOW();
 
 -- name: DeletePoll :execrows
+-- Only while open: a closed poll and its results stay, in the history.
 -- Row-level security: runs as the council (db.WithTenant).
 DELETE FROM poll
 WHERE
     id = sqlc.arg('id')
-    AND tenant_id = sqlc.arg('tenant_id');
+    AND tenant_id = sqlc.arg('tenant_id')
+    AND closed_at IS NULL
+    AND closes_at > NOW();
 
 -- name: ListPollsForUser :many
 -- /enquisas: the polls of the councils the person is part of (a verified

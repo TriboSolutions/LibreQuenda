@@ -4351,7 +4351,7 @@ paths:
       - Council admin
       summary: Borrar unha enquisa
       description: |-
-        Cos seus votos.
+        Só mentres está aberta (un erro, por exemplo), cos seus votos. Unha pechada queda no historial cos seus resultados: 409 errors.poll_closed_keep.
 
         Administración do concello: a persoa usuaria con sesión iniciada ten que ser administradora deste concello ou superadministradora, coa sesión iniciada cun segundo factor (cando REQUIRE_ADMIN_MFA está activado).
       security:

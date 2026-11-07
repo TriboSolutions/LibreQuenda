@@ -77,7 +77,7 @@ Estado: **feito** · **en curso** (traballo aberto) · **idea** (sen comezar).
 | As non presentacións lembran cando estaba desactivado o rexistro de entrada (historial das formas de rexistrar a entrada da instalación) | feito |
 | Widget de quendas libres para incrustar na propia web do concello (`/<council>/widget`, todas as instalacións ou unha, claro ou escuro, en calquera dos catro idiomas), co código para pegar e unha vista previa nos axustes do concello | feito |
 | Lista de mantemento (lapela Incidencias): avisos da veciñanza cun distintivo para os novos, filtros por instalación e estado, estado e nota para quen avisou, o correo de quen avisou só se o compartiu | feito |
-| Participación (lapela Participación, en dúas partes, cada unha co actual e o seu historial): publicar e retirar comunicados, con ou sen aviso a quen reserva; crear enquisas de 2 a 6 respostas, pechalas antes de tempo e borralas, cos votos de cada resposta en todo momento | feito |
+| Participación (lapela Participación, en dúas partes, cada unha co actual e o seu historial): publicar e retirar comunicados, con ou sen aviso a quen reserva; crear enquisas de 2 a 6 respostas, pechalas antes de tempo e borralas mentres están abertas (as pechadas quedan no historial cos seus resultados), cos votos de cada resposta en todo momento | feito |
 | Páxina de axustes do concello: datos, persoas administradoras (invitar, retirar), ventá de reserva, servidor de correo propio (SMTP) con correo de proba, descarga completa dos datos (CSV + datapackage de Frictionless + imaxes, opcionalmente cos datos persoais da veciñanza) | feito |
 
 ## Plataforma

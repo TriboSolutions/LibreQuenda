@@ -250,7 +250,8 @@
     "poll_not_found": "We couldn't find that poll.",
     "poll_closed": "This poll is already closed.",
     "poll_residents_only": "Only people verified as the council's residents vote in this poll.",
-    "poll_option_not_found": "That answer is not one of this poll’s."
+    "poll_option_not_found": "That answer is not one of this poll’s.",
+    "poll_closed_keep": "A closed poll cannot be deleted: its results stay in the history."
   },
   "email": {
     "greeting": "Hello {{0}},",

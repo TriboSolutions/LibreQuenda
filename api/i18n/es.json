@@ -250,7 +250,8 @@
     "poll_not_found": "No encontramos esa encuesta.",
     "poll_closed": "Esta encuesta ya está cerrada.",
     "poll_residents_only": "En esta encuesta solo votan las personas verificadas como vecinas del ayuntamiento.",
-    "poll_option_not_found": "Esa respuesta no es de esta encuesta."
+    "poll_option_not_found": "Esa respuesta no es de esta encuesta.",
+    "poll_closed_keep": "Una encuesta cerrada no se puede borrar: sus resultados quedan en el historial."
   },
   "email": {
     "greeting": "Hola {{0}}:",
