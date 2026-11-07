@@ -41,11 +41,14 @@ Despois abre `https://<your domain>/admin`, inicia sesión como persoa administr
 
 **Garda unha copia de `.env` (e de `android/` se compilaches a app) nun lugar seguro.** `ZITADEL_MASTERKEY` non se pode recuperar, sen ela non se poden restaurar as copias de seguridade, e as actualizacións da app teñen que asinarse coa mesma chave.
 
-Execútao de novo cando queiras para cambiar a configuración (cada campo trae o valor actual, e antes de gardar podes revisar e cambiar calquera sección), ou:
+Execútao de novo cando queiras: nunha instalación existente ofrece actualizar, cambiar a configuración (cada campo trae o valor actual, e antes de gardar podes revisar calquera sección), compilar a app, instalar de novo desde cero ou desinstalar. Borrar datos pide sempre escribir o dominio para confirmalo. Tamén directamente:
 
 ```sh
-docker compose pull && docker compose up -d --wait   # update LibreQuenda
-bash install.sh app                                  # build your app again (e.g. after an update)
+bash install.sh update      # update LibreQuenda
+bash install.sh config      # change the configuration
+bash install.sh app         # build your app again (e.g. after an update)
+bash install.sh reinstall   # delete all the data and install again
+bash install.sh remove      # uninstall LibreQuenda and delete its data
 ```
 
 ## Reservar desde un axente de IA

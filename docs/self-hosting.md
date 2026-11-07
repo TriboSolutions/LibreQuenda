@@ -14,7 +14,7 @@ curl -fL -o .env https://raw.githubusercontent.com/TriboSolutions/LibreQuenda/ma
 docker compose up -d --wait
 ```
 
-`LIBREQUENDA_VERSION` en `.env` escolle a etiqueta das imaxes: `latest` segue `main`; unha etiqueta de versión (p. ex. `1.2.3`) queda nesa versión. Para actualizar: `docker compose pull && docker compose up -d --wait`. Para executar os teus propios cambios, constrúe as imaxes desde este repositorio cos mesmos nomes (p. ex. `docker build -t ghcr.io/tribosolutions/librequenda-api:latest api`).
+`LIBREQUENDA_VERSION` en `.env` escolle a etiqueta das imaxes: `latest` segue `main`; unha etiqueta de versión (p. ex. `1.2.3`) queda nesa versión. Para actualizar: `bash install.sh update` (trae os ficheiros novos, engade a `.env` os axustes novos e baixa as imaxes), ou só as imaxes con `docker compose pull && docker compose up -d --wait`. Para executar os teus propios cambios, constrúe as imaxes desde este repositorio cos mesmos nomes (p. ex. `docker build -t ghcr.io/tribosolutions/librequenda-api:latest api`).
 
 ## Como funciona
 

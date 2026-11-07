@@ -2,10 +2,14 @@
 # ============================================================
 #  LibreQuenda installer
 #
-#    install.sh         sets up (or reconfigures) a server: asks what the .env needs,
-#                       generates the secrets, starts the stack, and offers your own
-#                       Android app for it
-#    install.sh app     only builds your own Android app (again, e.g. for an update)
+#    install.sh            a new server: asks what the .env needs, generates the secrets,
+#                          starts the stack, and offers your own Android app for it.
+#                          On an existing installation, a menu with the commands below.
+#    install.sh update     the latest LibreQuenda: files, new settings, images
+#    install.sh config     change the configuration
+#    install.sh app        builds your own Android app (again, e.g. after an update)
+#    install.sh reinstall  deletes all the data and installs again (same configuration)
+#    install.sh remove     deletes LibreQuenda and all its data from this server
 #
 #  Needs bash, Docker with Compose v2 and curl. Run it in the directory that holds (or will hold) the
 #  installation, or set LIBREQUENDA_DIR.
@@ -59,6 +63,57 @@ messages() {
 	m stopped "detido na liña" "detenido en la línea" "stopped at line" "aturat a la línia" "parado na linha"
 	m yes "Si" "Sí" "Yes" "Sí" "Sim"
 	m no "Non" "No" "No" "No" "Não"
+	m act_q "Que queres facer?" "¿Qué quieres hacer?" "What do you want to do?" "Què vols fer?" "O que quer fazer?"
+	m act_update "Actualizar LibreQuenda á última versión" "Actualizar LibreQuenda a la última versión" "Update LibreQuenda to the latest version" \
+		"Actualitzar LibreQuenda a l'última versió" "Atualizar o LibreQuenda para a última versão"
+	m act_config "Cambiar a configuración" "Cambiar la configuración" "Change the configuration" "Canviar la configuració" "Alterar a configuração"
+	m act_app "Compilar a túa app Android" "Compilar tu app Android" "Build your Android app" "Compilar la teva app Android" "Compilar a sua app Android"
+	m act_reinstall "Instalar de novo desde cero (borra todos os datos)" "Instalar de nuevo desde cero (borra todos los datos)" \
+		"Install again from scratch (deletes all the data)" "Instal·lar de nou des de zero (esborra totes les dades)" "Instalar de novo do zero (apaga todos os dados)"
+	m act_remove "Desinstalar LibreQuenda (borra todos os datos)" "Desinstalar LibreQuenda (borra todos los datos)" "Uninstall LibreQuenda (deletes all the data)" \
+		"Desinstal·lar LibreQuenda (esborra totes les dades)" "Desinstalar o LibreQuenda (apaga todos os dados)"
+	m act_quit "Saír" "Salir" "Quit" "Sortir" "Sair"
+	m leftover "Neste servidor quedan datos dunha instalación anterior de LibreQuenda, pero non o seu .env: sen as súas contrasinais non se poden usar." \
+		"En este servidor quedan datos de una instalación anterior de LibreQuenda, pero no su .env: sin sus contraseñas no se pueden usar." \
+		"This server holds data from an earlier LibreQuenda installation, but not its .env: without its passwords the data cannot be used." \
+		"En aquest servidor queden dades d'una instal·lació anterior de LibreQuenda, però no el seu .env: sense les seves contrasenyes no es poden fer servir." \
+		"Neste servidor há dados de uma instalação anterior do LibreQuenda, mas não o seu .env: sem as palavras-passe não podem ser usados."
+	m act_fresh "Instalar desde cero, borrando eses datos" "Instalar desde cero, borrando esos datos" "Install from scratch, deleting that data" \
+		"Instal·lar des de zero, esborrant aquestes dades" "Instalar do zero, apagando esses dados"
+	m act_clean "Só borrar eses datos" "Solo borrar esos datos" "Only delete that data" "Només esborrar aquestes dades" "Só apagar esses dados"
+	m elsewhere "LibreQuenda xa está instalado en %s: executa install.sh alí." "LibreQuenda ya está instalado en %s: ejecuta install.sh allí." \
+		"LibreQuenda is already installed in %s: run install.sh there." "LibreQuenda ja està instal·lat a %s: executa install.sh allà." "O LibreQuenda já está instalado em %s: execute o install.sh aí."
+	m no_install "Non hai ningunha instalación de LibreQuenda en %s." "No hay ninguna instalación de LibreQuenda en %s." "There is no LibreQuenda installation in %s." \
+		"No hi ha cap instal·lació de LibreQuenda a %s." "Não há nenhuma instalação do LibreQuenda em %s."
+	m wipe_warn "Isto borra para sempre a base de datos (concellos, instalacións, reservas, contas), as imaxes subidas e as copias de seguridade gardadas neste servidor. A app Android e a súa chave (android/) quedan." \
+		"Esto borra para siempre la base de datos (ayuntamientos, instalaciones, reservas, cuentas), las imágenes subidas y las copias de seguridad guardadas en este servidor. La app Android y su clave (android/) se quedan." \
+		"This deletes for good the database (councils, facilities, bookings, accounts), the uploaded images and the backups kept on this server. The Android app and its key (android/) stay." \
+		"Això esborra per sempre la base de dades (ajuntaments, instal·lacions, reserves, comptes), les imatges pujades i les còpies de seguretat desades en aquest servidor. L'app Android i la seva clau (android/) es queden." \
+		"Isto apaga para sempre a base de dados (municípios, instalações, reservas, contas), as imagens carregadas e as cópias de segurança guardadas neste servidor. A app Android e a sua chave (android/) ficam."
+	m wipe_confirm "Para confirmalo, escribe %s:" "Para confirmarlo, escribe %s:" "To confirm, type %s:" "Per confirmar-ho, escriu %s:" "Para confirmar, escreva %s:"
+	m wipe_mismatch "Non coincide: non se borrou nada." "No coincide: no se ha borrado nada." "It does not match: nothing was deleted." "No coincideix: no s'ha esborrat res." "Não coincide: não foi apagado nada."
+	m wiping "Borrando os datos de LibreQuenda" "Borrando los datos de LibreQuenda" "Deleting LibreQuenda's data" "Esborrant les dades de LibreQuenda" "A apagar os dados do LibreQuenda"
+	m wiped "datos borrados" "datos borrados" "data deleted" "dades esborrades" "dados apagados"
+	m removed "LibreQuenda desinstalouse. A súa configuración queda en %s, por se o volves instalar." \
+		"LibreQuenda se ha desinstalado. Su configuración queda en %s, por si lo vuelves a instalar." \
+		"LibreQuenda has been uninstalled. Its configuration stays in %s, in case you install it again." \
+		"LibreQuenda s'ha desinstal·lat. La seva configuració queda a %s, per si el tornes a instal·lar." \
+		"O LibreQuenda foi desinstalado. A configuração fica em %s, caso o volte a instalar."
+	m keep_android "A túa app Android e a súa chave de sinatura seguen en %s: sen a chave non se pode actualizar a app publicada." \
+		"Tu app Android y su clave de firma siguen en %s: sin la clave no se puede actualizar la app publicada." \
+		"Your Android app and its signing key stay in %s: without the key the published app cannot be updated." \
+		"La teva app Android i la seva clau de signatura continuen a %s: sense la clau no es pot actualitzar l'app publicada." \
+		"A sua app Android e a chave de assinatura continuam em %s: sem a chave não é possível atualizar a app publicada."
+	m upd_title "Actualización" "Actualización" "Update" "Actualització" "Atualização"
+	m upd_pinned "LIBREQUENDA_VERSION=%s: as imaxes quedan nesa versión. Para seguir sempre a última, ponlle latest en .env." \
+		"LIBREQUENDA_VERSION=%s: las imágenes se quedan en esa versión. Para seguir siempre la última, ponle latest en .env." \
+		"LIBREQUENDA_VERSION=%s: the images stay on that version. To always follow the latest, set it to latest in .env." \
+		"LIBREQUENDA_VERSION=%s: les imatges es queden en aquesta versió. Per seguir sempre l'última, posa-hi latest a .env." \
+		"LIBREQUENDA_VERSION=%s: as imagens ficam nessa versão. Para seguir sempre a última, defina latest em .env."
+	m upd_newkeys "axustes novos en .env: %s" "ajustes nuevos en .env: %s" "new settings in .env: %s" "ajustos nous a .env: %s" "definições novas em .env: %s"
+	m upd_app_q "Compilar tamén de novo a túa app (%s) con esta versión?" "¿Compilar también de nuevo tu app (%s) con esta versión?" \
+		"Build your app (%s) again with this version too?" "Vols compilar també de nou la teva app (%s) amb aquesta versió?" "Compilar também de novo a sua app (%s) com esta versão?"
+	m upd_done "LibreQuenda está actualizado." "LibreQuenda está actualizado." "LibreQuenda is up to date." "LibreQuenda està actualitzat." "O LibreQuenda está atualizado."
 	m quit_done "Saíches sen cambiar nada." "Has salido sin cambiar nada." "Left without changing anything." "Has sortit sense canviar res." "Saiu sem alterar nada."
 	m need_cmd "Precísase %s: %s" "Se necesita %s: %s" "%s is needed: %s" "Cal %s: %s" "É necessário %s: %s"
 	m need_compose "Precísase Docker Compose v2 (docker compose …)" "Se necesita Docker Compose v2 (docker compose …)" \
@@ -72,8 +127,8 @@ messages() {
 		"to download LibreQuenda's files" "per baixar els fitxers de LibreQuenda" "para transferir os ficheiros do LibreQuenda"
 	m dl_fail "Non se puido descargar %s (%s)" "No se ha podido descargar %s (%s)" "Could not download %s (%s)" "No s'ha pogut baixar %s (%s)" "Não foi possível transferir %s (%s)"
 	m src_dl "Descargando o código de LibreQuenda (%s)…" "Descargando el código de LibreQuenda (%s)…" "Downloading LibreQuenda's source (%s)…" "Baixant el codi de LibreQuenda (%s)…" "A transferir o código do LibreQuenda (%s)…"
-	m unknown_cmd "comando descoñecido: %s (install.sh, ou install.sh app)" "comando desconocido: %s (install.sh, o install.sh app)" \
-		"unknown command: %s (install.sh, or install.sh app)" "ordre desconeguda: %s (install.sh, o install.sh app)" "comando desconhecido: %s (install.sh, ou install.sh app)"
+	m unknown_cmd "comando descoñecido: %s (update, config, app, reinstall, remove)" "comando desconocido: %s (update, config, app, reinstall, remove)" \
+		"unknown command: %s (update, config, app, reinstall, remove)" "ordre desconeguda: %s (update, config, app, reinstall, remove)" "comando desconhecido: %s (update, config, app, reinstall, remove)"
 
 	m nav_hint "Nos campos móvese o cursor e xa está escrito o valor actual: Intro acéptao. Nos menús, frechas e Intro. Ctrl+C sae sen cambiar nada ata o final." \
 		"En los campos se mueve el cursor y ya está escrito el valor actual: Intro lo acepta. En los menús, flechas e Intro. Ctrl+C sale sin cambiar nada hasta el final." \
@@ -81,8 +136,8 @@ messages() {
 		"Als camps es mou el cursor i el valor actual ja hi és escrit: Retorn l'accepta. Als menús, fletxes i Retorn. Ctrl+C surt sense canviar res fins al final." \
 		"Nos campos o cursor move-se e o valor atual já está escrito: Enter aceita-o. Nos menus, setas e Enter. Ctrl+C sai sem alterar nada até ao fim."
 	m new_install "Vaise instalar LibreQuenda en %s." "Se va a instalar LibreQuenda en %s." "LibreQuenda will be installed in %s." "S'instal·larà LibreQuenda a %s." "O LibreQuenda vai ser instalado em %s."
-	m found_install "Hai unha instalación en %s: podes cambiar a súa configuración." "Hay una instalación en %s: puedes cambiar su configuración." \
-		"There is an installation in %s: you can change its configuration." "Hi ha una instal·lació a %s: en pots canviar la configuració." "Existe uma instalação em %s: pode alterar a sua configuração."
+	m found_install "Hai unha instalación de LibreQuenda en %s." "Hay una instalación de LibreQuenda en %s." "There is a LibreQuenda installation in %s." \
+		"Hi ha una instal·lació de LibreQuenda a %s." "Há uma instalação do LibreQuenda em %s."
 
 	# addresses
 	m sec_addr "Enderezos" "Direcciones" "Addresses" "Adreces" "Endereços"
@@ -942,19 +997,11 @@ EOF
 	NGINX_CONF=$file
 }
 
-install_server() {
-	check_docker
-	need curl "$(t why_curl)"
-	screen_size
-	mkdir -p "$DIR"
-
-	local fresh=y
-	if [ -f "$DIR/.env" ]; then fresh=n; env_load "$DIR/.env"; fi
-	override_load
-	local example="$DIR/.env.example"
+# ---------- the files of an installation ----------
+merge_example() { # .env.example's defaults under the values already set
+	local example=$1 k
 	fetch .env.example "$example"
-	# the example's defaults, under what is already set
-	declare -A current=(); local k
+	declare -A current=()
 	for k in "${!ENV[@]}"; do current[$k]=${ENV[$k]}; done
 	env_load "$example"
 	for k in "${!current[@]}"; do ENV[$k]=${current[$k]}; done
@@ -962,21 +1009,10 @@ install_server() {
 	for k in WEB_DOMAIN ZITADEL_DOMAIN SMTP_FROM SMTP_FROM_ADDRESS; do
 		[[ ${ENV[$k]:-} == *example.gal* ]] && ENV[$k]=""
 	done
+	return 0
+}
 
-	TITLE=LibreQuenda
-	if [ $fresh = y ]; then ui_msg "$(t new_install "$DIR")"$'\n\n'"$(t nav_hint)"
-	else ui_msg "$(t found_install "$DIR")"$'\n\n'"$(t nav_hint)"; fi
-
-	WANT_APP=n
-	section_addresses
-	section_network
-	section_admin
-	section_smtp
-	section_support
-	section_app
-	review_server
-
-	# everything else: generated once and never changed (the masterkey cannot change)
+gen_secrets() { # everything else: generated once and never changed (the masterkey cannot change)
 	secret POSTGRES_PASSWORD gen_alnum32
 	secret APP_DB_PASSWORD gen_alnum32
 	secret ANALYTICS_DB_PASSWORD gen_alnum32
@@ -988,10 +1024,191 @@ install_server() {
 	secret GARAGE_RPC_SECRET gen_hex32
 	secret GARAGE_ADMIN_TOKEN rand_b64
 	secret SECRETS_KEY gen_hex32
+}
+
+self_update() { # the installer next to the installation, the latest one
+	fetch install.sh "$DIR/install.sh.new" && chmod +x "$DIR/install.sh.new" && mv "$DIR/install.sh.new" "$DIR/install.sh"
+}
+
+COMPOSE_NEW="" PROJECT=librequenda
+compose_new() { # the latest docker-compose.yaml, in a temporary file until it is used
+	[ -z "$COMPOSE_NEW" ] || return 0
+	COMPOSE_NEW=$(mktemp)
+	fetch docker-compose.yaml "$COMPOSE_NEW"
+	PROJECT=$(awk '$1 == "name:" { print $2; exit }' "$COMPOSE_NEW")
+	PROJECT=${PROJECT:-librequenda}
+}
+compose_keys() { # compose_keys services|volumes: the names under that top-level key
+	awk -v sec="$1:" '$0 == sec { s = 1; next } /^[^ #]/ { s = 0 }
+		s && /^  [A-Za-z0-9_.-]+:[[:space:]]*(#.*)?$/ { k = $1; sub(/:$/, "", k); print k }' "$COMPOSE_NEW"
+}
+
+# Compose names everything after the project, whichever directory it runs in: the data
+# of an installation is found by its volumes and containers, never by the directory
+our_volumes() {
+	local v
+	for v in $(compose_keys volumes); do
+		docker volume inspect "${PROJECT}_$v" >/dev/null 2>&1 && printf '%s\n' "${PROJECT}_$v"
+	done
+	return 0
+}
+our_containers() { # only this stack's services: other containers in the same project stay
+	local svc
+	for svc in $(compose_keys services); do
+		docker ps -aq --filter "label=com.docker.compose.project=$PROJECT" --filter "label=com.docker.compose.service=$svc" 2>/dev/null
+	done
+	return 0
+}
+installed_elsewhere() { # the directory of another installation whose containers these are, with its .env
+	local id wd
+	for id in $(our_containers); do
+		wd=$(docker inspect -f '{{index .Config.Labels "com.docker.compose.project.working_dir"}}' "$id" 2>/dev/null) || continue
+		if [ -n "$wd" ] && [ "$wd" != "$DIR" ] && [ -f "$wd/.env" ]; then printf '%s' "$wd"; return 0; fi
+	done
+	return 0
+}
+
+confirm_wipe() { # the domain (or the project's name), typed: nothing else deletes data
+	local word=${ENV[WEB_DOMAIN]:-$PROJECT}
+	local elsewhere; elsewhere=$(installed_elsewhere)
+	[ -z "$elsewhere" ] || die "$(t elsewhere "$elsewhere")"
+	ui_warn "$(t wipe_warn)"
+	ui_input "$(t wipe_confirm "$word")" ""
+	[ "$(trim "$REPLY")" = "$word" ] && return 0
+	ui_err "$(t wipe_mismatch)"
+	return 1
+}
+
+wipe_data() { # wipe_data [images]: this stack's containers and volumes (and its images)
+	local ids vols images=""
+	title "$(t wiping)"
+	ids=$(our_containers | sort -u)
+	if [ -n "$ids" ]; then
+		[ "${1:-}" != images ] || images=$(docker inspect -f '{{.Config.Image}}' $ids 2>/dev/null | sort -u)
+		docker rm -f $ids >/dev/null
+	fi
+	vols=$(our_volumes)
+	[ -z "$vols" ] || docker volume rm $vols >/dev/null
+	docker network rm "${PROJECT}_default" >/dev/null 2>&1 || true # still used by other containers: it stays
+	[ -z "$images" ] || docker image rm $images >/dev/null 2>&1 || true
+	ok "$(t wiped)"
+}
+
+do_update() {
+	[ -f "$DIR/.env" ] || die "$(t no_install "$DIR")"
+	TITLE=$(t upd_title)
+	env_load "$DIR/.env"
+	local before k added=() example="$DIR/.env.example"
+	declare -A had=()
+	for k in "${!ENV[@]}"; do had[$k]=1; done
+	merge_example "$example"
+	gen_secrets
+	for k in "${!ENV[@]}"; do [ -n "${had[$k]+set}" ] || added+=("$k"); done
+	compose_new
+	cp "$COMPOSE_NEW" "$DIR/docker-compose.yaml"
+	self_update
+	if [ ${#added[@]} -gt 0 ]; then
+		WROTE=y
+		cp "$DIR/.env" "$DIR/.env.backup-$(date +%Y%m%d-%H%M%S)"
+		env_write "$example" "$DIR/.env"
+		ok "$(t upd_newkeys "${added[*]}")"
+	fi
+	[ "${ENV[LIBREQUENDA_VERSION]:-latest}" = latest ] || warn "$(t upd_pinned "${ENV[LIBREQUENDA_VERSION]}")"
+	start_stack
+	if [ -f "$DIR/android/app.conf" ]; then
+		APPDIR="$DIR/android"
+		while IFS='=' read -r k v; do [ -z "$k" ] || APP[$k]=$v; done <"$APPDIR/app.conf"
+		if ui_yesno "$(t upd_app_q "${APP[APP_NAME]:-}${APP[APP_ID]:+ · ${APP[APP_ID]}}")" n; then build_app; check_registered; fi
+	fi
+	say ""
+	ok "$(t upd_done)"
+}
+
+do_reinstall() { # the data goes; the configuration and its secrets stay, as answers to change
+	confirm_wipe || exit 1
+	WROTE=y
+	wipe_data
+	install_server
+}
+
+do_remove() {
+	confirm_wipe || exit 1
+	WROTE=y
+	wipe_data images
+	local kept=""
+	if [ -f "$DIR/.env" ]; then kept="$DIR/.env.removed-$(date +%Y%m%d-%H%M%S)"; mv "$DIR/.env" "$kept"; fi
+	rm -rf "$DIR/docker-compose.yaml" "$DIR/.env.example" "$DIR/nginx-librequenda.conf" "$DIR/.source"
+	if [ -f "$(override_file)" ] && override_ours; then rm -f "$(override_file)"; fi
+	say ""
+	ok "$(t removed "${kept:-$DIR}")"
+	[ ! -d "$DIR/android" ] || warn "$(t keep_android "$DIR/android")"
+}
+
+main_menu() { # what there is decides what can be done
+	compose_new
+	local elsewhere
+	elsewhere=$(installed_elsewhere)
+	if [ -f "$DIR/.env" ]; then
+		env_load "$DIR/.env"
+		TITLE=LibreQuenda
+		ui_menu "$(t found_install "$DIR")"$'\n'"$(t act_q)" update \
+			update "$(t act_update)" config "$(t act_config)" app "$(t act_app)" \
+			reinstall "$(t act_reinstall)" remove "$(t act_remove)" quit "$(t act_quit)"
+		case $REPLY in
+			update) do_update ;;
+			config) install_server ;;
+			app) install_app ;;
+			reinstall) do_reinstall ;;
+			remove) do_remove ;;
+			quit) exit 0 ;;
+		esac
+	elif [ -n "$elsewhere" ]; then
+		die "$(t elsewhere "$elsewhere")"
+	elif [ -n "$(our_volumes)" ] || [ -n "$(our_containers)" ]; then
+		TITLE=LibreQuenda
+		ui_menu "$(t leftover)"$'\n'"$(t act_q)" fresh \
+			fresh "$(t act_fresh)" clean "$(t act_clean)" quit "$(t act_quit)"
+		case $REPLY in
+			fresh) confirm_wipe || exit 1; WROTE=y; wipe_data; install_server ;;
+			clean) confirm_wipe || exit 1; WROTE=y; wipe_data ;;
+			quit) exit 0 ;;
+		esac
+	else
+		install_server
+	fi
+}
+
+install_server() {
+	check_docker
+	need curl "$(t why_curl)"
+	screen_size
+	mkdir -p "$DIR"
+
+	local fresh=y
+	if [ -f "$DIR/.env" ]; then fresh=n; env_load "$DIR/.env"; fi
+	override_load
+	local example="$DIR/.env.example"
+	merge_example "$example"
+
+	TITLE=LibreQuenda
+	if [ $fresh = y ]; then ui_msg "$(t new_install "$DIR")"$'\n\n'"$(t nav_hint)"
+	else ui_msg "$(t nav_hint)"; fi
+
+	WANT_APP=n
+	section_addresses
+	section_network
+	section_admin
+	section_smtp
+	section_support
+	section_app
+	review_server
+
+	gen_secrets
 	if [ "$WANT_APP" = y ]; then APP[WEB_DOMAIN]=${ENV[WEB_DOMAIN]}; add_app_id "${APP[APP_ID]}"; fi
 
-	fetch docker-compose.yaml "$DIR/docker-compose.yaml"
-	fetch install.sh "$DIR/install.sh.new" && chmod +x "$DIR/install.sh.new" && mv "$DIR/install.sh.new" "$DIR/install.sh"
+	compose_new
+	cp "$COMPOSE_NEW" "$DIR/docker-compose.yaml"
+	self_update
 	WROTE=y
 	[ -f "$DIR/.env" ] && cp "$DIR/.env" "$DIR/.env.backup-$(date +%Y%m%d-%H%M%S)"
 	env_write "$example" "$DIR/.env"
@@ -1013,7 +1230,7 @@ install_server() {
 	if [ "${ENV[CADDY_AUTO_HTTPS]}" = false ]; then proxy_help; else say ""; ok "$(t f_direct)"; fi
 	say ""
 	warn "$(t f_keep "$DIR/.env")"
-	note "$(t f_update "cd $DIR && docker compose pull && docker compose up -d --wait")"
+	note "$(t f_update "cd $DIR && bash install.sh update")"
 }
 
 proxy_help() { # the configuration the reverse proxy in front needs
@@ -1205,10 +1422,22 @@ case "${1:-}" in
 esac
 exec 3</dev/tty 5>/dev/tty || die "run it in a terminal: it asks questions"
 trap on_interrupt INT
-trap 'printf "\e[?25h" >&5 2>/dev/null || true' EXIT
+trap 'printf "\e[?25h" >&5 2>/dev/null || true; [ -z "$COMPOSE_NEW" ] || rm -f "$COMPOSE_NEW"' EXIT
 pick_language
 case "${1:-}" in
-	"") install_server ;;
+	"" | update | config | reinstall | remove)
+		check_docker
+		need curl "$(t why_curl)"
+		screen_size
+		mkdir -p "$DIR"
+		;;
+esac
+case "${1:-}" in
+	"") main_menu ;;
+	update) do_update ;;
+	config) [ -f "$DIR/.env" ] || die "$(t no_install "$DIR")"; install_server ;;
 	app) install_app ;;
+	reinstall) [ -f "$DIR/.env" ] || die "$(t no_install "$DIR")"; env_load "$DIR/.env"; compose_new; do_reinstall ;;
+	remove) compose_new; [ ! -f "$DIR/.env" ] || env_load "$DIR/.env"; do_remove ;;
 	*) die "$(t unknown_cmd "$1")" ;;
 esac
