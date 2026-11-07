@@ -99,7 +99,7 @@ ${i.warnStrong} ${i.warn}
 ### ${i.update}
 
 \`\`\`sh
-docker compose pull && docker compose up -d --wait
+bash install.sh update
 \`\`\`
 
 ### ${i.appTitle}
