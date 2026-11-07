@@ -38,7 +38,6 @@ services:
       DB_PASSWORD: ${APP_DB_PASSWORD:?set APP_DB_PASSWORD in .env}
       ANALYTICS_DB_PASSWORD: ${ANALYTICS_DB_PASSWORD:?set ANALYTICS_DB_PASSWORD in .env} # the analytics assistant's queries, read-only
       POSTGRES_DB: ${POSTGRES_DB}
-      VERSION: ${APP_VERSION}
 
       # Token verification: public keys fetched from Zitadel on startup
       OIDC_ISSUER: ${PUBLIC_SCHEME}://${ZITADEL_DOMAIN}

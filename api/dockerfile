@@ -18,6 +18,11 @@ FROM alpine:latest
 
 WORKDIR /app
 RUN apk add --no-cache curl postgresql-client gzip
+# The build's version, the same one the web app inside the proxy image is built with (CI passes
+# it to every image): the API answers with it and refuses pages of another one (X-App-Version).
+# Empty in a local build: nothing is compared.
+ARG VITE_APP_VERSION
+ENV VERSION=$VITE_APP_VERSION
 # Copy the binary from the builder
 COPY --from=builder /app/app .
 COPY --from=builder /app/i18n ./i18n
