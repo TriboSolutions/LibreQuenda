@@ -13,6 +13,15 @@ export const LANG_NAMES: Record<Lang, string> = {
   pt: "Português",
 };
 
+/** Open Graph locale of each language */
+export const OG_LOCALES: Record<Lang, string> = {
+  gl: "gl_ES",
+  es: "es_ES",
+  ca: "ca_ES",
+  en: "en_GB",
+  pt: "pt_PT",
+};
+
 /** The path of a page in a language: "/" + "instalar" -> "/es/instalar" */
 export function href(lang: Lang, path = "/"): string {
   const p = path.startsWith("/") ? path : `/${path}`;

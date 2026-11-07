@@ -1,0 +1,6 @@
+# LibreQuenda — free software (AGPL-3.0). Everyone is welcome to crawl it,
+# AI crawlers and agents included. A summary for language models: /llms.txt
+User-agent: *
+Allow: /
+
+Sitemap: https://librequenda.app/sitemap.xml

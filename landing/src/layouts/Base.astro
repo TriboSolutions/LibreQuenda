@@ -2,18 +2,88 @@
 import "../styles/global.css";
 import Github from "../components/GithubIcon.astro";
 import { Moon, Sun, Star, Languages, Check } from "@lucide/astro";
-import { REPO } from "../site";
-import { DICT, LANGS, LANG_NAMES, href, swapLang, type Lang } from "../i18n";
+import { REPO, SITE, ORG, LICENSE_URL, OG_IMAGE } from "../site";
+import { DICT, LANGS, LANG_NAMES, OG_LOCALES, href, swapLang, type Lang } from "../i18n";
 
 interface Props {
   lang: Lang;
   title: string;
   description: string;
+  /** what the page is, for the structured data; "error" pages are not indexed */
+  page?: "home" | "install" | "error";
 }
-const { lang, title, description } = Astro.props;
+const { lang, title, description, page = "home" } = Astro.props;
 const t = DICT[lang];
 const path = Astro.url.pathname;
-const site = Astro.site ?? new URL("https://librequenda.gal");
+const site = Astro.site ?? new URL(SITE);
+const abs = (p: string) => new URL(p, site).href;
+const canonical = abs(path);
+const ogImage = abs(OG_IMAGE.path);
+const indexable = page !== "error";
+
+// Structured data (schema.org) for search engines and AI crawlers
+const org = { "@type": "Organization", "@id": `${ORG.url}/#org`, name: ORG.name, url: ORG.url };
+const graph: Record<string, unknown>[] = [
+  org,
+  {
+    "@type": "WebSite",
+    "@id": `${abs("/")}#website`,
+    url: abs("/"),
+    name: "LibreQuenda",
+    description: DICT[lang].meta.description,
+    inLanguage: LANGS,
+    publisher: { "@id": org["@id"] },
+  },
+  {
+    "@type": "SoftwareApplication",
+    "@id": `${abs("/")}#software`,
+    name: "LibreQuenda",
+    description: DICT[lang].meta.description,
+    url: abs(href(lang)),
+    image: ogImage,
+    applicationCategory: "BusinessApplication",
+    applicationSubCategory: "Sports facility booking",
+    operatingSystem: "Web, Android, Linux (Docker)",
+    inLanguage: ["gl", "es", "ca", "en"],
+    isAccessibleForFree: true,
+    license: LICENSE_URL,
+    offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
+    author: { "@id": org["@id"] },
+    publisher: { "@id": org["@id"] },
+    codeRepository: REPO,
+    sameAs: [REPO],
+    installUrl: abs(href(lang, "/instalar")),
+    featureList: [
+      ...t.residents.items.map((i) => `${i.title}: ${i.text}`),
+      `${t.door.title} ${t.door.ways.join(", ")}`,
+      ...t.council.tabs,
+      t.council.mcpTitle,
+      t.council.widgetTitle,
+      t.council.a11yTitle,
+    ],
+  },
+  {
+    "@type": "WebPage",
+    "@id": `${canonical}#page`,
+    url: canonical,
+    name: title,
+    description,
+    inLanguage: lang,
+    isPartOf: { "@id": `${abs("/")}#website` },
+    about: { "@id": `${abs("/")}#software` },
+    primaryImageOfPage: ogImage,
+  },
+];
+if (page === "install") {
+  graph.push({
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "LibreQuenda", item: abs(href(lang)) },
+      { "@type": "ListItem", position: 2, name: t.install.title, item: canonical },
+    ],
+  });
+}
+const jsonLd = JSON.stringify({ "@context": "https://schema.org", "@graph": graph }).replace(/</g, "\\u003c");
 ---
 
 <!doctype html>
@@ -23,13 +93,44 @@ const site = Astro.site ?? new URL("https://librequenda.gal");
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <meta name="robots" content={indexable ? "index, follow, max-image-preview:large, max-snippet:-1" : "noindex, follow"} />
+    <meta name="author" content={ORG.name} />
+    <meta name="application-name" content="LibreQuenda" />
+    <meta name="generator" content={Astro.generator} />
+    {indexable && <link rel="canonical" href={canonical} />}
+    {indexable && LANGS.map((l) => <link rel="alternate" hreflang={l} href={abs(swapLang(path, l))} />)}
+    {indexable && <link rel="alternate" hreflang="x-default" href={abs(swapLang(path, "gl"))} />}
+    <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+    <link rel="alternate" type="text/plain" title="llms.txt" href="/llms.txt" />
+    <link rel="license" href={LICENSE_URL} />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="LibreQuenda" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    {LANGS.map((l) => <link rel="alternate" hreflang={l} href={new URL(swapLang(path, l), site).href} />)}
-    <link rel="alternate" hreflang="x-default" href={new URL(swapLang(path, "gl"), site).href} />
+    {indexable && <meta property="og:url" content={canonical} />}
+    <meta property="og:locale" content={OG_LOCALES[lang]} />
+    {LANGS.filter((l) => l !== lang).map((l) => <meta property="og:locale:alternate" content={OG_LOCALES[l]} />)}
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content={String(OG_IMAGE.width)} />
+    <meta property="og:image:height" content={String(OG_IMAGE.height)} />
+    <meta property="og:image:alt" content={DICT[lang].meta.title} />
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image:alt" content={DICT[lang].meta.title} />
+
+    <script type="application/ld+json" set:html={jsonLd} />
+
     <link rel="icon" href="/favicon.ico" sizes="48x48" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
     <meta name="theme-color" content="#0B2544" />
     <script is:inline>
       // same rule as the app: the saved choice, else the system's
