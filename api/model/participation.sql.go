@@ -638,11 +638,17 @@ FROM
     LEFT JOIN facility f ON f.id = n.facility_id
 WHERE
     n.tenant_id = $1
+    AND (n.expires_at <= NOW()) = $2::BOOLEAN
 ORDER BY
-    (n.expires_at > NOW()) DESC,
+    CASE WHEN $2::BOOLEAN THEN n.expires_at END DESC,
     n.created_at DESC
 LIMIT 200
 `
+
+type ListCouncilNoticesParams struct {
+	TenantID uuid.UUID `json:"tenant_id"`
+	Past     bool      `json:"past"`
+}
 
 type ListCouncilNoticesRow struct {
 	ID           uuid.UUID      `json:"id"`
@@ -656,9 +662,10 @@ type ListCouncilNoticesRow struct {
 	CreatedAt    time.Time      `json:"created_at"`
 }
 
-// The council's announcements for its administrators, the current ones first.
-func (q *Queries) ListCouncilNotices(ctx context.Context, tenantID uuid.UUID) ([]ListCouncilNoticesRow, error) {
-	rows, err := q.db.QueryContext(ctx, listCouncilNotices, tenantID)
+// The council's announcements for its administrators: the current ones (the
+// newest first), or the history (past: expired, the latest to expire first).
+func (q *Queries) ListCouncilNotices(ctx context.Context, arg ListCouncilNoticesParams) ([]ListCouncilNoticesRow, error) {
+	rows, err := q.db.QueryContext(ctx, listCouncilNotices, arg.TenantID, arg.Past)
 	if err != nil {
 		return nil, err
 	}
@@ -708,11 +715,17 @@ FROM
     LEFT JOIN facility f ON f.id = p.facility_id
 WHERE
     p.tenant_id = $1
+    AND (p.closed_at IS NOT NULL OR p.closes_at <= NOW()) = $2::BOOLEAN
 ORDER BY
-    (p.closed_at IS NULL AND p.closes_at > NOW()) DESC,
-    p.created_at DESC
+    CASE WHEN $2::BOOLEAN THEN COALESCE(p.closed_at, p.closes_at) END DESC,
+    p.closes_at ASC
 LIMIT 200
 `
+
+type ListCouncilPollsParams struct {
+	TenantID uuid.UUID `json:"tenant_id"`
+	Past     bool      `json:"past"`
+}
 
 type ListCouncilPollsRow struct {
 	ID            uuid.UUID      `json:"id"`
@@ -728,9 +741,10 @@ type ListCouncilPollsRow struct {
 	Votes         int32          `json:"votes"`
 }
 
-// The council's polls for its administrators, the open ones first.
-func (q *Queries) ListCouncilPolls(ctx context.Context, tenantID uuid.UUID) ([]ListCouncilPollsRow, error) {
-	rows, err := q.db.QueryContext(ctx, listCouncilPolls, tenantID)
+// The council's polls for its administrators: the open ones (closing soonest
+// first), or the history (past: closed, the latest to close first).
+func (q *Queries) ListCouncilPolls(ctx context.Context, arg ListCouncilPollsParams) ([]ListCouncilPollsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listCouncilPolls, arg.TenantID, arg.Past)
 	if err != nil {
 		return nil, err
 	}

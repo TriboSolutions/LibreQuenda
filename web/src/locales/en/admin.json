@@ -1146,7 +1146,9 @@
       "withdraw": "Withdraw",
       "withdrawTitle": "Withdraw “{{title}}”?",
       "withdrawBody": "It leaves the pages and the bells. Emails already sent cannot be undone.",
-      "withdrawn": "The announcement was withdrawn."
+      "withdrawn": "The announcement was withdrawn.",
+      "current": "Current",
+      "emptyHistory": "No announcement has expired yet."
     },
     "polls": {
       "title": "Polls",
@@ -1185,7 +1187,11 @@
       "asked_one": "{{count}} person asked",
       "asked_other": "{{count}} people asked",
       "createdAsked_one": "The poll was created and {{count}} person was asked.",
-      "createdAsked_other": "The poll was created and {{count}} people were asked."
-    }
+      "createdAsked_other": "The poll was created and {{count}} people were asked.",
+      "current": "Open",
+      "emptyHistory": "No poll has closed yet."
+    },
+    "show": "What to show",
+    "history": "History"
   }
 }

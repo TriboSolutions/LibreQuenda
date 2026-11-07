@@ -4107,13 +4107,20 @@ paths:
       - Council admin
       summary: Os comunicados do concello
       description: |-
-        Os vixentes primeiro, despois os caducados, os máis recentes primeiro.
+        Os vixentes, os máis recentes primeiro; con state=past, o historial: os caducados, o último en caducar primeiro.
 
         Administración do concello: a persoa usuaria con sesión iniciada ten que ser administradora deste concello ou superadministradora, coa sesión iniciada cun segundo factor (cando REQUIRE_ADMIN_MFA está activado).
       security:
       - bearerAuth: []
       parameters:
       - $ref: '#/components/parameters/TenantSlug'
+      - name: state
+        in: query
+        required: false
+        description: active (os vixentes, por defecto) ou past (o historial, os caducados).
+        schema:
+          type: string
+          enum: [active, past]
       responses:
         '200':
           description: OK
@@ -4222,13 +4229,20 @@ paths:
       - Council admin
       summary: As enquisas do concello
       description: |-
-        As abertas primeiro. As administradoras ven os votos de cada resposta en todo momento; a veciñanza, só cando a enquisa pecha.
+        As abertas, a que pecha antes primeiro; con state=past, o historial: as pechadas, a última en pechar primeiro. As administradoras ven os votos de cada resposta en todo momento; a veciñanza, só cando a enquisa pecha.
 
         Administración do concello: a persoa usuaria con sesión iniciada ten que ser administradora deste concello ou superadministradora, coa sesión iniciada cun segundo factor (cando REQUIRE_ADMIN_MFA está activado).
       security:
       - bearerAuth: []
       parameters:
       - $ref: '#/components/parameters/TenantSlug'
+      - name: state
+        in: query
+        required: false
+        description: open (as abertas, por defecto) ou past (o historial, as pechadas).
+        schema:
+          type: string
+          enum: [open, past]
       responses:
         '200':
           description: OK

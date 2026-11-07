@@ -15,7 +15,7 @@ type Props = {
  * average. Categories and dates only: never what anyone wrote, nor who.
  */
 export function FacilityIssues({ issues, councilName, timeZone }: Props) {
-  const { t } = useTranslation('facility')
+  const { t, i18n } = useTranslation('facility')
   const day = (iso: string) => formatLongDate(localDate(iso, timeZone))
   return (
     <section aria-labelledby="state-title" className="grid gap-3 rounded-lg border bg-card p-5">
@@ -65,7 +65,7 @@ export function FacilityIssues({ issues, councilName, timeZone }: Props) {
       )}
       {issues.average_days_to_solve !== null && (
         <p className="num rounded-md bg-muted px-3 py-2 text-sm">
-          {t('state.average', { council: councilName, days: formatDays(issues.average_days_to_solve), count: issues.solved_count })}
+          {t('state.average', { council: councilName, days: formatDays(issues.average_days_to_solve, i18n.resolvedLanguage ?? 'gl'), count: issues.solved_count })}
         </p>
       )}
     </section>
@@ -73,6 +73,6 @@ export function FacilityIssues({ issues, councilName, timeZone }: Props) {
 }
 
 /** 3.8 → "3,8" in the current language */
-function formatDays(days: number) {
-  return new Intl.NumberFormat(document.documentElement.lang || 'gl', { maximumFractionDigits: 1 }).format(days)
+function formatDays(days: number, language: string) {
+  return new Intl.NumberFormat(language || 'gl', { maximumFractionDigits: 1 }).format(days)
 }

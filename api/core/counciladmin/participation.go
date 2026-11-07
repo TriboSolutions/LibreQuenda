@@ -137,8 +137,20 @@ func (s *counciladminService) councilFacility(ctx context.Context, tenantId uuid
 	return uuid.NullUUID{UUID: parsed, Valid: true}, facility.Name, nil
 }
 
-func (s *counciladminService) ListNotices(ctx context.Context, tenantId uuid.UUID) (*NoticesResponse, *shared.ErrorResponse) {
-	var rows, err = model.New(s.db).ListCouncilNotices(ctx, tenantId)
+// historyState: "" or "active" (current) or "past" (the history); false when it is neither.
+func historyState(state, current string) (bool, bool) {
+	switch state {
+	case "", current:
+		return false, true
+	case "past":
+		return true, true
+	}
+	return false, false
+}
+
+// ListNotices: the current announcements, or the history (past).
+func (s *counciladminService) ListNotices(ctx context.Context, tenantId uuid.UUID, past bool) (*NoticesResponse, *shared.ErrorResponse) {
+	var rows, err = model.New(s.db).ListCouncilNotices(ctx, model.ListCouncilNoticesParams{TenantID: tenantId, Past: past})
 	if err != nil {
 		return nil, failed("errors.participation_failed")
 	}
@@ -236,9 +248,10 @@ func (s *counciladminService) DeleteNotice(ctx context.Context, tenantId, notice
 	return nil
 }
 
-func (s *counciladminService) ListPolls(ctx context.Context, tenantId uuid.UUID) (*PollsResponse, *shared.ErrorResponse) {
+// ListPolls: the open polls, or the history (past: closed).
+func (s *counciladminService) ListPolls(ctx context.Context, tenantId uuid.UUID, past bool) (*PollsResponse, *shared.ErrorResponse) {
 	var queries = model.New(s.db)
-	var rows, err = queries.ListCouncilPolls(ctx, tenantId)
+	var rows, err = queries.ListCouncilPolls(ctx, model.ListCouncilPollsParams{TenantID: tenantId, Past: past})
 	if err != nil {
 		return nil, failed("errors.participation_failed")
 	}
@@ -399,12 +412,18 @@ func pathId(w http.ResponseWriter, r *http.Request, name string) (uuid.UUID, boo
 	return id, true
 }
 
+// ListNotices: ?state=active (the default) or past (the history).
 func (h *counciladminHandler) ListNotices(w http.ResponseWriter, r *http.Request) {
 	var tenantId, ok = h.councilAdmin(w, r)
 	if !ok {
 		return
 	}
-	var response, err = GetCounciladminService(h.db).ListNotices(r.Context(), tenantId)
+	var past, valid = historyState(r.URL.Query().Get("state"), "active")
+	if !valid {
+		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_query_params")
+		return
+	}
+	var response, err = GetCounciladminService(h.db).ListNotices(r.Context(), tenantId, past)
 	send(w, r, response, err)
 }
 
@@ -433,12 +452,18 @@ func (h *counciladminHandler) DeleteNotice(w http.ResponseWriter, r *http.Reques
 	send(w, r, nil, GetCounciladminService(h.db).DeleteNotice(r.Context(), tenantId, noticeId))
 }
 
+// ListPolls: ?state=open (the default) or past (the history: closed).
 func (h *counciladminHandler) ListPolls(w http.ResponseWriter, r *http.Request) {
 	var tenantId, ok = h.councilAdmin(w, r)
 	if !ok {
 		return
 	}
-	var response, err = GetCounciladminService(h.db).ListPolls(r.Context(), tenantId)
+	var past, valid = historyState(r.URL.Query().Get("state"), "open")
+	if !valid {
+		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_query_params")
+		return
+	}
+	var response, err = GetCounciladminService(h.db).ListPolls(r.Context(), tenantId, past)
 	send(w, r, response, err)
 }
 

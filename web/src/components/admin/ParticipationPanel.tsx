@@ -2,6 +2,7 @@ import { Megaphone, Plus, Trash2, Vote, X } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
+import { useSearchParams } from 'react-router'
 import { DatePicker } from '@/components/DatePicker'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -11,7 +12,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { useAsync } from '@/hooks/useAsync'
 import { api, type AdminFacilitySummary, type AdminNotice, type AdminPoll } from '@/lib/api'
 import { addDays, formatDateTime, formatLongDate, localDate } from '@/lib/time'
@@ -26,12 +29,26 @@ const ZONE = 'Europe/Madrid'
 
 /**
  * The council talking to its residents: announcements on its pages (and, if it
- * wants, in their bell and inbox), and quick polls in their «For you».
+ * wants, in their bell and inbox), and quick polls that reach them as notices.
+ * Each in its own tab, the current ones first and the past in their history, so
+ * the page holds what matters now. ?parte=enquisas and ?historial=1 keep where
+ * one was.
  */
 export function ParticipationPanel({ slug, facilities }: Props) {
+  const { t } = useTranslation('admin')
   const [notice, setNotice] = useState<string | null>(null)
+  const [params, setParams] = useSearchParams()
+  const part = params.get('parte') === 'enquisas' ? 'polls' : 'notices'
+  const history = params.get('historial') === '1'
+  const go = (next: { part?: string; history?: boolean }) => {
+    const query: Record<string, string> = { vista: 'participacion' }
+    if ((next.part ?? part) === 'polls') query.parte = 'enquisas'
+    if (next.history ?? history) query.historial = '1'
+    setNotice(null)
+    setParams(query, { replace: true })
+  }
   return (
-    <div className="grid gap-10">
+    <div className="grid gap-4">
       <div aria-live="polite" className="empty:hidden">
         {notice && (
           <Alert className="border-0 bg-pill-positive-bg text-pill-positive-ink">
@@ -39,18 +56,50 @@ export function ParticipationPanel({ slug, facilities }: Props) {
           </Alert>
         )}
       </div>
-      <NoticesSection slug={slug} facilities={facilities} onDone={(message) => setNotice(message)} />
-      <PollsSection slug={slug} facilities={facilities} onDone={(message) => setNotice(message)} />
+      <Tabs value={part} onValueChange={(value) => go({ part: value, history: false })} className="gap-4">
+        <TabsList className="w-fit">
+          <TabsTrigger value="notices">{t('participation.notices.title')}</TabsTrigger>
+          <TabsTrigger value="polls">{t('participation.polls.title')}</TabsTrigger>
+        </TabsList>
+        <TabsContent value="notices">
+          <NoticesSection slug={slug} facilities={facilities} history={history} onHistory={(on) => go({ history: on })} onDone={setNotice} />
+        </TabsContent>
+        <TabsContent value="polls">
+          <PollsSection slug={slug} facilities={facilities} history={history} onHistory={(on) => go({ history: on })} onDone={setNotice} />
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
 
-type SectionProps = Props & { onDone: (message: string) => void }
+/** Current or history: the same list, the API filters and sorts it. */
+function HistoryToggle({ history, onChange, current }: { history: boolean; onChange: (history: boolean) => void; current: string }) {
+  const { t } = useTranslation('admin')
+  return (
+    <ToggleGroup
+      type="single"
+      variant="outline"
+      value={history ? 'past' : 'current'}
+      onValueChange={(value) => value && onChange(value === 'past')}
+      aria-label={t('participation.show')}
+      className="w-fit bg-card"
+    >
+      <ToggleGroupItem value="current" className="h-10 px-4 data-[state=on]:bg-accent data-[state=on]:text-accent-foreground">
+        {current}
+      </ToggleGroupItem>
+      <ToggleGroupItem value="past" className="h-10 px-4 data-[state=on]:bg-accent data-[state=on]:text-accent-foreground">
+        {t('participation.history')}
+      </ToggleGroupItem>
+    </ToggleGroup>
+  )
+}
 
-function NoticesSection({ slug, facilities, onDone }: SectionProps) {
+type SectionProps = Props & { history: boolean; onHistory: (history: boolean) => void; onDone: (message: string) => void }
+
+function NoticesSection({ slug, facilities, history, onHistory, onDone }: SectionProps) {
   const { t } = useTranslation('admin')
   const token = useAuth().user?.access_token ?? ''
-  const notices = useAsync(() => api.council.notices(token, slug), `council-notices:${slug}`)
+  const notices = useAsync(() => api.council.notices(token, slug, history), `council-notices:${slug}:${history}`)
   const [creating, setCreating] = useState(false)
   const [withdrawing, setWithdrawing] = useState<AdminNotice | null>(null)
   const zone = notices.data?.timezone ?? ZONE
@@ -69,6 +118,7 @@ function NoticesSection({ slug, facilities, onDone }: SectionProps) {
           {t('participation.notices.create')}
         </Button>
       </div>
+      <HistoryToggle history={history} onChange={onHistory} current={t('participation.notices.current')} />
       {notices.error && (
         <Alert variant="destructive">
           <AlertDescription>{notices.error.message}</AlertDescription>
@@ -77,11 +127,11 @@ function NoticesSection({ slug, facilities, onDone }: SectionProps) {
       {notices.loading && !notices.data ? (
         <Skeleton className="h-24 w-full" />
       ) : notices.data?.notices.length === 0 ? (
-        <p className="rounded-md border border-dashed px-4 py-3 text-muted-foreground">{t('participation.notices.empty')}</p>
+        <p className="rounded-md border border-dashed px-4 py-3 text-muted-foreground">{history ? t('participation.notices.emptyHistory') : t('participation.notices.empty')}</p>
       ) : (
         <ul className="divide-y rounded-md border">
           {notices.data?.notices.map((n) => (
-            <li key={n.id} className="flex flex-wrap items-start justify-between gap-3 px-4 py-3">
+            <li key={n.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 px-4 py-3">
               <div className="flex min-w-0 items-start gap-3">
                 <Megaphone className="mt-0.5 size-5 shrink-0 text-muted-foreground" aria-hidden />
                 <div className="grid min-w-0 gap-0.5">
@@ -115,7 +165,8 @@ function NoticesSection({ slug, facilities, onDone }: SectionProps) {
           onClose={() => setCreating(false)}
           onCreated={(created) => {
             setCreating(false)
-            notices.reload()
+            if (history) onHistory(false) // a new one is current
+            else notices.reload()
             onDone(created.notify ? t('participation.notices.publishedTold', { count: created.recipients }) : t('participation.notices.published'))
           }}
         />
@@ -138,10 +189,10 @@ function NoticesSection({ slug, facilities, onDone }: SectionProps) {
   )
 }
 
-function PollsSection({ slug, facilities, onDone }: SectionProps) {
+function PollsSection({ slug, facilities, history, onHistory, onDone }: SectionProps) {
   const { t } = useTranslation('admin')
   const token = useAuth().user?.access_token ?? ''
-  const polls = useAsync(() => api.council.polls(token, slug), `council-polls:${slug}`)
+  const polls = useAsync(() => api.council.polls(token, slug, history), `council-polls:${slug}:${history}`)
   const [creating, setCreating] = useState(false)
   const [closing, setClosing] = useState<AdminPoll | null>(null)
   const [deleting, setDeleting] = useState<AdminPoll | null>(null)
@@ -161,6 +212,7 @@ function PollsSection({ slug, facilities, onDone }: SectionProps) {
           {t('participation.polls.create')}
         </Button>
       </div>
+      <HistoryToggle history={history} onChange={onHistory} current={t('participation.polls.current')} />
       {polls.error && (
         <Alert variant="destructive">
           <AlertDescription>{polls.error.message}</AlertDescription>
@@ -169,12 +221,12 @@ function PollsSection({ slug, facilities, onDone }: SectionProps) {
       {polls.loading && !polls.data ? (
         <Skeleton className="h-24 w-full" />
       ) : polls.data?.polls.length === 0 ? (
-        <p className="rounded-md border border-dashed px-4 py-3 text-muted-foreground">{t('participation.polls.empty')}</p>
+        <p className="rounded-md border border-dashed px-4 py-3 text-muted-foreground">{history ? t('participation.polls.emptyHistory') : t('participation.polls.empty')}</p>
       ) : (
         <ul className="divide-y rounded-md border">
           {polls.data?.polls.map((poll) => (
             <li key={poll.id} className="grid gap-3 px-4 py-3">
-              <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
                 <div className="flex min-w-0 items-start gap-3">
                   <Vote className="mt-0.5 size-5 shrink-0 text-muted-foreground" aria-hidden />
                   <div className="grid min-w-0 gap-0.5">
@@ -188,7 +240,7 @@ function PollsSection({ slug, facilities, onDone }: SectionProps) {
                     </p>
                   </div>
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap justify-end gap-2">
                   {poll.open && (
                     <Button variant="outline" size="sm" onClick={() => setClosing(poll)}>
                       {t('participation.polls.close')}
@@ -236,7 +288,8 @@ function PollsSection({ slug, facilities, onDone }: SectionProps) {
           onClose={() => setCreating(false)}
           onCreated={(created) => {
             setCreating(false)
-            polls.reload()
+            if (history) onHistory(false) // a new one is open
+            else polls.reload()
             onDone(t('participation.polls.createdAsked', { count: created.recipients }))
           }}
         />

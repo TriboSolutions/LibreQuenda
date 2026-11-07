@@ -1413,11 +1413,15 @@ export const api = {
       request<void>(`/tenants/${encodeURIComponent(slug)}/admin/resident-requests/${id}/verify`, { token, method: 'POST' }),
     discardResidentRequest: (token: string, slug: string, id: string) =>
       request<void>(`/tenants/${encodeURIComponent(slug)}/admin/resident-requests/${id}`, { token, method: 'DELETE' }),
-    notices: (token: string, slug: string) => request<{ timezone: string; notices: AdminNotice[] }>(`/tenants/${encodeURIComponent(slug)}/admin/notices`, { token }),
+    // the current ones, or the history (expired)
+    notices: (token: string, slug: string, past = false) =>
+      request<{ timezone: string; notices: AdminNotice[] }>(`/tenants/${encodeURIComponent(slug)}/admin/notices${past ? '?state=past' : ''}`, { token }),
     createNotice: (token: string, slug: string, input: NoticeInput) =>
       request<AdminNotice>(`/tenants/${encodeURIComponent(slug)}/admin/notices`, { token, method: 'POST', body: input }),
     deleteNotice: (token: string, slug: string, id: string) => request<void>(`/tenants/${encodeURIComponent(slug)}/admin/notices/${id}`, { token, method: 'DELETE' }),
-    polls: (token: string, slug: string) => request<{ timezone: string; polls: AdminPoll[] }>(`/tenants/${encodeURIComponent(slug)}/admin/polls`, { token }),
+    // the open ones, or the history (closed)
+    polls: (token: string, slug: string, past = false) =>
+      request<{ timezone: string; polls: AdminPoll[] }>(`/tenants/${encodeURIComponent(slug)}/admin/polls${past ? '?state=past' : ''}`, { token }),
     createPoll: (token: string, slug: string, input: PollInput) =>
       request<AdminPoll>(`/tenants/${encodeURIComponent(slug)}/admin/polls`, { token, method: 'POST', body: input }),
     closePoll: (token: string, slug: string, id: string) => request<void>(`/tenants/${encodeURIComponent(slug)}/admin/polls/${id}/close`, { token, method: 'POST' }),

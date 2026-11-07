@@ -67,7 +67,8 @@ WHERE
     id = sqlc.arg('id');
 
 -- name: ListCouncilNotices :many
--- The council's announcements for its administrators, the current ones first.
+-- The council's announcements for its administrators: the current ones (the
+-- newest first), or the history (past: expired, the latest to expire first).
 SELECT
     n.id,
     n.facility_id,
@@ -83,8 +84,9 @@ FROM
     LEFT JOIN facility f ON f.id = n.facility_id
 WHERE
     n.tenant_id = sqlc.arg('tenant_id')
+    AND (n.expires_at <= NOW()) = sqlc.arg('past')::BOOLEAN
 ORDER BY
-    (n.expires_at > NOW()) DESC,
+    CASE WHEN sqlc.arg('past')::BOOLEAN THEN n.expires_at END DESC,
     n.created_at DESC
 LIMIT 200;
 
@@ -379,7 +381,8 @@ ORDER BY
 LIMIT sqlc.arg('max_rows');
 
 -- name: ListCouncilPolls :many
--- The council's polls for its administrators, the open ones first.
+-- The council's polls for its administrators: the open ones (closing soonest
+-- first), or the history (past: closed, the latest to close first).
 SELECT
     p.id,
     p.recipients,
@@ -397,9 +400,10 @@ FROM
     LEFT JOIN facility f ON f.id = p.facility_id
 WHERE
     p.tenant_id = sqlc.arg('tenant_id')
+    AND (p.closed_at IS NOT NULL OR p.closes_at <= NOW()) = sqlc.arg('past')::BOOLEAN
 ORDER BY
-    (p.closed_at IS NULL AND p.closes_at > NOW()) DESC,
-    p.created_at DESC
+    CASE WHEN sqlc.arg('past')::BOOLEAN THEN COALESCE(p.closed_at, p.closes_at) END DESC,
+    p.closes_at ASC
 LIMIT 200;
 
 -- name: ListPollOptions :many

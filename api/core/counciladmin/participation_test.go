@@ -46,3 +46,12 @@ func TestEndOfDay(t *testing.T) {
 		t.Error("90 days ahead refused")
 	}
 }
+
+func TestHistoryState(t *testing.T) {
+	for state, want := range map[string][2]bool{"": {false, true}, "active": {false, true}, "past": {true, true}, "open": {false, false}, "PAST": {false, false}} {
+		var past, valid = historyState(state, "active")
+		if past != want[0] || valid != want[1] {
+			t.Errorf("%q: past %v valid %v, want %v", state, past, valid, want)
+		}
+	}
+}

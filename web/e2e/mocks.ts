@@ -173,7 +173,7 @@ const adminPolls = {
   timezone: TZ,
   polls: [
     { id: 'p1', facility_id: '', facility_name: '', question: 'Que horario preferides para o ximnasio os sábados?', residents_only: false, closes_at: at(24 * 6), closed_at: null, open: true, votes: 41, recipients: 230, options: pollOptions([22, 7, 12]), created_at: at(-24 * 2) },
-    { id: 'p2', facility_id: 'f1', facility_name: 'Pista de pádel 1', question: 'Que deporte botades en falta?', residents_only: true, closes_at: at(-24), closed_at: at(-24 * 2), open: false, votes: 0, recipients: 18, options: pollOptions([0, 0, 0]), created_at: at(-24 * 10) },
+    { id: 'p2', facility_id: 'f1', facility_name: 'Pista de pádel 1', question: 'Que deporte botades en falta?', residents_only: true, closes_at: at(-24), closed_at: at(-24 * 2), open: false, votes: 18, recipients: 64, options: pollOptions([9, 3, 6]), created_at: at(-24 * 10) },
   ],
 }
 
@@ -816,6 +816,15 @@ export async function mockApp(page: Page, { signedIn = true, theme = 'light', la
       const status = url.searchParams.get('status')
       const facility = url.searchParams.get('facility')
       return fulfil(route, { issues: councilIssues.issues.filter((issue) => (!status || issue.status === status) && (!facility || issue.facility_id === facility)) })
+    }
+    // the participation tab: the current ones, or the history (?state=past)
+    if (route.request().method() === 'GET' && /^\/tenants\/[^/]+\/admin\/notices$/.test(path)) {
+      const past = url.searchParams.get('state') === 'past'
+      return fulfil(route, { ...adminNotices, notices: adminNotices.notices.filter((n) => n.active !== past) })
+    }
+    if (route.request().method() === 'GET' && /^\/tenants\/[^/]+\/admin\/polls$/.test(path)) {
+      const past = url.searchParams.get('state') === 'past'
+      return fulfil(route, { ...adminPolls, polls: adminPolls.polls.filter((p) => p.open !== past) })
     }
     // flash booking with the entry code: the phone is at Lugo's padel court
     // «For you» is asked for by POST, with the home page's position when «near me» is on

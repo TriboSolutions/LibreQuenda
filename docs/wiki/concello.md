@@ -4,7 +4,7 @@ O que fan as persoas administradoras dun concello desde a web (`/<concello>/admi
 
 [← Volver á wiki](README.md) · [Veciñanza](vecinanza.md) · [Superadministración](superadmin.md)
 
-**Índice:** [Alta e mantemento de instalacións](#alta-e-mantemento-de-instalacións) · [Horarios e peches](#horarios-e-peches) · [Ventá de reserva](#ventá-de-reserva) · [Formas de entrada](#formas-de-entrada) · [Reserva manual](#reserva-manual) · [Veciñanza empadroada](#veciñanza-empadroada) · [Eventos do concello](#eventos-do-concello) · [Incidencias](#incidencias) · [Analítica de uso](#analítica-de-uso) · [Fala cos datos](#fala-cos-datos) · [Widget para a web do concello](#widget-para-a-web-do-concello) · [Administración do concello](#administración-do-concello)
+**Índice:** [Alta e mantemento de instalacións](#alta-e-mantemento-de-instalacións) · [Horarios e peches](#horarios-e-peches) · [Ventá de reserva](#ventá-de-reserva) · [Formas de entrada](#formas-de-entrada) · [Reserva manual](#reserva-manual) · [Veciñanza empadroada](#veciñanza-empadroada) · [Eventos do concello](#eventos-do-concello) · [Incidencias](#incidencias) · [Participación](#participación) · [Analítica de uso](#analítica-de-uso) · [Fala cos datos](#fala-cos-datos) · [Widget para a web do concello](#widget-para-a-web-do-concello) · [Administración do concello](#administración-do-concello)
 
 ---
 
@@ -115,6 +115,24 @@ A lista de mantemento: os problemas que avisou a veciñanza, coa foto e a urxenc
 | Lista de mantemento | Marcar como arranxado, cunha nota |
 |:-:|:-:|
 | ![Lista](../screenshots/web/concello/issues/01-issues-list.webp) | ![Arranxado](../screenshots/web/concello/issues/03-mark-solved.webp) |
+
+## Participación
+
+A lapela **Participación** é a canle propia do concello coa veciñanza, en dúas partes, cada unha co que está en marcha e o seu **historial**, para que a lista teña só o actual.
+
+**Comunicados.** Un título e un texto, sobre unha instalación ou todo o concello, visibles ata o día que se escolla. Con «Avisar tamén», chegan á campá, á app e ao correo de quen reservou alí nos últimos 30 días (ou en todo o concello en 90 días, e á veciñanza verificada); a lista di a cantas persoas. Pódense retirar mentres están vixentes; os caducados pasan ao historial.
+
+| Vixentes | Novo comunicado | Historial |
+|:-:|:-:|:-:|
+| ![Comunicados](../screenshots/web/concello/participation/01-notices.webp) | ![Novo](../screenshots/web/concello/participation/02-new-notice.webp) | ![Historial](../screenshots/web/concello/participation/03-notices-history.webp) |
+
+**Enquisas.** Unha pregunta con 2 a 6 respostas, aberta ata o día que se escolla (como moito 90 días), opcionalmente só para a veciñanza verificada. Ao creala pregúntaselle á xente do concello, na campá e por correo; ao pechar (no seu día ou co botón «Pechar xa»), avísaselle de que xa hai resultados. A administración ve os votos de cada resposta en todo momento; a veciñanza, só ao pechar. Cada voto é anónimo: só se gardan as contas.
+
+| Abertas | Nova enquisa | Historial |
+|:-:|:-:|:-:|
+| ![Enquisas](../screenshots/web/concello/participation/04-polls.webp) | ![Nova](../screenshots/web/concello/participation/05-new-poll.webp) | ![Historial](../screenshots/web/concello/participation/06-polls-history.webp) |
+
+Todo queda no rexistro de actividade (sen o texto dos comunicados nin as preguntas) e na exportación de datos do concello. O lado da veciñanza está en [O concello informa e pregunta](vecinanza.md#o-concello-informa-e-pregunta).
 
 ## Analítica de uso
 

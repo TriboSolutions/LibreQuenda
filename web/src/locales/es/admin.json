@@ -1146,7 +1146,9 @@
       "withdraw": "Retirar",
       "withdrawTitle": "¿Retirar «{{title}}»?",
       "withdrawBody": "Dejará de salir en las páginas y en las campanas. Los correos ya enviados no se pueden deshacer.",
-      "withdrawn": "Se ha retirado el comunicado."
+      "withdrawn": "Se ha retirado el comunicado.",
+      "current": "Vigentes",
+      "emptyHistory": "Todavía no ha caducado ningún comunicado."
     },
     "polls": {
       "title": "Encuestas",
@@ -1185,7 +1187,11 @@
       "asked_one": "Se preguntó a {{count}} persona",
       "asked_other": "Se preguntó a {{count}} personas",
       "createdAsked_one": "Se ha creado la encuesta y se ha preguntado a {{count}} persona.",
-      "createdAsked_other": "Se ha creado la encuesta y se ha preguntado a {{count}} personas."
-    }
+      "createdAsked_other": "Se ha creado la encuesta y se ha preguntado a {{count}} personas.",
+      "current": "Abiertas",
+      "emptyHistory": "Todavía no se ha cerrado ninguna encuesta."
+    },
+    "show": "Qué mostrar",
+    "history": "Historial"
   }
 }

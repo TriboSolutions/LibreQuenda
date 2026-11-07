@@ -1146,7 +1146,9 @@
       "withdraw": "Retira",
       "withdrawTitle": "Vols retirar «{{title}}»?",
       "withdrawBody": "Deixarà de sortir a les pàgines i a les campanes. Els correus ja enviats no es poden desfer.",
-      "withdrawn": "S’ha retirat el comunicat."
+      "withdrawn": "S’ha retirat el comunicat.",
+      "current": "Vigents",
+      "emptyHistory": "Encara no ha caducat cap comunicat."
     },
     "polls": {
       "title": "Enquestes",
@@ -1185,7 +1187,11 @@
       "asked_one": "S’ha preguntat a {{count}} persona",
       "asked_other": "S’ha preguntat a {{count}} persones",
       "createdAsked_one": "S’ha creat l’enquesta i s’ha preguntat a {{count}} persona.",
-      "createdAsked_other": "S’ha creat l’enquesta i s’ha preguntat a {{count}} persones."
-    }
+      "createdAsked_other": "S’ha creat l’enquesta i s’ha preguntat a {{count}} persones.",
+      "current": "Obertes",
+      "emptyHistory": "Encara no s’ha tancat cap enquesta."
+    },
+    "show": "Què mostrar",
+    "history": "Historial"
   }
 }

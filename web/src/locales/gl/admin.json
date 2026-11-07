@@ -1146,7 +1146,9 @@
       "withdraw": "Retirar",
       "withdrawTitle": "Retirar «{{title}}»?",
       "withdrawBody": "Deixará de saír nas páxinas e nas campás. Os correos xa enviados non se poden desfacer.",
-      "withdrawn": "Retirouse o comunicado."
+      "withdrawn": "Retirouse o comunicado.",
+      "current": "Vixentes",
+      "emptyHistory": "Aínda non caducou ningún comunicado."
     },
     "polls": {
       "title": "Enquisas",
@@ -1185,7 +1187,11 @@
       "asked_one": "Preguntouse a {{count}} persoa",
       "asked_other": "Preguntouse a {{count}} persoas",
       "createdAsked_one": "Creouse a enquisa e preguntouse a {{count}} persoa.",
-      "createdAsked_other": "Creouse a enquisa e preguntouse a {{count}} persoas."
-    }
+      "createdAsked_other": "Creouse a enquisa e preguntouse a {{count}} persoas.",
+      "current": "Abertas",
+      "emptyHistory": "Aínda non pechou ningunha enquisa."
+    },
+    "show": "Que amosar",
+    "history": "Historial"
   }
 }

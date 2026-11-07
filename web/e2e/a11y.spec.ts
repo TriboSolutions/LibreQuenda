@@ -67,6 +67,7 @@ const pages: { name: string; path: string; signedIn?: boolean }[] = [
   { name: 'free-turns widget, one facility, dark', path: '/lugo/widget/padel-1?theme=dark&lang=es', signedIn: false },
   { name: 'council administration, maintenance', path: '/lugo/admin?vista=incidencias' },
   { name: 'council administration, participation', path: '/lugo/admin?vista=participacion' },
+  { name: 'council administration, past polls', path: '/lugo/admin?vista=participacion&parte=enquisas&historial=1' },
   { name: 'polls, from a notice', path: '/enquisas?enquisa=p1' },
   { name: 'facility editor, booking window', path: '/lugo/admin/facilities/f1?vista=reserva' },
   { name: 'entry code to print, in braille', path: '/lugo/admin/facilities/f1/imprimir?que=codigo&braille=1' },
@@ -201,6 +202,13 @@ for (const theme of ['light', 'dark'] as const) {
       await page.waitForTimeout(300)
       await expectAccessible(page, { overlay: true })
       await page.keyboard.press('Escape')
+      // the history holds the expired ones, out of the current list
+      await page.getByRole('radio', { name: 'Historial' }).click()
+      await expect(page.getByText('Redes novas')).toBeVisible()
+      await expect(page.getByText('Cambio de horario en decembro')).toBeHidden()
+      await page.getByRole('tab', { name: 'Enquisas' }).click()
+      await expect(page).toHaveURL(/parte=enquisas/)
+      await expect(page.getByText('Que horario preferides')).toBeVisible()
       await page.getByRole('button', { name: 'Nova enquisa' }).click()
       const dialog = page.getByRole('dialog', { name: 'Nova enquisa' })
       await dialog.getByRole('button', { name: 'Engadir resposta' }).click()
