@@ -261,6 +261,7 @@ const myBookings: MyBookings = {
     booking('b4', -60, { status: 'cancelled', checkin_code: '', can_cancel: false, can_change: false }),
     booking('b5', -80, { checkin_code: '', attendance: 'no_show', can_cancel: false, can_change: false }),
   ],
+  history_pagination: { page: 1, page_size: 20, total: 3, has_more: false },
 }
 
 // after a public booking: the facility already rated, the others not yet

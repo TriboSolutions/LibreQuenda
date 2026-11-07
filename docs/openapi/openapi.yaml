@@ -1059,7 +1059,7 @@ paths:
       tags:
       - Bookings
       summary: As reservas da persoa usuaria
-      description: 'As que fixo e ás que se uniu: as próximas enteiras, o historial paxinado. Tamén responde a HEAD.'
+      description: 'As que fixo e ás que se uniu: as próximas enteiras, o historial paxinado no SQL (20 por páxina por defecto, pageSize ata 100), o máis recente primeiro. Tamén responde a HEAD.'
       security:
       - bearerAuth: []
       parameters:

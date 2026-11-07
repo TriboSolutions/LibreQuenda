@@ -772,7 +772,8 @@ export type CouncilIssue = {
   reporter_phone: string // optional profile phone, only when contact sharing was allowed
 }
 
-export type MyBookings = { upcoming: Booking[]; history: Booking[] }
+/** The upcoming bookings whole, and a page of the history (20), most recent first. */
+export type MyBookings = { upcoming: Booking[]; history: Booking[]; history_pagination: Pagination }
 
 export type Me = {
   id: string
@@ -1293,7 +1294,7 @@ export const api = {
     resendEmailCode: (token: string) => request<void>('/me/account/email/resend', { token, method: 'POST' }),
     verifyEmail: (token: string, code: string) => request<void>('/me/account/email/verify', { token, method: 'POST', body: { code } }),
   },
-  myBookings: (token: string) => request<MyBookings>('/me/bookings', { token }),
+  myBookings: (token: string, historyPage = 1) => request<MyBookings>(`/me/bookings${historyPage > 1 ? `?page=${historyPage}` : ''}`, { token }),
   // asking the council to verify the person as its resident (residents-only facilities), or withdrawing it
   requestResidency: (token: string, slug: string, input: ResidentRequestInput) =>
     request<{ requested_at: string }>(`/tenants/${encodeURIComponent(slug)}/resident-request`, { token, method: 'POST', body: input }),

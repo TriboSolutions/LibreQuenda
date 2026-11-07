@@ -37,12 +37,24 @@ func (s *bookingsService) GetMyBookings(ctx context.Context, userId uuid.UUID, p
 	var loadFailed = &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.bookings_load_failed"}
 	var queries = model.New(s.db)
 	var user = uuid.NullUUID{UUID: userId, Valid: true}
-	var rows, err = queries.ListBookingsByUser(ctx, user)
+	// the page of the history first (ids and the total), then those bookings and every upcoming one
+	var limit, skip = shared.Rows(page)
+	var history, err = queries.ListHistoryPageByUser(ctx, model.ListHistoryPageByUserParams{UserID: user, MaxRows: limit, Skip: skip})
 	if err != nil {
 		return nil, loadFailed
 	}
+	var historyIds = make([]uuid.UUID, 0, len(history))
+	var total int64
+	for _, row := range history {
+		historyIds = append(historyIds, row.ID)
+		total = row.Total
+	}
+	var rows []model.ListBookingsByUserRow
+	if rows, err = queries.ListBookingsByUser(ctx, model.ListBookingsByUserParams{UserID: user, HistoryIds: historyIds}); err != nil {
+		return nil, loadFailed
+	}
 	var joined []model.ListParticipationsByUserRow
-	joined, err = queries.ListParticipationsByUser(ctx, user)
+	joined, err = queries.ListParticipationsByUser(ctx, model.ListParticipationsByUserParams{UserID: user, HistoryIds: historyIds})
 	if err != nil {
 		return nil, loadFailed
 	}
@@ -75,8 +87,7 @@ func (s *bookingsService) GetMyBookings(ctx context.Context, userId uuid.UUID, p
 		joinedBy[row.BookingID] = append(joinedBy[row.BookingID], row)
 	}
 	var response = MapMyBookings(rows, joined, spots, joinedBy, userId, time.Now())
-	response.HistoryPagination = shared.NewPageDto(page, int64(len(response.History)))
-	response.History = shared.Slice(response.History, page)
+	response.HistoryPagination = shared.NewPageDto(page, total)
 	return response, nil
 }
 

@@ -16,6 +16,7 @@ import { RateDialog } from '@/components/RateDialog'
 import { PeopleList } from '@/components/PeopleList'
 import { SpotsMeter } from '@/components/SpotsMeter'
 import { TopBar } from '@/components/TopBar'
+import { Pager } from '@/components/Pager'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -53,7 +54,9 @@ export function MyBookingsPage() {
   const { login } = useLogin()
   usePageTitle(t('invites:myBookings.title'))
   // GET /me (MeProvider) first creates the user's row; the bookings load after it
-  const bookings = useAsync(token && me.me ? () => api.myBookings(token) : null, `bookings:${me.me?.id}`)
+  // the history a page at a time (the upcoming ones always come whole)
+  const [historyPage, setHistoryPage] = useState(1)
+  const bookings = useAsync(token && me.me ? () => api.myBookings(token, historyPage) : null, `bookings:${me.me?.id}:${historyPage}`)
 
   const [now] = useState(() => new Date().toISOString())
   const today = localDate(now, TIME_ZONE)
@@ -221,7 +224,7 @@ export function MyBookingsPage() {
 
         <section aria-labelledby="history-title" className="rounded-lg border bg-card p-5">
           <h2 id="history-title" className="text-lg font-semibold">
-            {t('invites:myBookings.history')} <span className="num font-normal text-muted-foreground">· {history.length}</span>
+            {t('invites:myBookings.history')} <span className="num font-normal text-muted-foreground">· {bookings.data?.history_pagination?.total ?? history.length}</span>
           </h2>
           {history.length === 0 ? (
             <p className="mt-4 text-muted-foreground">{t('invites:myBookings.emptyHistory')}</p>
@@ -232,6 +235,9 @@ export function MyBookingsPage() {
               ))}
             </ul>
           )}
+          <div className="mt-3">
+            <Pager pagination={bookings.data?.history_pagination} onChange={setHistoryPage} label={t('invites:myBookings.historyPages')} />
+          </div>
         </section>
       </div>
     )

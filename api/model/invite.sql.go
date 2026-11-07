@@ -597,9 +597,16 @@ FROM
     LEFT JOIN app_user u ON u.id = b.user_id
 WHERE
     p.user_id = $1
+    -- the upcoming ones and the page of the history asked for, as ListBookingsByUser
+    AND ((b.status = 'confirmed' AND b.ends_at > NOW()) OR b.id = ANY($2::UUID[]))
 ORDER BY
     b.starts_at DESC
 `
+
+type ListParticipationsByUserParams struct {
+	UserID     uuid.NullUUID `json:"user_id"`
+	HistoryIds []uuid.UUID   `json:"history_ids"`
+}
 
 type ListParticipationsByUserRow struct {
 	ID                uuid.UUID     `json:"id"`
@@ -625,8 +632,8 @@ type ListParticipationsByUserRow struct {
 }
 
 // Bookings someone else made that this user joined.
-func (q *Queries) ListParticipationsByUser(ctx context.Context, userID uuid.NullUUID) ([]ListParticipationsByUserRow, error) {
-	rows, err := q.db.QueryContext(ctx, listParticipationsByUser, userID)
+func (q *Queries) ListParticipationsByUser(ctx context.Context, arg ListParticipationsByUserParams) ([]ListParticipationsByUserRow, error) {
+	rows, err := q.db.QueryContext(ctx, listParticipationsByUser, arg.UserID, pq.Array(arg.HistoryIds))
 	if err != nil {
 		return nil, err
 	}

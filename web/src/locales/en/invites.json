@@ -9,7 +9,8 @@
     "emptyUpcoming": "No upcoming bookings.",
     "emptyHistory": "No past bookings yet.",
     "signIn": "Sign in to see your bookings.",
-    "bookNow": "Book now"
+    "bookNow": "Book now",
+    "historyPages": "History pages"
   },
   "role": {
     "owner": "Yours",
