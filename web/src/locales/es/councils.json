@@ -51,5 +51,6 @@
     "book": "Reservar {{facility}} a las {{time}}, abre una nueva pestaña",
     "newTab": "abre una nueva pestaña",
     "bookIn": "Reservar en {{app}}"
-  }
+  },
+  "updating": "Actualizando…"
 }

@@ -168,8 +168,15 @@ export function HomePage() {
               </h2>
               {list.total !== null && (
                 <div className="mb-3 flex min-h-8 flex-wrap items-center gap-x-3 gap-y-1">
-                  <p aria-live="polite" className="text-sm text-muted-foreground">
+                  <p aria-live="polite" className="flex items-center gap-1.5 text-sm text-muted-foreground">
                     {zoomedIn ? t('councils:showingInView', { count: list.total }) : t('councils:showing', { count: list.total })}
+                    {/* new filters or a new view: the last results stay, dimmed, until the new ones come */}
+                    {list.refreshing && (
+                      <>
+                        <LoaderCircle className="size-3.5 animate-spin motion-reduce:animate-none" aria-hidden="true" />
+                        <span className="sr-only">{t('councils:updating')}</span>
+                      </>
+                    )}
                   </p>
                   {zoomedIn && (
                     <Button variant="link" size="sm" className="h-auto p-0" onClick={() => setFitKey((k) => k + 1)}>
@@ -198,7 +205,10 @@ export function HomePage() {
               ) : list.total === 0 ? (
                 <p className="rounded-md border border-dashed px-4 py-3 text-muted-foreground">{zoomedIn ? t('councils:noneInView') : t('councils:noResults')}</p>
               ) : (
-                <ul className="grid content-start gap-3 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:pr-1" aria-busy={list.loading}>
+                <ul
+                  className={cn('grid content-start gap-3 transition-opacity duration-200 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:pr-1', list.refreshing && 'opacity-60')}
+                  aria-busy={list.loading || list.refreshing}
+                >
                   {list.items.map((facility) => (
                     <li key={facility.id} onMouseEnter={() => setHighlighted(facility.id)} onMouseLeave={() => setHighlighted(null)}>
                       <FacilityRow facility={facility} km={facility.distance_km ?? null} active={facility.id === highlighted} labels={facility.tags.map(catalogue.label)} />

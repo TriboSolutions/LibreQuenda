@@ -25,7 +25,19 @@ function scrollParent(node: HTMLElement): HTMLElement | null {
   return null
 }
 
-type Pages = { key: string; items: FacilityCard[]; total: number | null; hasMore: boolean; error: Error | null; wanted: number; attempt: number }
+type Shown = { items: FacilityCard[]; total: number }
+
+type Pages = {
+  key: string
+  items: FacilityCard[]
+  total: number | null
+  hasMore: boolean
+  error: Error | null
+  wanted: number
+  attempt: number
+  // what the last filters found: shown, dimmed, while the new ones load, so the list never empties and flashes
+  previous: Shown | null
+}
 
 /**
  * The home page's list, a page at a time: the first page whenever the filters
@@ -33,10 +45,13 @@ type Pages = { key: string; items: FacilityCard[]; total: number | null; hasMore
  * into view. total: the API's count of every match; null until it answers.
  */
 export function useFacilityPages(filters: FacilityFilters, key: string) {
-  const [state, setState] = useState<Pages>({ key, items: [], total: null, hasMore: false, error: null, wanted: 1, attempt: 0 })
+  const [state, setState] = useState<Pages>({ key, items: [], total: null, hasMore: false, error: null, wanted: 1, attempt: 0, previous: null })
   const [node, setNode] = useState<HTMLElement | null>(null)
-  // new filters: the first page again
-  const current = state.key === key ? state : { key, items: [], total: null, hasMore: false, error: null, wanted: 1, attempt: 0 }
+  // new filters: the first page again, the last results on screen until it comes
+  const current: Pages =
+    state.key === key
+      ? state
+      : { key, items: [], total: null, hasMore: false, error: null, wanted: 1, attempt: 0, previous: state.total !== null ? { items: state.items, total: state.total } : state.previous }
   if (current !== state) setState(current)
   const loaded = Math.ceil(current.items.length / PAGE_SIZE)
   const page = current.wanted
@@ -78,10 +93,13 @@ export function useFacilityPages(filters: FacilityFilters, key: string) {
     return () => observer.disconnect()
   }, [node, ready, key])
 
+  // the new filters' first page has not come yet: the last results, marked as refreshing
+  const refreshing = current.total === null && current.previous !== null
   return {
-    items: current.items,
-    total: current.total,
-    hasMore: current.hasMore,
+    items: refreshing ? current.previous!.items : current.items,
+    total: refreshing ? current.previous!.total : current.total,
+    refreshing,
+    hasMore: !refreshing && current.hasMore,
     error: current.error,
     loading: page > loaded,
     sentinel: setNode,

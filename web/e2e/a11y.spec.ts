@@ -744,6 +744,26 @@ test.describe('keyboard', () => {
     expect(asked.every((q) => q.includes('booking=public') && !q.includes('event'))).toBe(true)
   })
 
+  test('while new filters load, the last results stay on screen, dimmed, instead of flashing empty', async ({ page }) => {
+    await open(page, '/')
+    const list = page.locator('section[aria-labelledby="facilities-title"]')
+    await expect(list.getByRole('link', { name: /Piscina municipal/ }).first()).toBeVisible()
+    // the next answer takes a while
+    let release: () => void = () => {}
+    const held = new Promise<void>((resolve) => (release = resolve))
+    await page.route(/\/api\/facilities\?/, async (route) => {
+      await held
+      await route.fallback()
+    })
+    await page.getByRole('searchbox', { name: 'Buscar instalación, concello, deporte…' }).fill('padel')
+    await expect(list.getByRole('list')).toHaveAttribute('aria-busy', 'true')
+    await expect(list.getByRole('link', { name: /Piscina municipal/ }).first()).toBeVisible()
+    await expect(list.getByText('Actualizando…')).toBeAttached()
+    release()
+    await expect(list.getByRole('link', { name: /Piscina municipal/ })).toHaveCount(0)
+    await expect(list.getByRole('list')).toHaveAttribute('aria-busy', 'false')
+  })
+
   test('the facilities list filters by the type of booking to join', async ({ page }) => {
     await open(page, '/')
     // the list beside the map («For you» links to facilities too)
