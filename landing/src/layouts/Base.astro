@@ -2,7 +2,7 @@
 import "../styles/global.css";
 import Github from "../components/GithubIcon.astro";
 import { Moon, Sun, Star, Languages, Check } from "@lucide/astro";
-import { REPO, SITE, ORG, LICENSE_URL, OG_IMAGE } from "../site";
+import { REPO, SITE, ORG, LICENSE_URL, OG_IMAGE, DEMO } from "../site";
 import { DICT, LANGS, LANG_NAMES, OG_LOCALES, href, swapLang, type Lang } from "../i18n";
 
 interface Props {
@@ -162,6 +162,7 @@ const jsonLd = JSON.stringify({ "@context": "https://schema.org", "@graph": grap
           <a href={`${href(lang)}#vecinanza`} class="transition-colors hover:text-foreground">{t.nav.residents}</a>
           <a href={`${href(lang)}#concello`} class="transition-colors hover:text-foreground">{t.nav.councils}</a>
           <a href={`${href(lang)}#libre`} class="transition-colors hover:text-foreground">{t.nav.free}</a>
+          <a href={DEMO} class="transition-colors hover:text-foreground">{t.nav.demo}</a>
           <a href={href(lang, "/instalar")} class:list={["transition-colors hover:text-foreground", path.includes("/instalar") && "font-medium text-foreground"]}>{t.nav.install}</a>
         </div>
         <div class="ml-auto flex items-center gap-1.5 lg:ml-0">
