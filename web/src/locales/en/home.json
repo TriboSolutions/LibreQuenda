@@ -86,5 +86,30 @@
     "title": "Rating",
     "any": "Any",
     "atLeast": "{{stars}} or more"
+  },
+  "polls": {
+    "title": "Your council asks",
+    "help": "One vote per person, which you can change while the poll is open. The results show when it closes.",
+    "closes": "Closes {{date}}",
+    "closed": "Closed {{date}}",
+    "residentsOnly": "Verified residents only",
+    "vote": "Vote",
+    "change": "Change my vote",
+    "saved": "Your vote is saved.",
+    "resultsLater": "You will see the results when it closes.",
+    "verifyEmail": "To vote, verify your email first.",
+    "verify": "Verify my email",
+    "yours": "your vote",
+    "votes_one": "{{count}} vote",
+    "votes_other": "{{count}} votes",
+    "total_one": "{{count}} vote in all",
+    "total_other": "{{count}} votes in all",
+    "signIn": "Sign in to see your councils’ polls and vote.",
+    "empty": "There are no polls from your councils right now. When the council asks something, you will get a notice.",
+    "menuLink": "Polls",
+    "profileTitle": "Polls",
+    "profileHelp": "Your councils’ questions: vote in the open ones and see the results of the closed ones.",
+    "profileLink": "See every poll",
+    "results": "Poll results"
   }
 }

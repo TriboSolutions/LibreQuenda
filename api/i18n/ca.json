@@ -238,7 +238,19 @@
     "resident_already_verified_self": "L’ajuntament ja t’ha verificat com a veí.",
     "resident_request_failed": "No s’ha pogut enviar la petició.",
     "resident_requests_load_failed": "No s’han pogut carregar les peticions.",
-    "resident_request_weekly": "Només pots enviar una petició de veí a la setmana. En podràs enviar una altra a partir del {{0}}."
+    "resident_request_weekly": "Només pots enviar una petició de veí a la setmana. En podràs enviar una altra a partir del {{0}}.",
+    "participation_failed": "No hem pogut desar els comunicats ni les enquestes. Torna-ho a provar.",
+    "notice_title_invalid": "Escriu un títol de fins a 120 caràcters.",
+    "notice_body_invalid": "Escriu el text del comunicat, de fins a 2000 caràcters.",
+    "notice_expiry_invalid": "Tria fins a quin dia es mostra: des d’avui i fins d’aquí a un any.",
+    "notice_not_found": "No hem trobat aquest comunicat.",
+    "poll_question_invalid": "Escriu la pregunta, de fins a 200 caràcters.",
+    "poll_options_invalid": "Posa entre 2 i 6 respostes diferents, de fins a 120 caràcters cadascuna.",
+    "poll_close_invalid": "Tria el dia de tancament: des d’avui i fins d’aquí a 90 dies.",
+    "poll_not_found": "No hem trobat aquesta enquesta.",
+    "poll_closed": "Aquesta enquesta ja està tancada.",
+    "poll_residents_only": "En aquesta enquesta només voten les persones verificades com a veïnes de l’ajuntament.",
+    "poll_option_not_found": "Aquesta resposta no és d’aquesta enquesta."
   },
   "email": {
     "greeting": "Hola {{0}},",
@@ -349,6 +361,27 @@
       "cancelled": "S’ha cancel·lat el que hi tenies reservat: {{0}} reserves. Si creus que és un error, truca a l’ajuntament.",
       "footer": "Reps aquest correu perquè eres veí verificat d’un ajuntament a {{0}}."
     },
-    "resident_footer": "Reps aquest correu perquè has demanat ser veí d’un ajuntament a {{0}}. Les dades de la petició ja s’han esborrat."
+    "resident_footer": "Reps aquest correu perquè has demanat ser veí d’un ajuntament a {{0}}. Les dades de la petició ja s’han esborrat.",
+    "council_notice": {
+      "subject": "{{0}}: {{1}}",
+      "intro": "{{0}} ha publicat aquest comunicat:",
+      "intro_facility": "{{0}} ha publicat aquest comunicat sobre {{1}}:",
+      "manage": "Veure-ho al web",
+      "footer": "Reps aquest correu de {{0}} perquè has reservat a {{1}}. Pots desactivar els avisos per correu a les teves preferències."
+    },
+    "poll_opened": {
+      "subject": "{{0}} pregunta: {{1}}",
+      "intro": "{{0}} vol saber la teva opinió:",
+      "intro_facility": "{{0}} vol saber la teva opinió sobre {{1}}:",
+      "closes": "Pots votar fins al {{0}}. Els resultats es veuen en tancar-la.",
+      "manage": "Vota",
+      "footer": "Reps aquest correu de {{0}} perquè formes part de {{1}}. Pots desactivar els avisos per correu a les teves preferències."
+    },
+    "poll_closed": {
+      "subject": "Resultats: {{0}}",
+      "intro": "S’ha tancat l’enquesta de {{0}}:",
+      "body": "Gràcies a totes les persones que heu votat. Ja pots veure els resultats.",
+      "manage": "Veure els resultats"
+    }
   }
 }

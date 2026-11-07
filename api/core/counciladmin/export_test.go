@@ -56,8 +56,8 @@ func TestCouncilExportZip(t *testing.T) {
 	if err = json.NewDecoder(reader).Decode(&descriptor); err != nil {
 		t.Fatal(err)
 	}
-	if len(descriptor.Resources) != 8 { // with the maintenance list (facility_issues)
-		t.Fatalf("%d tables, want 8", len(descriptor.Resources))
+	if len(descriptor.Resources) != 10 { // with the maintenance list (facility_issues), the announcements and the poll results
+		t.Fatalf("%d tables, want 10", len(descriptor.Resources))
 	}
 	var rowCounts = map[string]int{}
 	for _, resource := range descriptor.Resources {

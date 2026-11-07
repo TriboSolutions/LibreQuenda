@@ -238,7 +238,19 @@
     "resident_already_verified_self": "O concello xa te verificou como veciño.",
     "resident_request_failed": "Non se puido enviar a petición.",
     "resident_requests_load_failed": "Non se puideron cargar as peticións.",
-    "resident_request_weekly": "Só podes enviar unha petición de veciño á semana. Poderás enviar outra a partir do {{0}}."
+    "resident_request_weekly": "Só podes enviar unha petición de veciño á semana. Poderás enviar outra a partir do {{0}}.",
+    "participation_failed": "Non puidemos gardar os comunicados nin as enquisas. Proba de novo.",
+    "notice_title_invalid": "Escribe un título de ata 120 caracteres.",
+    "notice_body_invalid": "Escribe o texto do comunicado, de ata 2000 caracteres.",
+    "notice_expiry_invalid": "Escolle ata que día se amosa: desde hoxe e ata dentro dun ano.",
+    "notice_not_found": "Non atopamos ese comunicado.",
+    "poll_question_invalid": "Escribe a pregunta, de ata 200 caracteres.",
+    "poll_options_invalid": "Pon entre 2 e 6 respostas distintas, de ata 120 caracteres cada unha.",
+    "poll_close_invalid": "Escolle o día de peche: desde hoxe e ata dentro de 90 días.",
+    "poll_not_found": "Non atopamos esa enquisa.",
+    "poll_closed": "Esta enquisa xa está pechada.",
+    "poll_residents_only": "Nesta enquisa só votan as persoas verificadas como veciñas do concello.",
+    "poll_option_not_found": "Esa resposta non é desta enquisa."
   },
   "email": {
     "greeting": "Ola {{0}},",
@@ -349,6 +361,27 @@
       "cancelled": "Cancelouse o que tiñas reservado nelas: {{0}} reservas. Se cres que é un erro, chama ao concello.",
       "footer": "Recibes este correo porque eras veciño verificado dun concello en {{0}}."
     },
-    "resident_footer": "Recibes este correo porque pediches ser veciño dun concello en {{0}}. Os datos da petición xa se borraron."
+    "resident_footer": "Recibes este correo porque pediches ser veciño dun concello en {{0}}. Os datos da petición xa se borraron.",
+    "council_notice": {
+      "subject": "{{0}}: {{1}}",
+      "intro": "{{0}} publicou este comunicado:",
+      "intro_facility": "{{0}} publicou este comunicado sobre {{1}}:",
+      "manage": "Velo na web",
+      "footer": "Recibes este correo de {{0}} porque reservaches en {{1}}. Podes desactivar os avisos por correo nas túas preferencias."
+    },
+    "poll_opened": {
+      "subject": "{{0}} pregunta: {{1}}",
+      "intro": "{{0}} quere saber a túa opinión:",
+      "intro_facility": "{{0}} quere saber a túa opinión sobre {{1}}:",
+      "closes": "Podes votar ata o {{0}}. Os resultados vense ao pechar.",
+      "manage": "Votar",
+      "footer": "Recibes este correo de {{0}} porque formas parte de {{1}}. Podes desactivar os avisos por correo nas túas preferencias."
+    },
+    "poll_closed": {
+      "subject": "Resultados: {{0}}",
+      "intro": "Pechou a enquisa de {{0}}:",
+      "body": "Grazas a todas as persoas que votastes. Xa podes ver os resultados.",
+      "manage": "Ver os resultados"
+    }
   }
 }

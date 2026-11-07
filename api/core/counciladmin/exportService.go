@@ -60,6 +60,8 @@ type councilExport struct {
 	bookings     []model.ExportBookingsRow
 	participants []model.ExportBookingParticipantsRow
 	issues       []model.FacilityIssue
+	notices      []model.ExportNoticesRow
+	polls        []model.ExportPollsRow
 	people       []model.ExportPeopleRow
 }
 
@@ -90,7 +92,13 @@ func (s *counciladminService) ExportCouncil(ctx context.Context, tenantId uuid.U
 		if data.participants, err = q.ExportBookingParticipants(ctx, tenantId); err != nil {
 			return err
 		}
-		if data.issues, err = q.ExportIssues(ctx, tenantId); err != nil || !personal {
+		if data.issues, err = q.ExportIssues(ctx, tenantId); err != nil {
+			return err
+		}
+		if data.notices, err = q.ExportNotices(ctx, tenantId); err != nil {
+			return err
+		}
+		if data.polls, err = q.ExportPolls(ctx, tenantId); err != nil || !personal {
 			return err
 		}
 		data.people, err = q.ExportPeople(ctx, tenantId)
@@ -524,7 +532,57 @@ func (data *councilExport) tables(media map[string]string) []exportTable {
 		})
 	}
 
-	var tables = []exportTable{council, facilities, hours, closures, devices, bookings, participants, issues}
+	var notices = exportTable{
+		name:        "notices",
+		description: "The council's announcements, shown on its pages until they expired and, when notify, sent to who booked there.",
+		fields: []exportField{
+			{"id", "string", "Announcement id (UUID)"},
+			{"facility_id", "string", "The facility it was about; empty for the whole council"},
+			{"title", "string", "Title"},
+			{"body", "string", "Text"},
+			{"expires_at", "datetime", "Shown until"},
+			{"notify", "boolean", "Also sent in the bell and by email"},
+			{"recipients", "integer", "How many people it was sent to"},
+			{"created_by", "string", "Account id of the administrator who published it"},
+			{"created_at", "datetime", "Published"},
+		},
+		foreignKeys: []exportForeignKey{{"facility_id", "facilities"}},
+		rows:        make([][]string, 0, len(data.notices)),
+	}
+	for _, n := range data.notices {
+		notices.rows = append(notices.rows, []string{
+			n.ID.String(), exportNullUUID(n.FacilityID), n.Title, n.Body, exportTime(n.ExpiresAt), strconv.FormatBool(n.Notify),
+			strconv.Itoa(int(n.Recipients)), exportNullUUID(n.CreatedBy), exportTime(n.CreatedAt),
+		})
+	}
+
+	var polls = exportTable{
+		name:        "poll_results",
+		description: "The council's polls, one row per answer with how many chose it. Who voted what is never exported.",
+		fields: []exportField{
+			{"poll_id", "string", "Poll id (UUID)"},
+			{"facility_id", "string", "The facility it was about; empty for the whole council"},
+			{"question", "string", "Question"},
+			{"residents_only", "boolean", "Only verified residents could vote"},
+			{"closes_at", "datetime", "Planned close"},
+			{"closed_at", "datetime", "Closed early, if it was"},
+			{"created_by", "string", "Account id of the administrator who created it"},
+			{"created_at", "datetime", "Created"},
+			{"position", "integer", "Order of the answer, from 0"},
+			{"answer", "string", "Answer"},
+			{"votes", "integer", "Votes for this answer"},
+		},
+		rows: make([][]string, 0, len(data.polls)),
+	}
+	for _, p := range data.polls {
+		polls.rows = append(polls.rows, []string{
+			p.ID.String(), exportNullUUID(p.FacilityID), p.Question, strconv.FormatBool(p.ResidentsOnly), exportTime(p.ClosesAt),
+			exportNullTime(p.ClosedAt), exportNullUUID(p.CreatedBy), exportTime(p.CreatedAt), strconv.Itoa(int(p.Position)), p.Label,
+			strconv.Itoa(int(p.Votes)),
+		})
+	}
+
+	var tables = []exportTable{council, facilities, hours, closures, devices, bookings, participants, issues, notices, polls}
 	if !data.personal {
 		return tables
 	}

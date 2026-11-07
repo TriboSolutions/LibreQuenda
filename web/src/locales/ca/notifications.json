@@ -30,7 +30,12 @@
     "resident_verified": "{{council}} t’ha verificat com a veí: ja pots reservar a les seves instal·lacions només per a veïns.",
     "resident_rejected": "{{council}} no t’ha pogut verificar com a veí. Truca a l’ajuntament si creus que és un error.",
     "resident_revoked": "{{council}} ha retirat la teva verificació com a veí: s’ha cancel·lat el que tenies reservat a les seves instal·lacions només per a veïns.",
-    "participant_removed_event": "{{council}} t’ha tret de l’esdeveniment «{{title}}» a {{facility}}, {{day}} a les {{time}}. Ja no t’hi pots tornar a apuntar."
+    "participant_removed_event": "{{council}} t’ha tret de l’esdeveniment «{{title}}» a {{facility}}, {{day}} a les {{time}}. Ja no t’hi pots tornar a apuntar.",
+    "council_notice": "{{council}} ha publicat un comunicat: «{{title}}».",
+    "council_notice_facility": "{{council}} ha publicat un comunicat sobre {{facility}}: «{{title}}».",
+    "poll_opened": "{{council}} pregunta: «{{title}}». Vota!",
+    "poll_opened_facility": "{{council}} pregunta sobre {{facility}}: «{{title}}». Vota!",
+    "poll_closed": "Ja hi ha els resultats de «{{title}}»."
   },
   "reason": "Motiu: {{reason}}",
   "councilNote": "Nota de l’ajuntament: {{reason}}",

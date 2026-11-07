@@ -128,6 +128,7 @@ const listNotificationsByUser = `-- name: ListNotificationsByUser :many
 SELECT
     id,
     booking_id,
+    poll_id,
     type,
     payload,
     created_at,
@@ -152,6 +153,7 @@ type ListNotificationsByUserParams struct {
 type ListNotificationsByUserRow struct {
 	ID        uuid.UUID        `json:"id"`
 	BookingID uuid.NullUUID    `json:"booking_id"`
+	PollID    uuid.NullUUID    `json:"poll_id"`
 	Type      NotificationType `json:"type"`
 	Payload   json.RawMessage  `json:"payload"`
 	CreatedAt time.Time        `json:"created_at"`
@@ -171,6 +173,7 @@ func (q *Queries) ListNotificationsByUser(ctx context.Context, arg ListNotificat
 		if err := rows.Scan(
 			&i.ID,
 			&i.BookingID,
+			&i.PollID,
 			&i.Type,
 			&i.Payload,
 			&i.CreatedAt,

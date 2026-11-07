@@ -54,6 +54,13 @@ CREATE INDEX idx_booking_public ON booking (starts_at) WHERE kind <> 'private' A
 -- reported problems: the council's list by facility and status, and the open ones per person
 CREATE INDEX idx_facility_issue_facility  ON facility_issue (facility_id, status, created_at DESC);
 CREATE INDEX idx_facility_issue_reporter  ON facility_issue (reporter_id, status);
+CREATE INDEX idx_facility_issue_resolved  ON facility_issue (facility_id, resolved_at) WHERE status = 'solved';
+CREATE INDEX idx_council_notice_tenant    ON council_notice (tenant_id, expires_at DESC);
+CREATE INDEX idx_council_notice_facility  ON council_notice (facility_id, expires_at DESC) WHERE facility_id IS NOT NULL;
+CREATE INDEX idx_notification_notice      ON notification (notice_id) WHERE notice_id IS NOT NULL;
+CREATE INDEX idx_notification_poll        ON notification (poll_id) WHERE poll_id IS NOT NULL;
+CREATE INDEX idx_poll_tenant              ON poll (tenant_id, closes_at DESC);
+CREATE INDEX idx_poll_vote_option         ON poll_vote (option_id);
 
 -- ratings: the averages on the facility page and next to people
 CREATE INDEX idx_facility_rating_facility ON facility_rating (facility_id);

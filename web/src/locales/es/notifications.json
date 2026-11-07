@@ -30,7 +30,12 @@
     "resident_verified": "{{council}} te verificó como vecino: ya puedes reservar en sus instalaciones solo para vecinos.",
     "resident_rejected": "{{council}} no pudo verificarte como vecino. Llama al ayuntamiento si crees que es un error.",
     "resident_revoked": "{{council}} retiró tu verificación como vecino: se canceló lo que tenías reservado en sus instalaciones solo para vecinos.",
-    "participant_removed_event": "{{council}} te sacó del evento «{{title}}» en {{facility}}, {{day}} a las {{time}}. Ya no puedes volver a apuntarte a él."
+    "participant_removed_event": "{{council}} te sacó del evento «{{title}}» en {{facility}}, {{day}} a las {{time}}. Ya no puedes volver a apuntarte a él.",
+    "council_notice": "{{council}} ha publicado un comunicado: «{{title}}».",
+    "council_notice_facility": "{{council}} ha publicado un comunicado sobre {{facility}}: «{{title}}».",
+    "poll_opened": "{{council}} pregunta: «{{title}}». ¡Vota!",
+    "poll_opened_facility": "{{council}} pregunta sobre {{facility}}: «{{title}}». ¡Vota!",
+    "poll_closed": "Ya están los resultados de «{{title}}»."
   },
   "reason": "Motivo: {{reason}}",
   "councilNote": "Nota del ayuntamiento: {{reason}}",

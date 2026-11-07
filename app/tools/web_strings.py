@@ -136,7 +136,17 @@ KEYS = {
  **{f'notif_{t}': (N, f'type.{t}') for t in ['booking_confirmed', 'booking_reminder', 'booking_changed', 'booking_cancelled',
     'booking_cancelled_by_council', 'booking_cancelled_by_closure', 'booking_cancelled_by_staff', 'council_admin_granted',
     'booking_cancelled_by_owner', 'booking_cancelled_account_deleted', 'event_cancelled', 'booking_cancelled_resident_revoked', 'booking_left_resident_revoked', 'participant_removed', 'participant_removed_event',
-    'issue_solved', 'issue_rejected', 'booking_joined', 'issue_reported', 'rating_requested', 'rating_requested_public']}, 'council': (K,'council'), 'slots_full': (H,'availability.full'),
+    'issue_solved', 'issue_rejected', 'booking_joined', 'issue_reported', 'rating_requested', 'rating_requested_public',
+    'council_notice', 'council_notice_facility', 'poll_opened', 'poll_opened_facility', 'poll_closed']},
+ # the council's announcements and the facility's status, as the web's facility page (CouncilNotices, FacilityIssues)
+ **{f'notices_{k}': (F, f'notices.{k}') for k in ['title', 'label', 'published', 'until']},
+ **{f'state_{k}': (F, f'state.{v}') for k, v in [('title', 'title'), ('no_known', 'noKnown'), ('known', 'known'), ('already_known', 'alreadyKnown'),
+    ('reported', 'reported'), ('in_progress', 'inProgress'), ('since', 'since'), ('solved', 'solved'), ('solved_on', 'solvedOn')]},
+ # the councils' polls, as the web's home page (CouncilPolls)
+ **{f'polls_{k}': (H, f'polls.{v}') for k, v in [('title', 'title'), ('help', 'help'), ('closes', 'closes'), ('closed', 'closed'),
+    ('residents_only', 'residentsOnly'), ('vote', 'vote'), ('change', 'change'), ('saved', 'saved'), ('results_later', 'resultsLater'),
+    ('verify_email', 'verifyEmail'), ('yours', 'yours'), ('empty', 'empty'), ('menu', 'menuLink'), ('menu_sub', 'profileHelp'),
+    ('results', 'results')]}, 'council': (K,'council'), 'slots_full': (H,'availability.full'),
  'status_cancelled': (B,'status.cancelled'), 'status_attended': (B,'status.attended'), 'status_no_show': (B,'status.noShow'),
  'status_ended': (B,'status.ended'), 'status_checked_in': (B,'status.checkedIn'),
  # rating a booking that ended: the facility and, after a public one, the others (the web's RateDialog)
@@ -147,7 +157,8 @@ KEYS = {
  'people_unnamed': (I,'people.unnamed'), 'people_organiser': (I,'people.organiser'),
 }
 PLURALS = {'rule_length': (P,'accountSettings.rule.length'), 'results_count': (K,'showing'), 'public_spots': (H,'forYou.spots'), 'rule_slot': (F,'ruleSlot'), 'rule_cancel': (F,'ruleCancel'),
-           'rating_summary': (C,'rating.summary'), 'rating_stars': (C,'rating.stars')}
+           'rating_summary': (C,'rating.summary'), 'rating_stars': (C,'rating.stars'),
+           'state_reports': (F,'state.reports'), 'state_average': (F,'state.average'), 'polls_votes': (H,'polls.votes'), 'polls_total': (H,'polls.total')}
 def get(d, path):
     for part in path.split('.'): d = d[part]
     return d

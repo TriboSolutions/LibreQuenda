@@ -66,6 +66,8 @@ const pages: { name: string; path: string; signedIn?: boolean }[] = [
   { name: 'free-turns widget', path: '/lugo/widget', signedIn: false },
   { name: 'free-turns widget, one facility, dark', path: '/lugo/widget/padel-1?theme=dark&lang=es', signedIn: false },
   { name: 'council administration, maintenance', path: '/lugo/admin?vista=incidencias' },
+  { name: 'council administration, participation', path: '/lugo/admin?vista=participacion' },
+  { name: 'polls, from a notice', path: '/enquisas?enquisa=p1' },
   { name: 'facility editor, booking window', path: '/lugo/admin/facilities/f1?vista=reserva' },
   { name: 'entry code to print, in braille', path: '/lugo/admin/facilities/f1/imprimir?que=codigo&braille=1' },
   { name: 'check-in at the door, printed QR', path: '/lugo/padel-1/entrada?c=9a1f6c2e-3b4d-4e5f-8a7b-1c2d3e4f5a6b' },
@@ -189,6 +191,38 @@ for (const theme of ['light', 'dark'] as const) {
       await page.getByRole('dialog').getByRole('radio', { name: '4 estrelas' }).first().focus()
       await page.keyboard.press('ArrowRight')
       await expect(page.getByRole('dialog').getByRole('radio', { name: '5 estrelas' }).first()).toBeChecked()
+    })
+
+    test('a new announcement and a new poll, their dialogs', async ({ page }) => {
+      await open(page, '/lugo/admin?vista=participacion', { theme })
+      await expect(page.getByText('Avisouse a 132 persoas')).toBeVisible()
+      await page.getByRole('button', { name: 'Novo comunicado' }).click()
+      await expect(page.getByRole('dialog', { name: 'Novo comunicado' })).toBeVisible()
+      await page.waitForTimeout(300)
+      await expectAccessible(page, { overlay: true })
+      await page.keyboard.press('Escape')
+      await page.getByRole('button', { name: 'Nova enquisa' }).click()
+      const dialog = page.getByRole('dialog', { name: 'Nova enquisa' })
+      await dialog.getByRole('button', { name: 'Engadir resposta' }).click()
+      await expect(dialog.getByRole('textbox', { name: 'Resposta 3' })).toBeVisible()
+      await page.waitForTimeout(300)
+      await expectAccessible(page, { overlay: true })
+    })
+
+    test('the polls page: vote, and the results of a closed one', async ({ page }) => {
+      let voted: unknown = null
+      await open(page, '/enquisas?enquisa=p1', { theme })
+      await page.route('**/api/me/polls/p1/vote', (route) => {
+        voted = route.request().postDataJSON()
+        return route.fulfill({ status: 204 })
+      })
+      const poll = page.getByRole('listitem').filter({ hasText: 'Que horario preferides' })
+      await poll.getByRole('radio', { name: 'Pola tarde' }).check()
+      await poll.getByRole('button', { name: 'Votar' }).click()
+      await expect(poll.getByText('Gardouse o teu voto.')).toBeVisible()
+      expect(voted).toEqual({ option_id: 'o2' })
+      await expect(page.getByRole('listitem').filter({ hasText: 'Que deporte botades' })).toContainText('50% · 15 votos')
+      await expectAccessible(page)
     })
 
     test('notifications menu', async ({ page }) => {

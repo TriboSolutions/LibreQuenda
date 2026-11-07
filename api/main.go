@@ -20,6 +20,7 @@ import (
 	"librequenda/core/media"
 	"librequenda/core/notifications"
 	"librequenda/core/platform"
+	"librequenda/core/polls"
 	"librequenda/core/ratings"
 	"librequenda/core/reader"
 	"librequenda/core/tenants"
@@ -68,5 +69,6 @@ func main() {
 	entrance.EntranceRoutes(dbConexion, router).RegisterRoutes()
 	issues.IssuesRoutes(dbConexion, router).RegisterRoutes()
 	ratings.RatingsRoutes(dbConexion, router).RegisterRoutes()
+	polls.PollsRoutes(dbConexion, router).RegisterRoutes()
 	router.StartServer(":8000")
 }

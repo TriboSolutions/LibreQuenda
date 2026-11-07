@@ -90,6 +90,25 @@ CREATE POLICY tenant_smtp_insert ON tenant_smtp FOR INSERT WITH CHECK (tenant_id
 CREATE POLICY tenant_smtp_update ON tenant_smtp FOR UPDATE USING (tenant_id = app_tenant_id()) WITH CHECK (tenant_id = app_tenant_id());
 CREATE POLICY tenant_smtp_delete ON tenant_smtp FOR DELETE USING (tenant_id = app_tenant_id());
 
+-- council_notice, poll, poll_option: the council's announcements and questions,
+-- read on its public pages, written by the council. Votes (poll_vote) are the
+-- residents' own, written after the API checked the person.
+ALTER TABLE council_notice ENABLE ROW LEVEL SECURITY;
+CREATE POLICY council_notice_read   ON council_notice FOR SELECT USING (TRUE);
+CREATE POLICY council_notice_insert ON council_notice FOR INSERT WITH CHECK (tenant_id = app_tenant_id());
+CREATE POLICY council_notice_update ON council_notice FOR UPDATE USING (tenant_id = app_tenant_id()) WITH CHECK (tenant_id = app_tenant_id());
+CREATE POLICY council_notice_delete ON council_notice FOR DELETE USING (tenant_id = app_tenant_id());
+
+ALTER TABLE poll ENABLE ROW LEVEL SECURITY;
+CREATE POLICY poll_read   ON poll FOR SELECT USING (TRUE);
+CREATE POLICY poll_insert ON poll FOR INSERT WITH CHECK (tenant_id = app_tenant_id());
+CREATE POLICY poll_update ON poll FOR UPDATE USING (tenant_id = app_tenant_id()) WITH CHECK (tenant_id = app_tenant_id());
+CREATE POLICY poll_delete ON poll FOR DELETE USING (tenant_id = app_tenant_id());
+
+ALTER TABLE poll_option ENABLE ROW LEVEL SECURITY;
+CREATE POLICY poll_option_read   ON poll_option FOR SELECT USING (TRUE);
+CREATE POLICY poll_option_insert ON poll_option FOR INSERT WITH CHECK (EXISTS (SELECT 1 FROM poll p WHERE p.id = poll_id AND p.tenant_id = app_tenant_id()));
+
 -- audit_log: append-only for the API. A council's administrators read it
 -- inside db.WithTenant and see only their council; superadministrators read
 -- it without a council and see everything. Old entries go only through

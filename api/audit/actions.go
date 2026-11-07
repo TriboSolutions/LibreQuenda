@@ -4,7 +4,7 @@ package audit
 // names its target. An empty code means "not worth logging" (a preview).
 type action struct {
 	code   string
-	target string // facility, device, closure, booking, tenant, user, tag, tag_category, invitation
+	target string // facility, device, closure, booking, tenant, user, tag, tag_category, invitation, notice, poll
 	param  string // the path parameter holding the target's id
 }
 
@@ -29,6 +29,11 @@ var actions = map[string]action{
 	"PUT /tenants/{slug}/admin/facilities/{id}/booking-rules":                {code: "booking_window.facility_changed", target: "facility", param: "id"},
 	"PUT /tenants/{slug}/admin/booking-rules":                                {code: "booking_window.council_changed"},
 	"PUT /tenants/{slug}/admin/issues/{issueId}":                             {code: "issue.changed"},
+	"POST /tenants/{slug}/admin/notices":                                     {code: "notice.published"},
+	"DELETE /tenants/{slug}/admin/notices/{noticeId}":                        {code: "notice.withdrawn"},
+	"POST /tenants/{slug}/admin/polls":                                       {code: "poll.created"},
+	"POST /tenants/{slug}/admin/polls/{pollId}/close":                        {code: "poll.closed"},
+	"DELETE /tenants/{slug}/admin/polls/{pollId}":                            {code: "poll.deleted"},
 	"POST /tenants/{slug}/admin/bookings":                                    {code: "staff.booking_created"},
 	"POST /tenants/{slug}/admin/bookings/{bookingId}/cancel":                 {code: "staff.booking_cancelled", target: "booking", param: "bookingId"},
 	"POST /tenants/{slug}/admin/bookings/{bookingId}/participants":           {code: "staff.event_participant_added", target: "booking", param: "bookingId"},

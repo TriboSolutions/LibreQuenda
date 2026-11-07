@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Building2, CalendarDays, LogOut, QrCode, ShieldCheck, UserRound } from 'lucide-react'
+import { Building2, CalendarDays, LogOut, QrCode, ShieldCheck, UserRound, Vote } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import { Link, useNavigate } from 'react-router'
@@ -35,7 +35,7 @@ function initials(name: string) {
 }
 
 export function TopBar() {
-  const { t } = useTranslation(['common', 'admin', 'profile', 'invites'])
+  const { t } = useTranslation(['common', 'admin', 'profile', 'invites', 'home'])
   const auth = useAuth()
   const { me } = useMe()
   const { branding } = useBranding()
@@ -96,6 +96,10 @@ export function TopBar() {
                 <DropdownMenuItem onSelect={() => navigate('/reservas')}>
                   <CalendarDays />
                   {t('invites:myBookings.menuLink')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => navigate('/enquisas')}>
+                  <Vote />
+                  {t('home:polls.menuLink')}
                 </DropdownMenuItem>
                 <DropdownMenuItem onSelect={() => navigate('/perfil')}>
                   <UserRound />

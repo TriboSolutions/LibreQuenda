@@ -56,16 +56,19 @@ SELECT (
 -- The councils where the person counts as verified, for /me and their profile:
 -- those that verified them, those they administer, and every active council
 -- for a superadministrator (as IsTenantResident), each since the earliest.
+-- by_role: only through that role, not verified by the council: the person
+-- books there as its resident, but is the resident of one council at most.
 SELECT
     t.slug,
     t.name,
-    MIN(v.since)::TIMESTAMPTZ AS verified_at
+    MIN(v.since)::TIMESTAMPTZ AS verified_at,
+    (NOT BOOL_OR(v.verified))::BOOLEAN AS by_role
 FROM (
-    SELECT r.tenant_id, r.verified_at AS since FROM tenant_resident r WHERE r.user_id = sqlc.arg('user_id')
+    SELECT r.tenant_id, r.verified_at AS since, TRUE AS verified FROM tenant_resident r WHERE r.user_id = sqlc.arg('user_id')
     UNION ALL
-    SELECT m.tenant_id, m.created_at FROM tenant_membership m WHERE m.user_id = sqlc.arg('user_id') AND m.role = 'admin'
+    SELECT m.tenant_id, m.created_at, FALSE FROM tenant_membership m WHERE m.user_id = sqlc.arg('user_id') AND m.role = 'admin'
     UNION ALL
-    SELECT t2.id, p.created_at FROM platform_admin p CROSS JOIN tenant t2 WHERE p.user_id = sqlc.arg('user_id') AND t2.is_active = TRUE
+    SELECT t2.id, p.created_at, FALSE FROM platform_admin p CROSS JOIN tenant t2 WHERE p.user_id = sqlc.arg('user_id') AND t2.is_active = TRUE
 ) v
 JOIN tenant t ON t.id = v.tenant_id
 GROUP BY

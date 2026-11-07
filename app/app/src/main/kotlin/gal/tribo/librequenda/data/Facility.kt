@@ -27,6 +27,8 @@ data class FacilityDay(
     val slots: List<Slot>,
     val publicTurns: List<PublicTurn> = emptyList(),
     val rating: RatingSummary? = null, // residents' stars after their bookings; null until someone rated
+    val notices: List<CouncilNotice> = emptyList(), // the council's current announcements for it and for the whole council
+    val issues: IssuesSummary? = null, // the public side of its maintenance list
 )
 
 /**
@@ -101,6 +103,8 @@ suspend fun fetchFacilityDay(councilSlug: String, facilitySlug: String, date: Lo
             )
         },
         rating = json.ratingSummary("rating"),
+        notices = json.optJSONArray("notices").let { a -> List(a?.length() ?: 0) { a!!.getJSONObject(it).toCouncilNotice() } },
+        issues = json.optJSONObject("issues")?.toIssuesSummary(),
     )
 }
 

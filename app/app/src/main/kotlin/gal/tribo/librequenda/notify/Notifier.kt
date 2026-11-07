@@ -40,6 +40,10 @@ object Notifier {
     const val OPEN_RATE = "rate:"
     fun openRating(id: String) = OPEN_RATE + id
 
+    /** A council's poll, to vote in or see its results: the polls page, on that one. */
+    const val OPEN_POLL = "poll:"
+    fun openPoll(id: String) = OPEN_POLL + id
+
     // The councils are all in Galicia today, as on the web
     private val ZONE = ZoneId.of("Europe/Madrid")
 
@@ -130,6 +134,8 @@ object Notifier {
             n.type == "booking_cancelled_by_council" && n.byStaff -> "booking_cancelled_by_staff"
             n.type == "participant_removed" && n.title.isNotBlank() -> "participant_removed_event" // the council, from one of its events
             n.type == "rating_requested" && n.isPublic -> "rating_requested_public" // the others can be rated too
+            n.type == "council_notice" && n.facilityName.isNotBlank() -> "council_notice_facility" // about one of its facilities
+            n.type == "poll_opened" && n.facilityName.isNotBlank() -> "poll_opened_facility"
             else -> n.type
         }
         val text = textRes(type)?.let {
@@ -150,6 +156,9 @@ object Notifier {
             "resident_verified" -> R.string.notification_resident_verified
             "resident_rejected" -> R.string.notification_resident_rejected
             "resident_revoked" -> R.string.notification_resident_revoked
+            "council_notice", "council_notice_facility" -> R.string.notices_label
+            "poll_opened", "poll_opened_facility" -> R.string.polls_title
+            "poll_closed" -> R.string.polls_results
             else -> null
         }?.let(context::getString)
             ?: if (type == "council_admin_granted") context.getString(R.string.notification_council_admin_granted, n.tenantName)
@@ -191,6 +200,11 @@ object Notifier {
         "resident_verified" -> R.string.notif_resident_verified
         "resident_rejected" -> R.string.notif_resident_rejected
         "resident_revoked" -> R.string.notif_resident_revoked
+        "council_notice" -> R.string.notif_council_notice
+        "council_notice_facility" -> R.string.notif_council_notice_facility
+        "poll_opened" -> R.string.notif_poll_opened
+        "poll_opened_facility" -> R.string.notif_poll_opened_facility
+        "poll_closed" -> R.string.notif_poll_closed
         else -> null
     }
 

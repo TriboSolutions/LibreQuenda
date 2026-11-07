@@ -171,7 +171,9 @@ type FacilityPageResponse struct {
 	Now      time.Time         `json:"now"`
 	Facility FacilityDayDto    `json:"facility"`
 	Schedule []WeeklyWindowDto `json:"schedule"`
-	Rating   *rating.Summary   `json:"rating"` // residents' stars after their bookings; null until someone rated
+	Rating   *rating.Summary   `json:"rating"`  // residents' stars after their bookings; null until someone rated
+	Notices  []PublicNoticeDto `json:"notices"` // the council's current announcements for it, and for the whole council
+	Issues   *IssuesSummaryDto `json:"issues"`  // the public side of its maintenance list
 }
 
 // WeeklyOpeningDto: next week's turns open on Weekday (ISO, 7 = Sunday) at At ("20:00", council time).

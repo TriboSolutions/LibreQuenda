@@ -28,6 +28,9 @@ Estado: **feito** · **en curso** (traballo aberto) · **idea** (sen comezar).
 | Os teus datos nun ficheiro (JSON e CSV) e borrado da conta (reservas anonimizadas, conta de acceso borrada) | feito |
 | Instalacións só para a veciñanza marcadas «Só para veciños» na súa páxina, nas súas tarxetas e nos seus eventos; quen non está verificado alí pode pedilo: chamar ao concello ou enviar unha solicitude (DNI ou NIE, nome, código postal, rúa), unha á semana como máximo, e retirala mentres está pendente; recibe aviso e correo cando o concello decide | feito |
 | Avisar dun problema nunha instalación (rede rota, sen luz, vestiarios sucios…) desde unha reserva ou desde a páxina da instalación, cunha categoría, unha foto e se é urxente; recibe aviso e correo cando o concello o arranxa ou o rexeita | feito |
+| Comunicados do concello na páxina da instalación (ou en todas as do concello) ata a data que escolla, e na campá, nas notificacións da app e no correo de quen reserva alí | feito |
+| Estado da instalación: os problemas xa avisados e sen arranxar e o arranxado nos últimos 30 días (só a categoría e as datas, nunca o que alguén escribiu nin quen avisou), e canto tarda de media o concello en arranxar o que avisa a veciñanza | feito |
+| Enquisas do concello: chegan como aviso (campá, notificación e correo) a quen forma parte del, un voto por conta cun correo verificado que se pode cambiar mentres está aberta, só para a veciñanza verificada se o concello quere, e outro aviso cos resultados cando pecha; todas, abertas e pechadas, na páxina Enquisas (menú da conta e perfil) | feito |
 | Páxinas de condicións de uso e de política de privacidade; contacto de soporte no pé de páxina | feito |
 | Catro idiomas (galego, castelán, inglés, catalán), tema claro e escuro | feito |
 
@@ -41,6 +44,7 @@ Estado: **feito** · **en curso** (traballo aberto) · **idea** (sen comezar).
 | Reserva flash desde a app, tamén cunha etiqueta NFC | feito |
 | Avisos sen push (comprobación en segundo plano), recordatorios locais, notificacións de Android para valorar unha reserva cando remata | feito |
 | Perfil, preferencias, idioma, soporte e textos legais; textos xerados a partir das traducións da web | feito |
+| Comunicados e estado da instalación na súa páxina; enquisas desde o aviso ou o menú (votar, cambiar o voto, ver os resultados) | feito |
 | Instalacións só para a veciñanza marcadas «Só para veciños» (páxina da instalación, tarxetas, eventos e partidas públicas), e petición de verificación desde unha folla inferior: chamar ao concello ou enviar a solicitude, vela pendente e retirala (a xestión segue na web) | feito |
 
 ## Rexistro de entrada na porta
@@ -73,6 +77,7 @@ Estado: **feito** · **en curso** (traballo aberto) · **idea** (sen comezar).
 | As non presentacións lembran cando estaba desactivado o rexistro de entrada (historial das formas de rexistrar a entrada da instalación) | feito |
 | Widget de quendas libres para incrustar na propia web do concello (`/<council>/widget`, todas as instalacións ou unha, claro ou escuro, en calquera dos catro idiomas), co código para pegar e unha vista previa nos axustes do concello | feito |
 | Lista de mantemento (lapela Incidencias): avisos da veciñanza cun distintivo para os novos, filtros por instalación e estado, estado e nota para quen avisou, o correo de quen avisou só se o compartiu | feito |
+| Participación (lapela Participación): publicar e retirar comunicados, con ou sen aviso a quen reserva; crear enquisas de 2 a 6 respostas, pechalas antes de tempo e borralas, cos votos de cada resposta en todo momento | feito |
 | Páxina de axustes do concello: datos, persoas administradoras (invitar, retirar), ventá de reserva, servidor de correo propio (SMTP) con correo de proba, descarga completa dos datos (CSV + datapackage de Frictionless + imaxes, opcionalmente cos datos persoais da veciñanza) | feito |
 
 ## Plataforma

@@ -17,6 +17,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { SettingsRow } from '@/components/SettingsRow'
+import { PollsLink } from '@/components/PollsLink'
 import { useBranding } from '@/hooks/useBranding'
 import { useLogin } from '@/hooks/useLogin'
 import { ResidentOf } from '@/components/ResidentOf'
@@ -65,6 +66,7 @@ export function ProfilePage() {
         <ProfileForm key={me.id} me={me} />
         <PreferencesForm key={`prefs-${me.id}`} me={me} />
         <ResidentOf me={me} />
+        <PollsLink />
         <AccountSettings />
         <CalendarFeed />
         <PrivacySettings me={me} />

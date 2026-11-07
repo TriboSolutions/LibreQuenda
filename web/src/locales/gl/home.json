@@ -86,5 +86,30 @@
     "title": "Valoración",
     "any": "Calquera",
     "atLeast": "{{stars}} ou máis"
+  },
+  "polls": {
+    "title": "O teu concello pregunta",
+    "help": "Un voto por persoa, que podes cambiar mentres a enquisa estea aberta. Os resultados vense ao pechar.",
+    "closes": "Pecha o {{date}}",
+    "closed": "Pechou o {{date}}",
+    "residentsOnly": "Só veciñanza verificada",
+    "vote": "Votar",
+    "change": "Cambiar o voto",
+    "saved": "Gardouse o teu voto.",
+    "resultsLater": "Verás os resultados cando peche.",
+    "verifyEmail": "Para votar, verifica primeiro o teu correo.",
+    "verify": "Verificar o correo",
+    "yours": "o teu voto",
+    "votes_one": "{{count}} voto",
+    "votes_other": "{{count}} votos",
+    "total_one": "{{count}} voto en total",
+    "total_other": "{{count}} votos en total",
+    "signIn": "Inicia sesión para ver as enquisas dos teus concellos e votar.",
+    "empty": "Agora mesmo non hai enquisas dos teus concellos. Cando o concello pregunte algo, chegarache un aviso.",
+    "menuLink": "Enquisas",
+    "profileTitle": "Enquisas",
+    "profileHelp": "As preguntas dos teus concellos: vota nas abertas e mira os resultados das pechadas.",
+    "profileLink": "Ver todas as enquisas",
+    "results": "Resultados da enquisa"
   }
 }

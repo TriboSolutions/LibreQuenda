@@ -238,7 +238,19 @@
     "resident_already_verified_self": "The council has already verified you as a resident.",
     "resident_request_failed": "The request could not be sent.",
     "resident_requests_load_failed": "The requests could not be loaded.",
-    "resident_request_weekly": "You can send one resident request a week. You can send another from {{0}}."
+    "resident_request_weekly": "You can send one resident request a week. You can send another from {{0}}.",
+    "participation_failed": "We couldn't save the announcements or polls. Please try again.",
+    "notice_title_invalid": "Write a title of up to 120 characters.",
+    "notice_body_invalid": "Write the announcement, up to 2000 characters.",
+    "notice_expiry_invalid": "Choose the last day it is shown: from today up to a year from now.",
+    "notice_not_found": "We couldn't find that announcement.",
+    "poll_question_invalid": "Write the question, up to 200 characters.",
+    "poll_options_invalid": "Give 2 to 6 different answers, up to 120 characters each.",
+    "poll_close_invalid": "Choose the closing day: from today up to 90 days from now.",
+    "poll_not_found": "We couldn't find that poll.",
+    "poll_closed": "This poll is already closed.",
+    "poll_residents_only": "Only people verified as the council's residents vote in this poll.",
+    "poll_option_not_found": "That answer is not one of this poll’s."
   },
   "email": {
     "greeting": "Hello {{0}},",
@@ -349,6 +361,27 @@
       "cancelled": "What you had booked there was cancelled: {{0}} bookings. If you think this is a mistake, call the council.",
       "footer": "You get this email because you were a verified resident of a council on {{0}}."
     },
-    "resident_footer": "You get this email because you asked a council to verify you as a resident on {{0}}. The request's details have been deleted."
+    "resident_footer": "You get this email because you asked a council to verify you as a resident on {{0}}. The request's details have been deleted.",
+    "council_notice": {
+      "subject": "{{0}}: {{1}}",
+      "intro": "{{0}} published this announcement:",
+      "intro_facility": "{{0}} published this announcement about {{1}}:",
+      "manage": "See it on the web",
+      "footer": "You get this email from {{0}} because you booked at {{1}}. You can turn email notices off in your preferences."
+    },
+    "poll_opened": {
+      "subject": "{{0}} asks: {{1}}",
+      "intro": "{{0}} would like your opinion:",
+      "intro_facility": "{{0}} would like your opinion about {{1}}:",
+      "closes": "You can vote until {{0}}. The results show when it closes.",
+      "manage": "Vote",
+      "footer": "You get this email from {{0}} because you are part of {{1}}. You can turn email notices off in your preferences."
+    },
+    "poll_closed": {
+      "subject": "Results: {{0}}",
+      "intro": "The poll from {{0}} has closed:",
+      "body": "Thanks to everyone who voted. You can see the results now.",
+      "manage": "See the results"
+    }
   }
 }

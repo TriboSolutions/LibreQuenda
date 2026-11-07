@@ -68,6 +68,80 @@ export type Facility = {
 // contact: where residents send accessibility feedback and complaints (RD 1112/2018); "" when not given
 export type Tenant = { slug: string; name: string; logo_url: string; contact_email: string; contact_phone: string }
 
+/** The council's page: the council and its current announcements. */
+export type CouncilPage = Tenant & { notices: PublicNotice[] }
+
+// --- participation: announcements, the public maintenance list, polls -----------
+
+/** One of the council's announcements, on its pages until it expires. */
+export type PublicNotice = {
+  id: string
+  title: string
+  body: string
+  facility_name: string // "" for the whole council; only on the council's page
+  facility_slug: string
+  expires_at: string
+  created_at: string
+}
+
+/** The public side of a facility's maintenance list: no one's words, no one's name. */
+export type IssuesSummary = {
+  open: { category: IssueCategory; reports: number; first_reported_at: string; in_progress: boolean; urgent: boolean }[]
+  recently_solved: { category: IssueCategory; reports: number; solved_at: string }[] // the last 30 days
+  average_days_to_solve: number | null // the council's average over 180 days; null before it solved any
+  solved_count: number
+}
+
+export type AdminNotice = {
+  id: string
+  facility_id: string // "" for the whole council
+  facility_name: string
+  title: string
+  body: string
+  expires_at: string
+  active: boolean
+  notify: boolean
+  recipients: number // told in the bell and by email
+  created_at: string
+}
+
+export type NoticeInput = { facility_id: string; title: string; body: string; expires_on: string; notify: boolean }
+
+export type PollOption = { id: string; label: string; votes: number | null } // votes: null for residents while open
+
+export type AdminPoll = {
+  id: string
+  facility_id: string
+  facility_name: string
+  question: string
+  residents_only: boolean
+  closes_at: string
+  closed_at: string | null
+  open: boolean
+  votes: number
+  recipients: number // asked in the bell and by email when it opened
+  options: PollOption[]
+  created_at: string
+}
+
+export type PollInput = { facility_id: string; question: string; options: string[]; residents_only: boolean; closes_on: string }
+
+/** A poll as a resident sees it in «For you». */
+export type MyPoll = {
+  id: string
+  question: string
+  tenant_name: string
+  tenant_slug: string
+  facility_name: string
+  facility_slug: string
+  residents_only: boolean
+  open: boolean
+  closes_at: string // or when it closed, if early
+  my_option: string // "" before voting
+  votes: number | null // null while open
+  options: PollOption[]
+}
+
 export type GeoPoint = { latitude: number; longitude: number }
 
 /** Where a page sits in a list the API pages (?page=&pageSize=, 100 by default). */
@@ -157,6 +231,8 @@ export type FacilityPage = {
   facility: Facility
   schedule: WeeklyWindow[]
   rating: RatingSummary | null // residents' stars after their bookings; null until someone rated
+  notices: PublicNotice[] // the council's current announcements for it and for the whole council
+  issues: IssuesSummary
 }
 
 // --- ratings ------------------------------------------------------------------
@@ -579,10 +655,14 @@ export type NotificationType =
   | 'resident_rejected' // …or could not, from its census
   | 'participant_removed' // the owner of a public booking took the person out (they cannot join it again)
   | 'resident_revoked' // the council took the verification back (and cancelled the bookings at its residents-only facilities)
+  | 'council_notice' // the council's announcement (title), about a facility (facility_slug) or the whole council
+  | 'poll_opened' // the council asks (title: the question): vote in poll_id
+  | 'poll_closed' // …and it closed: its results are out
 
 export type AppNotification = {
   id: string
   booking_id: string // "" for notices about no booking
+  poll_id: string // poll_opened, poll_closed
   is_public: boolean // rating_requested: the others can be rated too
   type: NotificationType
   facility_name: string
@@ -715,7 +795,8 @@ export type Me = {
   // council roles waiting for this person: granted once the email is verified
   pending_invitations?: { tenant_name: string; tenant_slug: string }[]
   // councils that verified this person as their resident: they book at their residents-only facilities
-  resident_of?: { tenant_name: string; tenant_slug: string; verified_at: string }[]
+  // where they book as residents; by_role: as its administrator or a superadministrator, not verified by it
+  resident_of?: { tenant_name: string; tenant_slug: string; verified_at: string; by_role: boolean }[]
   // councils the person asked to verify them, still undecided
   resident_requests?: { tenant_name: string; tenant_slug: string; requested_at: string }[]
 }
@@ -1102,7 +1183,10 @@ async function uploadImage(token: string, folder: MediaFolder, file: File, owner
 export const api = {
   uploadImage,
   tenants: () => request<{ tenants: Tenant[] }>('/tenants'),
-  tenant: (slug: string) => request<Tenant>(`/tenants/${encodeURIComponent(slug)}`),
+  tenant: (slug: string) => request<CouncilPage>(`/tenants/${encodeURIComponent(slug)}`),
+  // the councils' polls for the signed-in person; one vote each, changed while open
+  myPolls: (token: string) => request<{ polls: MyPoll[] }>('/me/polls', { token }),
+  vote: (token: string, pollId: string, optionId: string) => request<void>(`/me/polls/${pollId}/vote`, { token, method: 'PUT', body: { option_id: optionId } }),
   tags: () => request<TagCatalogue>('/tags'),
   branding: () => request<Branding>('/branding'),
   // near: nearest first and each one's distance_km (the API sorts); radiusKm keeps those within it.
@@ -1329,6 +1413,15 @@ export const api = {
       request<void>(`/tenants/${encodeURIComponent(slug)}/admin/resident-requests/${id}/verify`, { token, method: 'POST' }),
     discardResidentRequest: (token: string, slug: string, id: string) =>
       request<void>(`/tenants/${encodeURIComponent(slug)}/admin/resident-requests/${id}`, { token, method: 'DELETE' }),
+    notices: (token: string, slug: string) => request<{ timezone: string; notices: AdminNotice[] }>(`/tenants/${encodeURIComponent(slug)}/admin/notices`, { token }),
+    createNotice: (token: string, slug: string, input: NoticeInput) =>
+      request<AdminNotice>(`/tenants/${encodeURIComponent(slug)}/admin/notices`, { token, method: 'POST', body: input }),
+    deleteNotice: (token: string, slug: string, id: string) => request<void>(`/tenants/${encodeURIComponent(slug)}/admin/notices/${id}`, { token, method: 'DELETE' }),
+    polls: (token: string, slug: string) => request<{ timezone: string; polls: AdminPoll[] }>(`/tenants/${encodeURIComponent(slug)}/admin/polls`, { token }),
+    createPoll: (token: string, slug: string, input: PollInput) =>
+      request<AdminPoll>(`/tenants/${encodeURIComponent(slug)}/admin/polls`, { token, method: 'POST', body: input }),
+    closePoll: (token: string, slug: string, id: string) => request<void>(`/tenants/${encodeURIComponent(slug)}/admin/polls/${id}/close`, { token, method: 'POST' }),
+    deletePoll: (token: string, slug: string, id: string) => request<void>(`/tenants/${encodeURIComponent(slug)}/admin/polls/${id}`, { token, method: 'DELETE' }),
     newIssueCount: (token: string, slug: string) => request<{ new: number }>(`/tenants/${encodeURIComponent(slug)}/admin/issues/count`, { token }),
     changeIssue: (token: string, slug: string, id: string, input: { status: IssueStatus; staff_note: string }) =>
       request<CouncilIssue>(`/tenants/${encodeURIComponent(slug)}/admin/issues/${id}`, { token, method: 'PUT', body: input }),

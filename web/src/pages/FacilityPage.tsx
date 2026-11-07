@@ -11,6 +11,8 @@ import { DatePicker } from '@/components/DatePicker'
 import { DayPicker } from '@/components/DayPicker'
 import { CouncilContact, FacilityContact } from '@/components/CouncilContact'
 import { FacilityMap } from '@/components/FacilityMap'
+import { CouncilNotices } from '@/components/CouncilNotices'
+import { FacilityIssues } from '@/components/FacilityIssues'
 import { TopBar } from '@/components/TopBar'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -140,6 +142,7 @@ export function FacilityPage() {
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start">
         <div className="grid gap-6">
+          <CouncilNotices notices={data.notices ?? []} timeZone={timeZone} />
           {(f.image_url || f.description) && (
             <section className="overflow-hidden rounded-lg border bg-card">
               {f.image_url && <img src={f.image_url} alt="" className="aspect-[16/7] w-full object-cover" />}
@@ -303,6 +306,7 @@ export function FacilityPage() {
           </section>
 
           {/* its own contact when it has one, and the council's always, each in its own panel */}
+          {data.issues && <FacilityIssues issues={data.issues} councilName={data.tenant.name} timeZone={timeZone} />}
           {(f.contact_phone || f.contact_email) && <FacilityContact facility={f} />}
           <CouncilContact tenant={data.tenant} />
 

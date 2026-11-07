@@ -111,6 +111,7 @@ WHERE
 SELECT
     id,
     booking_id,
+    poll_id,
     type,
     payload,
     created_at,

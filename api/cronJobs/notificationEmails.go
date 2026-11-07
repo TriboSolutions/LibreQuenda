@@ -77,6 +77,20 @@ func (j *notificationEmailJob) Execute() []any {
 		return []any{err}
 	}
 	sent += residents
+	var notices int
+	notices, err = SendNoticeEmails(ctx, j.db)
+	if err != nil {
+		log.Printf("failed to send notice emails: %v", err)
+		return []any{err}
+	}
+	sent += notices
+	var polls int
+	polls, err = SendPollEmails(ctx, j.db)
+	if err != nil {
+		log.Printf("failed to send poll emails: %v", err)
+		return []any{err}
+	}
+	sent += polls
 	if sent > 0 {
 		log.Printf("sent %d notification emails", sent)
 	}
@@ -177,6 +191,7 @@ func waysIn(row model.ListPendingEmailsRow) []model.CheckinMethod {
 
 type emailView struct {
 	Greeting, Intro, Reason, WaysTitle, Window, Address, Directions, Manage, ManageURL, Footer string
+	Heading, Body                                                                              string // a council announcement's own title and text
 	DirectionsURL                                                                              string
 	Ways                                                                                       []emailWay
 	Contacts                                                                                   []emailContact
@@ -293,6 +308,8 @@ var emailTemplate = template.Must(template.New("notification").Parse(`<!doctype 
 <p style="margin:0 0 12px">{{.Greeting}}</p>
 <p style="margin:0 0 16px">{{.Intro}}</p>
 {{if .Reason}}<p style="margin:0 0 16px">{{.Reason}}</p>{{end}}
+{{if .Heading}}<p style="margin:0 0 8px;font-size:17px;line-height:24px;font-weight:700">{{.Heading}}</p>{{end}}
+{{if .Body}}<p style="margin:0 0 16px;white-space:pre-line">{{.Body}}</p>{{end}}
 {{if .Ways}}<p style="margin:0 0 8px;font-weight:600">{{.WaysTitle}}</p>
 <ul style="margin:0 0 12px;padding-left:20px">{{range .Ways}}<li style="margin:0 0 8px">{{.Text}}{{if .LinkURL}} <a href="{{.LinkURL}}" style="color:#0a6fb0">{{.Link}}</a>{{end}}{{if .HasQR}}<br><img src="cid:booking-qr" width="200" height="200" alt="QR" style="display:block;margin:8px 0 0">{{end}}</li>{{end}}</ul>
 <p style="margin:0 0 16px;color:#5b6573">{{.Window}}</p>{{end}}

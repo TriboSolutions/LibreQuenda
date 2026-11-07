@@ -143,6 +143,45 @@ const facilityPage: FacilityPage = {
   },
   schedule,
   rating: { average: 4.3, count: 12 },
+  // an announcement on top, and the facility's status in the side column
+  notices: [{ id: 'n1', title: 'Cambio de horario en decembro', body: 'Do 1 ao 15 de decembro abrimos ás 10:00.\nGrazas pola comprensión.', facility_name: '', facility_slug: '', expires_at: at(24 * 10), created_at: at(-24) }],
+  issues: {
+    open: [{ category: 'lighting', reports: 2, first_reported_at: at(-24 * 3), in_progress: true, urgent: false }],
+    recently_solved: [{ category: 'equipment', reports: 1, solved_at: at(-24 * 5) }],
+    average_days_to_solve: 3.8,
+    solved_count: 12,
+  },
+}
+
+const councilNotices = [
+  { id: 'n1', title: 'Cambio de horario en decembro', body: 'Do 1 ao 15 de decembro abrimos ás 10:00.', facility_name: '', facility_slug: '', expires_at: at(24 * 10), created_at: at(-24) },
+  { id: 'n2', title: 'Piscina pechada por obras', body: 'Cambiamos o vaso pequeno.', facility_name: 'Pista de pádel 1', facility_slug: 'padel-1', expires_at: at(24 * 3), created_at: at(-2) },
+]
+
+const adminNotices = {
+  timezone: TZ,
+  notices: [
+    { id: 'n1', facility_id: '', facility_name: '', title: 'Cambio de horario en decembro', body: 'Do 1 ao 15 de decembro abrimos ás 10:00.', expires_at: at(24 * 10), active: true, notify: true, recipients: 132, created_at: at(-24) },
+    { id: 'n3', facility_id: 'f1', facility_name: 'Pista de pádel 1', title: 'Redes novas', body: 'Xa están postas.', expires_at: at(-24 * 2), active: false, notify: false, recipients: 0, created_at: at(-24 * 9) },
+  ],
+}
+
+const pollOptions = (votes: (number | null)[]) =>
+  ['Pola mañá', 'Ao mediodía', 'Pola tarde'].map((label, i) => ({ id: `o${i}`, label, votes: votes[i] }))
+
+const adminPolls = {
+  timezone: TZ,
+  polls: [
+    { id: 'p1', facility_id: '', facility_name: '', question: 'Que horario preferides para o ximnasio os sábados?', residents_only: false, closes_at: at(24 * 6), closed_at: null, open: true, votes: 41, recipients: 230, options: pollOptions([22, 7, 12]), created_at: at(-24 * 2) },
+    { id: 'p2', facility_id: 'f1', facility_name: 'Pista de pádel 1', question: 'Que deporte botades en falta?', residents_only: true, closes_at: at(-24), closed_at: at(-24 * 2), open: false, votes: 0, recipients: 18, options: pollOptions([0, 0, 0]), created_at: at(-24 * 10) },
+  ],
+}
+
+const myPolls = {
+  polls: [
+    { id: 'p1', question: 'Que horario preferides para o ximnasio os sábados?', tenant_name: 'Concello de Lugo', tenant_slug: 'lugo', facility_name: '', facility_slug: '', residents_only: false, open: true, closes_at: at(24 * 6), my_option: '', votes: null, options: pollOptions([null, null, null]) },
+    { id: 'p2', question: 'Que deporte botades en falta?', tenant_name: 'Concello de Lugo', tenant_slug: 'lugo', facility_name: 'Pista de pádel 1', facility_slug: 'padel-1', residents_only: true, open: false, closes_at: at(-24), my_option: 'o2', votes: 30, options: pollOptions([9, 6, 15]) },
+  ],
 }
 
 const details: FacilityDetails = {
@@ -262,7 +301,7 @@ const me: Me = {
   rating: { average: 4.8, count: 5 },
   profile_complete: true,
   pending_invitations: [],
-  resident_of: [{ tenant_name: 'Lugo', tenant_slug: 'lugo', verified_at: at(-24 * 40) }],
+  resident_of: [{ tenant_name: 'Lugo', tenant_slug: 'lugo', verified_at: at(-24 * 40), by_role: false }],
 }
 
 /** The same person before confirming their email: booking and joining with the account point to the profile. */
@@ -283,10 +322,10 @@ const account: Account = {
 const notifications: Notifications = {
   unread_count: 3,
   notifications: [
-    { name: '', id: 'n0', booking_id: 'b3', is_public: true, type: 'rating_requested', facility_name: 'Pista de pádel 1', starts_at: at(-30), ends_at: at(-29), reason: '', closed_from: null, closed_until: null, by_staff: false, cause: '', title: '', tenant_name: 'Concello de Lugo', tenant_slug: 'lugo', facility_slug: 'padel-1', created_at: at(-29), read: false },
-    { name: '', id: 'n1', type: 'booking_confirmed', facility_name: 'Pista de pádel 1', starts_at: at(3), ends_at: at(4), reason: '', closed_from: null, closed_until: null, by_staff: false, cause: '', title: '', booking_id: '', is_public: false, tenant_name: 'Concello de Lugo', tenant_slug: 'lugo', facility_slug: '', created_at: at(-1), read: false },
-    { name: '', id: 'n2', type: 'booking_cancelled_by_council', facility_name: 'Pavillón municipal', starts_at: at(30), ends_at: at(31), reason: 'Obras', closed_from: at(29), closed_until: at(40), by_staff: false, cause: '', title: '', booking_id: '', is_public: false, tenant_name: 'Concello de Lugo', tenant_slug: 'lugo', facility_slug: '', created_at: at(-5), read: false },
-    { name: '', id: 'n3', type: 'issue_solved', facility_name: 'Pista de pádel 1', starts_at: null, ends_at: null, reason: 'Rede nova colocada.', closed_from: null, closed_until: null, by_staff: false, cause: '', title: '', booking_id: '', is_public: false, tenant_name: 'Concello de Lugo', tenant_slug: 'lugo', facility_slug: 'padel-1', created_at: at(-30), read: true },
+    { poll_id: '', name: '', id: 'n0', booking_id: 'b3', is_public: true, type: 'rating_requested', facility_name: 'Pista de pádel 1', starts_at: at(-30), ends_at: at(-29), reason: '', closed_from: null, closed_until: null, by_staff: false, cause: '', title: '', tenant_name: 'Concello de Lugo', tenant_slug: 'lugo', facility_slug: 'padel-1', created_at: at(-29), read: false },
+    { poll_id: '', name: '', id: 'n1', type: 'booking_confirmed', facility_name: 'Pista de pádel 1', starts_at: at(3), ends_at: at(4), reason: '', closed_from: null, closed_until: null, by_staff: false, cause: '', title: '', booking_id: '', is_public: false, tenant_name: 'Concello de Lugo', tenant_slug: 'lugo', facility_slug: '', created_at: at(-1), read: false },
+    { poll_id: '', name: '', id: 'n2', type: 'booking_cancelled_by_council', facility_name: 'Pavillón municipal', starts_at: at(30), ends_at: at(31), reason: 'Obras', closed_from: at(29), closed_until: at(40), by_staff: false, cause: '', title: '', booking_id: '', is_public: false, tenant_name: 'Concello de Lugo', tenant_slug: 'lugo', facility_slug: '', created_at: at(-5), read: false },
+    { poll_id: '', name: '', id: 'n3', type: 'issue_solved', facility_name: 'Pista de pádel 1', starts_at: null, ends_at: null, reason: 'Rede nova colocada.', closed_from: null, closed_until: null, by_staff: false, cause: '', title: '', booking_id: '', is_public: false, tenant_name: 'Concello de Lugo', tenant_slug: 'lugo', facility_slug: 'padel-1', created_at: at(-30), read: true },
   ],
 }
 
@@ -704,7 +743,7 @@ const residents: ResidentsPage = {
 
 const routes: [RegExp, () => unknown][] = [
   [/^\/tenants$/, () => ({ tenants })],
-  [/^\/tenants\/[^/?]+$/, () => tenant],
+  [/^\/tenants\/[^/?]+$/, () => ({ ...tenant, notices: councilNotices })],
   [/^\/tags$/, () => tagCatalogue],
   [/^\/facilities$/, () => ({ facilities: facilityCards })],
   [/^\/tenants\/[^/]+\/day/, () => day],
@@ -718,6 +757,9 @@ const routes: [RegExp, () => unknown][] = [
   [/^\/tenants\/[^/]+\/admin\/booking-rules$/, () => councilRules],
   [/^\/tenants\/[^/]+\/admin\/events$/, () => councilEvents],
   [/^\/tenants\/[^/]+\/admin\/events\/[^/]+\/people$/, () => eventPeople],
+  [/^\/tenants\/[^/]+\/admin\/notices$/, () => adminNotices],
+  [/^\/tenants\/[^/]+\/admin\/polls$/, () => adminPolls],
+  [/^\/me\/polls$/, () => myPolls],
   [/^\/tenants\/[^/]+\/admin\/issues\/count$/, () => ({ new: 1 })],
   [/^\/tenants\/[^/]+\/admin\/issues/, () => councilIssues],
   [/^\/admin\/booking-policy$/, () => ({ one_council_per_account: true })],

@@ -163,7 +163,9 @@ internal fun JSONObject.toMe() = Me(
     rating = ratingSummary("rating"),
     residentOf = optJSONArray("resident_of")?.let { a -> List(a.length()) { a.getJSONObject(it).optString("tenant_slug") }.toSet() } ?: emptySet(),
     residentCouncils = optJSONArray("resident_of")?.let { a ->
-        List(a.length()) { a.getJSONObject(it) }.map { c -> ResidentCouncil(c.optString("tenant_slug"), c.optString("tenant_name"), c.optString("verified_at").take(10)) }
+        // only the council that verified them: a role (administrator, superadministrator) is not being its resident
+        List(a.length()) { a.getJSONObject(it) }.filterNot { it.optBoolean("by_role") }
+            .map { c -> ResidentCouncil(c.optString("tenant_slug"), c.optString("tenant_name"), c.optString("verified_at").take(10)) }
     } ?: emptyList(),
     residentRequests = optJSONArray("resident_requests")?.let { a ->
         List(a.length()) { a.getJSONObject(it) }.map { r ->
@@ -215,6 +217,7 @@ data class AppNotification(
     val bookingId: String = "", // "" for notices about no booking
     val isPublic: Boolean = false, // rating_requested: the others can be rated too
     val tenantSlug: String = "", // resident_*: which council
+    val pollId: String = "", // poll_opened, poll_closed: the poll to vote in, or to see the results of
 )
 
 private fun JSONObject.instant(key: String): java.time.Instant? =
@@ -245,6 +248,7 @@ suspend fun fetchNotifications(accessToken: String): Notifications {
                 bookingId = n.optString("booking_id"),
                 isPublic = n.optBoolean("is_public"),
                 tenantSlug = n.optString("tenant_slug"),
+                pollId = n.optString("poll_id"),
             )
         },
     )

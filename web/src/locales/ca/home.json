@@ -86,5 +86,30 @@
     "title": "Valoració",
     "any": "Qualsevol",
     "atLeast": "{{stars}} o més"
+  },
+  "polls": {
+    "title": "El teu ajuntament pregunta",
+    "help": "Un vot per persona, que pots canviar mentre l’enquesta és oberta. Els resultats es veuen en tancar-la.",
+    "closes": "Es tanca el {{date}}",
+    "closed": "Es va tancar el {{date}}",
+    "residentsOnly": "Només veïnat verificat",
+    "vote": "Vota",
+    "change": "Canvia el vot",
+    "saved": "S’ha desat el teu vot.",
+    "resultsLater": "Veuràs els resultats quan es tanqui.",
+    "verifyEmail": "Per votar, primer verifica el teu correu.",
+    "verify": "Verifica el correu",
+    "yours": "el teu vot",
+    "votes_one": "{{count}} vot",
+    "votes_other": "{{count}} vots",
+    "total_one": "{{count}} vot en total",
+    "total_other": "{{count}} vots en total",
+    "signIn": "Inicia la sessió per veure les enquestes dels teus ajuntaments i votar.",
+    "empty": "Ara mateix no hi ha enquestes dels teus ajuntaments. Quan l’ajuntament pregunti alguna cosa, et arribarà un avís.",
+    "menuLink": "Enquestes",
+    "profileTitle": "Enquestes",
+    "profileHelp": "Les preguntes dels teus ajuntaments: vota a les obertes i mira els resultats de les tancades.",
+    "profileLink": "Veure totes les enquestes",
+    "results": "Resultats de l’enquesta"
   }
 }

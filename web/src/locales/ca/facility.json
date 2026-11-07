@@ -169,5 +169,26 @@
     "pending": "Petició enviada el {{date}}, pendent de revisió.",
     "withdraw": "Retirar la petició",
     "close": "Tancar"
+  },
+  "notices": {
+    "title": "Comunicats de l’ajuntament",
+    "label": "Comunicat de l’ajuntament",
+    "published": "Publicat el {{date}}",
+    "until": "fins al {{date}}"
+  },
+  "state": {
+    "title": "Estat de la instal·lació",
+    "noKnown": "No hi ha problemes avisats per arreglar.",
+    "known": "Problemes ja avisats",
+    "alreadyKnown": "L’ajuntament ja ho sap: no cal tornar-ho a avisar.",
+    "reported": "Avisat",
+    "inProgress": "L’ajuntament ja s’hi ha posat",
+    "since": "des del {{date}}",
+    "reports_one": "{{count}} avís",
+    "reports_other": "{{count}} avisos",
+    "solved": "Arreglat fa poc",
+    "solvedOn": "Arreglat el {{date}}",
+    "average_one": "{{council}} arregla els problemes que avisa el veïnat en {{days}} dies de mitjana ({{count}} arreglat els últims 6 mesos).",
+    "average_other": "{{council}} arregla els problemes que avisa el veïnat en {{days}} dies de mitjana ({{count}} arreglats els últims 6 mesos)."
   }
 }

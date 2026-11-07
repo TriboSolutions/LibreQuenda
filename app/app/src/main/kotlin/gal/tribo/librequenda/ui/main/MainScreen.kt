@@ -144,6 +144,7 @@ fun MainScreen(
     opening: String? = null, // from a tapped notification
     onOpened: () -> Unit = {},
     onTour: () -> Unit = {},
+    onRefreshPolls: () -> Unit = {},
 ) {
     var tab by rememberSaveable { mutableStateOf(Tab.Home) }
     var notificationsOpen by rememberSaveable { mutableStateOf(false) } // survives the language change (the activity is recreated)
@@ -151,6 +152,7 @@ fun MainScreen(
     var preferencesOpen by rememberSaveable { mutableStateOf(false) } // survives the language change (the activity is recreated)
     var legalOpen by rememberSaveable { mutableStateOf<String?>(null) } // "terms", "privacy" or "support", over the menu
     var profileOpen by rememberSaveable { mutableStateOf(false) } // survives the language change (the activity is recreated)
+    var pollsOpen by rememberSaveable { mutableStateOf<String?>(null) } // the polls page: "" for all, or the id a notice named
     var bookingOpen by rememberSaveable { mutableStateOf<String?>(null) } // a booking's page
     var ratingOpen by rememberSaveable { mutableStateOf<String?>(null) } // a booking that ended, to rate in a sheet
     var rated by remember { mutableStateOf(false) } // just rated: the celebration, as after checking in
@@ -174,6 +176,8 @@ fun MainScreen(
             opening.startsWith(Notifier.OPEN_RATE) -> { tab = Tab.Bookings; menuOpen = false; notificationsOpen = false; ratingOpen = opening.removePrefix(Notifier.OPEN_RATE) }
             opening == Notifier.OPEN_BOOKINGS -> { tab = Tab.Bookings; menuOpen = false }
             opening == Notifier.OPEN_NOTICES -> { notificationsOpen = true; onOpenNotifications() }
+            // a council's poll: the polls, on that one (to vote, or its results)
+            opening.startsWith(Notifier.OPEN_POLL) -> { menuOpen = false; pollsOpen = opening.removePrefix(Notifier.OPEN_POLL); onRefreshPolls() }
             else -> return@LaunchedEffect
         }
         onOpened()
@@ -229,6 +233,7 @@ fun MainScreen(
         NotificationsPage(
             notificationsOpen, session, onSignIn = { notificationsOpen = false; onSignIn() }, onMarkRead = onMarkRead,
             onRate = { ratingOpen = it },
+            onPoll = { pollsOpen = it; onRefreshPolls() },
         ) { notificationsOpen = false }
         MenuPage(
             open = menuOpen,
@@ -236,6 +241,7 @@ fun MainScreen(
             onClose = { menuOpen = false },
             onProfile = { profileOpen = true },
             onPreferences = { preferencesOpen = true },
+            onPolls = { pollsOpen = ""; onRefreshPolls() },
             onTour = onTour,
             branding = branding,
             onLegal = { legalOpen = it },
@@ -273,6 +279,15 @@ fun MainScreen(
         // over the menu, as its next pages
         SettingsPage(profileOpen, stringResource(R.string.profile_title), onBack = { profileOpen = false }) {
             ProfileScreen(session, actions, onSignIn, onRegister, onSignOut = { profileOpen = false; onSignOut() })
+        }
+        // the councils' polls: from a notice, or from the menu to see them all again and follow the results
+        SettingsPage(pollsOpen != null, stringResource(R.string.polls_title), onBack = { pollsOpen = null }) {
+            gal.tribo.librequenda.ui.home.PollsContent(
+                polls = home.polls,
+                emailVerified = session.me?.emailVerified == true,
+                focus = pollsOpen.orEmpty(),
+                onVote = { poll, option -> actions.authed { gal.tribo.librequenda.data.vote(it, poll, option) }; onRefreshPolls() },
+            )
         }
         SettingsPage(preferencesOpen, stringResource(R.string.preferences), onBack = { preferencesOpen = false }) {
             PreferencesContent(session, actions)
@@ -402,6 +417,7 @@ private fun MenuPage(
     onClose: () -> Unit,
     onProfile: () -> Unit,
     onPreferences: () -> Unit,
+    onPolls: () -> Unit,
     onTour: () -> Unit,
     branding: Branding,
     onLegal: (String) -> Unit,
@@ -469,6 +485,9 @@ private fun MenuPage(
                 MenuGroup(stringResource(R.string.menu_account)) {
                     if (session.signedIn) {
                         MenuRow(R.drawable.ic_user, stringResource(R.string.profile_title), stringResource(R.string.menu_profile_sub), onClick = onProfile)
+                        MenuDivider()
+                        // every poll of their councils: vote again, follow the results
+                        MenuRow(R.drawable.ic_vote, stringResource(R.string.polls_menu), stringResource(R.string.polls_menu_sub), onClick = onPolls)
                         MenuDivider()
                     }
                     // the menu stays under the preferences: back returns to it
@@ -670,7 +689,7 @@ private fun RowScope.FlashTab(selected: Boolean, onClick: () -> Unit) {
 
 /** Notifications: a page of its own, pushed in from the right like a new screen. */
 @Composable
-private fun NotificationsPage(open: Boolean, session: SessionState, onSignIn: () -> Unit, onMarkRead: () -> Unit, onRate: (String) -> Unit, onBack: () -> Unit) {
+private fun NotificationsPage(open: Boolean, session: SessionState, onSignIn: () -> Unit, onMarkRead: () -> Unit, onRate: (String) -> Unit, onPoll: (String) -> Unit, onBack: () -> Unit) {
     BackHandler(enabled = open, onBack = onBack)
     AnimatedVisibility(
         visible = open,
@@ -718,7 +737,13 @@ private fun NotificationsPage(open: Boolean, session: SessionState, onSignIn: ()
                     items(items, key = { it.id }) { n ->
                         // the request to rate opens the stars, as the web's bell does
                         val rate = n.type == "rating_requested" && n.bookingId.isNotBlank()
-                        NotificationRow(n, new = n.id in fresh.value || !n.read, onClick = if (rate) ({ onRate(n.bookingId) }) else null)
+                        // a poll opens the polls, on that one: vote, or its results
+                        val poll = n.type.startsWith("poll_") && n.pollId.isNotBlank()
+                        NotificationRow(n, new = n.id in fresh.value || !n.read, onClick = when {
+                            rate -> ({ onRate(n.bookingId) })
+                            poll -> ({ onPoll(n.pollId) })
+                            else -> null
+                        })
                     }
                 }
             }

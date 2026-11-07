@@ -86,5 +86,30 @@
     "title": "Valoración",
     "any": "Cualquiera",
     "atLeast": "{{stars}} o más"
+  },
+  "polls": {
+    "title": "Tu ayuntamiento pregunta",
+    "help": "Un voto por persona, que puedes cambiar mientras la encuesta esté abierta. Los resultados se ven al cerrar.",
+    "closes": "Cierra el {{date}}",
+    "closed": "Cerró el {{date}}",
+    "residentsOnly": "Solo vecindario verificado",
+    "vote": "Votar",
+    "change": "Cambiar el voto",
+    "saved": "Se ha guardado tu voto.",
+    "resultsLater": "Verás los resultados cuando cierre.",
+    "verifyEmail": "Para votar, verifica primero tu correo.",
+    "verify": "Verificar el correo",
+    "yours": "tu voto",
+    "votes_one": "{{count}} voto",
+    "votes_other": "{{count}} votos",
+    "total_one": "{{count}} voto en total",
+    "total_other": "{{count}} votos en total",
+    "signIn": "Inicia sesión para ver las encuestas de tus ayuntamientos y votar.",
+    "empty": "Ahora mismo no hay encuestas de tus ayuntamientos. Cuando el ayuntamiento pregunte algo, te llegará un aviso.",
+    "menuLink": "Encuestas",
+    "profileTitle": "Encuestas",
+    "profileHelp": "Las preguntas de tus ayuntamientos: vota en las abiertas y mira los resultados de las cerradas.",
+    "profileLink": "Ver todas las encuestas",
+    "results": "Resultados de la encuesta"
   }
 }

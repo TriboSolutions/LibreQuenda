@@ -55,7 +55,7 @@ func (s *tenantsService) GetTenants(ctx context.Context) (*TenantsResponse, *sha
 }
 
 // GetTenant is one active council, for the pages about it.
-func (s *tenantsService) GetTenant(ctx context.Context, slug string) (*TenantDto, *shared.ErrorResponse) {
+func (s *tenantsService) GetTenant(ctx context.Context, slug string) (*CouncilPageDto, *shared.ErrorResponse) {
 	var row, err = model.New(s.db).GetTenantBySlug(ctx, slug)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, &shared.ErrorResponse{Code: http.StatusNotFound, Message: "errors.tenant_not_found"}
@@ -63,12 +63,19 @@ func (s *tenantsService) GetTenant(ctx context.Context, slug string) (*TenantDto
 	if err != nil {
 		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.tenants_load_failed"}
 	}
-	return &TenantDto{
-		Slug:         row.Slug,
-		Name:         row.Name,
-		LogoUrl:      storage.URL(row.LogoRef.String),
-		ContactEmail: row.ContactEmail.String,
-		ContactPhone: row.ContactPhone.String,
+	var notices, noticesErr = s.councilNotices(ctx, row.ID)
+	if noticesErr != nil {
+		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.tenants_load_failed"}
+	}
+	return &CouncilPageDto{
+		TenantDto: TenantDto{
+			Slug:         row.Slug,
+			Name:         row.Name,
+			LogoUrl:      storage.URL(row.LogoRef.String),
+			ContactEmail: row.ContactEmail.String,
+			ContactPhone: row.ContactPhone.String,
+		},
+		Notices: notices,
 	}, nil
 }
 
@@ -373,7 +380,7 @@ func (s *tenantsService) loadDay(ctx context.Context, slug string, dateParam str
 
 // GetFacilityPage is one active facility of the council with its slots for the day and its weekly schedule.
 func (s *tenantsService) GetFacilityPage(ctx context.Context, slug string, facilitySlug string, dateParam string) (*FacilityPageResponse, *shared.ErrorResponse) {
-	var day, _, _, err = s.loadDay(ctx, slug, dateParam)
+	var day, tenantId, _, err = s.loadDay(ctx, slug, dateParam)
 	if err != nil {
 		return nil, err
 	}
@@ -394,7 +401,17 @@ func (s *tenantsService) GetFacilityPage(ctx context.Context, slug string, facil
 		if starsErr != nil {
 			return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.day_load_failed"}
 		}
+		var notices, noticesErr = s.facilityNotices(ctx, tenantId, id)
+		if noticesErr != nil {
+			return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.day_load_failed"}
+		}
+		var issues, issuesErr = s.issuesSummary(ctx, tenantId, id)
+		if issuesErr != nil {
+			return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.day_load_failed"}
+		}
 		return &FacilityPageResponse{
+			Notices:  notices,
+			Issues:   issues,
 			Rating:   rating.Of(stars.Average, stars.Count),
 			Tenant:   day.Tenant,
 			Timezone: day.Timezone,

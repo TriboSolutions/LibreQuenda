@@ -169,5 +169,26 @@
     "pending": "Petición enviada el {{date}}, pendiente de revisión.",
     "withdraw": "Retirar la petición",
     "close": "Cerrar"
+  },
+  "notices": {
+    "title": "Comunicados del ayuntamiento",
+    "label": "Comunicado del ayuntamiento",
+    "published": "Publicado el {{date}}",
+    "until": "hasta el {{date}}"
+  },
+  "state": {
+    "title": "Estado de la instalación",
+    "noKnown": "No hay problemas avisados sin arreglar.",
+    "known": "Problemas ya avisados",
+    "alreadyKnown": "El ayuntamiento ya lo sabe: no hace falta avisar otra vez.",
+    "reported": "Avisado",
+    "inProgress": "El ayuntamiento ya está en ello",
+    "since": "desde el {{date}}",
+    "reports_one": "{{count}} aviso",
+    "reports_other": "{{count}} avisos",
+    "solved": "Arreglado recientemente",
+    "solvedOn": "Arreglado el {{date}}",
+    "average_one": "{{council}} arregla los problemas que avisa el vecindario en {{days}} días de media ({{count}} arreglado en los últimos 6 meses).",
+    "average_other": "{{council}} arregla los problemas que avisa el vecindario en {{days}} días de media ({{count}} arreglados en los últimos 6 meses)."
   }
 }
