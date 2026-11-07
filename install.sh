@@ -889,6 +889,8 @@ section_admin() {
 	ask ZITADEL_ADMIN_FIRSTNAME "$(t q_first)" "" v_nonempty
 	ask ZITADEL_ADMIN_LASTNAME "$(t q_last)" "" v_nonempty
 	ask_secret ZITADEL_ADMIN_PASSWORD "$(t q_admin_pw)" gen_password v_password confirm
+	# the email is the login name too: a username without "@" becomes <name>@zitadel.<ZITADEL_DOMAIN>
+	ENV[ZITADEL_ADMIN_USERNAME]=${ENV[ZITADEL_ADMIN_EMAIL]}
 }
 
 section_smtp() {
