@@ -7,8 +7,7 @@
 #                       Android app for it
 #    install.sh app     only builds your own Android app (again, e.g. for an update)
 #
-#  Needs bash, whiptail (in Debian and Ubuntu already; newt in Fedora), Docker with
-#  Compose v2 and curl. Run it in the directory that holds (or will hold) the
+#  Needs bash, Docker with Compose v2 and curl. Run it in the directory that holds (or will hold) the
 #  installation, or set LIBREQUENDA_DIR.
 #  Without a checkout: curl -fsSL https://raw.githubusercontent.com/TriboSolutions/LibreQuenda/main/install.sh | bash
 #
@@ -26,7 +25,7 @@ fi
 
 set -euo pipefail
 LOCALE_LANG=${LC_ALL:-${LC_MESSAGES:-${LANG:-}}} # for the installer's language, before the line below changes it
-# whiptail draws accents only in a UTF-8 locale (cloud images often start in C, or in one not generated)
+# a UTF-8 locale, so that the screens count characters and not bytes (cloud images often start in C)
 if [ "$(locale charmap 2>/dev/null)" != UTF-8 ]; then
 	for l in C.UTF-8 C.utf8 en_US.UTF-8 en_US.utf8; do
 		if locale -a 2>/dev/null | grep -qx "$l"; then export LC_ALL=$l; break; fi
@@ -58,16 +57,8 @@ m() { local k=$1; shift; local v=("$@"); M[$k]=${v[$LI]}; }
 
 messages() {
 	m stopped "detido na liña" "detenido en la línea" "stopped at line" "aturat a la línia" "parado na linha"
-	m backtitle "LibreQuenda · instalador" "LibreQuenda · instalador" "LibreQuenda · installer" "LibreQuenda · instal·lador" "LibreQuenda · instalador"
-	m ok "Aceptar" "Aceptar" "OK" "D'acord" "OK"
-	m cancel "Saír" "Salir" "Quit" "Surt" "Sair"
 	m yes "Si" "Sí" "Yes" "Sí" "Sim"
 	m no "Non" "No" "No" "No" "Não"
-	m quit_q "Saír do instalador? Aínda non se cambiou nada." \
-		"¿Salir del instalador? Todavía no se ha cambiado nada." \
-		"Leave the installer? Nothing has been changed yet." \
-		"Vols sortir de l'instal·lador? Encara no s'ha canviat res." \
-		"Sair do instalador? Ainda não foi alterado nada."
 	m quit_done "Saíches sen cambiar nada." "Has salido sin cambiar nada." "Left without changing anything." "Has sortit sense canviar res." "Saiu sem alterar nada."
 	m need_cmd "Precísase %s: %s" "Se necesita %s: %s" "%s is needed: %s" "Cal %s: %s" "É necessário %s: %s"
 	m need_compose "Precísase Docker Compose v2 (docker compose …)" "Se necesita Docker Compose v2 (docker compose …)" \
@@ -84,11 +75,11 @@ messages() {
 	m unknown_cmd "comando descoñecido: %s (install.sh, ou install.sh app)" "comando desconocido: %s (install.sh, o install.sh app)" \
 		"unknown command: %s (install.sh, or install.sh app)" "ordre desconeguda: %s (install.sh, o install.sh app)" "comando desconhecido: %s (install.sh, ou install.sh app)"
 
-	m nav_hint "Frechas e Tab para moverte, Intro para aceptar, Esc para saír. Cada campo trae o valor actual: edítao ou acéptao tal cal." \
-		"Flechas y Tab para moverte, Intro para aceptar, Esc para salir. Cada campo trae el valor actual: edítalo o acéptalo tal cual." \
-		"Arrows and Tab to move, Enter to accept, Esc to leave. Each field holds its current value: edit it or accept it as it is." \
-		"Fletxes i Tab per moure't, Retorn per acceptar, Esc per sortir. Cada camp porta el valor actual: edita'l o accepta'l tal com és." \
-		"Setas e Tab para navegar, Enter para aceitar, Esc para sair. Cada campo traz o valor atual: edite-o ou aceite-o como está."
+	m nav_hint "Nos campos móvese o cursor e xa está escrito o valor actual: Intro acéptao. Nos menús, frechas e Intro. Ctrl+C sae sen cambiar nada ata o final." \
+		"En los campos se mueve el cursor y ya está escrito el valor actual: Intro lo acepta. En los menús, flechas e Intro. Ctrl+C sale sin cambiar nada hasta el final." \
+		"In the fields the cursor moves and the current value is already written: Enter accepts it. In the menus, arrows and Enter. Ctrl+C leaves without changing anything until the end." \
+		"Als camps es mou el cursor i el valor actual ja hi és escrit: Retorn l'accepta. Als menús, fletxes i Retorn. Ctrl+C surt sense canviar res fins al final." \
+		"Nos campos o cursor move-se e o valor atual já está escrito: Enter aceita-o. Nos menus, setas e Enter. Ctrl+C sai sem alterar nada até ao fim."
 	m new_install "Vaise instalar LibreQuenda en %s." "Se va a instalar LibreQuenda en %s." "LibreQuenda will be installed in %s." "S'instal·larà LibreQuenda a %s." "O LibreQuenda vai ser instalado em %s."
 	m found_install "Hai unha instalación en %s: podes cambiar a súa configuración." "Hay una instalación en %s: puedes cambiar su configuración." \
 		"There is an installation in %s: you can change its configuration." "Hi ha una instal·lació a %s: en pots canviar la configuració." "Existe uma instalação em %s: pode alterar a sua configuração."
@@ -376,77 +367,138 @@ messages() {
 }
 
 # ============================================================
-#  Screens (whiptail)
+#  Screens: the questions inline in the terminal, with readline fields
+#  (the cursor moves, the current value is already written) and arrow-key menus
 # ============================================================
-TITLE=LibreQuenda
+TITLE=LibreQuenda SHOWN=""
 PROXY_KIND=npm
-W=76 SH=22
+W=72
+WROTE=n
+
+# the terminal, also when the script itself is piped into bash: questions on fd 3, screens on fd 5
+c_acc=$'\e[36m' c_bold=$'\e[1m' c_dim=$'\e[2m' c_red=$'\e[31m' c_yel=$'\e[33m' c_grn=$'\e[32m' c_inv=$'\e[7m' c_off=$'\e[0m'
+if [ "$(locale charmap 2>/dev/null)" = UTF-8 ]; then
+	G_BAR="│" G_SEC="◆" G_ASK="›" G_ON="●" G_OFF="○" G_OK="✓" G_BAD="✗" G_WARN="▲" G_ELL="…"
+else
+	G_BAR="|" G_SEC="*" G_ASK=">" G_ON="(*)" G_OFF="( )" G_OK="+" G_BAD="x" G_WARN="!" G_ELL="..."
+fi
 
 screen_size() {
 	local r=0 c=0
-	read -r r c < <(stty size </dev/tty 2>/dev/null || echo "24 80") || true
+	read -r r c < <(stty size <&3 2>/dev/null || echo "24 80") || true
 	[ "${c:-0}" -ge 40 ] || c=80
-	[ "${r:-0}" -ge 12 ] || r=24
-	W=$((c - 4)); [ $W -le 76 ] || W=76
-	SH=$((r - 2))
+	W=$((c - 6)); [ $W -le 72 ] || W=72
 }
 
-box_h() { # box_h "text" extra: rows for the text wrapped in the box, plus extra, within the screen
-	local line n=0 w=$((W - 6))
+wrap() { # the text, words onto lines of at most W characters
+	local line word cur words
 	while IFS= read -r line; do
-		if [ -z "$line" ]; then n=$((n + 1)); else n=$((n + (${#line} + w - 1) / w)); fi
+		read -ra words <<<"$line"
+		cur=""
+		for word in "${words[@]}"; do
+			if [ -z "$cur" ]; then cur=$word
+			elif [ $((${#cur} + 1 + ${#word})) -le "$W" ]; then cur+=" $word"
+			else printf '%s\n' "$cur"; cur=$word; fi
+		done
+		printf '%s\n' "$cur"
 	done <<<"$1"
-	n=$((n + $2))
-	[ $n -le "$SH" ] || n=$SH
-	printf '%s' "$n"
 }
 
-# the answer comes out on fd 4; the boxes are drawn on, and read from, the terminal
-wt_raw() { whiptail --output-fd 4 "$@" 4>&1 1>/dev/tty 2>/dev/tty </dev/tty; }
-wt() {
-	wt_raw --backtitle "$(t backtitle)" --title " $TITLE " --yes-button "$(t yes)" --no-button "$(t no)" \
-		--ok-button "$(t ok)" --cancel-button "$(t cancel)" "$@"
-}
-
-ui_quit() { # Cancel or Esc: leave, or back to the same question
-	if wt --defaultno --yesno "$(t quit_q)" 8 "$W"; then
-		clear; say "$(t quit_done)"; exit 0
+ui_head() { # the section's title once, then a spacer between its questions
+	if [ "$TITLE" != "$SHOWN" ]; then
+		printf '\n%s%s %s%s\n' "$c_acc$c_bold" "$G_SEC" "$TITLE" "$c_off" >&5
+		SHOWN=$TITLE
+	else
+		printf '%s%s%s\n' "$c_acc" "$G_BAR" "$c_off" >&5
 	fi
 }
-ui_msg() { wt --msgbox "$1" "$(box_h "$1" 7)" "$W" || true; }
-ui_input() { # ui_input "text" "initial" -> REPLY
-	local out
-	while ! out=$(wt --inputbox "$1" "$(box_h "$1" 8)" "$W" "$2"); do ui_quit; done
-	REPLY=$out
+ui_lines() { # ui_lines "text" [colour]: the text on the section's bar
+	local line
+	while IFS= read -r line; do printf '%s%s%s %s%s%s\n' "$c_acc" "$G_BAR" "$c_off" "${2:-}" "$line" "$c_off" >&5; done < <(wrap "$1")
 }
-ui_password() { # ui_password "text" -> REPLY
-	local out
-	while ! out=$(wt --passwordbox "$1" "$(box_h "$1" 8)" "$W"); do ui_quit; done
-	REPLY=$out
+ui_msg() { ui_head; ui_lines "$1"; }
+ui_warn() { ui_lines "$G_WARN $1" "$c_yel"; }
+ui_err() { ui_lines "$G_BAD $1" "$c_red"; }
+
+on_interrupt() { # Ctrl+C: nothing written yet, nothing changed
+	printf '\e[?25h%s\n' "$c_off" >&5
+	[ "$WROTE" = y ] || [ -z "${M[quit_done]:-}" ] || say "${M[quit_done]}"
+	exit 130
+}
+
+ui_input() { # ui_input "text" "initial" -> REPLY
+	ui_head; ui_lines "$1" "$c_bold"
+	local p=$'\001'"$c_acc"$'\002'"$G_BAR $G_ASK "$'\001'"$c_off"$'\002'
+	IFS= read -r -e -i "$2" -p "$p" REPLY <&3 2>&5 || on_interrupt
+}
+ui_password() { # ui_password "text" -> REPLY, hidden
+	ui_head; ui_lines "$1" "$c_bold"
+	IFS= read -r -s -p "$c_acc$G_BAR $G_ASK $c_off" REPLY <&3 2>&5 || on_interrupt
+	if [ -n "$REPLY" ]; then printf '%s\n' "${REPLY//?/•}" >&5; else printf '\n' >&5; fi
+}
+
+menu_draw() { # the options of ui_menu, the chosen one highlighted
+	local i
+	for i in "${!labels[@]}"; do
+		if [ "$i" = "$sel" ]; then
+			printf '\e[2K%s%s%s %s%s %s%s\n' "$c_acc" "$G_BAR" "$c_off" "$c_acc" "$G_ON" "${labels[$i]}" "$c_off" >&5
+		else
+			printf '\e[2K%s%s%s %s%s %s%s\n' "$c_acc" "$G_BAR" "$c_off" "$c_dim" "$G_OFF" "${labels[$i]}" "$c_off" >&5
+		fi
+	done
+	printf '\e[2K%s%s%s %s↑↓ · ⏎%s\n' "$c_acc" "$G_BAR" "$c_off" "$c_dim" "$c_off" >&5
 }
 ui_menu() { # ui_menu "text" default tag label [tag label…] -> REPLY
-	local text=$1 def=$2 out; shift 2
-	local n=$(($# / 2))
-	while ! out=$(wt --notags --default-item "$def" --menu "$text" "$(box_h "$text" $((n + 8)))" "$W" "$n" "$@"); do ui_quit; done
-	REPLY=$out
+	local text=$1 def=$2 key rest i n sel=0 max=$((W - 4)) l
+	shift 2
+	local tags=() labels=()
+	while [ $# -gt 1 ]; do
+		l=$2; [ ${#l} -le $max ] || l="${l:0:max-1}$G_ELL"
+		tags+=("$1"); labels+=("$l"); shift 2
+	done
+	n=${#tags[@]}
+	for i in "${!tags[@]}"; do [ "${tags[$i]}" != "$def" ] || sel=$i; done
+	ui_head; ui_lines "$text" "$c_bold"
+	printf '\e[?25l' >&5
+	menu_draw
+	while true; do
+		IFS= read -rsn1 key <&3 || on_interrupt
+		case $key in
+			$'\e')
+				rest=""; IFS= read -rsn2 -t 0.05 rest <&3 || true
+				case $rest in
+					'[A' | 'OA') sel=$(((sel + n - 1) % n)) ;;
+					'[B' | 'OB') sel=$(((sel + 1) % n)) ;;
+				esac
+				;;
+			k) sel=$(((sel + n - 1) % n)) ;;
+			j) sel=$(((sel + 1) % n)) ;;
+			[1-9]) if [ "$key" -le "$n" ]; then sel=$((key - 1)); fi ;;
+			"") break ;;
+		esac
+		printf '\e[%dA' $((n + 1)) >&5
+		menu_draw
+	done
+	# only the answer stays on the screen
+	printf '\e[%dA' $((n + 1)) >&5
+	for i in $(seq 0 "$n"); do printf '\e[2K\n' >&5; done
+	printf '\e[%dA' $((n + 1)) >&5
+	printf '%s%s%s %s%s %s%s\n\e[?25h' "$c_acc" "$G_BAR" "$c_off" "$c_grn" "$G_OK" "${labels[$sel]}" "$c_off" >&5
+	REPLY=${tags[$sel]}
 }
 ui_yesno() { # ui_yesno "text" y|n
-	local rc opts=()
-	[ "$2" = y ] || opts=(--defaultno)
-	while true; do
-		rc=0; wt "${opts[@]}" --yesno "$1" "$(box_h "$1" 7)" "$W" || rc=$?
-		case $rc in 0) return 0 ;; 1) return 1 ;; *) ui_quit ;; esac
-	done
+	ui_menu "$1" "$2" y "$(t yes)" n "$(t no)"
+	[ "$REPLY" = y ]
 }
 
 pick_language() {
-	command -v whiptail >/dev/null 2>&1 || die "LibreQuenda's installer needs whiptail: sudo apt install whiptail (Debian, Ubuntu) · sudo dnf install newt (Fedora)"
 	local l=${LIBREQUENDA_LANG:-}
 	if [ -z "$l" ]; then
 		case $LOCALE_LANG in gl*) l=gl ;; es*) l=es ;; ca*) l=ca ;; pt*) l=pt ;; *) l=en ;; esac
-		l=$(wt_raw --title " LibreQuenda " --notags --default-item "$l" --ok-button OK --nocancel \
-			--menu "Lingua · Idioma · Language · Llengua · Língua" 13 54 5 \
-			gl Galego es Español en English ca Català pt Português) || { clear; exit 0; }
+		TITLE=LibreQuenda
+		ui_menu "Lingua · Idioma · Language · Llengua · Língua" "$l" \
+			gl Galego es Español en English ca Català pt Português
+		l=$REPLY
 	fi
 	case $l in gl) LI=0 ;; es) LI=1 ;; en) LI=2 ;; ca) LI=3 ;; pt) LI=4 ;; *) die "LIBREQUENDA_LANG: gl, es, en, ca, pt" ;; esac
 	messages
@@ -503,8 +555,8 @@ ask() {
 	while true; do
 		ui_input "$text" "$answer"
 		answer=$(trim "$REPLY")
-		if [[ $answer == *"'"* ]]; then ui_msg "$(t v_quote)"; continue; fi
-		if [ -n "$check" ] && ! "$check" "$answer"; then ui_msg "$ERR"; continue; fi
+		if [[ $answer == *"'"* ]]; then ui_err "$(t v_quote)"; continue; fi
+		if [ -n "$check" ] && ! "$check" "$answer"; then ui_err "$ERR"; continue; fi
 		ENV[$key]=$answer
 		return
 	done
@@ -525,11 +577,11 @@ ask_secret() {
 			[ "$gen" = true ] || GENERATED+=("$key")
 			return
 		fi
-		if [[ $answer == *"'"* ]]; then ui_msg "$(t v_quote)"; continue; fi
-		if [ -n "$check" ] && ! "$check" "$answer"; then ui_msg "$ERR"; continue; fi
+		if [[ $answer == *"'"* ]]; then ui_err "$(t v_quote)"; continue; fi
+		if [ -n "$check" ] && ! "$check" "$answer"; then ui_err "$ERR"; continue; fi
 		if [ -n "$confirm" ]; then
 			ui_password "$(t q_pw_again)"
-			[ "$REPLY" = "$answer" ] || { ui_msg "$(t pw_mismatch)"; continue; }
+			[ "$REPLY" = "$answer" ] || { ui_err "$(t pw_mismatch)"; continue; }
 		fi
 		ENV[$key]=$answer
 		return
@@ -641,7 +693,7 @@ section_addresses() {
 	for d in "${ENV[WEB_DOMAIN]}" "${ENV[ZITADEL_DOMAIN]}"; do
 		getent hosts "$d" >/dev/null 2>&1 || missing+=$'\n'"  $d"
 	done
-	[ -z "$missing" ] || ui_msg "$(t dns_warn)"$'\n'"$missing"
+	[ -z "$missing" ] || ui_warn "$(t dns_warn)"$'\n'"$missing"
 }
 
 section_network() {
@@ -679,13 +731,13 @@ section_network() {
 	port=${ENV[_PORT]}; unset 'ENV[_PORT]'
 	case $kind in
 		# a proxy in a container reaches the host at Docker's bridge, which the internet cannot
-		npm) if [ -n "$bridge" ]; then bind=$bridge:; else bind=""; ui_msg "$(t reach_any_warn "$port")"; fi ;;
+		npm) if [ -n "$bridge" ]; then bind=$bridge:; else bind=""; ui_warn "$(t reach_any_warn "$port")"; fi ;;
 		nginx) bind=127.0.0.1: ;;
 		*)
 			local reach=local
 			[[ $cur == 127.0.0.1:* ]] || [ "$cur" = 80 ] || reach=any
 			ui_menu "$(t q_reach)" "$reach" local "$(t reach_local)" any "$(t reach_any)"
-			if [ "$REPLY" = local ]; then bind=127.0.0.1:; else bind=""; ui_msg "$(t reach_any_warn "$port")"; fi
+			if [ "$REPLY" = local ]; then bind=127.0.0.1:; else bind=""; ui_warn "$(t reach_any_warn "$port")"; fi
 			;;
 	esac
 	PROXY_KIND=$kind
@@ -743,7 +795,7 @@ npm_networks() { # the user-defined networks of the running Nginx Proxy Manager 
 v_network() { docker network inspect "$1" >/dev/null 2>&1 || bad v_network; }
 
 npm_route() { # joins NPM's network (0), or leaves it to a port on the bridge (1)
-	if ! override_ours; then ui_msg "$(t override_foreign "$(override_file)")"; return 1; fi
+	if ! override_ours; then ui_warn "$(t override_foreign "$(override_file)")"; return 1; fi
 	local nets=() n items=() def bridge
 	mapfile -t nets < <(npm_networks)
 	for n in "${nets[@]}"; do items+=("net:$n" "$(t npm_join "$n")"); done
@@ -923,7 +975,6 @@ install_server() {
 	section_support
 	section_app
 	review_server
-	clear
 
 	# everything else: generated once and never changed (the masterkey cannot change)
 	secret POSTGRES_PASSWORD gen_alnum32
@@ -941,6 +992,7 @@ install_server() {
 
 	fetch docker-compose.yaml "$DIR/docker-compose.yaml"
 	fetch install.sh "$DIR/install.sh.new" && chmod +x "$DIR/install.sh.new" && mv "$DIR/install.sh.new" "$DIR/install.sh"
+	WROTE=y
 	[ -f "$DIR/.env" ] && cp "$DIR/.env" "$DIR/.env.backup-$(date +%Y%m%d-%H%M%S)"
 	env_write "$example" "$DIR/.env"
 	ok "$(t wrote_env "$DIR/.env")"
@@ -1110,6 +1162,7 @@ register_app() {
 	fi
 	[[ ",${ENV[ANDROID_APP_IDS]:-}," == *",$id,"* ]] && return
 	add_app_id "$id"
+	WROTE=y
 	cp "$DIR/.env" "$DIR/.env.backup-$(date +%Y%m%d-%H%M%S)"
 	local example="$DIR/.env.example"; [ -f "$example" ] || fetch .env.example "$example"
 	env_write "$example" "$DIR/.env"
@@ -1139,7 +1192,6 @@ install_app() {
 		app_questions
 		ui_yesno "$(t app_confirm "${APP[APP_NAME]}" "${APP[APP_ID]}" "${APP[WEB_DOMAIN]}")" y && break
 	done
-	clear
 	register_app
 	build_app
 	check_registered
@@ -1151,7 +1203,9 @@ DIR=$(realpath -m "${LIBREQUENDA_DIR:-$PWD}")
 case "${1:-}" in
 	-h|--help) awk 'NR > 2 && /^# =+$/ { exit } NR > 2' "$0" | sed 's/^# \{0,2\}//'; exit 0 ;;
 esac
-exec 3</dev/tty || die "run it in a terminal: it asks questions"
+exec 3</dev/tty 5>/dev/tty || die "run it in a terminal: it asks questions"
+trap on_interrupt INT
+trap 'printf "\e[?25h" >&5 2>/dev/null || true' EXIT
 pick_language
 case "${1:-}" in
 	"") install_server ;;
