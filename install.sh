@@ -130,6 +130,16 @@ messages() {
 		"O LibreQuenda não poderá arrancar enquanto estiver ocupada. Se já tem um servidor web, escolha «atrás de outro servidor web». Continuar mesmo assim?"
 	m q_port "Porto no que LibreQuenda lle serve HTTP ao teu servidor web:" "Puerto en el que LibreQuenda le sirve HTTP a tu servidor web:" \
 		"Port on which LibreQuenda serves HTTP to your web server:" "Port on LibreQuenda serveix HTTP al teu servidor web:" "Porta em que o LibreQuenda serve HTTP ao seu servidor web:"
+	m q_kind "Que servidor web tes diante de LibreQuenda?" "¿Qué servidor web tienes delante de LibreQuenda?" "Which web server sits in front of LibreQuenda?" \
+		"Quin servidor web tens davant de LibreQuenda?" "Que servidor web tem à frente do LibreQuenda?"
+	m kind_npm "Nginx Proxy Manager, ou outro proxy en Docker neste servidor" "Nginx Proxy Manager, u otro proxy en Docker en este servidor" \
+		"Nginx Proxy Manager, or another proxy in Docker on this server" "Nginx Proxy Manager, o un altre proxy en Docker en aquest servidor" \
+		"Nginx Proxy Manager, ou outro proxy em Docker neste servidor"
+	m kind_nginx "nginx instalado neste servidor (sen Docker)" "nginx instalado en este servidor (sin Docker)" "nginx installed on this server (not in Docker)" \
+		"nginx instal·lat en aquest servidor (sense Docker)" "nginx instalado neste servidor (sem Docker)"
+	m kind_other "Outro (Apache, Traefik, un balanceador noutra máquina…)" "Otro (Apache, Traefik, un balanceador en otra máquina…)" \
+		"Another (Apache, Traefik, a load balancer on another machine…)" "Un altre (Apache, Traefik, un balancejador en una altra màquina…)" \
+		"Outro (Apache, Traefik, um balanceador noutra máquina…)"
 	m q_reach "Onde está ese servidor web?" "¿Dónde está ese servidor web?" "Where is that web server?" "On és aquest servidor web?" "Onde está esse servidor web?"
 	m reach_local "Neste mesmo servidor (só 127.0.0.1)" "En este mismo servidor (solo 127.0.0.1)" "On this same server (127.0.0.1 only)" "En aquest mateix servidor (només 127.0.0.1)" "Neste mesmo servidor (só 127.0.0.1)"
 	m reach_any "Noutra máquina (todas as interfaces)" "En otra máquina (todas las interfaces)" "On another machine (all interfaces)" "En una altra màquina (totes les interfícies)" "Noutra máquina (todas as interfaces)"
@@ -139,6 +149,9 @@ messages() {
 		"LibreQuenda servirà HTTP sense xifrar al port %s a totes les interfícies: al tallafoc, obre'l només per al teu servidor web." \
 		"O LibreQuenda vai servir HTTP sem cifrar na porta %s em todas as interfaces: na firewall, abra-a só para o seu servidor web."
 	m sum_direct "directo, 80 e 443" "directo, 80 y 443" "direct, 80 and 443" "directe, 80 i 443" "direto, 80 e 443"
+	m f_npm "En Nginx Proxy Manager, engade un Proxy Host cos dominios %s e %s:" "En Nginx Proxy Manager, añade un Proxy Host con los dominios %s y %s:" \
+		"In Nginx Proxy Manager, add a Proxy Host with the domains %s and %s:" "A Nginx Proxy Manager, afegeix un Proxy Host amb els dominis %s i %s:" \
+		"No Nginx Proxy Manager, adicione um Proxy Host com os domínios %s e %s:"
 	m sum_proxy "detrás do teu servidor web → %s" "detrás de tu servidor web → %s" "behind your web server → %s" "darrere del teu servidor web → %s" "atrás do seu servidor web → %s"
 
 	# administrator
@@ -325,6 +338,7 @@ messages() {
 #  Screens (whiptail)
 # ============================================================
 TITLE=LibreQuenda
+PROXY_KIND=npm
 W=76 SH=22
 
 screen_size() {
@@ -607,15 +621,28 @@ section_network() {
 	fi
 
 	ENV[CADDY_AUTO_HTTPS]=false
-	local cur=${ENV[PROXY_HTTP_PORT]:-80} reach=local
-	[[ $cur == *:* ]] || [ "$cur" = 80 ] || reach=any
+	local cur=${ENV[PROXY_HTTP_PORT]:-80} bridge kind
+	bridge=$(docker_bridge_ip)
+	case $cur in 127.0.0.1:*) kind=nginx ;; *:*) kind=npm ;; 80) kind=npm ;; *) kind=other ;; esac
+	ui_menu "$(t q_kind)" "$kind" npm "$(t kind_npm)" nginx "$(t kind_nginx)" other "$(t kind_other)"
+	kind=$REPLY
 	port=${cur##*:}
 	[ "$port" != 80 ] || port=$(free_port 8080)
 	ENV[_PORT]=$port
 	ask _PORT "$(t q_port)" "" v_free_port
 	port=${ENV[_PORT]}; unset 'ENV[_PORT]'
-	ui_menu "$(t q_reach)" "$reach" local "$(t reach_local)" any "$(t reach_any)"
-	if [ "$REPLY" = local ]; then bind=127.0.0.1:; else bind=""; ui_msg "$(t reach_any_warn "$port")"; fi
+	case $kind in
+		# a proxy in a container reaches the host at Docker's bridge, which the internet cannot
+		npm) if [ -n "$bridge" ]; then bind=$bridge:; else bind=""; ui_msg "$(t reach_any_warn "$port")"; fi ;;
+		nginx) bind=127.0.0.1: ;;
+		*)
+			local reach=local
+			[[ $cur == 127.0.0.1:* ]] || [ "$cur" = 80 ] || reach=any
+			ui_menu "$(t q_reach)" "$reach" local "$(t reach_local)" any "$(t reach_any)"
+			if [ "$REPLY" = local ]; then bind=127.0.0.1:; else bind=""; ui_msg "$(t reach_any_warn "$port")"; fi
+			;;
+	esac
+	PROXY_KIND=$kind
 	ENV[PROXY_HTTP_PORT]=$bind$port
 	# Caddy serves no HTTPS behind a proxy, but Compose still publishes the port: somewhere out of the way
 	https=${ENV[PROXY_HTTPS_PORT]:-}; https=${https##*:}
@@ -623,6 +650,10 @@ section_network() {
 		https=$(free_port 8443 "$port")
 	fi
 	ENV[PROXY_HTTPS_PORT]=127.0.0.1:$https
+}
+
+docker_bridge_ip() { # the host's address on docker0 (172.17.0.1 by default), "" without it
+	ip -4 -o addr show docker0 2>/dev/null | awk '{ split($4, a, "/"); print a[1]; exit }' || true
 }
 
 section_admin() {
@@ -791,7 +822,7 @@ install_server() {
 	env_write "$example" "$DIR/.env"
 	ok "$(t wrote_env "$DIR/.env")"
 	NGINX_CONF=""
-	[ "${ENV[CADDY_AUTO_HTTPS]}" = true ] || nginx_conf
+	[ "${ENV[CADDY_AUTO_HTTPS]}" = true ] || [ "$PROXY_KIND" != nginx ] || nginx_conf
 
 	start_stack
 	if [ "$WANT_APP" = y ]; then build_app; check_registered; fi
@@ -803,9 +834,25 @@ install_server() {
 	if [[ " ${GENERATED[*]} " == *" ZITADEL_ADMIN_PASSWORD "* ]]; then
 		say ""; say "${bold}$(t f_pw "${ENV[ZITADEL_ADMIN_PASSWORD]}")${off}"
 	fi
+	if [ "${ENV[CADDY_AUTO_HTTPS]}" = false ]; then proxy_help; fi
+	say ""
+	warn "$(t f_keep "$DIR/.env")"
+	note "$(t f_update "cd $DIR && docker compose pull && docker compose up -d --wait")"
+}
+
+proxy_help() { # what the web server in front needs
+	local host=${ENV[PROXY_HTTP_PORT]%:*} port=${ENV[PROXY_HTTP_PORT]##*:}
+	[[ ${ENV[PROXY_HTTP_PORT]} == *:* ]] || host=$(hostname -I 2>/dev/null | awk '{print $1}')
+	say ""
+	if [ "$PROXY_KIND" = npm ]; then
+		warn "$(t f_npm "${ENV[WEB_DOMAIN]}" "${ENV[ZITADEL_DOMAIN]}")"
+		say "  Details:  Scheme http · Forward Hostname / IP ${bold}$host${off} · Forward Port ${bold}$port${off}"
+		say "            Block Common Exploits · Websockets Support"
+		say "  SSL:      Request a new SSL Certificate · Force SSL · HTTP/2 Support"
+		return
+	fi
+	warn "$(t f_proxy "$host:$port" "${ENV[WEB_DOMAIN]}" "${ENV[ZITADEL_DOMAIN]}")"
 	if [ -n "$NGINX_CONF" ]; then
-		say ""
-		warn "$(t f_proxy "${ENV[PROXY_HTTP_PORT]}" "${ENV[WEB_DOMAIN]}" "${ENV[ZITADEL_DOMAIN]}")"
 		say "$(t f_nginx "$NGINX_CONF")"
 		say ""
 		say "  sudo cp $NGINX_CONF /etc/nginx/sites-available/librequenda"
@@ -813,9 +860,6 @@ install_server() {
 		say "  sudo nginx -t && sudo systemctl reload nginx"
 		say "  sudo certbot --nginx -d ${ENV[WEB_DOMAIN]} -d ${ENV[ZITADEL_DOMAIN]}"
 	fi
-	say ""
-	warn "$(t f_keep "$DIR/.env")"
-	note "$(t f_update "cd $DIR && docker compose pull && docker compose up -d --wait")"
 }
 
 # ============================================================

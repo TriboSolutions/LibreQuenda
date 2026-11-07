@@ -35,7 +35,7 @@ curl -fsSLO https://raw.githubusercontent.com/TriboSolutions/LibreQuenda/main/in
 bash install.sh
 ```
 
-O instalador (en galego, castelán, inglés, catalán ou portugués, con menús que se manexan coas frechas) pide os dominios, como chega o tráfico (directamente polos portos 80 e 443, ou detrás do servidor web que xa teñas, para o que deixa escrita a configuración de nginx), a primeira persoa administradora e a conta SMTP, xera todos os segredos, escribe `.env` e arrinca LibreQuenda a partir das imaxes xa compiladas. Ao final tamén pode compilar **a túa propia app Android** (co teu nome, logotipo e paquete, xa apuntando ao teu servidor) como un APK para instalar directamente e un AAB para Google Play.
+O instalador (en galego, castelán, inglés, catalán ou portugués, con menús que se manexan coas frechas) pide os dominios, como chega o tráfico (directamente polos portos 80 e 443, ou detrás do servidor web que xa teñas: Nginx Proxy Manager, nginx ou outro), a primeira persoa administradora e a conta SMTP, xera todos os segredos, escribe `.env` e arrinca LibreQuenda a partir das imaxes xa compiladas. Ao final tamén pode compilar **a túa propia app Android** (co teu nome, logotipo e paquete, xa apuntando ao teu servidor) como un APK para instalar directamente e un AAB para Google Play.
 
 Despois abre `https://<your domain>/admin`, inicia sesión como persoa administradora e crea o teu concello.
 
