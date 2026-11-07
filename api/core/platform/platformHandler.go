@@ -3,10 +3,12 @@ package platform
 import (
 	"database/sql"
 	"encoding/json"
+	"librequenda/applog"
 	"librequenda/audit"
 	"librequenda/auth"
 	"librequenda/core/analytics"
 	"librequenda/core/me"
+	"librequenda/emaillog"
 	"librequenda/model"
 	"librequenda/shared"
 	"net/http"
@@ -434,6 +436,32 @@ func (h *platformHandler) GetAudit(w http.ResponseWriter, r *http.Request) {
 		filters.TenantID = uuid.NullUUID{UUID: row.ID, Valid: true}
 	}
 	audit.Serve(w, r, h.db, uuid.NullUUID{}, filters)
+}
+
+// GetEmailLog: the emails LibreQuenda tried to send, searched and filtered (?council=slug too).
+func (h *platformHandler) GetEmailLog(w http.ResponseWriter, r *http.Request) {
+	if _, ok := h.superadmin(w, r); !ok {
+		return
+	}
+	var filters = emaillog.ParseFilters(r.URL.Query(), audit.Zone())
+	if slug := r.URL.Query().Get("council"); slug != "" {
+		var row, err = model.New(h.db).GetTenantIdBySlug(r.Context(), slug)
+		if err != nil {
+			helpers.SendI18NErrorResponse(w, r, http.StatusNotFound, "errors.tenant_not_found")
+			return
+		}
+		filters.TenantID = uuid.NullUUID{UUID: row.ID, Valid: true}
+	}
+	emaillog.Serve(w, r, h.db, filters)
+}
+
+// GetAPILog: the API's log files, newest first, by level and text.
+func (h *platformHandler) GetAPILog(w http.ResponseWriter, r *http.Request) {
+	if _, ok := h.superadmin(w, r); !ok {
+		return
+	}
+	w.Header().Set("Cache-Control", "no-store")
+	helpers.SendSuccessResponse(w, applog.Read(applog.ParseFilters(r.URL.Query())))
 }
 
 func (h *platformHandler) GetBookingPolicy(w http.ResponseWriter, r *http.Request) {

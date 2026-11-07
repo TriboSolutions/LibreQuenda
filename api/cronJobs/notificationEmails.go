@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"github.com/google/uuid"
 	"html/template"
 	"librequenda/branding"
 	"librequenda/core/checkin"
@@ -97,13 +98,17 @@ func (j *notificationEmailJob) Execute() []any {
 	return []any{sent}
 }
 
-// send goes through the council's relay, or else the environment's.
-func send(council *mailer.Relay, councilErr error, message mailer.Message) error {
+// send goes through the council's relay, or else the environment's; kind and
+// tenant go in the email registry, where an email that cannot be sent is written down too.
+func send(council *mailer.Relay, councilErr error, kind string, tenantId uuid.UUID, message mailer.Message) error {
+	message.Kind, message.TenantID = kind, tenantId
 	if councilErr != nil {
+		mailer.Record(mailer.Relay{}, message, councilErr)
 		return councilErr
 	}
 	var relay, err = mailer.Pick(council)
 	if err != nil {
+		mailer.Record(mailer.Relay{}, message, err)
 		return err
 	}
 	return mailer.Send(relay, message)
@@ -128,7 +133,7 @@ func SendNotificationEmails(ctx context.Context, db *sql.DB) (int, error) {
 			var message, buildErr = notificationEmail(row, brand, now)
 			if buildErr == nil {
 				var council, councilErr = mailer.OpenRelay(row.SmtpConfig, row.TenantID)
-				buildErr = send(council, councilErr, message)
+				buildErr = send(council, councilErr, string(row.Type), row.TenantID, message)
 			}
 			if buildErr != nil {
 				log.Printf("notification email %s: %v", row.ID, buildErr)
@@ -494,7 +499,7 @@ func SendInvitationEmails(ctx context.Context, db *sql.DB) (int, error) {
 	var brand = branding.ForEmail(ctx, db)
 	for _, row := range rows {
 		var council, councilErr = mailer.OpenRelay(row.SmtpConfig, row.TenantID)
-		if err = send(council, councilErr, invitationEmail(row, brand)); err != nil {
+		if err = send(council, councilErr, "invitation", row.TenantID, invitationEmail(row, brand)); err != nil {
 			log.Printf("invitation email %s: %v", row.ID, err)
 			continue
 		}

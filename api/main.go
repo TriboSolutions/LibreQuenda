@@ -26,6 +26,7 @@ import (
 	"librequenda/core/tenants"
 	"librequenda/cronJobs"
 	"librequenda/db"
+	"librequenda/mailer"
 	"librequenda/shared"
 	"librequenda/storage"
 
@@ -50,6 +51,7 @@ func main() {
 	helpers.GetI18nInstance(helpers.SetDefaultLocale("gl"), helpers.SetDirectory("i18n"))
 
 	var dbConexion *sql.DB = db.EstablishConnection()
+	mailer.UseRegistry(dbConexion) // every email is written down in email_log
 	auth.InitializeAuth()
 	var router = router.InitRouter()
 	cronJobs.InitializeCronJobs(dbConexion)

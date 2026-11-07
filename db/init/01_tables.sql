@@ -681,3 +681,25 @@ CREATE TABLE audit_log (
     target_label   VARCHAR(255) NULL,                 -- a non-personal name then (a facility's, a tag's)
     summary        TEXT         NOT NULL DEFAULT ''   -- what changed, without personal data or free text
 );
+
+
+-- ============================================================
+--  EMAIL LOG (correos enviados)
+-- ============================================================
+
+-- Every email LibreQuenda tried to send (Zitadel sends its own, not here): to
+-- whom, what about, through which relay, and whether it went. Only the
+-- superadministrators read it (05_row_security.sql); never the body. Append-only
+-- for the API, purged after EMAIL_LOG_RETENTION_DAYS by purge_email_log().
+CREATE TABLE email_log (
+    id         UUID         PRIMARY KEY DEFAULT uuidv7(),
+    at         TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    status     VARCHAR(10)  NOT NULL CHECK (status IN ('sent', 'failed')),
+    kind       VARCHAR(64)  NOT NULL DEFAULT '',  -- booking_reminder, invitation, issue, notice, poll, smtp_test, …
+    tenant_id  UUID         NULL,                 -- the council it was sent for; no FK: kept after the council is deleted
+    recipient  VARCHAR(320) NOT NULL,
+    subject    TEXT         NOT NULL DEFAULT '',
+    sender     VARCHAR(320) NOT NULL DEFAULT '',  -- the From address
+    relay      VARCHAR(255) NOT NULL DEFAULT '',  -- host:port; empty when no relay could be used
+    error      TEXT         NOT NULL DEFAULT ''   -- why it failed
+);

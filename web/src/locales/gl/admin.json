@@ -7,7 +7,9 @@
     "superadmins": "Superadministradores",
     "tags": "Etiquetas",
     "branding": "Personalizar a aplicación",
-    "audit": "Rexistro"
+    "audit": "Rexistro",
+    "emails": "Correos",
+    "apiLog": "Logs da API"
   },
   "guard": {
     "signIn": "Inicia sesión para entrar na administración.",
@@ -1200,5 +1202,48 @@
     },
     "show": "Que amosar",
     "history": "Historial"
+  },
+  "emailLog": {
+    "title": "Correos enviados",
+    "help": "Cada correo que LibreQuenda intentou enviar, desde todos os concellos: a quen, sobre que, por que servidor e se saíu ou fallou. Nunca garda o contido. Os correos de inicio de sesión envíaos Zitadel e non están aquí. Consérvanse un ano (EMAIL_LOG_RETENTION_DAYS).",
+    "last24h": "Últimas 24 horas: {{sent}} enviados, {{failed}} fallaron.",
+    "download": "Descargar CSV",
+    "filters": "Filtrar os correos",
+    "search": "Buscar",
+    "searchPlaceholder": "Enderezo, asunto ou erro",
+    "status": "Estado",
+    "anyStatus": "Todos",
+    "sent": "Enviado",
+    "failed": "Fallou",
+    "kind": "Tipo",
+    "anyKind": "Todos os tipos",
+    "empty": "Non hai correos con estes filtros.",
+    "caption": "Correos enviados, máis recente primeiro",
+    "colTo": "Para",
+    "colSubject": "Asunto",
+    "colVia": "Remitente e servidor",
+    "kinds": {
+      "booking_reminder": "Lembranza de reserva",
+      "booking_cancelled_by_council": "Reserva cancelada polo concello",
+      "invitation": "Invitación á administración",
+      "issue": "Incidencia",
+      "resident": "Veciñanza verificada",
+      "notice": "Comunicado",
+      "poll": "Enquisa",
+      "smtp_test": "Proba do SMTP"
+    }
+  },
+  "apiLog": {
+    "title": "Logs da API",
+    "help": "O que a API escribe nos seus ficheiros de log (api.log e os rotados), o máis recente primeiro. Hora do servidor. Os ficheiros rotados consérvanse LOG_KEEP_DAYS días.",
+    "refresh": "Actualizar",
+    "filters": "Filtrar o log",
+    "search": "Buscar",
+    "searchPlaceholder": "Texto ou ficheiro",
+    "levels": "Niveis",
+    "empty": "Non hai liñas con estes filtros.",
+    "disabled": "Esta instalación non escribe ficheiros de log (falta LOG_DIR).",
+    "caption": "Liñas do log da API, máis recente primeiro",
+    "older": "Ver anteriores"
   }
 }

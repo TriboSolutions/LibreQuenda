@@ -2540,6 +2540,118 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
         '500':
           $ref: '#/components/responses/InternalError'
+  /admin/email-log:
+    get:
+      operationId: platformGetEmailLog
+      tags:
+      - Platform
+      summary: Os correos que LibreQuenda intentou enviar
+      description: 'Só a superadministración, coa sesión iniciada cun segundo factor (cando REQUIRE_ADMIN_MFA está activado). Cada correo, enviado ou non: destinatario, asunto, tipo, concello, remitente, servidor SMTP e o erro se fallou (nunca o corpo). Os máis recentes primeiro, 50 por páxina (?before= para a seguinte); ?format=csv para o ficheiro. Un valor non válido nun filtro é coma non filtrar. Cache-Control: no-store.'
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: q
+        in: query
+        required: false
+        description: Parte do enderezo, do asunto ou do erro (sen distinguir maiúsculas).
+        schema:
+          type: string
+          maxLength: 100
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          enum: [sent, failed]
+      - name: kind
+        in: query
+        required: false
+        description: O tipo de correo (booking_reminder, invitation, issue, notice, poll, smtp_test…); os que hai veñen en kinds.
+        schema:
+          type: string
+          pattern: ^[a-z_]{1,64}$
+      - name: council
+        in: query
+        required: false
+        description: Só os correos deste concello (404 se non existe).
+        schema:
+          type: string
+          pattern: ^[a-z0-9]+(-[a-z0-9]+)*$
+          maxLength: 64
+      - $ref: '#/components/parameters/AuditFrom'
+      - $ref: '#/components/parameters/AuditTo'
+      - $ref: '#/components/parameters/AuditBefore'
+      - $ref: '#/components/parameters/AuditFormat'
+      responses:
+        '200':
+          description: Unha páxina do rexistro, ou o ficheiro CSV (attachment; filename="email-log.csv").
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailLogResponse'
+            text/csv:
+              schema:
+                type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /admin/api-log:
+    get:
+      operationId: platformGetApiLog
+      tags:
+      - Platform
+      summary: O rexistro da API (os seus ficheiros de log)
+      description: 'Só a superadministración, coa sesión iniciada cun segundo factor (cando REQUIRE_ADMIN_MFA está activado). As liñas de LOG_DIR/api.log e dos ficheiros rotados, as máis recentes primeiro, 200 por páxina (?before= para as anteriores). enabled é false se a API non escribe ficheiros (sen LOG_DIR). Cache-Control: no-store.'
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: level
+        in: query
+        required: false
+        description: Niveis separados por comas (DEBUG, INFO, WARN, ERROR, FATAL); sen el, todos.
+        schema:
+          type: string
+          maxLength: 40
+      - name: q
+        in: query
+        required: false
+        description: Parte do texto ou do ficheiro de orixe (sen distinguir maiúsculas).
+        schema:
+          type: string
+          maxLength: 100
+      - name: before
+        in: query
+        required: false
+        description: Só as liñas anteriores a este momento, como o devolve next (AAAA-MM-DD hh:mm:ss.mmm).
+        schema:
+          type: string
+          pattern: ^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}$
+      responses:
+        '200':
+          description: Unha páxina de liñas.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiLogPage'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
   /admin/booking-policy:
     get:
       operationId: getBookingPolicy
@@ -9038,6 +9150,81 @@ components:
       - target_name
       - target_exists
       - summary
+    EmailLogResponse:
+      type: object
+      properties:
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmailLogEntry'
+        next:
+          type: string
+          format: date-time
+          nullable: true
+          description: Para ?before= na seguinte páxina; null ao final.
+        kinds:
+          type: array
+          items:
+            type: string
+          description: Os tipos de correo que hai no rexistro, para o filtro.
+        sent_24h:
+          type: integer
+          description: Correos enviados nas últimas 24 horas (sen filtros).
+        failed_24h:
+          type: integer
+          description: Correos que fallaron nas últimas 24 horas (sen filtros).
+    EmailLogEntry:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        at:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [sent, failed]
+        kind:
+          type: string
+        tenant_slug:
+          type: string
+        tenant_name:
+          type: string
+        recipient:
+          type: string
+        subject:
+          type: string
+        sender:
+          type: string
+        relay:
+          type: string
+          description: host:porto do servidor SMTP; baleiro se non se puido usar ningún.
+        error:
+          type: string
+    ApiLogPage:
+      type: object
+      properties:
+        lines:
+          type: array
+          items:
+            type: object
+            properties:
+              at:
+                type: string
+                description: AAAA-MM-DD hh:mm:ss.mmm, na hora do servidor.
+              level:
+                type: string
+                enum: [DEBUG, INFO, WARN, ERROR, FATAL]
+              caller:
+                type: string
+              text:
+                type: string
+        next:
+          type: string
+          description: Para ?before= nas liñas anteriores; baleiro ao final.
+        enabled:
+          type: boolean
     AuditListResponse:
       type: object
       properties:

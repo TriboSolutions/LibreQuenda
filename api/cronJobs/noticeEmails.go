@@ -35,7 +35,7 @@ func SendNoticeEmails(ctx context.Context, db *sql.DB) (int, error) {
 			continue
 		}
 		var council, councilErr = mailer.OpenRelay(row.SmtpConfig, row.TenantID)
-		if err = send(council, councilErr, noticeEmail(row, brand)); err != nil {
+		if err = send(council, councilErr, "notice", row.TenantID, noticeEmail(row, brand)); err != nil {
 			log.Printf("notice email %s: %v", row.ID, err)
 			continue
 		}
@@ -107,7 +107,7 @@ func SendPollEmails(ctx context.Context, db *sql.DB) (int, error) {
 			continue
 		}
 		var council, councilErr = mailer.OpenRelay(row.SmtpConfig, row.TenantID)
-		if err = send(council, councilErr, pollEmail(row, brand)); err != nil {
+		if err = send(council, councilErr, "poll", row.TenantID, pollEmail(row, brand)); err != nil {
 			log.Printf("poll email %s: %v", row.ID, err)
 			continue
 		}

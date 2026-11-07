@@ -3,14 +3,17 @@ package mailer
 
 import (
 	"bytes"
+	"context"
 	"crypto/rand"
 	"crypto/tls"
+	"database/sql"
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"librequenda/model"
 	"librequenda/secrets"
 	"librequenda/shared"
 	"mime"
@@ -40,6 +43,10 @@ type Message struct {
 	Text    string
 	HTML    string
 	Inline  []Inline
+
+	// for the email registry (LOG_DIR/mail-*.log): what kind of email, and whose council
+	Kind     string
+	TenantID uuid.UUID
 }
 
 // Relay is an SMTP server to send through: a council's own, or the one in the
@@ -105,7 +112,15 @@ func Pick(council *Relay) (Relay, error) {
 	return Relay{}, ErrNoRelay
 }
 
+// Send sends the message through the relay, and writes it down in the email
+// registry whatever happens.
 func Send(relay Relay, message Message) error {
+	var err = sendMessage(relay, message)
+	Record(relay, message, err)
+	return err
+}
+
+func sendMessage(relay Relay, message Message) error {
 	var from, err = mail.ParseAddress(relay.From)
 	if err != nil {
 		return fmt.Errorf("from address: %w", err)
@@ -115,6 +130,79 @@ func Send(relay Relay, message Message) error {
 		return err
 	}
 	return relay.send(from.Address, message.To, body)
+}
+
+// mailRecord is a line of the email registry: who, what, through which relay,
+// and how it went (never the body).
+type mailRecord struct {
+	Time    string `json:"time"`
+	Status  string `json:"status"` // sent | failed
+	Kind    string `json:"kind,omitempty"`
+	Tenant  string `json:"tenant_id,omitempty"`
+	To      string `json:"to"`
+	Subject string `json:"subject"`
+	From    string `json:"from,omitempty"`
+	Relay   string `json:"relay,omitempty"`
+	Error   string `json:"error,omitempty"`
+}
+
+// registry: where Record writes the emails down (the email_log table); set by UseRegistry.
+var registry *sql.DB
+
+// UseRegistry: the database the emails are written down in, from main.
+func UseRegistry(db *sql.DB) { registry = db }
+
+// Record writes an email down in the registry (email_log, which the
+// superadministrators read) and in the API's log: sent, or why not. Also for
+// the ones that never reached a relay.
+func Record(relay Relay, message Message, sendErr error) {
+	var record = mailRecord{
+		Time:    time.Now().Format(time.RFC3339),
+		Status:  "sent",
+		Kind:    message.Kind,
+		To:      message.To,
+		Subject: message.Subject,
+		From:    relay.From,
+	}
+	if message.TenantID != uuid.Nil {
+		record.Tenant = message.TenantID.String()
+	}
+	if relay.Host != "" {
+		record.Relay = net.JoinHostPort(relay.Host, relay.Port)
+	}
+	if sendErr != nil {
+		record.Status = "failed"
+		record.Error = sendErr.Error()
+		shared.Logger.Warn("email %s to %s not sent: %v", message.Kind, message.To, sendErr)
+	} else {
+		shared.Logger.Info("email %s sent to %s via %s", message.Kind, message.To, record.Relay)
+	}
+	if registry == nil {
+		return
+	}
+	var ctx, cancel = context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	var err = model.New(registry).InsertEmailLog(ctx, model.InsertEmailLogParams{
+		Status:    record.Status,
+		Kind:      truncate(record.Kind, 64),
+		TenantID:  uuid.NullUUID{UUID: message.TenantID, Valid: message.TenantID != uuid.Nil},
+		Recipient: truncate(record.To, 320),
+		Subject:   record.Subject,
+		Sender:    truncate(record.From, 320),
+		Relay:     truncate(record.Relay, 255),
+		Error:     record.Error,
+	})
+	if err != nil {
+		// the API's log keeps it anyway
+		shared.Logger.Error("email log: %v", err)
+	}
+}
+
+func truncate(s string, max int) string {
+	if len([]rune(s)) <= max {
+		return s
+	}
+	return string([]rune(s)[:max])
 }
 
 // sendTimeout bounds a whole send, so a wrong host fails instead of hanging.

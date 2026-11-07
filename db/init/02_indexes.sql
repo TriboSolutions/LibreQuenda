@@ -47,6 +47,9 @@ CREATE INDEX idx_checkin_period_facility ON facility_checkin_period (facility_id
 CREATE INDEX idx_audit_log_tenant_at ON audit_log (tenant_id, at DESC);
 CREATE INDEX idx_audit_log_at        ON audit_log (at DESC);
 CREATE INDEX idx_audit_log_action    ON audit_log (action);
+CREATE INDEX idx_email_log_at        ON email_log (at DESC);
+CREATE INDEX idx_email_log_status_at ON email_log (status, at DESC);
+CREATE INDEX idx_email_log_recipient ON email_log USING gin (recipient gin_trgm_ops); -- search by any part of the address
 
 -- «For you»: the upcoming public bookings and events
 CREATE INDEX idx_booking_public ON booking (starts_at) WHERE kind <> 'private' AND status = 'confirmed';

@@ -650,6 +650,28 @@ const auditPage = {
   next: at(-31),
 }
 
+// the email log: one sent, one that failed at the relay
+const emailLogPage = {
+  entries: [
+    { id: 'e1', at: at(-1), status: 'sent', kind: 'booking_reminder', tenant_slug: 'lugo', tenant_name: 'Concello de Lugo', recipient: 'ana@example.com', subject: 'Lembranza: Pista de pádel 1', sender: 'Concello de Lugo <reservas@lugo.gal>', relay: 'smtp.lugo.gal:587', error: '' },
+    { id: 'e2', at: at(-3), status: 'failed', kind: 'invitation', tenant_slug: '', tenant_name: '', recipient: 'pepe@example.com', subject: 'Invitación', sender: 'LibreQuenda <noreply@example.gal>', relay: 'smtp.gmail.com:587', error: '535 authentication failed' },
+  ],
+  next: at(-4),
+  kinds: ['booking_reminder', 'invitation'],
+  sent_24h: 1,
+  failed_24h: 1,
+}
+
+// the API's log: newest first
+const apiLogPage = {
+  lines: [
+    { at: '2026-11-07 12:00:01.000', level: 'WARN', caller: 'mailer/mailer.go:140', text: 'email invitation to pepe@example.com not sent: 535 authentication failed' },
+    { at: '2026-11-07 12:00:00.000', level: 'INFO', caller: 'db/dbConexion.go:50', text: 'database connection established successfully' },
+  ],
+  next: '2026-11-07 12:00:00.000',
+  enabled: true,
+}
+
 // the council's maintenance list: one new and urgent with the reporter's email, one being dealt with
 const councilIssues = {
   issues: [
@@ -776,6 +798,8 @@ const routes: [RegExp, () => unknown][] = [
   [/^\/me\/calendar$/, () => ({ url: 'https://reservas.example.org/api/calendar/7c9e6679-7425-40de-944b-e07fc1f90ae7.ics' })],
   [/^\/me\/bookings$/, () => myBookings],
   [/^\/admin\/audit/, () => auditPage],
+  [/^\/admin\/email-log/, () => emailLogPage],
+  [/^\/admin\/api-log/, () => apiLogPage],
   [/^\/tenants\/[^/]+\/admin\/audit/, () => auditPage],
   [/^\/me\/recommendations$/, () => recommendations],
   [/^\/me\/bookings\/[^/]+\/invite$/, () => invite],

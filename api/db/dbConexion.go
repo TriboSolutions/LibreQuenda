@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/angelbarreiros/Penguin/logger"
 	_ "github.com/lib/pq"
 )
 
@@ -37,7 +36,7 @@ func GetConnectionString() string {
 
 }
 func EstablishConnection() *sql.DB {
-	var logger = logger.GetConsoleLogger()
+	var logger = shared.Logger
 	connStr := GetConnectionString()
 	var db *sql.DB
 	var err error

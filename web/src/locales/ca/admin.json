@@ -7,7 +7,9 @@
     "superadmins": "Superadministradors",
     "tags": "Etiquetes",
     "branding": "Personalitza l’aplicació",
-    "audit": "Registre"
+    "audit": "Registre",
+    "emails": "Correus",
+    "apiLog": "Logs de l'API"
   },
   "guard": {
     "signIn": "Inicia la sessió per entrar a l’administració.",
@@ -1200,5 +1202,48 @@
     },
     "show": "Què mostrar",
     "history": "Historial"
+  },
+  "emailLog": {
+    "title": "Correus enviats",
+    "help": "Cada correu que LibreQuenda ha intentat enviar, des de tots els ajuntaments: a qui, sobre què, per quin servidor i si ha sortit o ha fallat. Mai no en desa el contingut. Els correus d'inici de sessió els envia Zitadel i no hi són. Es conserven un any (EMAIL_LOG_RETENTION_DAYS).",
+    "last24h": "Últimes 24 hores: {{sent}} enviats, {{failed}} han fallat.",
+    "download": "Baixa el CSV",
+    "filters": "Filtra els correus",
+    "search": "Cerca",
+    "searchPlaceholder": "Adreça, assumpte o error",
+    "status": "Estat",
+    "anyStatus": "Tots",
+    "sent": "Enviat",
+    "failed": "Ha fallat",
+    "kind": "Tipus",
+    "anyKind": "Tots els tipus",
+    "empty": "No hi ha correus amb aquests filtres.",
+    "caption": "Correus enviats, el més recent primer",
+    "colTo": "Per a",
+    "colSubject": "Assumpte",
+    "colVia": "Remitent i servidor",
+    "kinds": {
+      "booking_reminder": "Recordatori de reserva",
+      "booking_cancelled_by_council": "Reserva cancel·lada per l'ajuntament",
+      "invitation": "Invitació a l'administració",
+      "issue": "Incidència",
+      "resident": "Veïnat verificat",
+      "notice": "Comunicat",
+      "poll": "Enquesta",
+      "smtp_test": "Prova de l'SMTP"
+    }
+  },
+  "apiLog": {
+    "title": "Logs de l'API",
+    "help": "El que l'API escriu als seus fitxers de log (api.log i els rotats), el més recent primer. Hora del servidor. Els fitxers rotats es conserven LOG_KEEP_DAYS dies.",
+    "refresh": "Actualitza",
+    "filters": "Filtra el log",
+    "search": "Cerca",
+    "searchPlaceholder": "Text o fitxer",
+    "levels": "Nivells",
+    "empty": "No hi ha línies amb aquests filtres.",
+    "disabled": "Aquesta instal·lació no escriu fitxers de log (falta LOG_DIR).",
+    "caption": "Línies del log de l'API, la més recent primer",
+    "older": "Mostra les anteriors"
   }
 }

@@ -546,6 +546,19 @@ type CouncilNotice struct {
 	CreatedAt  time.Time     `json:"created_at"`
 }
 
+type EmailLog struct {
+	ID        uuid.UUID     `json:"id"`
+	At        time.Time     `json:"at"`
+	Status    string        `json:"status"`
+	Kind      string        `json:"kind"`
+	TenantID  uuid.NullUUID `json:"tenant_id"`
+	Recipient string        `json:"recipient"`
+	Subject   string        `json:"subject"`
+	Sender    string        `json:"sender"`
+	Relay     string        `json:"relay"`
+	Error     string        `json:"error"`
+}
+
 type Facility struct {
 	ID                       uuid.UUID       `json:"id"`
 	TenantID                 uuid.UUID       `json:"tenant_id"`

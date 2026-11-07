@@ -133,10 +133,12 @@ func (s *counciladminService) TestSmtp(ctx context.Context, tenantId uuid.UUID, 
 	var appName = branding.Name(ctx, s.db)
 	var body = t("body", councilName, relay.Host, appName)
 	err = mailer.Send(relay, mailer.Message{
-		To:      profile.Email,
-		Subject: t("subject", councilName, appName),
-		Text:    body,
-		HTML:    "<p>" + htmlEscape(body) + "</p>",
+		To:       profile.Email,
+		Subject:  t("subject", councilName, appName),
+		Text:     body,
+		HTML:     "<p>" + htmlEscape(body) + "</p>",
+		Kind:     "smtp_test",
+		TenantID: tenantId,
 	})
 	if err != nil {
 		shared.Logger.Error("SMTP test for council %s: %v", tenantId, err)

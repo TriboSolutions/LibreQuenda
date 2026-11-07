@@ -36,7 +36,7 @@ func SendResidentEmails(ctx context.Context, db *sql.DB) (int, error) {
 			continue
 		}
 		var council, councilErr = mailer.OpenRelay(row.SmtpConfig, row.TenantID)
-		if err = send(council, councilErr, residentEmail(row, brand)); err != nil {
+		if err = send(council, councilErr, "resident", row.TenantID, residentEmail(row, brand)); err != nil {
 			log.Printf("resident email %s: %v", row.ID, err)
 			continue
 		}

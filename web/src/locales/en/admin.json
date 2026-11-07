@@ -7,7 +7,9 @@
     "superadmins": "Superadministrators",
     "tags": "Tags",
     "branding": "Customise the app",
-    "audit": "Activity log"
+    "audit": "Activity log",
+    "emails": "Emails",
+    "apiLog": "API logs"
   },
   "guard": {
     "signIn": "Sign in to open the administration.",
@@ -1200,5 +1202,48 @@
     },
     "show": "What to show",
     "history": "History"
+  },
+  "emailLog": {
+    "title": "Emails sent",
+    "help": "Every email LibreQuenda tried to send, from every council: to whom, about what, through which server, and whether it went out or failed. It never keeps the content. Sign-in emails are sent by Zitadel and are not here. Kept for a year (EMAIL_LOG_RETENTION_DAYS).",
+    "last24h": "Last 24 hours: {{sent}} sent, {{failed}} failed.",
+    "download": "Download CSV",
+    "filters": "Filter the emails",
+    "search": "Search",
+    "searchPlaceholder": "Address, subject or error",
+    "status": "Status",
+    "anyStatus": "All",
+    "sent": "Sent",
+    "failed": "Failed",
+    "kind": "Kind",
+    "anyKind": "All kinds",
+    "empty": "No emails with these filters.",
+    "caption": "Emails sent, newest first",
+    "colTo": "To",
+    "colSubject": "Subject",
+    "colVia": "Sender and server",
+    "kinds": {
+      "booking_reminder": "Booking reminder",
+      "booking_cancelled_by_council": "Booking cancelled by the council",
+      "invitation": "Administration invitation",
+      "issue": "Reported problem",
+      "resident": "Verified resident",
+      "notice": "Announcement",
+      "poll": "Poll",
+      "smtp_test": "SMTP test"
+    }
+  },
+  "apiLog": {
+    "title": "API logs",
+    "help": "What the API writes to its log files (api.log and the rotated ones), newest first. Server time. Rotated files are kept for LOG_KEEP_DAYS days.",
+    "refresh": "Refresh",
+    "filters": "Filter the log",
+    "search": "Search",
+    "searchPlaceholder": "Text or file",
+    "levels": "Levels",
+    "empty": "No lines with these filters.",
+    "disabled": "This installation writes no log files (LOG_DIR is not set).",
+    "caption": "Lines of the API log, newest first",
+    "older": "Show older"
   }
 }

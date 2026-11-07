@@ -426,6 +426,22 @@ for (const theme of ['light', 'dark'] as const) {
       await expectAccessible(page)
     })
 
+    test('platform admin, emails tab', async ({ page }) => {
+      await open(page, '/admin', { theme })
+      await page.getByRole('tab', { name: 'Correos' }).click()
+      await expect(page.getByRole('table', { name: 'Correos enviados, máis recente primeiro' })).toBeVisible()
+      await page.waitForTimeout(300)
+      await expectAccessible(page)
+    })
+
+    test('platform admin, API logs tab', async ({ page }) => {
+      await open(page, '/admin', { theme })
+      await page.getByRole('tab', { name: 'Logs da API' }).click()
+      await expect(page.getByRole('list', { name: 'Liñas do log da API, máis recente primeiro' })).toBeVisible()
+      await page.waitForTimeout(300)
+      await expectAccessible(page)
+    })
+
     test('platform admin, app name and logo tab', async ({ page }) => {
       await open(page, '/admin', { theme })
       await page.getByRole('tab', { name: 'Personalizar a aplicación' }).click()
@@ -872,6 +888,38 @@ test.describe('keyboard', () => {
     const more = page.waitForRequest((r) => r.url().includes('/admin/audit?') && r.url().includes('before='))
     await page.getByRole('button', { name: 'Ver máis' }).click()
     await more
+  })
+
+  test('the email log searches, filters and pages', async ({ page }) => {
+    await open(page, '/admin')
+    await page.getByRole('tab', { name: 'Correos' }).click()
+    const log = page.getByRole('table', { name: 'Correos enviados, máis recente primeiro' })
+    await expect(log).toContainText('ana@example.com')
+    await expect(log).toContainText('535 authentication failed')
+    await expect(page.getByText('Últimas 24 horas: 1 enviados, 1 fallaron.')).toBeVisible()
+    const searched = page.waitForRequest((r) => r.url().includes('/admin/email-log?') && new URL(r.url()).searchParams.get('q') === 'pepe')
+    await page.getByLabel('Buscar').fill('pepe')
+    await searched
+    const failed = page.waitForRequest((r) => r.url().includes('/admin/email-log?') && new URL(r.url()).searchParams.get('status') === 'failed')
+    await page.getByLabel('Estado').click()
+    await page.getByRole('option', { name: 'Fallou' }).click()
+    await failed
+    const more = page.waitForRequest((r) => r.url().includes('/admin/email-log?') && r.url().includes('before='))
+    await page.getByRole('button', { name: 'Ver máis' }).click()
+    await more
+  })
+
+  test('the API log filters by level and text', async ({ page }) => {
+    await open(page, '/admin')
+    await page.getByRole('tab', { name: 'Logs da API' }).click()
+    await expect(page.getByText('database connection established successfully')).toBeVisible()
+    const levels = page.waitForRequest((r) => r.url().includes('/admin/api-log?') && new URL(r.url()).searchParams.get('level') === 'WARN,ERROR')
+    await page.getByRole('button', { name: 'WARN' }).click()
+    await page.getByRole('button', { name: 'ERROR' }).click()
+    await levels
+    const older = page.waitForRequest((r) => r.url().includes('/admin/api-log?') && r.url().includes('before='))
+    await page.getByRole('button', { name: 'Ver anteriores' }).click()
+    await older
   })
 
   test('the widget lists free turns that open LibreQuenda in a new tab', async ({ page }) => {

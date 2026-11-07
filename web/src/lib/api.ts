@@ -1084,14 +1084,38 @@ export type AuditPage = { entries: AuditEntry[]; next: string | null }
 /** What the log is narrowed to: an action code or prefix, days (YYYY-MM-DD), a council (superadmins), and a page. */
 export type AuditFilters = { action?: string; from?: string; to?: string; council?: string; before?: string }
 
-function auditParams(filters: AuditFilters) {
+function auditParams(filters: AuditFilters | EmailLogFilters | ApiLogFilters) {
   const params = new URLSearchParams()
   for (const [key, value] of Object.entries(filters)) if (value) params.set(key, value)
   return params
 }
 
+/** One email LibreQuenda tried to send (superadministrators): never its body. */
+export type EmailLogEntry = {
+  id: string
+  at: string
+  status: 'sent' | 'failed'
+  kind: string
+  tenant_slug: string
+  tenant_name: string
+  recipient: string
+  subject: string
+  sender: string
+  relay: string // host:port; empty when no relay could be used
+  error: string
+}
+export type EmailLogPage = { entries: EmailLogEntry[]; next: string | null; kinds: string[]; sent_24h: number; failed_24h: number }
+/** Searched (address, subject, error), by status, kind, council and days, and a page. */
+export type EmailLogFilters = { q?: string; status?: string; kind?: string; council?: string; from?: string; to?: string; before?: string }
+
+/** A line of the API's log files, as written (the time is the server's). */
+export type ApiLogLine = { at: string; level: 'DEBUG' | 'INFO' | 'WARN' | 'ERROR' | 'FATAL'; caller: string; text: string }
+export type ApiLogPage = { lines: ApiLogLine[]; next: string; enabled: boolean }
+/** level: comma-separated levels; q: part of the text; before: the next of the last page. */
+export type ApiLogFilters = { level?: string; q?: string; before?: string }
+
 /** The filtered audit log as a CSV, fetched with the token and saved. */
-async function downloadAudit(token: string, path: string, filters: AuditFilters) {
+async function downloadAudit(token: string, path: string, filters: AuditFilters | EmailLogFilters, name = 'audit-log') {
   const params = auditParams(filters)
   params.set('format', 'csv')
   const res = await apiFetch(`/api${path}?${params}`, {
@@ -1101,7 +1125,7 @@ async function downloadAudit(token: string, path: string, filters: AuditFilters)
   const url = URL.createObjectURL(await res.blob())
   const link = document.createElement('a')
   link.href = url
-  link.download = `audit-log-${new Date().toISOString().slice(0, 10)}.csv`
+  link.download = `${name}-${new Date().toISOString().slice(0, 10)}.csv`
   link.click()
   URL.revokeObjectURL(url)
 }
@@ -1482,6 +1506,10 @@ export const api = {
   admin: {
     audit: (token: string, filters: AuditFilters) => request<AuditPage>(`/admin/audit?${auditParams(filters)}`, { token }),
     downloadAudit: (token: string, filters: AuditFilters) => downloadAudit(token, '/admin/audit', filters),
+    // every email sent or not, and the API's own log files
+    emailLog: (token: string, filters: EmailLogFilters) => request<EmailLogPage>(`/admin/email-log?${auditParams(filters)}`, { token }),
+    downloadEmailLog: (token: string, filters: EmailLogFilters) => downloadAudit(token, '/admin/email-log', filters, 'email-log'),
+    apiLog: (token: string, filters: ApiLogFilters) => request<ApiLogPage>(`/admin/api-log?${auditParams(filters)}`, { token }),
     // platform-wide booking rules (superadministrators)
     // the analytics assistant: its language model (the key is never sent back), and questions about every council
     aiSettings: (token: string) => request<AISettings>('/admin/ai-settings', { token }),

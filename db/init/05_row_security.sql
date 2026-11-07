@@ -126,3 +126,19 @@ LANGUAGE sql SECURITY DEFINER SET search_path = public AS $$
 $$;
 REVOKE ALL ON FUNCTION purge_audit_log(INTERVAL) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION purge_audit_log(INTERVAL) TO librequenda_app;
+
+-- email_log: append-only for the API, from anywhere (a council's own relay
+-- sends inside db.WithTenant). Only read without a council, by the
+-- superadministrators: no council sees it, not even its own lines.
+ALTER TABLE email_log ENABLE ROW LEVEL SECURITY;
+CREATE POLICY email_log_read   ON email_log FOR SELECT USING (app_tenant_id() IS NULL);
+CREATE POLICY email_log_insert ON email_log FOR INSERT WITH CHECK (TRUE);
+REVOKE UPDATE, DELETE, TRUNCATE ON email_log FROM librequenda_app;
+
+CREATE FUNCTION purge_email_log(older_than INTERVAL) RETURNS BIGINT
+LANGUAGE sql SECURITY DEFINER SET search_path = public AS $$
+    WITH gone AS (DELETE FROM email_log WHERE at < NOW() - older_than RETURNING 1)
+    SELECT COUNT(*) FROM gone
+$$;
+REVOKE ALL ON FUNCTION purge_email_log(INTERVAL) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION purge_email_log(INTERVAL) TO librequenda_app;

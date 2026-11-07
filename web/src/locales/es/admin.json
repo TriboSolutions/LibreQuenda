@@ -7,7 +7,9 @@
     "superadmins": "Superadministradores",
     "tags": "Etiquetas",
     "branding": "Personalizar la aplicación",
-    "audit": "Registro"
+    "audit": "Registro",
+    "emails": "Correos",
+    "apiLog": "Logs de la API"
   },
   "guard": {
     "signIn": "Inicia sesión para entrar en la administración.",
@@ -1200,5 +1202,48 @@
     },
     "show": "Qué mostrar",
     "history": "Historial"
+  },
+  "emailLog": {
+    "title": "Correos enviados",
+    "help": "Cada correo que LibreQuenda intentó enviar, desde todos los ayuntamientos: a quién, sobre qué, por qué servidor y si salió o falló. Nunca guarda el contenido. Los correos de inicio de sesión los envía Zitadel y no están aquí. Se conservan un año (EMAIL_LOG_RETENTION_DAYS).",
+    "last24h": "Últimas 24 horas: {{sent}} enviados, {{failed}} fallaron.",
+    "download": "Descargar CSV",
+    "filters": "Filtrar los correos",
+    "search": "Buscar",
+    "searchPlaceholder": "Dirección, asunto o error",
+    "status": "Estado",
+    "anyStatus": "Todos",
+    "sent": "Enviado",
+    "failed": "Falló",
+    "kind": "Tipo",
+    "anyKind": "Todos los tipos",
+    "empty": "No hay correos con estos filtros.",
+    "caption": "Correos enviados, más reciente primero",
+    "colTo": "Para",
+    "colSubject": "Asunto",
+    "colVia": "Remitente y servidor",
+    "kinds": {
+      "booking_reminder": "Recordatorio de reserva",
+      "booking_cancelled_by_council": "Reserva cancelada por el ayuntamiento",
+      "invitation": "Invitación a la administración",
+      "issue": "Incidencia",
+      "resident": "Vecindario verificado",
+      "notice": "Comunicado",
+      "poll": "Encuesta",
+      "smtp_test": "Prueba del SMTP"
+    }
+  },
+  "apiLog": {
+    "title": "Logs de la API",
+    "help": "Lo que la API escribe en sus ficheros de log (api.log y los rotados), lo más reciente primero. Hora del servidor. Los ficheros rotados se conservan LOG_KEEP_DAYS días.",
+    "refresh": "Actualizar",
+    "filters": "Filtrar el log",
+    "search": "Buscar",
+    "searchPlaceholder": "Texto o fichero",
+    "levels": "Niveles",
+    "empty": "No hay líneas con estos filtros.",
+    "disabled": "Esta instalación no escribe ficheros de log (falta LOG_DIR).",
+    "caption": "Líneas del log de la API, más reciente primero",
+    "older": "Ver anteriores"
   }
 }
