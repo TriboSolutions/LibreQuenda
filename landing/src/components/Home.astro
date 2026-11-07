@@ -13,7 +13,7 @@ import Phone from "./Phone.astro";
 import Browser from "./Browser.astro";
 import DayStrip from "./DayStrip.astro";
 import Code from "./Code.astro";
-import { REPO, INSTALL } from "../site";
+import { REPO, INSTALL, DEMO } from "../site";
 
 // screenshots: the same ones as the README and the wiki (docs/screenshots)
 import aHome from "../../../docs/screenshots/android/vecino/facilities/home.webp";
@@ -133,11 +133,17 @@ const facts = [
         </p>
         <div class="rise mt-9 flex flex-wrap gap-3" style="--d:240ms">
           <a
-            href={href(lang, "/instalar")}
+            href={DEMO}
             class="group inline-flex h-11 items-center gap-2 rounded-md bg-primary px-5 font-medium text-primary-foreground shadow-lg shadow-primary/20 hover:-translate-y-0.5 hover:shadow-xl transition-all"
           >
-            {t.hero.install}
+            {t.hero.demo}
             <ArrowRight class="size-4 transition-transform group-hover:translate-x-1" />
+          </a>
+          <a
+            href={href(lang, "/instalar")}
+            class="group inline-flex h-11 items-center gap-2 rounded-md border border-border bg-card px-5 font-medium hover:border-brand-blue/50 hover:-translate-y-0.5 transition-all"
+          >
+            {t.hero.install}
           </a>
           <a
             href={REPO}
