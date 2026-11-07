@@ -102,6 +102,7 @@ class MainActivity : ComponentActivity() {
                         actions = model,
                         onMarkRead = model::markNotificationsRead,
                         onRefreshPolls = model::refreshPolls,
+                        onMorePolls = model::morePolls,
                         opening = opening.value,
                         onOpened = { opening.value = null },
                         onTour = { tourAgain = true },

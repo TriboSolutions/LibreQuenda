@@ -110,6 +110,7 @@
     "profileTitle": "Encuestas",
     "profileHelp": "Las preguntas de tus ayuntamientos: vota en las abiertas y mira los resultados de las cerradas.",
     "profileLink": "Ver todas las encuestas",
-    "results": "Resultados de la encuesta"
+    "results": "Resultados de la encuesta",
+    "pages": "Páginas de las encuestas"
   }
 }

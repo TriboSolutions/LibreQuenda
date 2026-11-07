@@ -11,6 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Textarea } from '@/components/ui/textarea'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { useAsync } from '@/hooks/useAsync'
+import { Pager } from '@/components/Pager'
 import { api, type AdminFacilitySummary, type CouncilIssue, type IssueStatus } from '@/lib/api'
 import { formatDateTime } from '@/lib/time'
 
@@ -35,9 +36,10 @@ export function IssuesPanel({ slug, facilities, onChanged }: Props) {
   const token = auth.user?.access_token ?? ''
   const [facility, setFacility] = useState(ALL)
   const [status, setStatus] = useState<IssueStatus | typeof ALL>('new')
+  const [page, setPage] = useState(1)
   const issues = useAsync(
-    () => api.council.issues(token, slug, { facility: facility === ALL ? '' : facility, status: status === ALL ? '' : status }),
-    `issues:${slug}:${facility}:${status}`,
+    () => api.council.issues(token, slug, { facility: facility === ALL ? '' : facility, status: status === ALL ? '' : status, page }),
+    `issues:${slug}:${facility}:${status}:${page}`,
   )
   const list = issues.data?.issues ?? []
 
@@ -52,7 +54,7 @@ export function IssuesPanel({ slug, facilities, onChanged }: Props) {
       <div className="flex flex-wrap gap-3">
         <div className="grid min-w-0 max-w-full gap-1.5">
           <Label htmlFor="issues-facility">{t('issues.facility')}</Label>
-          <Select value={facility} onValueChange={setFacility}>
+          <Select value={facility} onValueChange={(value) => { setFacility(value); setPage(1) }}>
             <SelectTrigger id="issues-facility" className="w-64 max-w-full">
               <SelectValue />
             </SelectTrigger>
@@ -68,7 +70,7 @@ export function IssuesPanel({ slug, facilities, onChanged }: Props) {
         </div>
         <div className="grid min-w-0 max-w-full gap-1.5">
           <Label htmlFor="issues-status">{t('issues.status')}</Label>
-          <Select value={status} onValueChange={(value) => setStatus(value as IssueStatus | typeof ALL)}>
+          <Select value={status} onValueChange={(value) => { setStatus(value as IssueStatus | typeof ALL); setPage(1) }}>
             <SelectTrigger id="issues-status" className="w-48 max-w-full">
               <SelectValue />
             </SelectTrigger>
@@ -106,6 +108,7 @@ export function IssuesPanel({ slug, facilities, onChanged }: Props) {
           ))}
         </ul>
       )}
+      <Pager pagination={issues.data?.pagination} onChange={setPage} label={t('issues.pages')} />
     </section>
   )
 }

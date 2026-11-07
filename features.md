@@ -71,7 +71,7 @@ Estado: **feito** · **en curso** (traballo aberto) · **idea** (sen comezar).
 | Formas de rexistrar a entrada por instalación (lapela Entrada) e follas imprimibles co QR e o código | feito |
 | Ventá de reserva por concello, herdada polas súas instalacións ou substituída na lapela Reserva de cada unha: con canta antelación (horas ou días) ou apertura da semana seguinte a unha hora fixa (p. ex., domingo ás 20:00), canto antes do comezo se pode reservar desde a app, prazo para cancelar e cambiar, reservas próximas, reservas por día e por semana, quendas seguidas, penalización opcional por non presentarse | feito |
 | Un límite para todo o concello das reservas próximas de cada persoa en todas as súas instalacións; un só concello á vez por conta (axuste da plataforma, activado por defecto); ninguén pode ter dúas reservas á mesma hora | feito |
-| Eventos (lapela Eventos): un tipo de reserva que só crean as persoas administradoras, cun título, aforo opcional, calquera inicio e fin e sen límites por persoa; amosa as reservas ou peches que coinciden, que o persoal cancela antes; movelo ou cancelalo avisa a quen se apuntou | feito |
+| Eventos (lapela Eventos, cos próximos e o historial dos rematados e cancelados): un tipo de reserva que só crean as persoas administradoras, cun título, aforo opcional, calquera inicio e fin e sen límites por persoa; amosa as reservas ou peches que coinciden, que o persoal cancela antes; movelo ou cancelalo avisa a quen se apuntou | feito |
 | Reserva do persoal por teléfono ou no mostrador, para unha conta ou só cun nome e un teléfono; cancelar calquera reserva; imprimir o QR de entrada | feito |
 | Indicadores: reservas, ocupación, cancelacións, non presentacións (contando todas as formas de rexistrar a entrada), días e horas con máis reservas, valoracións (media, reparto de 1 a 5, evolución), comparación con outro período, por instalación; exportación a CSV e Excel | feito |
 | As non presentacións lembran cando estaba desactivado o rexistro de entrada (historial das formas de rexistrar a entrada da instalación) | feito |
@@ -94,7 +94,7 @@ Estado: **feito** · **en curso** (traballo aberto) · **idea** (sen comezar).
 | Tokens de acceso de curta duración (10 min, renovados en segundo plano), segundo factor obrigatorio para as persoas administradoras, arranque de Zitadel co mínimo privilexio | feito |
 | Límite de peticións no rexistro e no acceso, no proxy (sen captcha: o login de Zitadel non ten) | feito |
 | Rexistro de actividade de todos os cambios administrativos, para a superadministración (todos) e para as persoas administradoras de cada concello (os seus), só de engadir e cun período de conservación, descargable en CSV | feito |
-| API: ordenación, filtrado e paxinación no backend, con parámetros de consulta validados | feito |
+| API: ordenación, filtrado e paxinación no backend, con parámetros de consulta validados; as listas e historiais da administración (eventos, comunicados, enquisas, incidencias, veciñanza) e as enquisas da veciñanza, unha páxina de cada vez, con scroll infinito na app | feito |
 | Despregamento de demostración, kit de produción (`deploy/`), especificación OpenAPI | idea (ver todo.md) |
 
 ## Ideas para máis adiante

@@ -411,7 +411,8 @@ export type CouncilEvent = {
   own_capacity: number | null // null: the facility's
   capacity: number // who can join
   participant_count: number
-  can_change: boolean // until it starts
+  can_change: boolean // until it starts, and not cancelled
+  cancelled: boolean // by the council (in the history)
   timezone: string // the council's: the form shows and takes the times in it
 }
 
@@ -1180,12 +1181,20 @@ async function uploadImage(token: string, folder: MediaFolder, file: File, owner
   return res.json()
 }
 
+/** ?state=past for a history, ?page= after the first: the councils' paged lists. */
+function listQuery(past: boolean, page: number) {
+  const query = new URLSearchParams()
+  if (past) query.set('state', 'past')
+  if (page > 1) query.set('page', String(page))
+  return query.size ? `?${query}` : ''
+}
+
 export const api = {
   uploadImage,
   tenants: () => request<{ tenants: Tenant[] }>('/tenants'),
   tenant: (slug: string) => request<CouncilPage>(`/tenants/${encodeURIComponent(slug)}`),
   // the councils' polls for the signed-in person; one vote each, changed while open
-  myPolls: (token: string) => request<{ polls: MyPoll[] }>('/me/polls', { token }),
+  myPolls: (token: string, page = 1) => request<{ polls: MyPoll[]; pagination: Pagination }>(`/me/polls${page > 1 ? `?page=${page}` : ''}`, { token }),
   vote: (token: string, pollId: string, optionId: string) => request<void>(`/me/polls/${pollId}/vote`, { token, method: 'PUT', body: { option_id: optionId } }),
   tags: () => request<TagCatalogue>('/tags'),
   branding: () => request<Branding>('/branding'),
@@ -1369,7 +1378,10 @@ export const api = {
       request<{ people: EventPerson[] }>(`/tenants/${encodeURIComponent(slug)}/admin/events/${eventId}/people`, { token }),
     removeEventParticipant: (token: string, slug: string, eventId: string, participantId: string) =>
       request<void>(`/tenants/${encodeURIComponent(slug)}/admin/events/${eventId}/people/${participantId}`, { token, method: 'DELETE' }),
-    events: (token: string, slug: string) => request<{ timezone: string; events: CouncilEvent[] }>(`/tenants/${encodeURIComponent(slug)}/admin/events`, { token }),
+    // upcoming (not ended), or the history (ended or cancelled), a page at a time
+    events: (token: string, slug: string, past = false, page = 1) =>
+      request<{ timezone: string; events: CouncilEvent[]; pagination: Pagination }>(`/tenants/${encodeURIComponent(slug)}/admin/events${listQuery(past, page)}`, { token }),
+    event: (token: string, slug: string, id: string) => request<CouncilEvent>(`/tenants/${encodeURIComponent(slug)}/admin/events/${id}`, { token }),
     // except: the event being moved, which is not in its own way
     previewEvent: (token: string, slug: string, input: EventInput, except?: string) =>
       request<EventInTheWay>(`/tenants/${encodeURIComponent(slug)}/admin/events/preview${except ? `?except=${except}` : ''}`, { token, method: 'POST', body: input }),
@@ -1387,11 +1399,12 @@ export const api = {
       request<Indicators>(`/tenants/${encodeURIComponent(slug)}/admin/indicators?${indicatorsParams(query)}`, { token }),
     exportIndicators,
     exportData: exportCouncilData,
-    issues: (token: string, slug: string, filter: { facility?: string; status?: IssueStatus | '' } = {}) => {
+    issues: (token: string, slug: string, filter: { facility?: string; status?: IssueStatus | ''; page?: number } = {}) => {
       const query = new URLSearchParams()
       if (filter.facility) query.set('facility', filter.facility)
       if (filter.status) query.set('status', filter.status)
-      return request<{ issues: CouncilIssue[] }>(`/tenants/${encodeURIComponent(slug)}/admin/issues${query.size ? `?${query}` : ''}`, { token })
+      if (filter.page && filter.page > 1) query.set('page', String(filter.page))
+      return request<{ issues: CouncilIssue[]; pagination: Pagination }>(`/tenants/${encodeURIComponent(slug)}/admin/issues${query.size ? `?${query}` : ''}`, { token })
     },
     residents: (token: string, slug: string, filter: { q?: string; sort?: ResidentSort; page?: number } = {}) => {
       const query = new URLSearchParams()
@@ -1414,14 +1427,14 @@ export const api = {
     discardResidentRequest: (token: string, slug: string, id: string) =>
       request<void>(`/tenants/${encodeURIComponent(slug)}/admin/resident-requests/${id}`, { token, method: 'DELETE' }),
     // the current ones, or the history (expired)
-    notices: (token: string, slug: string, past = false) =>
-      request<{ timezone: string; notices: AdminNotice[] }>(`/tenants/${encodeURIComponent(slug)}/admin/notices${past ? '?state=past' : ''}`, { token }),
+    notices: (token: string, slug: string, past = false, page = 1) =>
+      request<{ timezone: string; notices: AdminNotice[]; pagination: Pagination }>(`/tenants/${encodeURIComponent(slug)}/admin/notices${listQuery(past, page)}`, { token }),
     createNotice: (token: string, slug: string, input: NoticeInput) =>
       request<AdminNotice>(`/tenants/${encodeURIComponent(slug)}/admin/notices`, { token, method: 'POST', body: input }),
     deleteNotice: (token: string, slug: string, id: string) => request<void>(`/tenants/${encodeURIComponent(slug)}/admin/notices/${id}`, { token, method: 'DELETE' }),
     // the open ones, or the history (closed)
-    polls: (token: string, slug: string, past = false) =>
-      request<{ timezone: string; polls: AdminPoll[] }>(`/tenants/${encodeURIComponent(slug)}/admin/polls${past ? '?state=past' : ''}`, { token }),
+    polls: (token: string, slug: string, past = false, page = 1) =>
+      request<{ timezone: string; polls: AdminPoll[]; pagination: Pagination }>(`/tenants/${encodeURIComponent(slug)}/admin/polls${listQuery(past, page)}`, { token }),
     createPoll: (token: string, slug: string, input: PollInput) =>
       request<AdminPoll>(`/tenants/${encodeURIComponent(slug)}/admin/polls`, { token, method: 'POST', body: input }),
     closePoll: (token: string, slug: string, id: string) => request<void>(`/tenants/${encodeURIComponent(slug)}/admin/polls/${id}/close`, { token, method: 'POST' }),

@@ -951,7 +951,8 @@
     "saved": "Guardado.",
     "close": "Cerrar la instalación o mirar su horario",
     "newCount_one": ", {{count}} nueva",
-    "newCount_other": ", {{count}} nuevas"
+    "newCount_other": ", {{count}} nuevas",
+    "pages": "Páginas de las incidencias"
   },
   "bookingPolicy": {
     "title": "Normas de reserva de la plataforma",
@@ -1025,7 +1026,11 @@
       "removed": "Se ha sacado a {{name}} del evento.",
       "close": "Cerrar",
       "noRating": "Sin valoraciones"
-    }
+    },
+    "upcoming": "Próximos",
+    "emptyHistory": "Todavía no ha terminado ni se ha cancelado ningún evento.",
+    "cancelledPill": "Cancelado",
+    "pages": "Páginas de los eventos"
   },
   "residents": {
     "tab": "Vecinos",
@@ -1148,7 +1153,8 @@
       "withdrawBody": "Dejará de salir en las páginas y en las campanas. Los correos ya enviados no se pueden deshacer.",
       "withdrawn": "Se ha retirado el comunicado.",
       "current": "Vigentes",
-      "emptyHistory": "Todavía no ha caducado ningún comunicado."
+      "emptyHistory": "Todavía no ha caducado ningún comunicado.",
+      "pages": "Páginas de los comunicados"
     },
     "polls": {
       "title": "Encuestas",
@@ -1189,7 +1195,8 @@
       "createdAsked_one": "Se ha creado la encuesta y se ha preguntado a {{count}} persona.",
       "createdAsked_other": "Se ha creado la encuesta y se ha preguntado a {{count}} personas.",
       "current": "Abiertas",
-      "emptyHistory": "Todavía no se ha cerrado ninguna encuesta."
+      "emptyHistory": "Todavía no se ha cerrado ninguna encuesta.",
+      "pages": "Páginas de las encuestas"
     },
     "show": "Qué mostrar",
     "history": "Historial"

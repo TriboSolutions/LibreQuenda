@@ -711,8 +711,11 @@ const weather = {
 const councilEvents = {
   timezone: TZ,
   events: [
-    { id: 'ev1', facility_id: 'f1', facility_name: 'Pista de pádel 1', starts_at: at(50), ends_at: at(54), title: 'Torneo de pádel de outono', description: 'Por parellas, calquera nivel.', own_capacity: 16, capacity: 16, participant_count: 2, can_change: true, timezone: TZ },
-    { id: 'ev2', facility_id: 'f1', facility_name: 'Pista de pádel 1', starts_at: at(100), ends_at: at(124), title: 'Xornada de portas abertas', description: '', own_capacity: null, capacity: 4, participant_count: 0, can_change: true, timezone: TZ },
+    { id: 'ev1', facility_id: 'f1', facility_name: 'Pista de pádel 1', starts_at: at(50), ends_at: at(54), title: 'Torneo de pádel de outono', description: 'Por parellas, calquera nivel.', own_capacity: 16, capacity: 16, participant_count: 2, can_change: true, cancelled: false, timezone: TZ },
+    { id: 'ev2', facility_id: 'f1', facility_name: 'Pista de pádel 1', starts_at: at(100), ends_at: at(124), title: 'Xornada de portas abertas', description: '', own_capacity: null, capacity: 4, participant_count: 0, can_change: true, cancelled: false, timezone: TZ },
+    // the history: one that ended, one the council cancelled
+    { id: 'ev3', facility_id: 'f1', facility_name: 'Pista de pádel 1', starts_at: at(-200), ends_at: at(-196), title: 'Torneo de verán', description: '', own_capacity: 16, capacity: 16, participant_count: 14, can_change: false, cancelled: false, timezone: TZ },
+    { id: 'ev4', facility_id: 'f1', facility_name: 'Pista de pádel 1', starts_at: at(30), ends_at: at(32), title: 'Clase aberta', description: '', own_capacity: null, capacity: 4, participant_count: 0, can_change: false, cancelled: true, timezone: TZ },
   ],
 }
 
@@ -816,6 +819,16 @@ export async function mockApp(page: Page, { signedIn = true, theme = 'light', la
       const status = url.searchParams.get('status')
       const facility = url.searchParams.get('facility')
       return fulfil(route, { issues: councilIssues.issues.filter((issue) => (!status || issue.status === status) && (!facility || issue.facility_id === facility)) })
+    }
+    // the council's events: upcoming, or the history (?state=past: ended or cancelled); one, for its editor
+    if (route.request().method() === 'GET' && /^\/tenants\/[^/]+\/admin\/events$/.test(path)) {
+      const past = url.searchParams.get('state') === 'past'
+      const shown = councilEvents.events.filter((e) => (e.cancelled || Date.parse(e.ends_at) <= Date.now()) === past)
+      return fulfil(route, { ...councilEvents, events: shown, pagination: { page: 1, page_size: 20, total: shown.length, has_more: false } })
+    }
+    if (route.request().method() === 'GET' && /^\/tenants\/[^/]+\/admin\/events\/[^/]+$/.test(path)) {
+      const found = councilEvents.events.find((e) => path.endsWith('/' + e.id))
+      return found ? fulfil(route, found) : fulfil(route, { error: 'Non atopamos esa reserva.' }, 404)
     }
     // the participation tab: the current ones, or the history (?state=past)
     if (route.request().method() === 'GET' && /^\/tenants\/[^/]+\/admin\/notices$/.test(path)) {

@@ -6,6 +6,7 @@ import (
 	"librequenda/core/bookings"
 	"librequenda/core/invites"
 	"librequenda/model"
+	"librequenda/shared"
 	"net/http"
 
 	"github.com/angelbarreiros/Penguin/router/helpers"
@@ -145,12 +146,34 @@ func (h *counciladminHandler) UndoStaffCheckIn(w http.ResponseWriter, r *http.Re
 
 // The "Eventos" tab: the council's own activities, which residents join.
 
+// ListEvents: ?state=upcoming (the default) or past (the history: ended or cancelled), ?page= (20 a page).
 func (h *counciladminHandler) ListEvents(w http.ResponseWriter, r *http.Request) {
 	var tenantId, ok = h.councilAdmin(w, r)
 	if !ok {
 		return
 	}
-	var response, err = bookings.GetBookingsService(h.db).ListEvents(r.Context(), tenantId)
+	var past, valid = historyState(r.URL.Query().Get("state"), "upcoming")
+	var page, pageErr = shared.PageOf(r, shared.ListPageSize)
+	if !valid || pageErr != nil {
+		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_query_params")
+		return
+	}
+	var response, err = bookings.GetBookingsService(h.db).ListEvents(r.Context(), tenantId, past, page)
+	send(w, r, response, err)
+}
+
+// GetEvent: one event, for its editor.
+func (h *counciladminHandler) GetEvent(w http.ResponseWriter, r *http.Request) {
+	var tenantId, ok = h.councilAdmin(w, r)
+	if !ok {
+		return
+	}
+	var eventId, idErr = helpers.GetUUidPathValue("bookingId", r)
+	if idErr != nil {
+		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_query_params")
+		return
+	}
+	var response, err = bookings.GetBookingsService(h.db).Event(r.Context(), tenantId, eventId)
 	send(w, r, response, err)
 }
 

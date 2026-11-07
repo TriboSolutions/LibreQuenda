@@ -45,8 +45,9 @@ type NoticeDto struct {
 }
 
 type NoticesResponse struct {
-	Timezone string      `json:"timezone"`
-	Notices  []NoticeDto `json:"notices"`
+	Timezone   string         `json:"timezone"`
+	Notices    []NoticeDto    `json:"notices"`
+	Pagination shared.PageDto `json:"pagination"`
 }
 
 // NoticeInput: shown until the end of ExpiresOn (YYYY-MM-DD, council time).
@@ -74,8 +75,9 @@ type PollDto struct {
 }
 
 type PollsResponse struct {
-	Timezone string    `json:"timezone"`
-	Polls    []PollDto `json:"polls"`
+	Timezone   string         `json:"timezone"`
+	Polls      []PollDto      `json:"polls"`
+	Pagination shared.PageDto `json:"pagination"`
 }
 
 // PollInput: open until the end of ClosesOn (YYYY-MM-DD, council time).
@@ -149,14 +151,18 @@ func historyState(state, current string) (bool, bool) {
 }
 
 // ListNotices: the current announcements, or the history (past).
-func (s *counciladminService) ListNotices(ctx context.Context, tenantId uuid.UUID, past bool) (*NoticesResponse, *shared.ErrorResponse) {
-	var rows, err = model.New(s.db).ListCouncilNotices(ctx, model.ListCouncilNoticesParams{TenantID: tenantId, Past: past})
+func (s *counciladminService) ListNotices(ctx context.Context, tenantId uuid.UUID, past bool, page helpers.PaginationParams) (*NoticesResponse, *shared.ErrorResponse) {
+	var limit, skip = shared.Rows(page)
+	var rows, err = model.New(s.db).ListCouncilNotices(ctx, model.ListCouncilNoticesParams{TenantID: tenantId, Past: past, MaxRows: limit, Skip: skip})
 	if err != nil {
 		return nil, failed("errors.participation_failed")
 	}
 	var _, zone = s.councilZone(ctx, tenantId)
 	var now = time.Now()
-	var response = &NoticesResponse{Timezone: zone, Notices: make([]NoticeDto, 0, len(rows))}
+	var response = &NoticesResponse{Timezone: zone, Notices: make([]NoticeDto, 0, len(rows)), Pagination: shared.NewPageDto(page, 0)}
+	if len(rows) > 0 {
+		response.Pagination = shared.NewPageDto(page, rows[0].Total)
+	}
 	for _, row := range rows {
 		var dto = NoticeDto{
 			Id: row.ID.String(), FacilityName: row.FacilityName.String, Title: row.Title, Body: row.Body,
@@ -249,9 +255,10 @@ func (s *counciladminService) DeleteNotice(ctx context.Context, tenantId, notice
 }
 
 // ListPolls: the open polls, or the history (past: closed).
-func (s *counciladminService) ListPolls(ctx context.Context, tenantId uuid.UUID, past bool) (*PollsResponse, *shared.ErrorResponse) {
+func (s *counciladminService) ListPolls(ctx context.Context, tenantId uuid.UUID, past bool, page helpers.PaginationParams) (*PollsResponse, *shared.ErrorResponse) {
 	var queries = model.New(s.db)
-	var rows, err = queries.ListCouncilPolls(ctx, model.ListCouncilPollsParams{TenantID: tenantId, Past: past})
+	var limit, skip = shared.Rows(page)
+	var rows, err = queries.ListCouncilPolls(ctx, model.ListCouncilPollsParams{TenantID: tenantId, Past: past, MaxRows: limit, Skip: skip})
 	if err != nil {
 		return nil, failed("errors.participation_failed")
 	}
@@ -264,7 +271,10 @@ func (s *counciladminService) ListPolls(ctx context.Context, tenantId uuid.UUID,
 		return nil, failed("errors.participation_failed")
 	}
 	var _, zone = s.councilZone(ctx, tenantId)
-	var response = &PollsResponse{Timezone: zone, Polls: make([]PollDto, 0, len(rows))}
+	var response = &PollsResponse{Timezone: zone, Polls: make([]PollDto, 0, len(rows)), Pagination: shared.NewPageDto(page, 0)}
+	if len(rows) > 0 {
+		response.Pagination = shared.NewPageDto(page, rows[0].Total)
+	}
 	for _, row := range rows {
 		var dto = PollDto{
 			Id: row.ID.String(), FacilityName: row.FacilityName.String, Question: row.Question, ResidentsOnly: row.ResidentsOnly,
@@ -418,7 +428,7 @@ func pathId(w http.ResponseWriter, r *http.Request, name string) (uuid.UUID, boo
 	return id, true
 }
 
-// ListNotices: ?state=active (the default) or past (the history).
+// ListNotices: ?state=active (the default) or past (the history), ?page= (20 a page).
 func (h *counciladminHandler) ListNotices(w http.ResponseWriter, r *http.Request) {
 	var tenantId, ok = h.councilAdmin(w, r)
 	if !ok {
@@ -429,7 +439,12 @@ func (h *counciladminHandler) ListNotices(w http.ResponseWriter, r *http.Request
 		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_query_params")
 		return
 	}
-	var response, err = GetCounciladminService(h.db).ListNotices(r.Context(), tenantId, past)
+	var page, pageErr = shared.PageOf(r, shared.ListPageSize)
+	if pageErr != nil {
+		helpers.SendI18NErrorResponse(w, r, pageErr.Code, pageErr.Message)
+		return
+	}
+	var response, err = GetCounciladminService(h.db).ListNotices(r.Context(), tenantId, past, page)
 	send(w, r, response, err)
 }
 
@@ -458,7 +473,7 @@ func (h *counciladminHandler) DeleteNotice(w http.ResponseWriter, r *http.Reques
 	send(w, r, nil, GetCounciladminService(h.db).DeleteNotice(r.Context(), tenantId, noticeId))
 }
 
-// ListPolls: ?state=open (the default) or past (the history: closed).
+// ListPolls: ?state=open (the default) or past (the history: closed), ?page= (20 a page).
 func (h *counciladminHandler) ListPolls(w http.ResponseWriter, r *http.Request) {
 	var tenantId, ok = h.councilAdmin(w, r)
 	if !ok {
@@ -469,7 +484,12 @@ func (h *counciladminHandler) ListPolls(w http.ResponseWriter, r *http.Request) 
 		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.invalid_query_params")
 		return
 	}
-	var response, err = GetCounciladminService(h.db).ListPolls(r.Context(), tenantId, past)
+	var page, pageErr = shared.PageOf(r, shared.ListPageSize)
+	if pageErr != nil {
+		helpers.SendI18NErrorResponse(w, r, pageErr.Code, pageErr.Message)
+		return
+	}
+	var response, err = GetCounciladminService(h.db).ListPolls(r.Context(), tenantId, past, page)
 	send(w, r, response, err)
 }
 

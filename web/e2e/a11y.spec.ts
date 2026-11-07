@@ -194,6 +194,18 @@ for (const theme of ['light', 'dark'] as const) {
       await expect(page.getByRole('dialog').getByRole('radio', { name: '5 estrelas' }).first()).toBeChecked()
     })
 
+    test('the events history: ended and cancelled ones, out of the upcoming list', async ({ page }) => {
+      await open(page, '/lugo/admin?vista=eventos', { theme })
+      await expect(page.getByText('Torneo de pádel de outono')).toBeVisible()
+      await expect(page.getByText('Torneo de verán')).toBeHidden()
+      await page.getByRole('radio', { name: 'Historial' }).click()
+      await expect(page.getByText('Torneo de verán')).toBeVisible()
+      await expect(page.getByRole('listitem').filter({ hasText: 'Clase aberta' })).toContainText('Cancelado')
+      await expect(page.getByRole('button', { name: 'Editar' })).toHaveCount(0)
+      await page.waitForTimeout(300)
+      await expectAccessible(page)
+    })
+
     test('a new announcement and a new poll, their dialogs', async ({ page }) => {
       await open(page, '/lugo/admin?vista=participacion', { theme })
       await expect(page.getByText('Avisouse a 132 persoas')).toBeVisible()

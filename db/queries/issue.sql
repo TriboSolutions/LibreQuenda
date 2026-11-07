@@ -59,6 +59,7 @@ RETURNING
 -- name: ListCouncilIssues :many
 -- The council's maintenance list, newest first; facility_id and status narrow it.
 -- The reporter's first name always; the API keeps their email only when they shared it.
+-- issue_id: only that one (after a change). A page at a time, with the total.
 SELECT
     i.id,
     i.facility_id,
@@ -76,7 +77,8 @@ SELECT
     split_part(COALESCE(u.full_name, ''), ' ', 1)::TEXT AS reporter_first_name,
     i.share_contact,
     u.email AS reporter_email, -- the API drops contact details unless share_contact
-    u.phone AS reporter_phone
+    u.phone AS reporter_phone,
+    COUNT(*) OVER ()::BIGINT AS total
 FROM
     facility_issue i
     JOIN facility f ON f.id = i.facility_id
@@ -86,9 +88,12 @@ WHERE
     f.tenant_id = sqlc.arg('tenant_id')
     AND (sqlc.narg('facility_id')::UUID IS NULL OR i.facility_id = sqlc.narg('facility_id'))
     AND (sqlc.narg('status')::issue_status IS NULL OR i.status = sqlc.narg('status'))
+    AND (sqlc.narg('issue_id')::UUID IS NULL OR i.id = sqlc.narg('issue_id'))
 ORDER BY
-    i.created_at DESC
-LIMIT 500;
+    i.created_at DESC,
+    i.id
+LIMIT sqlc.arg('max_rows')
+OFFSET sqlc.arg('skip');
 
 -- name: CountNewCouncilIssues :one
 -- The badge on the council administration's Maintenance tab.

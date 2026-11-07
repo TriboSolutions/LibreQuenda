@@ -951,7 +951,8 @@
     "saved": "Saved.",
     "close": "Close the facility or check its hours",
     "newCount_one": ", {{count}} new",
-    "newCount_other": ", {{count}} new"
+    "newCount_other": ", {{count}} new",
+    "pages": "Maintenance list pages"
   },
   "bookingPolicy": {
     "title": "Platform booking rules",
@@ -1025,7 +1026,11 @@
       "removed": "{{name}} is out of the event.",
       "close": "Close",
       "noRating": "No ratings"
-    }
+    },
+    "upcoming": "Upcoming",
+    "emptyHistory": "No event has ended or been cancelled yet.",
+    "cancelledPill": "Cancelled",
+    "pages": "Event pages"
   },
   "residents": {
     "tab": "Residents",
@@ -1148,7 +1153,8 @@
       "withdrawBody": "It leaves the pages and the bells. Emails already sent cannot be undone.",
       "withdrawn": "The announcement was withdrawn.",
       "current": "Current",
-      "emptyHistory": "No announcement has expired yet."
+      "emptyHistory": "No announcement has expired yet.",
+      "pages": "Announcement pages"
     },
     "polls": {
       "title": "Polls",
@@ -1189,7 +1195,8 @@
       "createdAsked_one": "The poll was created and {{count}} person was asked.",
       "createdAsked_other": "The poll was created and {{count}} people were asked.",
       "current": "Open",
-      "emptyHistory": "No poll has closed yet."
+      "emptyHistory": "No poll has closed yet.",
+      "pages": "Poll pages"
     },
     "show": "What to show",
     "history": "History"

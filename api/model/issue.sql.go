@@ -332,7 +332,8 @@ SELECT
     split_part(COALESCE(u.full_name, ''), ' ', 1)::TEXT AS reporter_first_name,
     i.share_contact,
     u.email AS reporter_email, -- the API drops contact details unless share_contact
-    u.phone AS reporter_phone
+    u.phone AS reporter_phone,
+    COUNT(*) OVER ()::BIGINT AS total
 FROM
     facility_issue i
     JOIN facility f ON f.id = i.facility_id
@@ -342,15 +343,21 @@ WHERE
     f.tenant_id = $1
     AND ($2::UUID IS NULL OR i.facility_id = $2)
     AND ($3::issue_status IS NULL OR i.status = $3)
+    AND ($4::UUID IS NULL OR i.id = $4)
 ORDER BY
-    i.created_at DESC
-LIMIT 500
+    i.created_at DESC,
+    i.id
+LIMIT $6
+OFFSET $5
 `
 
 type ListCouncilIssuesParams struct {
 	TenantID   uuid.UUID       `json:"tenant_id"`
 	FacilityID uuid.NullUUID   `json:"facility_id"`
 	Status     NullIssueStatus `json:"status"`
+	IssueID    uuid.NullUUID   `json:"issue_id"`
+	Skip       int32           `json:"skip"`
+	MaxRows    int32           `json:"max_rows"`
 }
 
 type ListCouncilIssuesRow struct {
@@ -371,12 +378,21 @@ type ListCouncilIssuesRow struct {
 	ShareContact      bool           `json:"share_contact"`
 	ReporterEmail     sql.NullString `json:"reporter_email"`
 	ReporterPhone     sql.NullString `json:"reporter_phone"`
+	Total             int64          `json:"total"`
 }
 
 // The council's maintenance list, newest first; facility_id and status narrow it.
 // The reporter's first name always; the API keeps their email only when they shared it.
+// issue_id: only that one (after a change). A page at a time, with the total.
 func (q *Queries) ListCouncilIssues(ctx context.Context, arg ListCouncilIssuesParams) ([]ListCouncilIssuesRow, error) {
-	rows, err := q.db.QueryContext(ctx, listCouncilIssues, arg.TenantID, arg.FacilityID, arg.Status)
+	rows, err := q.db.QueryContext(ctx, listCouncilIssues,
+		arg.TenantID,
+		arg.FacilityID,
+		arg.Status,
+		arg.IssueID,
+		arg.Skip,
+		arg.MaxRows,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -402,6 +418,7 @@ func (q *Queries) ListCouncilIssues(ctx context.Context, arg ListCouncilIssuesPa
 			&i.ShareContact,
 			&i.ReporterEmail,
 			&i.ReporterPhone,
+			&i.Total,
 		); err != nil {
 			return nil, err
 		}

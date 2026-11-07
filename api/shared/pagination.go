@@ -18,6 +18,15 @@ const MaxPage = 10000
 // them. Penguin ignores bad values; here they are an error, so a client hears
 // about its mistake instead of getting another page.
 func Page(r *http.Request) (helpers.PaginationParams, *ErrorResponse) {
+	return PageOf(r, DefaultPageSize)
+}
+
+// ListPageSize: the councils' lists and histories (events, announcements, polls,
+// the maintenance list) a page at a time, so none loads all of it.
+const ListPageSize uint = 20
+
+// PageOf: Page, with size as the default ?pageSize= (still 100 at most).
+func PageOf(r *http.Request, size uint) (helpers.PaginationParams, *ErrorResponse) {
 	var q = r.URL.Query()
 	for _, key := range []string{"page", "pageSize"} {
 		if text := q.Get(key); text != "" {
@@ -26,7 +35,7 @@ func Page(r *http.Request) (helpers.PaginationParams, *ErrorResponse) {
 			}
 		}
 	}
-	return helpers.GetPaginationParamsWithMax(r, DefaultPageSize, DefaultPageSize), nil
+	return helpers.GetPaginationParamsWithMax(r, size, DefaultPageSize), nil
 }
 
 // PageDto: where a page sits in the whole list.
@@ -49,4 +58,9 @@ func Slice[T any](items []T, params helpers.PaginationParams) []T {
 		return []T{}
 	}
 	return items[start:min(start+int(params.PageSize), len(items))]
+}
+
+// Rows: the LIMIT and OFFSET of a page, for the queries.
+func Rows(params helpers.PaginationParams) (int32, int32) {
+	return int32(params.PageSize), int32(params.Offset())
 }

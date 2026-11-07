@@ -100,8 +100,10 @@ WHERE
     AND kind = 'event'
     AND status = 'confirmed';
 
--- name: ListEventsByTenant :many
--- The council's confirmed events that have not ended, by start.
+-- name: ListCouncilEvents :many
+-- The council's events for its administrators, a page at a time: those that
+-- have not ended (soonest first), or the history (past: ended or cancelled,
+-- the latest first).
 SELECT
     b.id,
     b.facility_id,
@@ -114,7 +116,8 @@ SELECT
     b.event_capacity,
     COALESCE(b.event_capacity, f.capacity) AS capacity,
     (SELECT COUNT(*) FROM booking_participant p WHERE p.booking_id = b.id) AS participant_count,
-    t.timezone
+    t.timezone,
+    COUNT(*) OVER ()::BIGINT AS total
 FROM
     booking b
     JOIN facility f ON f.id = b.facility_id
@@ -122,11 +125,13 @@ FROM
 WHERE
     f.tenant_id = sqlc.arg('tenant_id')
     AND b.kind = 'event'
-    AND b.status = 'confirmed'
-    AND b.ends_at > NOW()
+    AND (b.status = 'cancelled' OR b.ends_at <= NOW()) = sqlc.arg('past')::BOOLEAN
 ORDER BY
+    CASE WHEN sqlc.arg('past')::BOOLEAN THEN b.starts_at END DESC,
     b.starts_at,
-    b.id;
+    b.id
+LIMIT sqlc.arg('max_rows')
+OFFSET sqlc.arg('skip');
 
 -- name: GetEvent :one
 SELECT

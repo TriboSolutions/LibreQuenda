@@ -1376,9 +1376,14 @@ paths:
       - Me
       summary: As enquisas para min
       description: |-
+        Unha páxina de cada vez: 20 por defecto (pageSize, ata 100).
+
         As dos concellos dos que a persoa forma parte (veciñanza verificada, administración, ou reservou alí no último ano), mentres están abertas e ata un ano despois de pechar, para seguir os resultados; as só para a veciñanza, só a quen pode votar. Os votos (votes) son null mentres está aberta.
       security:
       - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/PageSize'
       responses:
         '200':
           description: OK
@@ -3723,11 +3728,23 @@ paths:
       tags:
       - Council admin
       summary: Os eventos do concello (a lapela «Eventos»)
-      description: 'Administración do concello: a persoa usuaria con sesión iniciada ten que ser administradora deste concello ou superadministradora, coa sesión iniciada cun segundo factor (cando REQUIRE_ADMIN_MFA está activado).'
+      description: |-
+        Unha páxina de cada vez: 20 por defecto (pageSize, ata 100).
+
+        Administración do concello: a persoa usuaria con sesión iniciada ten que ser administradora deste concello ou superadministradora, coa sesión iniciada cun segundo factor (cando REQUIRE_ADMIN_MFA está activado).
       security:
       - bearerAuth: []
       parameters:
       - $ref: '#/components/parameters/TenantSlug'
+      - name: state
+        in: query
+        required: false
+        description: upcoming (os que non remataron, por defecto) ou past (o historial, os rematados e os cancelados, o último primeiro).
+        schema:
+          type: string
+          enum: [upcoming, past]
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/PageSize'
       responses:
         '200':
           description: OK
@@ -3839,6 +3856,38 @@ paths:
         '500':
           $ref: '#/components/responses/InternalError'
   /tenants/{slug}/admin/events/{bookingId}:
+    get:
+      operationId: adminGetEvent
+      tags:
+      - Council admin
+      summary: Un evento do concello, para o seu editor
+      description: 'Administración do concello: a persoa usuaria con sesión iniciada ten que ser administradora deste concello ou superadministradora, coa sesión iniciada cun segundo factor (cando REQUIRE_ADMIN_MFA está activado).'
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/TenantSlug'
+      - $ref: '#/components/parameters/AdminBookingId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
     put:
       operationId: adminUpdateEvent
       tags:
@@ -4107,6 +4156,8 @@ paths:
       - Council admin
       summary: Os comunicados do concello
       description: |-
+        Unha páxina de cada vez: 20 por defecto (pageSize, ata 100).
+
         Os vixentes, os máis recentes primeiro; con state=past, o historial: os caducados, o último en caducar primeiro.
 
         Administración do concello: a persoa usuaria con sesión iniciada ten que ser administradora deste concello ou superadministradora, coa sesión iniciada cun segundo factor (cando REQUIRE_ADMIN_MFA está activado).
@@ -4121,6 +4172,8 @@ paths:
         schema:
           type: string
           enum: [active, past]
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/PageSize'
       responses:
         '200':
           description: OK
@@ -4229,6 +4282,8 @@ paths:
       - Council admin
       summary: As enquisas do concello
       description: |-
+        Unha páxina de cada vez: 20 por defecto (pageSize, ata 100).
+
         As abertas, a que pecha antes primeiro; con state=past, o historial: as pechadas, a última en pechar primeiro. As administradoras ven os votos de cada resposta en todo momento; a veciñanza, só cando a enquisa pecha.
 
         Administración do concello: a persoa usuaria con sesión iniciada ten que ser administradora deste concello ou superadministradora, coa sesión iniciada cun segundo factor (cando REQUIRE_ADMIN_MFA está activado).
@@ -4243,6 +4298,8 @@ paths:
         schema:
           type: string
           enum: [open, past]
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/PageSize'
       responses:
         '200':
           description: OK
@@ -4389,6 +4446,8 @@ paths:
       - Council admin
       summary: A lista de mantemento
       description: |-
+        Unha páxina de cada vez: 20 por defecto (pageSize, ata 100).
+
         As máis recentes primeiro.
 
         Administración do concello: a persoa usuaria con sesión iniciada ten que ser administradora deste concello ou superadministradora, coa sesión iniciada cun segundo factor (cando REQUIRE_ADMIN_MFA está activado).
@@ -4409,6 +4468,8 @@ paths:
         description: Só este estado.
         schema:
           $ref: '#/components/schemas/IssueStatus'
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/PageSize'
       responses:
         '200':
           description: OK
@@ -5869,7 +5930,9 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AdminNotice'
-      required: [timezone, notices]
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      required: [timezone, notices, pagination]
     NoticeInput:
       type: object
       properties:
@@ -5947,7 +6010,9 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AdminPoll'
-      required: [timezone, polls]
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      required: [timezone, polls, pagination]
     PollInput:
       type: object
       properties:
@@ -6013,7 +6078,9 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/MyPoll'
-      required: [polls]
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      required: [polls, pagination]
     VoteInput:
       type: object
       properties:
@@ -9875,6 +9942,9 @@ components:
         can_change:
           type: boolean
           description: Ata que comeza.
+        cancelled:
+          type: boolean
+          description: O concello cancelouno (no historial).
         timezone:
           type: string
           description: O do concello, para amosar e editar as horas nel.
@@ -9890,6 +9960,7 @@ components:
       - capacity
       - participant_count
       - can_change
+      - cancelled
       - timezone
     EventsResponse:
       type: object
@@ -9902,7 +9973,10 @@ components:
           items:
             $ref: '#/components/schemas/Event'
           description: Aínda sen rematar, os máis próximos primeiro.
+        pagination:
+          $ref: '#/components/schemas/Pagination'
       required:
+      - pagination
       - timezone
       - events
     EventInput:
@@ -10335,7 +10409,10 @@ components:
           items:
             $ref: '#/components/schemas/Issue'
           description: As máis recentes primeiro.
+        pagination:
+          $ref: '#/components/schemas/Pagination'
       required:
+      - pagination
       - issues
     IssueCount:
       type: object

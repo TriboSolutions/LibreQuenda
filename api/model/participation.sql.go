@@ -635,7 +635,8 @@ SELECT
     n.expires_at,
     n.notify,
     n.recipients,
-    n.created_at
+    n.created_at,
+    COUNT(*) OVER ()::BIGINT AS total
 FROM
     council_notice n
     LEFT JOIN facility f ON f.id = n.facility_id
@@ -644,13 +645,17 @@ WHERE
     AND (n.expires_at <= NOW()) = $2::BOOLEAN
 ORDER BY
     CASE WHEN $2::BOOLEAN THEN n.expires_at END DESC,
-    n.created_at DESC
-LIMIT 200
+    n.created_at DESC,
+    n.id
+LIMIT $4
+OFFSET $3
 `
 
 type ListCouncilNoticesParams struct {
 	TenantID uuid.UUID `json:"tenant_id"`
 	Past     bool      `json:"past"`
+	Skip     int32     `json:"skip"`
+	MaxRows  int32     `json:"max_rows"`
 }
 
 type ListCouncilNoticesRow struct {
@@ -663,12 +668,18 @@ type ListCouncilNoticesRow struct {
 	Notify       bool           `json:"notify"`
 	Recipients   int32          `json:"recipients"`
 	CreatedAt    time.Time      `json:"created_at"`
+	Total        int64          `json:"total"`
 }
 
 // The council's announcements for its administrators: the current ones (the
 // newest first), or the history (past: expired, the latest to expire first).
 func (q *Queries) ListCouncilNotices(ctx context.Context, arg ListCouncilNoticesParams) ([]ListCouncilNoticesRow, error) {
-	rows, err := q.db.QueryContext(ctx, listCouncilNotices, arg.TenantID, arg.Past)
+	rows, err := q.db.QueryContext(ctx, listCouncilNotices,
+		arg.TenantID,
+		arg.Past,
+		arg.Skip,
+		arg.MaxRows,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -686,6 +697,7 @@ func (q *Queries) ListCouncilNotices(ctx context.Context, arg ListCouncilNotices
 			&i.Notify,
 			&i.Recipients,
 			&i.CreatedAt,
+			&i.Total,
 		); err != nil {
 			return nil, err
 		}
@@ -712,7 +724,8 @@ SELECT
     p.closed_at,
     p.created_at,
     (p.closed_at IS NULL AND p.closes_at > NOW())::BOOLEAN AS is_open,
-    (SELECT COUNT(*) FROM poll_vote v WHERE v.poll_id = p.id)::INT AS votes
+    (SELECT COUNT(*) FROM poll_vote v WHERE v.poll_id = p.id)::INT AS votes,
+    COUNT(*) OVER ()::BIGINT AS total
 FROM
     poll p
     LEFT JOIN facility f ON f.id = p.facility_id
@@ -721,13 +734,17 @@ WHERE
     AND (p.closed_at IS NOT NULL OR p.closes_at <= NOW()) = $2::BOOLEAN
 ORDER BY
     CASE WHEN $2::BOOLEAN THEN COALESCE(p.closed_at, p.closes_at) END DESC,
-    p.closes_at ASC
-LIMIT 200
+    p.closes_at ASC,
+    p.id
+LIMIT $4
+OFFSET $3
 `
 
 type ListCouncilPollsParams struct {
 	TenantID uuid.UUID `json:"tenant_id"`
 	Past     bool      `json:"past"`
+	Skip     int32     `json:"skip"`
+	MaxRows  int32     `json:"max_rows"`
 }
 
 type ListCouncilPollsRow struct {
@@ -742,12 +759,18 @@ type ListCouncilPollsRow struct {
 	CreatedAt     time.Time      `json:"created_at"`
 	IsOpen        bool           `json:"is_open"`
 	Votes         int32          `json:"votes"`
+	Total         int64          `json:"total"`
 }
 
 // The council's polls for its administrators: the open ones (closing soonest
 // first), or the history (past: closed, the latest to close first).
 func (q *Queries) ListCouncilPolls(ctx context.Context, arg ListCouncilPollsParams) ([]ListCouncilPollsRow, error) {
-	rows, err := q.db.QueryContext(ctx, listCouncilPolls, arg.TenantID, arg.Past)
+	rows, err := q.db.QueryContext(ctx, listCouncilPolls,
+		arg.TenantID,
+		arg.Past,
+		arg.Skip,
+		arg.MaxRows,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -767,6 +790,7 @@ func (q *Queries) ListCouncilPolls(ctx context.Context, arg ListCouncilPollsPara
 			&i.CreatedAt,
 			&i.IsOpen,
 			&i.Votes,
+			&i.Total,
 		); err != nil {
 			return nil, err
 		}
@@ -1104,7 +1128,8 @@ SELECT
     COALESCE(f.name, '')::TEXT AS facility_name,
     COALESCE(f.slug, '')::TEXT AS facility_slug,
     v.option_id AS my_option,
-    (SELECT COUNT(*) FROM poll_vote c WHERE c.poll_id = p.id)::INT AS votes
+    (SELECT COUNT(*) FROM poll_vote c WHERE c.poll_id = p.id)::INT AS votes,
+    COUNT(*) OVER ()::BIGINT AS total
 FROM
     poll p
     JOIN tenant t ON t.id = p.tenant_id
@@ -1126,9 +1151,17 @@ WHERE
 ORDER BY
     (p.closed_at IS NULL AND p.closes_at > NOW()) DESC,
     CASE WHEN p.closed_at IS NULL AND p.closes_at > NOW() THEN p.closes_at END ASC,
-    COALESCE(p.closed_at, p.closes_at) DESC
-LIMIT 100
+    COALESCE(p.closed_at, p.closes_at) DESC,
+    p.id
+LIMIT $3
+OFFSET $2
 `
+
+type ListPollsForUserParams struct {
+	UserID  uuid.NullUUID `json:"user_id"`
+	Skip    int32         `json:"skip"`
+	MaxRows int32         `json:"max_rows"`
+}
 
 type ListPollsForUserRow struct {
 	ID            uuid.UUID     `json:"id"`
@@ -1143,14 +1176,15 @@ type ListPollsForUserRow struct {
 	FacilitySlug  string        `json:"facility_slug"`
 	MyOption      uuid.NullUUID `json:"my_option"`
 	Votes         int32         `json:"votes"`
+	Total         int64         `json:"total"`
 }
 
 // /enquisas: the polls of the councils the person is part of (a verified
 // resident, its administrator, or who booked there in the last year), while
 // open and for a year after they close, to follow the results; residents-only
 // ones only for who may vote. my_option: their vote, if any.
-func (q *Queries) ListPollsForUser(ctx context.Context, userID uuid.NullUUID) ([]ListPollsForUserRow, error) {
-	rows, err := q.db.QueryContext(ctx, listPollsForUser, userID)
+func (q *Queries) ListPollsForUser(ctx context.Context, arg ListPollsForUserParams) ([]ListPollsForUserRow, error) {
+	rows, err := q.db.QueryContext(ctx, listPollsForUser, arg.UserID, arg.Skip, arg.MaxRows)
 	if err != nil {
 		return nil, err
 	}
@@ -1171,6 +1205,7 @@ func (q *Queries) ListPollsForUser(ctx context.Context, userID uuid.NullUUID) ([
 			&i.FacilitySlug,
 			&i.MyOption,
 			&i.Votes,
+			&i.Total,
 		); err != nil {
 			return nil, err
 		}

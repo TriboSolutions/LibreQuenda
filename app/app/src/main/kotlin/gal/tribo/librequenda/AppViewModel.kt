@@ -33,7 +33,9 @@ data class HomeState(
     val facilities: List<FacilityCard> = emptyList(),
     val events: List<gal.tribo.librequenda.data.UpcomingEvent> = emptyList(), // not started, soonest first
     val recommendations: List<Recommendation> = emptyList(),
-    val polls: List<gal.tribo.librequenda.data.Poll> = emptyList(), // the councils' polls, signed in
+    val polls: List<gal.tribo.librequenda.data.Poll> = emptyList(), // the councils' polls, signed in: the pages loaded so far
+    val pollsPage: Int = 1,
+    val pollsHasMore: Boolean = false,
     val location: GeoPoint? = null, // shared by the person, for distances; never stored
     val loading: Boolean = true,
     val today: List<gal.tribo.librequenda.data.DayFacility> = emptyList(), // every facility's day: the public bookings to join
@@ -131,8 +133,28 @@ class AppViewModel(application: Application) : AndroidViewModel(application), Pr
         viewModelScope.launch {
             try {
                 val token = auth.accessToken() ?: return@launch
-                val polls = gal.tribo.librequenda.data.fetchPolls(token)
-                homeState.update { it.copy(polls = polls) }
+                // again from the first page (a vote, or the page opened)
+                val first = gal.tribo.librequenda.data.fetchPolls(token)
+                homeState.update { it.copy(polls = first.polls, pollsPage = 1, pollsHasMore = first.hasMore) }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                // keeps what it had
+            }
+        }
+    }
+
+    /** The next page of the polls, after those shown. */
+    fun morePolls() {
+        if (!sessionState.value.signedIn || !homeState.value.pollsHasMore) return
+        viewModelScope.launch {
+            try {
+                val token = auth.accessToken() ?: return@launch
+                val next = homeState.value.pollsPage + 1
+                val more = gal.tribo.librequenda.data.fetchPolls(token, next)
+                homeState.update { state ->
+                    state.copy(polls = (state.polls + more.polls).distinctBy { it.id }, pollsPage = next, pollsHasMore = more.hasMore)
+                }
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Exception) {

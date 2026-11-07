@@ -63,7 +63,8 @@ type PollDto struct {
 }
 
 type PollsResponse struct {
-	Polls []PollDto `json:"polls"` // the open ones first, those closing soonest first
+	Polls      []PollDto      `json:"polls"` // the open ones first, those closing soonest first
+	Pagination shared.PageDto `json:"pagination"`
 }
 
 type VoteInput struct {
@@ -75,9 +76,10 @@ type pollsService struct {
 }
 
 // ForUser: the polls of the councils the person is part of, open and recently closed.
-func (s *pollsService) ForUser(ctx context.Context, userId uuid.UUID) (*PollsResponse, *shared.ErrorResponse) {
+func (s *pollsService) ForUser(ctx context.Context, userId uuid.UUID, page helpers.PaginationParams) (*PollsResponse, *shared.ErrorResponse) {
 	var queries = model.New(s.db)
-	var rows, err = queries.ListPollsForUser(ctx, uuid.NullUUID{UUID: userId, Valid: true})
+	var limit, skip = shared.Rows(page)
+	var rows, err = queries.ListPollsForUser(ctx, model.ListPollsForUserParams{UserID: uuid.NullUUID{UUID: userId, Valid: true}, MaxRows: limit, Skip: skip})
 	if err != nil {
 		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.participation_failed"}
 	}
@@ -89,7 +91,10 @@ func (s *pollsService) ForUser(ctx context.Context, userId uuid.UUID) (*PollsRes
 	if optionsErr != nil {
 		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.participation_failed"}
 	}
-	var response = &PollsResponse{Polls: make([]PollDto, 0, len(rows))}
+	var response = &PollsResponse{Polls: make([]PollDto, 0, len(rows)), Pagination: shared.NewPageDto(page, 0)}
+	if len(rows) > 0 {
+		response.Pagination = shared.NewPageDto(page, rows[0].Total)
+	}
 	for _, row := range rows {
 		var dto = PollDto{
 			Id: row.ID.String(), Question: row.Question, TenantName: row.TenantName, TenantSlug: row.TenantSlug,
@@ -186,11 +191,16 @@ func (r *pollsRoutes) RegisterRoutes() {
 		Method:            http.MethodGet,
 		AdditionalMethods: []router.HTTPMethod{router.HEAD, router.OPTIONS},
 		Handler: middlewares.AuthMiddleware(func(w http.ResponseWriter, req *http.Request) {
+			var page, pageErr = shared.PageOf(req, shared.ListPageSize)
+			if pageErr != nil {
+				helpers.SendI18NErrorResponse(w, req, pageErr.Code, pageErr.Message)
+				return
+			}
 			var userId, ok = currentUser(w, req, r.db)
 			if !ok {
 				return
 			}
-			var response, err = s.ForUser(req.Context(), userId)
+			var response, err = s.ForUser(req.Context(), userId, page)
 			if err != nil {
 				helpers.SendI18NErrorResponse(w, req, err.Code, err.Message)
 				return

@@ -2,14 +2,14 @@ package gal.tribo.librequenda.ui.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInParent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -63,24 +63,38 @@ private val ZONE = ZoneId.of("Europe/Madrid")
  * tinted. emailVerified: voting needs it, as booking does.
  */
 @Composable
-internal fun PollsContent(polls: List<Poll>, emailVerified: Boolean, focus: String, onVote: suspend (poll: String, option: String) -> Unit) {
-    val scroll = rememberScrollState()
-    var focusY by remember(focus) { mutableStateOf<Int?>(null) }
-    LaunchedEffect(focusY) { focusY?.let { scroll.animateScrollTo(it) } }
-    Column(Modifier.fillMaxSize().verticalScroll(scroll).navigationBarsPadding().padding(top = 8.dp, bottom = 32.dp)) {
-        Text(stringResource(R.string.polls_help), style = MaterialTheme.typography.bodyMedium, color = Lq.colors.mutedForeground, modifier = Modifier.padding(horizontal = 16.dp).padding(bottom = 16.dp))
-        if (polls.isEmpty()) {
-            Text(stringResource(R.string.polls_empty), style = MaterialTheme.typography.bodyMedium, color = Lq.colors.mutedForeground, modifier = Modifier.padding(horizontal = 16.dp))
+internal fun PollsContent(
+    polls: List<Poll>,
+    emailVerified: Boolean,
+    focus: String,
+    onVote: suspend (poll: String, option: String) -> Unit,
+    hasMore: Boolean = false,
+    onMore: () -> Unit = {},
+) {
+    val list = rememberLazyListState()
+    // the poll a notice named: scrolled to once it is there (item 0 is the help)
+    var scrolled by remember(focus) { mutableStateOf(false) }
+    LaunchedEffect(focus, polls) {
+        val index = polls.indexOfFirst { it.id == focus }
+        if (!scrolled && index >= 0) { list.animateScrollToItem(index + 1); scrolled = true }
+    }
+    LazyColumn(state = list, modifier = Modifier.fillMaxSize().navigationBarsPadding(), contentPadding = PaddingValues(top = 8.dp, bottom = 32.dp)) {
+        item {
+            Text(stringResource(R.string.polls_help), style = MaterialTheme.typography.bodyMedium, color = Lq.colors.mutedForeground, modifier = Modifier.padding(horizontal = 16.dp).padding(bottom = 16.dp))
+            if (polls.isEmpty()) {
+                Text(stringResource(R.string.polls_empty), style = MaterialTheme.typography.bodyMedium, color = Lq.colors.mutedForeground, modifier = Modifier.padding(horizontal = 16.dp))
+            }
         }
-        polls.forEachIndexed { i, poll ->
+        itemsIndexed(polls, key = { _, poll -> poll.id }) { i, poll ->
+            // a page at a time: the next one as the end comes into view, as the facilities' search
+            if (hasMore && i >= polls.size - 3) LaunchedEffect(polls.size) { onMore() }
             if (i > 0) HorizontalDivider(Modifier.padding(horizontal = 16.dp, vertical = 12.dp), color = Lq.colors.border)
             val focused = poll.id == focus
-            Box(
-                Modifier.fillMaxWidth()
-                    .then(if (focused) Modifier.background(Lq.colors.pillAccentBg).padding(vertical = 12.dp) else Modifier)
-                    .onGloballyPositioned { if (focused && focusY == null) focusY = it.positionInParent().y.toInt() },
-            ) { PollItem(poll, emailVerified, onVote) }
+            Box(Modifier.fillMaxWidth().then(if (focused) Modifier.background(Lq.colors.pillAccentBg).padding(vertical = 12.dp) else Modifier)) {
+                PollItem(poll, emailVerified, onVote)
+            }
         }
+        if (hasMore) item { LinearProgressIndicator(Modifier.fillMaxWidth().padding(16.dp)) }
     }
 }
 

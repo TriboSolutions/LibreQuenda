@@ -951,7 +951,8 @@
     "saved": "Gardado.",
     "close": "Pechar a instalación ou mirar o seu horario",
     "newCount_one": ", {{count}} nova",
-    "newCount_other": ", {{count}} novas"
+    "newCount_other": ", {{count}} novas",
+    "pages": "Páxinas das incidencias"
   },
   "bookingPolicy": {
     "title": "Normas de reserva da plataforma",
@@ -1025,7 +1026,11 @@
       "removed": "Sacouse a {{name}} do evento.",
       "close": "Pechar",
       "noRating": "Sen valoracións"
-    }
+    },
+    "upcoming": "Próximos",
+    "emptyHistory": "Aínda non rematou nin se cancelou ningún evento.",
+    "cancelledPill": "Cancelado",
+    "pages": "Páxinas dos eventos"
   },
   "residents": {
     "tab": "Veciños",
@@ -1148,7 +1153,8 @@
       "withdrawBody": "Deixará de saír nas páxinas e nas campás. Os correos xa enviados non se poden desfacer.",
       "withdrawn": "Retirouse o comunicado.",
       "current": "Vixentes",
-      "emptyHistory": "Aínda non caducou ningún comunicado."
+      "emptyHistory": "Aínda non caducou ningún comunicado.",
+      "pages": "Páxinas dos comunicados"
     },
     "polls": {
       "title": "Enquisas",
@@ -1189,7 +1195,8 @@
       "createdAsked_one": "Creouse a enquisa e preguntouse a {{count}} persoa.",
       "createdAsked_other": "Creouse a enquisa e preguntouse a {{count}} persoas.",
       "current": "Abertas",
-      "emptyHistory": "Aínda non pechou ningunha enquisa."
+      "emptyHistory": "Aínda non pechou ningunha enquisa.",
+      "pages": "Páxinas das enquisas"
     },
     "show": "Que amosar",
     "history": "Historial"

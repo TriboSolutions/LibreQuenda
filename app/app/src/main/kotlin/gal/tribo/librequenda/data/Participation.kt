@@ -55,10 +55,14 @@ data class Poll(
     val options: List<PollOption>,
 )
 
-/** GET /me/polls: the polls of the councils the person is part of, the open ones first. */
-suspend fun fetchPolls(token: String): List<Poll> {
-    val polls = Api.getJson(Api.baseUrl + "/me/polls", token).optJSONArray("polls")
-    return List(polls?.length() ?: 0) { polls!!.getJSONObject(it) }.map { p ->
+/** One page of the polls, and whether there are more after it. */
+data class PollsPage(val polls: List<Poll>, val hasMore: Boolean)
+
+/** GET /me/polls?page=: the polls of the councils the person is part of, the open ones first, 20 a page. */
+suspend fun fetchPolls(token: String, page: Int = 1): PollsPage {
+    val json = Api.getJson(Api.baseUrl + "/me/polls" + (if (page > 1) "?page=$page" else ""), token)
+    val polls = json.optJSONArray("polls")
+    val list = List(polls?.length() ?: 0) { polls!!.getJSONObject(it) }.map { p ->
         val options = p.optJSONArray("options")
         Poll(
             id = p.getString("id"),
@@ -75,6 +79,7 @@ suspend fun fetchPolls(token: String): List<Poll> {
             },
         )
     }
+    return PollsPage(list, json.optJSONObject("pagination")?.optBoolean("has_more") == true)
 }
 
 /** PUT /me/polls/{id}/vote: casts, or changes, the person's vote. */

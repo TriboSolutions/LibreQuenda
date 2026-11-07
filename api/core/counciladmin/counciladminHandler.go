@@ -588,14 +588,19 @@ func (h *counciladminHandler) GetAudit(w http.ResponseWriter, r *http.Request) {
 
 // --- the maintenance list ---------------------------------------------------------
 
-// ListIssues: ?facility=<id>&status=<new|in_progress|solved|rejected>, both optional.
+// ListIssues: ?facility=<id>&status=<new|in_progress|solved|rejected>, both optional; ?page= (20 a page).
 func (h *counciladminHandler) ListIssues(w http.ResponseWriter, r *http.Request) {
 	var tenantId, ok = h.councilAdmin(w, r)
 	if !ok {
 		return
 	}
 	var query = r.URL.Query()
-	var response, err = GetCounciladminService(h.db).ListIssues(r.Context(), tenantId, query.Get("facility"), query.Get("status"))
+	var page, pageErr = shared.PageOf(r, shared.ListPageSize)
+	if pageErr != nil {
+		helpers.SendI18NErrorResponse(w, r, pageErr.Code, pageErr.Message)
+		return
+	}
+	var response, err = GetCounciladminService(h.db).ListIssues(r.Context(), tenantId, query.Get("facility"), query.Get("status"), page)
 	send(w, r, response, err)
 }
 

@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import { Link, useLocation, useNavigate } from 'react-router'
 import { EventPeopleDialog } from '@/components/admin/EventPeopleDialog'
+import { HistoryToggle } from '@/components/admin/HistoryToggle'
+import { Pager } from '@/components/Pager'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -29,7 +31,10 @@ export function EventsPanel({ slug, facilities }: Props) {
   const { t } = useTranslation('admin')
   const token = useAuth().user?.access_token ?? ''
   const active = facilities.filter((f) => f.is_active)
-  const events = useAsync(() => api.council.events(token, slug), `council-events:${slug}`)
+  // the upcoming ones, or the history (ended or cancelled), a page at a time
+  const [history, setHistory] = useState(false)
+  const [page, setPage] = useState(1)
+  const events = useAsync(() => api.council.events(token, slug, history, page), `council-events:${slug}:${history}:${page}`)
   const [cancelling, setCancelling] = useState<CouncilEvent | null>(null)
   const [seeing, setSeeing] = useState<CouncilEvent | null>(null) // whose people are open
   // what the editor page saved, handed over on the way back
@@ -67,6 +72,15 @@ export function EventsPanel({ slug, facilities }: Props) {
         )}
       </div>
 
+      <HistoryToggle
+        history={history}
+        onChange={(on) => {
+          setHistory(on)
+          setPage(1)
+        }}
+        current={t('events.upcoming')}
+      />
+
       <div aria-live="polite" className="empty:hidden">
         {notice && (
           <Alert className="border-0 bg-pill-positive-bg text-pill-positive-ink">
@@ -85,22 +99,25 @@ export function EventsPanel({ slug, facilities }: Props) {
       ) : events.loading && !events.data ? (
         <Skeleton className="h-24 w-full" />
       ) : events.data?.events.length === 0 ? (
-        <p className="rounded-md border border-dashed px-4 py-3 text-muted-foreground">{t('events.empty')}</p>
+        <p className="rounded-md border border-dashed px-4 py-3 text-muted-foreground">{history ? t('events.emptyHistory') : t('events.empty')}</p>
       ) : (
         <ul className="divide-y rounded-md border">
           {events.data?.events.map((event) => (
-            <li key={event.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+            <li key={event.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-3">
               <div className="flex min-w-0 items-start gap-3">
                 <PartyPopper className="mt-0.5 size-5 shrink-0 text-muted-foreground" aria-hidden />
                 <div className="min-w-0">
-                  <p className="font-medium break-words">{event.title}</p>
+                  <p className="font-medium break-words">
+                    {event.title}
+                    {event.cancelled && <span className="ml-2 rounded-full bg-pill-negative-bg px-2 py-0.5 align-middle text-xs font-medium text-pill-negative-ink">{t('events.cancelledPill')}</span>}
+                  </p>
                   <p className="num text-sm text-muted-foreground">
                     {event.facility_name} · {formatDateTime(event.starts_at, zone)} – {sameDay(event, zone) ? formatTime(event.ends_at, zone) : formatDateTime(event.ends_at, zone)}
                   </p>
                   <p className="num text-sm text-muted-foreground">{t('events.joined', { count: event.participant_count, capacity: event.capacity })}</p>
                 </div>
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap justify-end gap-2">
                 <Button variant="outline" size="sm" onClick={() => setSeeing(event)}>
                   <Users />
                   {t('events.peopleList.people', { count: event.participant_count })}
@@ -128,6 +145,8 @@ export function EventsPanel({ slug, facilities }: Props) {
           ))}
         </ul>
       )}
+
+      <Pager pagination={events.data?.pagination} onChange={setPage} label={t('events.pages')} />
 
       {seeing && <EventPeopleDialog slug={slug} token={token} zone={zone} event={seeing} onClose={() => setSeeing(null)} onChanged={() => events.reload()} />}
 

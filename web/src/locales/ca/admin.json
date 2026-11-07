@@ -951,7 +951,8 @@
     "saved": "Desat.",
     "close": "Tanca la instal·lació o mira’n l’horari",
     "newCount_one": ", {{count}} nova",
-    "newCount_other": ", {{count}} noves"
+    "newCount_other": ", {{count}} noves",
+    "pages": "Pàgines de les incidències"
   },
   "bookingPolicy": {
     "title": "Normes de reserva de la plataforma",
@@ -1025,7 +1026,11 @@
       "removed": "S’ha tret {{name}} de l’esdeveniment.",
       "close": "Tanca",
       "noRating": "Sense valoracions"
-    }
+    },
+    "upcoming": "Propers",
+    "emptyHistory": "Encara no ha acabat ni s’ha cancel·lat cap esdeveniment.",
+    "cancelledPill": "Cancel·lat",
+    "pages": "Pàgines dels esdeveniments"
   },
   "residents": {
     "tab": "Veïns",
@@ -1148,7 +1153,8 @@
       "withdrawBody": "Deixarà de sortir a les pàgines i a les campanes. Els correus ja enviats no es poden desfer.",
       "withdrawn": "S’ha retirat el comunicat.",
       "current": "Vigents",
-      "emptyHistory": "Encara no ha caducat cap comunicat."
+      "emptyHistory": "Encara no ha caducat cap comunicat.",
+      "pages": "Pàgines dels comunicats"
     },
     "polls": {
       "title": "Enquestes",
@@ -1189,7 +1195,8 @@
       "createdAsked_one": "S’ha creat l’enquesta i s’ha preguntat a {{count}} persona.",
       "createdAsked_other": "S’ha creat l’enquesta i s’ha preguntat a {{count}} persones.",
       "current": "Obertes",
-      "emptyHistory": "Encara no s’ha tancat cap enquesta."
+      "emptyHistory": "Encara no s’ha tancat cap enquesta.",
+      "pages": "Pàgines de les enquestes"
     },
     "show": "Què mostrar",
     "history": "Historial"

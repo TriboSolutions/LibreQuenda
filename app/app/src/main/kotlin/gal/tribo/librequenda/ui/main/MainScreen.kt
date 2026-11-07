@@ -145,6 +145,7 @@ fun MainScreen(
     onOpened: () -> Unit = {},
     onTour: () -> Unit = {},
     onRefreshPolls: () -> Unit = {},
+    onMorePolls: () -> Unit = {},
 ) {
     var tab by rememberSaveable { mutableStateOf(Tab.Home) }
     var notificationsOpen by rememberSaveable { mutableStateOf(false) } // survives the language change (the activity is recreated)
@@ -287,6 +288,8 @@ fun MainScreen(
                 emailVerified = session.me?.emailVerified == true,
                 focus = pollsOpen.orEmpty(),
                 onVote = { poll, option -> actions.authed { gal.tribo.librequenda.data.vote(it, poll, option) }; onRefreshPolls() },
+                hasMore = home.pollsHasMore,
+                onMore = onMorePolls,
             )
         }
         SettingsPage(preferencesOpen, stringResource(R.string.preferences), onBack = { preferencesOpen = false }) {

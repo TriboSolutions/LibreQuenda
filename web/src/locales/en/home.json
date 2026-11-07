@@ -110,6 +110,7 @@
     "profileTitle": "Polls",
     "profileHelp": "Your councils’ questions: vote in the open ones and see the results of the closed ones.",
     "profileLink": "See every poll",
-    "results": "Poll results"
+    "results": "Poll results",
+    "pages": "Poll pages"
   }
 }

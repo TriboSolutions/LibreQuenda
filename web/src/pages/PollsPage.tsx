@@ -1,7 +1,9 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import { useSearchParams } from 'react-router'
 import { PollList } from '@/components/CouncilPolls'
+import { Pager } from '@/components/Pager'
 import { SiteFooter } from '@/components/SiteFooter'
 import { TopBar } from '@/components/TopBar'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -25,7 +27,8 @@ export function PollsPage() {
   const { me } = useMe()
   const [params] = useSearchParams()
   const token = auth.user?.access_token
-  const polls = useAsync(token && me ? () => api.myPolls(token) : null, `polls:${me?.id}`)
+  const [page, setPage] = useState(1)
+  const polls = useAsync(token && me ? () => api.myPolls(token, page) : null, `polls:${me?.id}:${page}`)
   usePageTitle(t('home:polls.title'))
 
   let body
@@ -52,6 +55,9 @@ export function PollsPage() {
     body = (
       <div className="mt-6">
         <PollList polls={polls.data.polls} onVoted={polls.reload} focus={params.get('enquisa') ?? undefined} />
+        <div className="mt-4">
+          <Pager pagination={polls.data.pagination} onChange={setPage} label={t('home:polls.pages')} />
+        </div>
       </div>
     )
   }

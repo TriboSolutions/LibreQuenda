@@ -78,7 +78,8 @@ SELECT
     n.expires_at,
     n.notify,
     n.recipients,
-    n.created_at
+    n.created_at,
+    COUNT(*) OVER ()::BIGINT AS total
 FROM
     council_notice n
     LEFT JOIN facility f ON f.id = n.facility_id
@@ -87,8 +88,10 @@ WHERE
     AND (n.expires_at <= NOW()) = sqlc.arg('past')::BOOLEAN
 ORDER BY
     CASE WHEN sqlc.arg('past')::BOOLEAN THEN n.expires_at END DESC,
-    n.created_at DESC
-LIMIT 200;
+    n.created_at DESC,
+    n.id
+LIMIT sqlc.arg('max_rows')
+OFFSET sqlc.arg('skip');
 
 -- name: GetCouncilNotice :one
 SELECT
@@ -394,7 +397,8 @@ SELECT
     p.closed_at,
     p.created_at,
     (p.closed_at IS NULL AND p.closes_at > NOW())::BOOLEAN AS is_open,
-    (SELECT COUNT(*) FROM poll_vote v WHERE v.poll_id = p.id)::INT AS votes
+    (SELECT COUNT(*) FROM poll_vote v WHERE v.poll_id = p.id)::INT AS votes,
+    COUNT(*) OVER ()::BIGINT AS total
 FROM
     poll p
     LEFT JOIN facility f ON f.id = p.facility_id
@@ -403,8 +407,10 @@ WHERE
     AND (p.closed_at IS NOT NULL OR p.closes_at <= NOW()) = sqlc.arg('past')::BOOLEAN
 ORDER BY
     CASE WHEN sqlc.arg('past')::BOOLEAN THEN COALESCE(p.closed_at, p.closes_at) END DESC,
-    p.closes_at ASC
-LIMIT 200;
+    p.closes_at ASC,
+    p.id
+LIMIT sqlc.arg('max_rows')
+OFFSET sqlc.arg('skip');
 
 -- name: ListPollOptions :many
 -- The options of some polls, in their order, with how many chose each.
@@ -472,7 +478,8 @@ SELECT
     COALESCE(f.name, '')::TEXT AS facility_name,
     COALESCE(f.slug, '')::TEXT AS facility_slug,
     v.option_id AS my_option,
-    (SELECT COUNT(*) FROM poll_vote c WHERE c.poll_id = p.id)::INT AS votes
+    (SELECT COUNT(*) FROM poll_vote c WHERE c.poll_id = p.id)::INT AS votes,
+    COUNT(*) OVER ()::BIGINT AS total
 FROM
     poll p
     JOIN tenant t ON t.id = p.tenant_id
@@ -494,8 +501,10 @@ WHERE
 ORDER BY
     (p.closed_at IS NULL AND p.closes_at > NOW()) DESC,
     CASE WHEN p.closed_at IS NULL AND p.closes_at > NOW() THEN p.closes_at END ASC,
-    COALESCE(p.closed_at, p.closes_at) DESC
-LIMIT 100;
+    COALESCE(p.closed_at, p.closes_at) DESC,
+    p.id
+LIMIT sqlc.arg('max_rows')
+OFFSET sqlc.arg('skip');
 
 -- name: GetPollForVote :one
 -- Whether the person may vote: the poll open, its council active, and, when

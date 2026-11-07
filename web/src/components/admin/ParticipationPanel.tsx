@@ -14,7 +14,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import { HistoryToggle } from '@/components/admin/HistoryToggle'
+import { Pager } from '@/components/Pager'
 import { useAsync } from '@/hooks/useAsync'
 import { api, type AdminFacilitySummary, type AdminNotice, type AdminPoll } from '@/lib/api'
 import { addDays, formatDateTime, formatLongDate, localDate } from '@/lib/time'
@@ -72,34 +73,19 @@ export function ParticipationPanel({ slug, facilities }: Props) {
   )
 }
 
-/** Current or history: the same list, the API filters and sorts it. */
-function HistoryToggle({ history, onChange, current }: { history: boolean; onChange: (history: boolean) => void; current: string }) {
-  const { t } = useTranslation('admin')
-  return (
-    <ToggleGroup
-      type="single"
-      variant="outline"
-      value={history ? 'past' : 'current'}
-      onValueChange={(value) => value && onChange(value === 'past')}
-      aria-label={t('participation.show')}
-      className="w-fit bg-card"
-    >
-      <ToggleGroupItem value="current" className="h-10 px-4 data-[state=on]:bg-accent data-[state=on]:text-accent-foreground">
-        {current}
-      </ToggleGroupItem>
-      <ToggleGroupItem value="past" className="h-10 px-4 data-[state=on]:bg-accent data-[state=on]:text-accent-foreground">
-        {t('participation.history')}
-      </ToggleGroupItem>
-    </ToggleGroup>
-  )
-}
-
 type SectionProps = Props & { history: boolean; onHistory: (history: boolean) => void; onDone: (message: string) => void }
 
 function NoticesSection({ slug, facilities, history, onHistory, onDone }: SectionProps) {
   const { t } = useTranslation('admin')
   const token = useAuth().user?.access_token ?? ''
-  const notices = useAsync(() => api.council.notices(token, slug, history), `council-notices:${slug}:${history}`)
+  const [page, setPage] = useState(1)
+  const [shownHistory, setShownHistory] = useState(history)
+  if (shownHistory !== history) {
+    // another list: from its first page
+    setShownHistory(history)
+    setPage(1)
+  }
+  const notices = useAsync(() => api.council.notices(token, slug, history, page), `council-notices:${slug}:${history}:${page}`)
   const [creating, setCreating] = useState(false)
   const [withdrawing, setWithdrawing] = useState<AdminNotice | null>(null)
   const zone = notices.data?.timezone ?? ZONE
@@ -156,6 +142,7 @@ function NoticesSection({ slug, facilities, history, onHistory, onDone }: Sectio
           ))}
         </ul>
       )}
+      <Pager pagination={notices.data?.pagination} onChange={setPage} label={t('participation.notices.pages')} />
       {creating && (
         <NoticeDialog
           slug={slug}
@@ -192,7 +179,13 @@ function NoticesSection({ slug, facilities, history, onHistory, onDone }: Sectio
 function PollsSection({ slug, facilities, history, onHistory, onDone }: SectionProps) {
   const { t } = useTranslation('admin')
   const token = useAuth().user?.access_token ?? ''
-  const polls = useAsync(() => api.council.polls(token, slug, history), `council-polls:${slug}:${history}`)
+  const [page, setPage] = useState(1)
+  const [shownHistory, setShownHistory] = useState(history)
+  if (shownHistory !== history) {
+    setShownHistory(history)
+    setPage(1)
+  }
+  const polls = useAsync(() => api.council.polls(token, slug, history, page), `council-polls:${slug}:${history}:${page}`)
   const [creating, setCreating] = useState(false)
   const [closing, setClosing] = useState<AdminPoll | null>(null)
   const [deleting, setDeleting] = useState<AdminPoll | null>(null)
@@ -280,6 +273,7 @@ function PollsSection({ slug, facilities, history, onHistory, onDone }: SectionP
           ))}
         </ul>
       )}
+      <Pager pagination={polls.data?.pagination} onChange={setPage} label={t('participation.polls.pages')} />
       {creating && (
         <PollDialog
           slug={slug}
