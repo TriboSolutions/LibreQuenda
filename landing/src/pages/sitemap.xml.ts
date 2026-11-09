@@ -6,6 +6,7 @@ import { SITE } from "../site";
 const PAGES = [
   { path: "/", priority: "1.0" },
   { path: "/instalar", priority: "0.8" },
+  { path: "/privacidade", priority: "0.3" },
 ];
 
 export const GET: APIRoute = ({ site }) => {
