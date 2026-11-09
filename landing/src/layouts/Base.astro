@@ -4,13 +4,14 @@ import Github from "../components/GithubIcon.astro";
 import { Moon, Sun, Star, Languages, Check } from "@lucide/astro";
 import { REPO, SITE, ORG, LICENSE_URL, OG_IMAGE, DEMO } from "../site";
 import { DICT, LANGS, LANG_NAMES, OG_LOCALES, href, swapLang, type Lang } from "../i18n";
+import { PRIVACY } from "../privacy";
 
 interface Props {
   lang: Lang;
   title: string;
   description: string;
   /** what the page is, for the structured data; "error" pages are not indexed */
-  page?: "home" | "install" | "error";
+  page?: "home" | "install" | "privacy" | "error";
 }
 const { lang, title, description, page = "home" } = Astro.props;
 const t = DICT[lang];
@@ -74,12 +75,12 @@ const graph: Record<string, unknown>[] = [
     primaryImageOfPage: ogImage,
   },
 ];
-if (page === "install") {
+if (page === "install" || page === "privacy") {
   graph.push({
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "LibreQuenda", item: abs(href(lang)) },
-      { "@type": "ListItem", position: 2, name: t.install.title, item: canonical },
+      { "@type": "ListItem", position: 2, name: page === "install" ? t.install.title : PRIVACY[lang].title, item: canonical },
     ],
   });
 }
@@ -255,6 +256,7 @@ const jsonLd = JSON.stringify({ "@context": "https://schema.org", "@graph": grap
           <ul class="space-y-2 text-sm text-muted-foreground">
             <li><a class="hover:text-foreground" href={`${REPO}/blob/main/LICENSE`}>{t.footer.licence}</a></li>
             <li><a class="hover:text-foreground" href={`${REPO}/blob/main/SECURITY.md`}>{t.footer.security}</a></li>
+            <li><a class="hover:text-foreground" href={href(lang, "/privacidade")}>{PRIVACY[lang].title}</a></li>
           </ul>
         </div>
       </div>

@@ -1,0 +1,49 @@
+---
+import { Mail } from "@lucide/astro";
+import Base from "../layouts/Base.astro";
+import { PRIVACY, PRIVACY_EMAIL } from "../privacy";
+import type { Lang } from "../i18n";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const p = PRIVACY[lang];
+---
+
+<Base lang={lang} title={`${p.title} · LibreQuenda`} description={p.description} page="privacy">
+  <section class="relative overflow-hidden pt-32 pb-10 sm:pt-40">
+    <div class="dots absolute inset-0 -z-10 [mask-image:radial-gradient(ellipse_at_top,black,transparent_70%)]"></div>
+    <div class="mx-auto max-w-3xl px-4 sm:px-6">
+      <p class="rise text-sm font-semibold uppercase tracking-wider text-brand-blue">{p.eyebrow}</p>
+      <h1 class="rise mt-3 text-4xl font-semibold tracking-tight sm:text-5xl" style="--d:80ms">{p.title}</h1>
+      <p class="rise mt-4 text-sm text-muted-foreground" style="--d:160ms">{p.updated}</p>
+    </div>
+  </section>
+
+  <section class="pb-24">
+    <!-- long reading: lines under 80 characters and roomy leading (WCAG 1.4.8) -->
+    <div class="mx-auto grid max-w-3xl gap-8 px-4 text-base leading-relaxed sm:px-6">
+      <p class="max-w-[68ch] text-lg">{p.intro}</p>
+      {
+        p.sections.map((s, i) => (
+          <section aria-labelledby={`privacy-${i}`} class="grid max-w-[68ch] gap-2">
+            <h2 id={`privacy-${i}`} class="text-xl font-semibold">
+              {s.title}
+            </h2>
+            {s.body.map((para) => (
+              <p class="text-muted-foreground">{para}</p>
+            ))}
+          </section>
+        ))
+      }
+      <div class="flex max-w-[68ch] flex-wrap items-center gap-x-3 gap-y-1 border-t border-border pt-6">
+        <span class="font-medium">{p.contact}:</span>
+        <a href={`mailto:${PRIVACY_EMAIL}`} class="inline-flex min-h-11 items-center gap-2 text-brand-blue underline-offset-4 hover:underline">
+          <Mail class="size-4" />
+          {PRIVACY_EMAIL}
+        </a>
+      </div>
+    </div>
+  </section>
+</Base>
