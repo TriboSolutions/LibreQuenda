@@ -1597,12 +1597,14 @@ for (const days of [3, 7, 90]) {
       const menus = page.getByRole('dialog').getByRole('combobox')
       await menus.nth(1).selectOption(String(target.getFullYear()))
       await menus.nth(0).selectOption(String(target.getMonth()))
-      const cell = page.getByRole('dialog').getByRole('gridcell').filter({ hasText: new RegExp(`^${target.getDate()}$`) }).getByRole('button')
+      const iso = `${target.getFullYear()}-${String(target.getMonth() + 1).padStart(2, '0')}-${String(target.getDate()).padStart(2, '0')}`
+      // by its date, in the shown month: the grid also shows the neighbouring months' days (28 Dec beside 28 Jan)
+      const cell = page.getByRole('dialog').locator(`[role="gridcell"][data-day="${iso}"]:not([data-outside])`).getByRole('button')
       await expect(cell).toBeEnabled()
       const requested = page.waitForRequest((r) => r.url().includes('/facilities/padel-1?date='))
       await cell.click()
       const selected = new URL((await requested).url()).searchParams.get('date')
-      expect(selected).toBe(`${target.getFullYear()}-${String(target.getMonth() + 1).padStart(2, '0')}-${String(target.getDate()).padStart(2, '0')}`)
+      expect(selected).toBe(iso)
     }
   })
 }
