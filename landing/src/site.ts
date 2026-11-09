@@ -11,3 +11,5 @@ export const ORG = { name: "Tribo Solutions", url: "https://tribosolutions.es" }
 export const LICENSE_URL = "https://www.gnu.org/licenses/agpl-3.0.html";
 /** The social preview image, 1200×630, in public/ */
 export const OG_IMAGE = { path: "/og.jpg", width: 1200, height: 630 };
+/** The demo app on Google Play; on Android it opens the Play Store app */
+export const PLAY = "https://play.google.com/store/apps/details?id=gal.tribo.librequenda";

@@ -13,7 +13,7 @@ import Phone from "./Phone.astro";
 import Browser from "./Browser.astro";
 import DayStrip from "./DayStrip.astro";
 import Code from "./Code.astro";
-import { REPO, INSTALL, DEMO } from "../site";
+import { REPO, INSTALL, DEMO, PLAY } from "../site";
 
 // screenshots: the same ones as the README and the wiki (docs/screenshots)
 import aHome from "../../../docs/screenshots/android/vecino/facilities/home.webp";
@@ -153,6 +153,33 @@ const facts = [
             {t.hero.code}
           </a>
         </div>
+        <!-- the demo app, on Google Play -->
+        <a
+          href={PLAY}
+          class="rise group relative mt-8 flex w-fit max-w-full items-center gap-4 rounded-2xl border border-brand-blue/30 bg-card/80 p-2 pr-5 shadow-lg shadow-brand-blue/10 backdrop-blur transition-all hover:-translate-y-0.5 hover:border-brand-blue/60 hover:shadow-xl"
+          style="--d:320ms"
+        >
+          <span class="absolute -right-2 -top-2.5 flex items-center">
+            <span class="ping-ring absolute inset-0 rounded-full bg-brand-blue"></span>
+            <span class="relative rounded-full bg-brand-blue px-2 py-0.5 text-[0.7rem] font-semibold uppercase tracking-wider text-white">{t.hero.play.new}</span>
+          </span>
+          <span class="relative flex shrink-0 items-center gap-2.5 overflow-hidden rounded-xl bg-black px-3.5 py-2 text-white shimmer">
+            <svg viewBox="0 0 24 24" class="size-7" aria-hidden="true">
+              <path fill="#34A853" d="M3.6 1.8 13.8 12l3-3L5.1 2c-.5-.3-1.1-.35-1.5-.2Z" />
+              <path fill="#FBBC04" d="m16.8 9-3 3 3 3 3.5-2c.8-.45.8-1.55 0-2Z" />
+              <path fill="#EA4335" d="M13.8 12 3.6 22.2c.4.15 1 .1 1.5-.2l11.7-7Z" />
+              <path fill="#4285F4" d="M3.6 1.8C3.25 2 3 2.4 3 2.9v18.2c0 .5.25.9.6 1.1L13.8 12Z" />
+            </svg>
+            <span class="leading-none">
+              <span class="block text-[0.65rem] uppercase tracking-wide opacity-80">{t.hero.play.on}</span>
+              <span class="mt-0.5 block text-lg font-semibold tracking-tight">Google Play</span>
+            </span>
+          </span>
+          <span class="flex items-center gap-1.5 font-medium">
+            {t.hero.play.text}
+            <ArrowRight class="size-4 shrink-0 text-brand-blue transition-transform group-hover:translate-x-1" />
+          </span>
+        </a>
       </div>
 
       <!-- browser + phone -->
