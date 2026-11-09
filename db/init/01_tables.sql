@@ -653,7 +653,8 @@ CREATE TABLE notification (
     payload    JSONB             NOT NULL DEFAULT '{}',
     created_at TIMESTAMPTZ       NOT NULL DEFAULT NOW(),
     read_at    TIMESTAMPTZ       NULL,
-    emailed_at TIMESTAMPTZ       NULL               -- NULL = pending in the email queue
+    emailed_at TIMESTAMPTZ       NULL,              -- NULL = pending in the email queue
+    in_app     BOOLEAN           NOT NULL DEFAULT TRUE -- FALSE: an email receipt only, never in the bell (the person did it themselves)
 );
 
 

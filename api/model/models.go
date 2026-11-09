@@ -666,6 +666,7 @@ type Notification struct {
 	CreatedAt time.Time        `json:"created_at"`
 	ReadAt    sql.NullTime     `json:"read_at"`
 	EmailedAt sql.NullTime     `json:"emailed_at"`
+	InApp     bool             `json:"in_app"`
 }
 
 type OpeningHour struct {

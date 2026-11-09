@@ -21,6 +21,7 @@ FROM
     notification
 WHERE
     user_id = $1
+    AND in_app
 `
 
 // How many notices the bell has, for its pages.
@@ -38,6 +39,7 @@ FROM
     notification
 WHERE
     user_id = $1
+    AND in_app
     AND read_at IS NULL
 `
 
@@ -93,6 +95,44 @@ func (q *Queries) CreateBookingReminders(ctx context.Context) (int64, error) {
 	return result.RowsAffected()
 }
 
+const createEmailReceipt = `-- name: CreateEmailReceipt :exec
+INSERT INTO notification (
+    user_id,
+    booking_id,
+    type,
+    payload,
+    read_at,
+    in_app
+) VALUES (
+    $1,
+    $2,
+    $3,
+    $4,
+    NOW(),
+    FALSE
+)
+`
+
+type CreateEmailReceiptParams struct {
+	UserID    uuid.UUID        `json:"user_id"`
+	BookingID uuid.NullUUID    `json:"booking_id"`
+	Type      NotificationType `json:"type"`
+	Payload   json.RawMessage  `json:"payload"`
+}
+
+// A receipt of what the person just did themselves (cancelling their booking):
+// emailed, so the confirmation in their inbox is closed and they'd notice if it
+// wasn't them, but never in the bell nor as a push: they have just seen it.
+func (q *Queries) CreateEmailReceipt(ctx context.Context, arg CreateEmailReceiptParams) error {
+	_, err := q.db.ExecContext(ctx, createEmailReceipt,
+		arg.UserID,
+		arg.BookingID,
+		arg.Type,
+		arg.Payload,
+	)
+	return err
+}
+
 const createNotification = `-- name: CreateNotification :exec
 INSERT INTO notification (
     user_id,
@@ -137,6 +177,7 @@ FROM
     notification
 WHERE
     user_id = $1
+    AND in_app
 ORDER BY
     created_at DESC,
     id DESC
