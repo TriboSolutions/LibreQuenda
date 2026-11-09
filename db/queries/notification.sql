@@ -47,6 +47,26 @@ INSERT INTO notification (
     sqlc.arg('payload')
 );
 
+-- name: CreateEmailReceipt :exec
+-- A receipt of what the person just did themselves (cancelling their booking):
+-- emailed, so the confirmation in their inbox is closed and they'd notice if it
+-- wasn't them, but never in the bell nor as a push: they have just seen it.
+INSERT INTO notification (
+    user_id,
+    booking_id,
+    type,
+    payload,
+    read_at,
+    in_app
+) VALUES (
+    sqlc.arg('user_id'),
+    sqlc.arg('booking_id'),
+    sqlc.arg('type'),
+    sqlc.arg('payload'),
+    NOW(),
+    FALSE
+);
+
 -- name: ListPendingEmails :many
 -- The email queue: every notification is also an email, sent through the
 -- council's relay or else the environment's.
@@ -120,6 +140,7 @@ FROM
     notification
 WHERE
     user_id = sqlc.arg('user_id')
+    AND in_app
 ORDER BY
     created_at DESC,
     id DESC
@@ -133,7 +154,8 @@ SELECT
 FROM
     notification
 WHERE
-    user_id = sqlc.arg('user_id');
+    user_id = sqlc.arg('user_id')
+    AND in_app;
 
 -- name: CountUnreadNotifications :one
 SELECT
@@ -142,6 +164,7 @@ FROM
     notification
 WHERE
     user_id = sqlc.arg('user_id')
+    AND in_app
     AND read_at IS NULL;
 
 -- name: MarkNotificationsRead :exec

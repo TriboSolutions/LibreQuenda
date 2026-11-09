@@ -147,13 +147,13 @@ WHERE analytics.sees(f.tenant_id);
 COMMENT ON VIEW analytics.facility_issue IS 'Problems residents reported at facilities. category: equipment, lighting, cleaning, changing_rooms, accessibility, safety, other; status: new, in_progress, solved, rejected';
 
 CREATE VIEW analytics.notification WITH (security_barrier = TRUE) AS
-SELECT n.id, n.user_id, n.booking_id, n.issue_id, n.type, n.created_at, n.read_at, n.emailed_at
+SELECT n.id, n.user_id, n.booking_id, n.issue_id, n.type, n.created_at, n.read_at, n.emailed_at, n.in_app
 FROM public.notification n
 LEFT JOIN public.booking b ON b.id = n.booking_id
 LEFT JOIN public.facility_issue i ON i.id = n.issue_id
 LEFT JOIN public.facility f ON f.id = COALESCE(b.facility_id, i.facility_id)
 WHERE f.id IS NOT NULL AND analytics.sees(f.tenant_id);
-COMMENT ON VIEW analytics.notification IS 'Notices people got (bell, app and email): their type and when they were read or emailed';
+COMMENT ON VIEW analytics.notification IS 'Notices people got (bell, app and email): their type and when they were read or emailed. in_app false: an email receipt only (the person cancelled their own booking), never in the bell';
 
 -- --- people (ids only) -------------------------------------------------------------
 

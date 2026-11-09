@@ -629,7 +629,17 @@ func (s *bookingsService) CancelBooking(ctx context.Context, userId uuid.UUID, b
 	if facilityErr == nil {
 		facilityName = facility.Name
 	}
-	s.notify(ctx, queries, userId, cancelled.ID, model.NotificationTypeBookingCancelled, facilityName, cancelled.StartsAt, cancelled.EndsAt)
+	// they have just done it: an email receipt (it closes the confirmation in their
+	// inbox, and they'd notice if it wasn't them), not a notice in the bell or a push
+	err = queries.CreateEmailReceipt(ctx, model.CreateEmailReceiptParams{
+		UserID:    userId,
+		BookingID: uuid.NullUUID{UUID: cancelled.ID, Valid: true},
+		Type:      model.NotificationTypeBookingCancelled,
+		Payload:   NotificationPayload(facilityName, cancelled.StartsAt, cancelled.EndsAt),
+	})
+	if err != nil {
+		shared.Logger.Error("failed to record the cancellation receipt for booking %s: %v", cancelled.ID, err)
+	}
 	// who joined loses the place too: they are told that its owner cancelled it, and who (first name)
 	var ownerName, _ = queries.GetUserFullName(ctx, userId)
 	var payload = notice.Payload(
