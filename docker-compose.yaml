@@ -211,6 +211,10 @@ services:
       # Sign-in and sign-up stop at "enter the code we emailed you" until the email
       # is verified. Council roles only follow a verified email (api/core/me).
       EMAIL_VERIFICATION: "true"
+      # Where the login goes once it finishes outside a sign-in from an app (setting up
+      # a second factor from the web's notice, a password reset, an emailed link).
+      # Without it the person is left on Zitadel's "you are signed in" page.
+      DEFAULT_REDIRECT_URI: ${PUBLIC_SCHEME}://${WEB_DOMAIN}/
       # The installation's logo (api/zitadel/branding.go) shows within a minute of a
       # save; the login keeps its other settings for the usual 15 to 60 minutes.
       API_CACHE_CONFIG: '{"getBrandingSettings":1}'
