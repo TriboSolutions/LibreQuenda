@@ -211,6 +211,20 @@ const gl = {
     source: "Código fonte en GitHub",
     docNote: "A documentación detallada está en galego.",
   },
+  faq: {
+    title: "Preguntas frecuentes",
+    lead: "O que adoita preguntar un concello.",
+    items: [
+      { q: "Que é LibreQuenda?", a: "LibreQuenda é software libre (AGPL-3.0) para reservar e xestionar instalacións deportivas municipais. A veciñanza atopa instalacións, reserva quendas libres e rexistra a entrada na porta desde a web ou unha app Android; o concello xestiona instalacións, horarios, normas, eventos e incidencias nun só panel. Faino Tribo Solutions para os concellos galegos." },
+      { q: "Canto custa?", a: "Nada en licenzas, nin agora nin no futuro: é software libre baixo a licenza AGPL-3.0. O único custo é o servidor onde o instala o concello (un servidor Linux con 2 GB de RAM abonda) e, se o quere, o soporte que contrate." },
+      { q: "Onde se gardan os datos?", a: "No servidor do propio concello. A base de datos, as imaxes e as copias de seguridade quedan alí, sen nubes de terceiros, sen publicidade e sen rastrexadores." },
+      { q: "Pode usalo máis dun concello á vez?", a: "Si. Unha mesma instalación serve a un concello ou a moitos, por exemplo unha mancomunidade ou unha deputación, e cada concello queda illado na base de datos." },
+      { q: "Hai app para o móbil?", a: "Si. Ademais da web, o instalador compila unha app Android co nome e o logotipo do concello, xa apuntando ao seu servidor: un APK para instalar directamente e un AAB para Google Play. A app para iPhone está prevista." },
+      { q: "Pode reservar un axente de IA?", a: "Si. Cada instalación inclúe un servidor MCP en https://<dominio>/api/mcp. Claude, ChatGPT, Cursor e outros axentes poden buscar instalacións e quendas libres e reservar, cancelar ou unirse a partidas en nome dunha persoa, coas mesmas normas ca na web e sen ver nunca o seu contrasinal." },
+      { q: "É accesible e cumpre o RGPD?", a: "Si. Cumpre WCAG 2.1 AA e os criterios AAA que se aplican, e a norma UNE-EN 301 549, comprobado automaticamente en cada cambio. Cada persoa pode descargar os seus datos e borrar a súa conta cando queira." },
+      { q: "Como se instala?", a: "Nun servidor Linux con Docker Compose v2, dous dominios (a web e o inicio de sesión), os portos 80 e 443 e unha conta SMTP. Descárgase o instalador, execútase e pregunta o necesario; en poucos minutos está listo." },
+    ],
+  },
   notFound: { title: "Non atopada", text: "Esta quenda non existe.", back: "Volver ao inicio" },
 };
 
@@ -393,6 +407,20 @@ const es: Dict = {
     source: "Código fuente en GitHub",
     docNote: "La documentación detallada está en gallego.",
   },
+  faq: {
+    title: "Preguntas frecuentes",
+    lead: "Lo que suele preguntar un ayuntamiento.",
+    items: [
+      { q: "¿Qué es LibreQuenda?", a: "LibreQuenda es software libre (AGPL-3.0) para reservar y gestionar instalaciones deportivas municipales. Los vecinos encuentran instalaciones, reservan turnos libres y registran la entrada en la puerta desde la web o una app Android; el ayuntamiento gestiona instalaciones, horarios, normas, eventos e incidencias en un solo panel. Lo hace Tribo Solutions para los ayuntamientos gallegos." },
+      { q: "¿Cuánto cuesta?", a: "Nada en licencias, ni ahora ni en el futuro: es software libre bajo la licencia AGPL-3.0. El único coste es el servidor donde lo instala el ayuntamiento (basta un servidor Linux con 2 GB de RAM) y, si lo quiere, el soporte que contrate." },
+      { q: "¿Dónde se guardan los datos?", a: "En el servidor del propio ayuntamiento. La base de datos, las imágenes y las copias de seguridad se quedan allí, sin nubes de terceros, sin publicidad y sin rastreadores." },
+      { q: "¿Puede usarlo más de un ayuntamiento a la vez?", a: "Sí. Una misma instalación sirve a un ayuntamiento o a muchos, por ejemplo una mancomunidad o una diputación, y cada ayuntamiento queda aislado en la base de datos." },
+      { q: "¿Hay app para el móvil?", a: "Sí. Además de la web, el instalador compila una app Android con el nombre y el logotipo del ayuntamiento, ya apuntando a su servidor: un APK para instalar directamente y un AAB para Google Play. La app para iPhone está prevista." },
+      { q: "¿Puede reservar un agente de IA?", a: "Sí. Cada instalación incluye un servidor MCP en https://<dominio>/api/mcp. Claude, ChatGPT, Cursor y otros agentes pueden buscar instalaciones y turnos libres y reservar, cancelar o unirse a partidas en nombre de una persona, con las mismas normas que en la web y sin ver nunca su contraseña." },
+      { q: "¿Es accesible y cumple el RGPD?", a: "Sí. Cumple WCAG 2.1 AA y los criterios AAA aplicables, y la norma UNE-EN 301 549, comprobado automáticamente en cada cambio. Cada persona puede descargar sus datos y borrar su cuenta cuando quiera." },
+      { q: "¿Cómo se instala?", a: "En un servidor Linux con Docker Compose v2, dos dominios (la web y el inicio de sesión), los puertos 80 y 443 y una cuenta SMTP. Se descarga el instalador, se ejecuta y pregunta lo necesario; en pocos minutos está listo." },
+    ],
+  },
   notFound: { title: "No encontrada", text: "Este turno no existe.", back: "Volver al inicio" },
 };
 
@@ -572,6 +600,20 @@ const ca: Dict = {
     fullGuide: "Guia completa d'autoallotjament",
     source: "Codi font a GitHub",
     docNote: "La documentació detallada és en gallec.",
+  },
+  faq: {
+    title: "Preguntes freqüents",
+    lead: "El que sol preguntar un ajuntament.",
+    items: [
+      { q: "Què és LibreQuenda?", a: "LibreQuenda és programari lliure (AGPL-3.0) per reservar i gestionar instal·lacions esportives municipals. Els veïns troben instal·lacions, reserven torns lliures i registren l'entrada a la porta des del web o una app Android; l'ajuntament gestiona instal·lacions, horaris, normes, esdeveniments i incidències en un sol tauler. El fa Tribo Solutions per als ajuntaments gallecs." },
+      { q: "Quant costa?", a: "Res en llicències, ni ara ni en el futur: és programari lliure sota la llicència AGPL-3.0. L'únic cost és el servidor on l'instal·la l'ajuntament (n'hi ha prou amb un servidor Linux amb 2 GB de RAM) i, si ho vol, el suport que contracti." },
+      { q: "On es guarden les dades?", a: "Al servidor del mateix ajuntament. La base de dades, les imatges i les còpies de seguretat es queden allà, sense núvols de tercers, sense publicitat i sense rastrejadors." },
+      { q: "El pot fer servir més d'un ajuntament alhora?", a: "Sí. Una mateixa instal·lació serveix un ajuntament o molts, per exemple una mancomunitat o una diputació, i cada ajuntament queda aïllat a la base de dades." },
+      { q: "Hi ha app per al mòbil?", a: "Sí. A més del web, l'instal·lador compila una app Android amb el nom i el logotip de l'ajuntament, ja apuntant al seu servidor: un APK per instal·lar directament i un AAB per a Google Play. L'app per a iPhone està prevista." },
+      { q: "Pot reservar un agent d'IA?", a: "Sí. Cada instal·lació inclou un servidor MCP a https://<domini>/api/mcp. Claude, ChatGPT, Cursor i altres agents poden cercar instal·lacions i torns lliures i reservar, cancel·lar o unir-se a partides en nom d'una persona, amb les mateixes normes que al web i sense veure mai la seva contrasenya." },
+      { q: "És accessible i compleix el RGPD?", a: "Sí. Compleix WCAG 2.1 AA i els criteris AAA aplicables, i la norma UNE-EN 301 549, comprovat automàticament a cada canvi. Cada persona pot descarregar les seves dades i esborrar el seu compte quan vulgui." },
+      { q: "Com s'instal·la?", a: "En un servidor Linux amb Docker Compose v2, dos dominis (el web i l'inici de sessió), els ports 80 i 443 i un compte SMTP. Es descarrega l'instal·lador, s'executa i pregunta el necessari; en pocs minuts està llest." },
+    ],
   },
   notFound: { title: "No trobada", text: "Aquest torn no existeix.", back: "Torna a l'inici" },
 };
@@ -753,6 +795,20 @@ const en: Dict = {
     source: "Source code on GitHub",
     docNote: "The detailed documentation is in Galician.",
   },
+  faq: {
+    title: "Frequently asked questions",
+    lead: "What councils usually ask.",
+    items: [
+      { q: "What is LibreQuenda?", a: "LibreQuenda is free software (AGPL-3.0) for booking and managing municipal sports facilities. Residents find facilities, book free slots and check in at the door from the web or an Android app; the council manages facilities, opening hours, rules, events and issues from one admin panel. It is made by Tribo Solutions for Galician councils." },
+      { q: "How much does it cost?", a: "Nothing in licence fees, now or ever: it is free software under the AGPL-3.0 licence. The only cost is the server the council installs it on (a Linux server with 2 GB of RAM is enough) and, if it wants, any support it hires." },
+      { q: "Where is the data kept?", a: "On the council's own server. The database, the images and the backups stay there, with no third-party clouds, no advertising and no trackers." },
+      { q: "Can several councils share it?", a: "Yes. One installation serves one council or many, for example an association of municipalities or a provincial government, and each council is isolated in the database." },
+      { q: "Is there a mobile app?", a: "Yes. Besides the web app, the installer builds an Android app with the council's name and logo, already pointing at its server: an APK to install directly and an AAB for Google Play. An iPhone app is planned." },
+      { q: "Can an AI agent book?", a: "Yes. Every installation includes an MCP server at https://<domain>/api/mcp. Claude, ChatGPT, Cursor and other agents can find facilities and free slots and book, cancel or join public games on a person's behalf, under the same rules as the web and without ever seeing their password." },
+      { q: "Is it accessible and GDPR compliant?", a: "Yes. It meets WCAG 2.1 AA plus the applicable AAA criteria and the EN 301 549 standard, checked automatically on every change. Every person can download their data and delete their account whenever they want." },
+      { q: "How is it installed?", a: "On a Linux server with Docker Compose v2, two domains (the web and the sign-in), ports 80 and 443 and an SMTP account. Download the installer and run it; it asks what it needs and is ready in a few minutes." },
+    ],
+  },
   notFound: { title: "Not found", text: "This slot doesn't exist.", back: "Back to home" },
 };
 
@@ -932,6 +988,20 @@ const pt: Dict = {
     fullGuide: "Guia completo de alojamento próprio",
     source: "Código-fonte no GitHub",
     docNote: "A documentação detalhada está em galego.",
+  },
+  faq: {
+    title: "Perguntas frequentes",
+    lead: "O que uma câmara municipal costuma perguntar.",
+    items: [
+      { q: "O que é o LibreQuenda?", a: "O LibreQuenda é software livre (AGPL-3.0) para reservar e gerir instalações desportivas municipais. Os munícipes encontram instalações, reservam horários livres e registam a entrada à porta a partir da web ou de uma app Android; o município gere instalações, horários, regras, eventos e ocorrências num só painel. É feito pela Tribo Solutions para os concelhos galegos." },
+      { q: "Quanto custa?", a: "Nada em licenças, nem agora nem no futuro: é software livre sob a licença AGPL-3.0. O único custo é o servidor onde o município o instala (basta um servidor Linux com 2 GB de RAM) e, se quiser, o suporte que contratar." },
+      { q: "Onde ficam os dados?", a: "No servidor do próprio município. A base de dados, as imagens e as cópias de segurança ficam lá, sem nuvens de terceiros, sem publicidade e sem rastreadores." },
+      { q: "Pode ser usado por vários municípios ao mesmo tempo?", a: "Sim. Uma mesma instalação serve um município ou muitos, por exemplo uma comunidade intermunicipal, e cada município fica isolado na base de dados." },
+      { q: "Há app para telemóvel?", a: "Sim. Além da web, o instalador compila uma app Android com o nome e o logótipo do município, já apontada ao seu servidor: um APK para instalar diretamente e um AAB para o Google Play. A app para iPhone está prevista." },
+      { q: "Um agente de IA pode reservar?", a: "Sim. Cada instalação inclui um servidor MCP em https://<domínio>/api/mcp. O Claude, o ChatGPT, o Cursor e outros agentes podem procurar instalações e horários livres e reservar, cancelar ou juntar-se a jogos em nome de uma pessoa, com as mesmas regras da web e sem nunca verem a sua palavra-passe." },
+      { q: "É acessível e cumpre o RGPD?", a: "Sim. Cumpre a WCAG 2.1 AA e os critérios AAA aplicáveis, e a norma EN 301 549, verificado automaticamente em cada alteração. Cada pessoa pode descarregar os seus dados e apagar a sua conta quando quiser." },
+      { q: "Como se instala?", a: "Num servidor Linux com Docker Compose v2, dois domínios (a web e o início de sessão), as portas 80 e 443 e uma conta SMTP. Descarrega-se o instalador, executa-se e pergunta o necessário; fica pronto em poucos minutos." },
+    ],
   },
   notFound: { title: "Não encontrada", text: "Este horário não existe.", back: "Voltar ao início" },
 };

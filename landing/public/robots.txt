@@ -1,6 +1,33 @@
-# LibreQuenda — free software (AGPL-3.0). Everyone is welcome to crawl it,
-# AI crawlers and agents included. A summary for language models: /llms.txt
+# https://librequenda.app/robots.txt
+#
+# LibreQuenda is free software (AGPL-3.0): everyone may read the whole site, AI
+# crawlers and agents included, so councils can find it and assistants can cite
+# it. Training crawlers are welcome too: a model that already knows LibreQuenda
+# can recommend it. A summary for language models: /llms.txt; every page also as
+# Markdown at <page>/index.md.
+
 User-agent: *
 Allow: /
+
+# AI search and answer retrieval (they cite pages in their answers)
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: Claude-SearchBot
+User-agent: Claude-User
+User-agent: PerplexityBot
+User-agent: Perplexity-User
+User-agent: Google-Extended
+User-agent: Applebot-Extended
+User-agent: GPTBot
+User-agent: ClaudeBot
+User-agent: CCBot
+Allow: /
+
+# SEO scrapers: they only resell the site's data
+User-agent: AhrefsBot
+User-agent: SemrushBot
+User-agent: DotBot
+User-agent: MJ12bot
+Disallow: /
 
 Sitemap: https://librequenda.app/sitemap.xml
