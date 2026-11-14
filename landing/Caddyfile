@@ -9,8 +9,17 @@
 	encode zstd gzip
 	file_server
 
+	# cache: Astro's hashed files never change; images, fonts and icons, a month; pages,
+	# sitemaps, robots and the texts for AI, an hour (changes show up quickly)
 	@hashed path /_astro/*
 	header @hashed Cache-Control "public, max-age=31536000, immutable"
+	@media {
+		path *.webp *.jpg *.jpeg *.png *.svg *.ico *.avif *.woff2
+		not path /_astro/*
+	}
+	header @media Cache-Control "public, max-age=2592000"
+	@text path / */ *.html *.xml *.txt *.md *.webmanifest
+	header @text Cache-Control "public, max-age=3600"
 
 	# Every page also exists as Markdown at <page>/index.md (src/markdown.ts), for agents
 	# and language models: announced in a Link header, and served in place of the page
@@ -33,7 +42,11 @@
 
 	header {
 		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
 		Referrer-Policy strict-origin-when-cross-origin
+		Permissions-Policy "geolocation=(), microphone=(), camera=()"
+		# .app is on the browsers' HTTPS-only list anyway; this says so for every client
+		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
 		-Server
 	}
 

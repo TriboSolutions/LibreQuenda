@@ -2,10 +2,12 @@
 import "../styles/global.css";
 import Github from "../components/GithubIcon.astro";
 import { Moon, Sun, Star, Languages, Check } from "@lucide/astro";
-import { REPO, SITE, ORG, LICENSE_URL, OG_IMAGE, DEMO } from "../site";
+import { REPO, SITE, ORG, VERIFY, LICENSE_URL, OG_IMAGE, DEMO, PLAY } from "../site";
 import { DICT, LANGS, LANG_NAMES, OG_LOCALES, href, swapLang, type Lang } from "../i18n";
-import { PRIVACY, PRIVACY_EMAIL } from "../privacy";
+import { PRIVACY } from "../privacy";
 import { mdPath } from "../markdown";
+import { lastmod, NEWEST } from "../lastmod";
+import fontUrl from "@fontsource-variable/dm-sans/files/dm-sans-latin-wght-normal.woff2?url";
 
 interface Props {
   lang: Lang;
@@ -24,15 +26,50 @@ const ogImage = abs(OG_IMAGE.path);
 const indexable = page !== "error";
 // the same page as Markdown, for agents and language models (src/markdown.ts)
 const markdown = indexable ? mdPath(path) : null;
+// the date of the last commit that changed this page (scripts/gen-lastmod.mjs)
+const modified = lastmod(path);
 
-// Structured data (schema.org) for search engines and AI crawlers
+// Chrome and Edge fetch the next page as the pointer goes to its link: pages only, no files
+// (.md, .txt) and nothing that opens elsewhere
+const speculation = JSON.stringify({
+  prefetch: [
+    {
+      where: { and: [{ href_matches: "/*" }, { not: { href_matches: "/*.*" } }, { not: { selector_matches: "[download], [target=_blank]" } }] },
+      eagerness: "moderate",
+    },
+  ],
+});
+
+// Structured data (schema.org) for search engines and AI crawlers: one @graph, its nodes linked
+// by @id. The organization is the same node as on tribosolutions.es (same @id and data).
+const orgId = { "@id": ORG.id };
 const org = {
   "@type": "Organization",
-  "@id": `${ORG.url}/#org`,
+  "@id": ORG.id,
   name: ORG.name,
-  url: ORG.url,
-  sameAs: [ORG.github],
-  contactPoint: { "@type": "ContactPoint", contactType: "customer support", email: PRIVACY_EMAIL, availableLanguage: ["gl", "es", "en"] },
+  legalName: ORG.legalName,
+  taxID: ORG.taxId,
+  url: `${ORG.url}/`,
+  logo: { "@type": "ImageObject", url: ORG.logo, contentUrl: ORG.logo, caption: ORG.name },
+  email: ORG.email,
+  telephone: ORG.phone,
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: ORG.address.street,
+    addressLocality: ORG.address.locality,
+    addressRegion: ORG.address.region,
+    postalCode: ORG.address.postalCode,
+    addressCountry: ORG.address.country,
+  },
+  sameAs: [ORG.linkedin, ORG.github],
+  contactPoint: {
+    "@type": "ContactPoint",
+    contactType: "customer support",
+    email: ORG.email,
+    telephone: ORG.phone,
+    areaServed: "ES",
+    availableLanguage: ["gl", "es", "en"],
+  },
 };
 const graph: Record<string, unknown>[] = [
   org,
@@ -43,7 +80,7 @@ const graph: Record<string, unknown>[] = [
     name: "LibreQuenda",
     description: DICT[lang].meta.description,
     inLanguage: LANGS,
-    publisher: { "@id": org["@id"] },
+    publisher: orgId,
   },
   {
     "@type": "SoftwareApplication",
@@ -59,11 +96,12 @@ const graph: Record<string, unknown>[] = [
     isAccessibleForFree: true,
     license: LICENSE_URL,
     offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
-    author: { "@id": org["@id"] },
-    publisher: { "@id": org["@id"] },
+    author: orgId,
+    publisher: orgId,
     codeRepository: REPO,
     sameAs: [REPO],
     installUrl: abs(href(lang, "/instalar")),
+    ...(NEWEST && { dateModified: NEWEST }),
     featureList: [
       ...t.residents.items.map((i) => `${i.title}: ${i.text}`),
       `${t.door.title} ${t.door.ways.join(", ")}`,
@@ -74,6 +112,23 @@ const graph: Record<string, unknown>[] = [
     ],
   },
   {
+    // the demo app on Google Play, the same one every council can build with its own name
+    "@type": "MobileApplication",
+    "@id": `${abs("/")}#android`,
+    name: "LibreQuenda",
+    description: t.app.text,
+    operatingSystem: "Android",
+    applicationCategory: "SportsApplication",
+    installUrl: PLAY,
+    downloadUrl: PLAY,
+    offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
+    isAccessibleForFree: true,
+    inLanguage: ["gl", "es", "ca", "en"],
+    author: orgId,
+    publisher: orgId,
+    isBasedOn: { "@id": `${abs("/")}#software` },
+  },
+  {
     "@type": "WebPage",
     "@id": `${canonical}#page`,
     url: canonical,
@@ -82,7 +137,9 @@ const graph: Record<string, unknown>[] = [
     inLanguage: lang,
     isPartOf: { "@id": `${abs("/")}#website` },
     about: { "@id": `${abs("/")}#software` },
+    publisher: orgId,
     primaryImageOfPage: ogImage,
+    ...(modified && { dateModified: modified }),
     ...(markdown && { encoding: { "@type": "MediaObject", contentUrl: abs(markdown), encodingFormat: "text/markdown" } }),
   },
 ];
@@ -115,15 +172,18 @@ const jsonLd = JSON.stringify({ "@context": "https://schema.org", "@graph": grap
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    <meta name="robots" content={indexable ? "index, follow, max-image-preview:large, max-snippet:-1" : "noindex, follow"} />
+    <meta name="robots" content={indexable ? "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" : "noindex, follow"} />
     <meta name="author" content={ORG.name} />
     <meta name="application-name" content="LibreQuenda" />
-    <meta name="google-site-verification" content="-ZllA27lA55OYlwz_5Pw6Pduh502l5478lgEokaftxg" />
+    <meta name="google-site-verification" content={VERIFY.google} />
+    <meta name="msvalidate.01" content={VERIFY.bing} />
     <meta name="generator" content={Astro.generator} />
     {indexable && <link rel="canonical" href={canonical} />}
     {indexable && LANGS.map((l) => <link rel="alternate" hreflang={l} href={abs(swapLang(path, l))} />)}
     {indexable && <link rel="alternate" hreflang="x-default" href={abs(swapLang(path, "gl"))} />}
-    <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+    <link rel="sitemap" type="application/xml" href="/sitemap-index.xml" />
+    <!-- the font of every heading and text on the first screen -->
+    <link rel="preload" href={fontUrl} as="font" type="font/woff2" crossorigin />
     <link rel="alternate" type="text/plain" title="llms.txt" href="/llms.txt" />
     <link rel="alternate" type="text/plain" title="llms-full.txt" href="/llms-full.txt" />
     {markdown && <link rel="alternate" type="text/markdown" title="Markdown" href={markdown} />}
@@ -150,14 +210,13 @@ const jsonLd = JSON.stringify({ "@context": "https://schema.org", "@graph": grap
     <meta name="twitter:image" content={ogImage} />
     <meta name="twitter:image:alt" content={DICT[lang].meta.title} />
 
-    <script type="application/ld+json" set:html={jsonLd} />
+    {indexable && <script type="application/ld+json" set:html={jsonLd} />}
 
     <link rel="icon" href="/favicon.ico" sizes="48x48" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
-    <!-- the next page is fetched while the pointer rests on its link -->
-    <script type="speculationrules" is:inline>{"prefetch":[{"where":{"href_matches":"/*"},"eagerness":"moderate"}]}</script>
+    <script type="speculationrules" is:inline set:html={speculation} />
     <meta name="theme-color" content="#0B2544" />
     <script is:inline>
       // same rule as the app: the saved choice, else the system's
