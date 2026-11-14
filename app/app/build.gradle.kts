@@ -52,6 +52,13 @@ android {
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
     }
   }
+  // Play splits an App Bundle by language and installs only the device's ones: the app's own
+  // language picker then finds no strings for gl or ca. Every language goes in every install.
+  bundle {
+    language {
+      enableSplit = false
+    }
+  }
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17

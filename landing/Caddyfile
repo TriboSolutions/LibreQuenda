@@ -12,6 +12,25 @@
 	@hashed path /_astro/*
 	header @hashed Cache-Control "public, max-age=31536000, immutable"
 
+	# Every page also exists as Markdown at <page>/index.md (src/markdown.ts), for agents
+	# and language models: announced in a Link header, and served in place of the page
+	# to a client that asks for it with Accept: text/markdown.
+	@page {
+		path / */
+		file {path}index.md
+	}
+	header @page Link "<{path}index.md>; rel=\"alternate\"; type=\"text/markdown\""
+	header @page Vary Accept
+	@wantsMarkdown {
+		path / */
+		file {path}index.md
+		header Accept *text/markdown*
+	}
+	rewrite @wantsMarkdown {path}index.md
+	@markdown path *.md
+	header @markdown Content-Type "text/markdown; charset=utf-8"
+	header @wantsMarkdown Content-Type "text/markdown; charset=utf-8"
+
 	header {
 		X-Content-Type-Options nosniff
 		Referrer-Policy strict-origin-when-cross-origin

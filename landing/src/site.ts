@@ -7,7 +7,7 @@ bash install.sh`;
 export const SITE = "https://librequenda.app";
 /** A LibreQuenda with demo data, to try it */
 export const DEMO = "https://demo.librequenda.app";
-export const ORG = { name: "Tribo Solutions", url: "https://tribosolutions.es" };
+export const ORG = { name: "Tribo Solutions", url: "https://tribosolutions.es", github: "https://github.com/TriboSolutions" };
 export const LICENSE_URL = "https://www.gnu.org/licenses/agpl-3.0.html";
 /** The social preview image, 1200×630, in public/ */
 export const OG_IMAGE = { path: "/og.jpg", width: 1200, height: 630 };

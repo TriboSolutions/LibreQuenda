@@ -4,7 +4,8 @@ import Github from "../components/GithubIcon.astro";
 import { Moon, Sun, Star, Languages, Check } from "@lucide/astro";
 import { REPO, SITE, ORG, LICENSE_URL, OG_IMAGE, DEMO } from "../site";
 import { DICT, LANGS, LANG_NAMES, OG_LOCALES, href, swapLang, type Lang } from "../i18n";
-import { PRIVACY } from "../privacy";
+import { PRIVACY, PRIVACY_EMAIL } from "../privacy";
+import { mdPath } from "../markdown";
 
 interface Props {
   lang: Lang;
@@ -21,9 +22,18 @@ const abs = (p: string) => new URL(p, site).href;
 const canonical = abs(path);
 const ogImage = abs(OG_IMAGE.path);
 const indexable = page !== "error";
+// the same page as Markdown, for agents and language models (src/markdown.ts)
+const markdown = indexable ? mdPath(path) : null;
 
 // Structured data (schema.org) for search engines and AI crawlers
-const org = { "@type": "Organization", "@id": `${ORG.url}/#org`, name: ORG.name, url: ORG.url };
+const org = {
+  "@type": "Organization",
+  "@id": `${ORG.url}/#org`,
+  name: ORG.name,
+  url: ORG.url,
+  sameAs: [ORG.github],
+  contactPoint: { "@type": "ContactPoint", contactType: "customer support", email: PRIVACY_EMAIL, availableLanguage: ["gl", "es", "en"] },
+};
 const graph: Record<string, unknown>[] = [
   org,
   {
@@ -73,8 +83,19 @@ const graph: Record<string, unknown>[] = [
     isPartOf: { "@id": `${abs("/")}#website` },
     about: { "@id": `${abs("/")}#software` },
     primaryImageOfPage: ogImage,
+    ...(markdown && { encoding: { "@type": "MediaObject", contentUrl: abs(markdown), encodingFormat: "text/markdown" } }),
   },
 ];
+// the questions shown at the end of the home page (#preguntas), word for word
+if (page === "home") {
+  graph.push({
+    "@type": "FAQPage",
+    "@id": `${canonical}#faq`,
+    inLanguage: lang,
+    isPartOf: { "@id": `${canonical}#page` },
+    mainEntity: t.faq.items.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
+  });
+}
 if (page === "install" || page === "privacy") {
   graph.push({
     "@type": "BreadcrumbList",
@@ -104,6 +125,8 @@ const jsonLd = JSON.stringify({ "@context": "https://schema.org", "@graph": grap
     {indexable && <link rel="alternate" hreflang="x-default" href={abs(swapLang(path, "gl"))} />}
     <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
     <link rel="alternate" type="text/plain" title="llms.txt" href="/llms.txt" />
+    <link rel="alternate" type="text/plain" title="llms-full.txt" href="/llms-full.txt" />
+    {markdown && <link rel="alternate" type="text/markdown" title="Markdown" href={markdown} />}
     <link rel="license" href={LICENSE_URL} />
 
     <!-- Open Graph -->
@@ -133,6 +156,8 @@ const jsonLd = JSON.stringify({ "@context": "https://schema.org", "@graph": grap
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
+    <!-- the next page is fetched while the pointer rests on its link -->
+    <script type="speculationrules" is:inline>{"prefetch":[{"where":{"href_matches":"/*"},"eagerness":"moderate"}]}</script>
     <meta name="theme-color" content="#0B2544" />
     <script is:inline>
       // same rule as the app: the saved choice, else the system's
