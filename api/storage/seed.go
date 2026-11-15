@@ -2,6 +2,7 @@ package storage
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -34,13 +35,16 @@ func SeedDirectory(ctx context.Context, dir string) (uploaded int, skipped int, 
 			skipped++
 			return nil
 		}
-		var file, openErr = os.Open(path)
-		if openErr != nil {
-			return openErr
+		var data, readErr = os.ReadFile(path)
+		if readErr != nil {
+			return readErr
 		}
-		defer file.Close()
-		var info, _ = file.Stat()
-		if putErr := Put(ctx, ref, file, info.Size(), contentType); putErr != nil {
+		// as an upload would be; the reference names the format, so it stays the same
+		var parts = strings.Split(ref, "/") // [council/]folder/file
+		if shrunk, shrunkType := Shrink(data, contentType, MaxSide(parts[len(parts)-2])); SameType(ref, shrunkType) {
+			data, contentType = shrunk, shrunkType
+		}
+		if putErr := Put(ctx, ref, bytes.NewReader(data), int64(len(data)), contentType); putErr != nil {
 			return putErr
 		}
 		uploaded++

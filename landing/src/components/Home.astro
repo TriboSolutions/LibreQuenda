@@ -4,7 +4,7 @@ import {
   ArrowRight, Star, Search, CalendarCheck, Users, DoorOpen, MessageSquareWarning,
   QrCode, Printer, Hash, Nfc, UserCheck, Building2, CalendarClock, PartyPopper, ChartColumn,
   Wrench, ScrollText, Sparkles, Bot, Smartphone, Code2, Languages, Accessibility, Server,
-  Scale, GitFork, BookOpen, Check, ShieldCheck, LockKeyhole, Database, HardDrive, Image as ImageIcon, CloudOff,
+  Scale, GitFork, BookOpen, Check, ShieldCheck, LockKeyhole, Database, HardDrive, Image as ImageIcon, CloudOff, ChevronDown,
 } from "@lucide/astro";
 import Base from "../layouts/Base.astro";
 import { DICT, href, type Lang } from "../i18n";
@@ -620,6 +620,27 @@ const facts = [
               {l.t}
               <ArrowRight class="ml-auto size-4 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-foreground" />
             </a>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+  <!-- ============ FAQ ============ -->
+  <!-- the same questions go into the FAQPage structured data (Base.astro) -->
+  <section id="preguntas" class="scroll-mt-20 pb-28">
+    <div class="mx-auto max-w-3xl px-4 sm:px-6">
+      <h2 data-reveal class="text-3xl font-semibold tracking-tight sm:text-4xl">{t.faq.title}</h2>
+      <p data-reveal style="--d:80ms" class="mt-3 text-muted-foreground">{t.faq.lead}</p>
+      <div class="mt-10 divide-y divide-border border-y border-border">
+        {
+          t.faq.items.map((f) => (
+            <details class="group py-1">
+              <summary class="flex cursor-pointer list-none items-center justify-between gap-4 py-4 font-medium [&::-webkit-details-marker]:hidden">
+                <h3>{f.q}</h3>
+                <ChevronDown class="size-5 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
+              </summary>
+              <p class="pb-5 text-muted-foreground">{f.a}</p>
+            </details>
           ))
         }
       </div>

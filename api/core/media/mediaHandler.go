@@ -146,22 +146,25 @@ func (h *mediaHandler) Upload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var head = make([]byte, 512)
-	var n, _ = io.ReadFull(file, head)
-	var contentType = http.DetectContentType(head[:n])
-	var ext, ok = allowedImages[contentType]
-	if !ok {
+	var data []byte
+	if data, err = io.ReadAll(file); err != nil {
+		helpers.SendI18NErrorResponse(w, r, http.StatusBadRequest, "errors.upload_invalid")
+		return
+	}
+	var contentType = http.DetectContentType(data)
+	if _, ok := allowedImages[contentType]; !ok {
 		helpers.SendI18NErrorResponse(w, r, http.StatusUnsupportedMediaType, "errors.upload_type_not_allowed")
 		return
 	}
+	// a phone's photo is several MB and 4000 px wide; the screens show a fraction of it
+	data, contentType = storage.Shrink(data, contentType, storage.MaxSide(folder))
 
-	var name = uuid.Must(uuid.NewV7()).String() + ext
+	var name = uuid.Must(uuid.NewV7()).String() + allowedImages[contentType]
 	var ref = folder + "/" + name
 	if council != uuid.Nil {
 		ref = storage.CouncilRef(council, folder, name)
 	}
-	var body = io.MultiReader(bytes.NewReader(head[:n]), file)
-	if err = storage.Put(r.Context(), ref, body, header.Size, contentType); err != nil {
+	if err = storage.Put(r.Context(), ref, bytes.NewReader(data), int64(len(data)), contentType); err != nil {
 		helpers.SendI18NErrorResponse(w, r, http.StatusBadGateway, "errors.upload_failed")
 		return
 	}
