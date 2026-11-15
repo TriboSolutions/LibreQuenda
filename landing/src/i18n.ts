@@ -91,9 +91,9 @@ const gl = {
     ],
   },
   facts: [
-    "idiomas na app: galego, castelán, catalán, inglés",
-    "formas de rexistrar a entrada",
-    "apps: web e Android",
+    "comando para instalalo",
+    "servidor",
+    "concellos",
     "en licenzas, para sempre",
   ],
   residents: {
@@ -287,9 +287,9 @@ const es: Dict = {
     ],
   },
   facts: [
-    "idiomas en la app: gallego, castellano, catalán, inglés",
-    "formas de registrar la entrada",
-    "apps: web y Android",
+    "comando para instalarlo",
+    "servidor",
+    "ayuntamientos",
     "en licencias, para siempre",
   ],
   residents: {
@@ -481,9 +481,9 @@ const ca: Dict = {
     ],
   },
   facts: [
-    "idiomes a l'app: gallec, castellà, català, anglès",
-    "maneres de registrar l'entrada",
-    "apps: web i Android",
+    "ordre per instal·lar-lo",
+    "servidor",
+    "ajuntaments",
     "en llicències, per sempre",
   ],
   residents: {
@@ -675,9 +675,9 @@ const en: Dict = {
     ],
   },
   facts: [
-    "languages in the app: Galician, Spanish, Catalan, English",
-    "ways to check in",
-    "apps: web and Android",
+    "command to install it",
+    "server",
+    "councils",
     "in licence fees, forever",
   ],
   residents: {
@@ -869,9 +869,9 @@ const pt: Dict = {
     ],
   },
   facts: [
-    "idiomas na app: galego, castelhano, catalão, inglês",
-    "formas de registar a entrada",
-    "apps: web e Android",
+    "comando para o instalar",
+    "servidor",
+    "municípios",
     "em licenças, para sempre",
   ],
   residents: {
