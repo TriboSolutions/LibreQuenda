@@ -113,18 +113,30 @@ const { screens, id, interval = 3200, class: cls, eager = false } = Astro.props;
   document.querySelectorAll<HTMLElement>("[data-phone]").forEach((phone) => {
     const shots = [...phone.querySelectorAll<HTMLElement>(".screen")];
     let i = 0;
-    const show = (n: number) => {
-      shots[i].classList.remove("on");
-      shots[i].setAttribute("aria-hidden", "true");
-      i = (n + shots.length) % shots.length;
-      shots[i].classList.add("on");
-      shots[i].removeAttribute("aria-hidden");
+    // forward (and wrapping from the last back to the first) slides in from the right, back from the left
+    const show = (n: number, dir = n > i || (n === 0 && i === shots.length - 1) ? 1 : -1) => {
+      n = (n + shots.length) % shots.length;
+      if (n === i) return;
+      const prev = shots[i];
+      const next = shots[n];
+      // park the next screen on the side it comes from, without animating
+      next.style.transition = "none";
+      next.classList.toggle("left", dir < 0);
+      void next.offsetWidth;
+      next.style.transition = "";
+      prev.classList.remove("on");
+      prev.classList.toggle("left", dir > 0);
+      prev.setAttribute("aria-hidden", "true");
+      next.classList.remove("left");
+      next.classList.add("on");
+      next.removeAttribute("aria-hidden");
+      i = n;
     };
     phone.addEventListener("phone:show", (e) => show((e as CustomEvent<number>).detail));
     const every = Number(phone.dataset.interval);
     if (!every || shots.length < 2) return;
     let timer = 0;
-    const run = () => (timer = window.setInterval(() => show(i + 1), every));
+    const run = () => (timer = window.setInterval(() => show(i + 1, 1), every));
     // only turn pages while the phone is on screen
     new IntersectionObserver(([e]) => {
       clearInterval(timer);

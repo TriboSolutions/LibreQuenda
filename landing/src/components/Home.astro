@@ -184,14 +184,14 @@ const facts = [
 
       <!-- browser + phone -->
       <div class="relative mx-auto w-full max-w-xl lg:max-w-none">
-        <div class="rise float-slow" style="--d:200ms">
+        <div class="rise" style="--d:200ms">
           <Browser>
             <Image src={wHome} alt={t.hero.altWeb} widths={[600, 1200]} sizes="(min-width:1024px) 560px, 90vw" loading="eager" class="h-full w-full object-cover object-top dark:hidden" />
             <Image src={wHomeDark} alt={t.hero.altWebDark} widths={[600, 1200]} sizes="(min-width:1024px) 560px, 90vw" class="hidden h-full w-full object-cover object-top dark:block" />
           </Browser>
         </div>
         <div class="rise absolute -bottom-12 -right-2 w-[34%] min-w-[130px] sm:-right-6" style="--d:420ms">
-          <div class="float">
+          <div>
             <Phone screens={heroScreens} interval={2600} eager />
           </div>
         </div>
