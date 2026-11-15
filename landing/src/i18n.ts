@@ -92,7 +92,7 @@ const gl = {
   },
   facts: [
     "comando para instalalo",
-    "servidor para todo: datos, imaxes e copias",
+    "servidor",
     "concellos",
     "en licenzas, para sempre",
   ],
@@ -288,7 +288,7 @@ const es: Dict = {
   },
   facts: [
     "comando para instalarlo",
-    "servidor para todo: datos, imágenes y copias",
+    "servidor",
     "ayuntamientos",
     "en licencias, para siempre",
   ],
@@ -482,7 +482,7 @@ const ca: Dict = {
   },
   facts: [
     "ordre per instal·lar-lo",
-    "servidor per a tot: dades, imatges i còpies",
+    "servidor",
     "ajuntaments",
     "en llicències, per sempre",
   ],
@@ -676,7 +676,7 @@ const en: Dict = {
   },
   facts: [
     "command to install it",
-    "server for everything: data, images and backups",
+    "server",
     "councils",
     "in licence fees, forever",
   ],
@@ -870,7 +870,7 @@ const pt: Dict = {
   },
   facts: [
     "comando para o instalar",
-    "servidor para tudo: dados, imagens e cópias",
+    "servidor",
     "municípios",
     "em licenças, para sempre",
   ],
