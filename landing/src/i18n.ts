@@ -93,7 +93,7 @@ const gl = {
   facts: [
     "comando para instalalo",
     "formas de rexistrar a entrada",
-    "concellos nunha mesma instalación",
+    "concellos",
     "en licenzas, para sempre",
   ],
   residents: {
@@ -289,7 +289,7 @@ const es: Dict = {
   facts: [
     "comando para instalarlo",
     "formas de registrar la entrada",
-    "ayuntamientos en una misma instalación",
+    "ayuntamientos",
     "en licencias, para siempre",
   ],
   residents: {
@@ -483,7 +483,7 @@ const ca: Dict = {
   facts: [
     "ordre per instal·lar-lo",
     "maneres de registrar l'entrada",
-    "ajuntaments en una mateixa instal·lació",
+    "ajuntaments",
     "en llicències, per sempre",
   ],
   residents: {
@@ -677,7 +677,7 @@ const en: Dict = {
   facts: [
     "command to install it",
     "ways to check in",
-    "councils on a single installation",
+    "councils",
     "in licence fees, forever",
   ],
   residents: {
@@ -871,7 +871,7 @@ const pt: Dict = {
   facts: [
     "comando para o instalar",
     "formas de registar a entrada",
-    "municípios numa mesma instalação",
+    "municípios",
     "em licenças, para sempre",
   ],
   residents: {
