@@ -92,7 +92,7 @@ const gl = {
   },
   facts: [
     "comando para instalalo",
-    "formas de rexistrar a entrada",
+    "dos datos no teu servidor, non na nube doutros",
     "concellos",
     "en licenzas, para sempre",
   ],
@@ -288,7 +288,7 @@ const es: Dict = {
   },
   facts: [
     "comando para instalarlo",
-    "formas de registrar la entrada",
+    "de los datos en tu servidor, no en la nube de otros",
     "ayuntamientos",
     "en licencias, para siempre",
   ],
@@ -482,7 +482,7 @@ const ca: Dict = {
   },
   facts: [
     "ordre per instal·lar-lo",
-    "maneres de registrar l'entrada",
+    "de les dades al teu servidor, no al núvol d'altres",
     "ajuntaments",
     "en llicències, per sempre",
   ],
@@ -676,7 +676,7 @@ const en: Dict = {
   },
   facts: [
     "command to install it",
-    "ways to check in",
+    "of the data on your server, not in someone else's cloud",
     "councils",
     "in licence fees, forever",
   ],
@@ -870,7 +870,7 @@ const pt: Dict = {
   },
   facts: [
     "comando para o instalar",
-    "formas de registar a entrada",
+    "dos dados no teu servidor, não na nuvem de outros",
     "municípios",
     "em licenças, para sempre",
   ],
