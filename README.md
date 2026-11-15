@@ -64,3 +64,7 @@ Todo o demais (opcións de configuración, copias de seguridade e como restaural
 Copyright (C) 2026 Tribo Solutions
 
 Este programa é software libre: podes redistribuílo e/ou modificalo baixo os termos da GNU Affero General Public License tal como a publica a Free Software Foundation, xa sexa a versión 3 da licenza ou (á túa elección) calquera versión posterior. Consulta [LICENSE](LICENSE).
+
+---
+
+Desenvolvido por [Tribo Solutions](https://tribosolutions.es).
