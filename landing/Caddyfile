@@ -38,6 +38,13 @@
 	rewrite @wantsMarkdown {path}index.md
 	@markdown path *.md
 	header @markdown Content-Type "text/markdown; charset=utf-8"
+	# the .md files are copies of the pages: Google must index the HTML page instead
+	# (/en/instalar/index.md -> /en/instalar/), or it reports them as duplicates
+	@mdfile path_regexp mdfile ^(.*/)index\.md$
+	header @mdfile Link "<https://librequenda.app{re.mdfile.1}>; rel=\"canonical\""
+	# llms.txt and llms-full.txt are for AI assistants, not for search results
+	@llms path /llms.txt /llms-full.txt
+	header @llms X-Robots-Tag noindex
 	header @wantsMarkdown Content-Type "text/markdown; charset=utf-8"
 
 	header {

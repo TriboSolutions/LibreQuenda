@@ -265,7 +265,7 @@ const jsonLd = JSON.stringify({ "@context": "https://schema.org", "@graph": grap
                 LANGS.map((l) => (
                   <li>
                     <a
-                      href={swapLang(path, l)}
+                      href={indexable ? swapLang(path, l) : href(l)}
                       hreflang={l}
                       lang={l}
                       aria-current={l === lang ? "true" : undefined}

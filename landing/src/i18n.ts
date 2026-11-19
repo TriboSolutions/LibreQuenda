@@ -22,9 +22,13 @@ export const OG_LOCALES: Record<Lang, string> = {
   pt: "pt_PT",
 };
 
-/** The path of a page in a language: "/" + "instalar" -> "/es/instalar" */
+/**
+ * The path of a page in a language: "/" + "instalar" -> "/es/instalar/". Always with the trailing
+ * slash: the server 308s the URL without it, and Google reports those links as "Page with redirect".
+ */
 export function href(lang: Lang, path = "/"): string {
-  const p = path.startsWith("/") ? path : `/${path}`;
+  let p = path.startsWith("/") ? path : `/${path}`;
+  if (!p.endsWith("/")) p += "/";
   return lang === DEFAULT_LANG ? p : `/${lang}${p === "/" ? "/" : p}`;
 }
 
