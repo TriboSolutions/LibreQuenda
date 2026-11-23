@@ -27,6 +27,9 @@ var ZITADEL_USERS_PAT_FILE = os.Getenv("ZITADEL_USERS_PAT_FILE") // token of the
 var REQUIRE_ADMIN_MFA = os.Getenv("REQUIRE_ADMIN_MFA") == "true"
 var ZITADEL_INTROSPECTION_FILE = envOr("ZITADEL_INTROSPECTION_FILE", "/secrets/zitadel-introspection.json")
 
+// A public identity provider's (Cl@ve, Chave365) attribute mapping, written by zitadel-setup (zitadel/idpintent.go)
+var ZITADEL_IDP_MAPPING_FILE = envOr("ZITADEL_IDP_MAPPING_FILE", "/secrets/zitadel-idp-mapping.json")
+
 // The first superadministrator: granted on this person's login with a verified email.
 var SUPERADMIN_EMAIL = strings.ToLower(strings.TrimSpace(os.Getenv("SUPERADMIN_EMAIL")))
 

@@ -45,7 +45,7 @@ A primeira persoa administradora de Zitadel (`ZITADEL_ADMIN_*`), os axustes de c
 
 **As imaxes** gárdanse en **Garage** (autoaloxado, compatible con S3; servizo `storage`). Os buckets son privados, un por concello; a base de datos só garda referencias como `<council id>/facilities/<id>.webp`, e a API convérteas en ligazóns `/storage/…` presinadas (válidas durante unha semana) ao responder. **Os mapas** usan OpenStreetMap (Leaflet); «Como chegar» é unha ligazón simple ás indicacións de Google Maps. A busca de enderezos pasa pola API cara a OpenStreetMap Nominatim (ou `GEOCODER_URL`).
 
-**Iniciar sesión con Google (opcional):** crea un ID de cliente OAuth (tipo *Web application*) en Google Cloud co URI de redirección autorizado `https://<ZITADEL_DOMAIN>/idps/callback`, despois define `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` en `.env` e executa `docker compose up -d`. Déixaos baleiros para quitar outra vez o botón de Google.
+**Iniciar sesión con Google (opcional):** crea un ID de cliente OAuth (tipo *Web application*) en Google Cloud co URI de redirección autorizado `https://<ZITADEL_DOMAIN>/idps/callback`, despois define `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` en `.env` e executa `docker compose up -d`. Déixaos baleiros para quitar outra vez o botón de Google. Para Cl@ve, Chave365 ou outro provedor SAML ou OpenID Connect, consulta [Inicio de sesión con Cl@ve ou Chave365](#inicio-de-sesión-con-clve-ou-chave365).
 
 **Contrasinais, non chaves de acceso:** o rexistro e o inicio de sesión van directamente a un contrasinal. Define `ZITADEL_PASSKEYS=true` en `.env` e executa `docker compose up -d` para ofrecer tamén chaves de acceso (passkeys).
 
@@ -87,6 +87,40 @@ docker compose start api zitadel-api zitadel-login
 ```
 
 **Imaxes desde a CI:** cada push a `main` e cada etiqueta de versión constrúe as imaxes e publícaas en `ghcr.io/<owner>/librequenda-<image>` (`.github/workflows/ci.yml`).
+
+## Inicio de sesión con Cl@ve ou Chave365
+
+LibreQuenda pode engadir ao inicio de sesión o botón dun provedor de identidade pública: calquera provedor SAML 2.0 (Cl@ve, Chave365) e, ademais ou no seu lugar, un de OpenID Connect. A primeira vez que alguén entra con el créase a súa conta de LibreQuenda co nome, os apelidos e o correo que envía o provedor; se xa tiña unha conta co mesmo correo e o provedor o garante, vincúlase a ela. Todo se configura en `.env` (ou co instalador, sección «Inicio de sesión con identidade pública») e `zitadel-setup` aplícao en cada arranque; sen as variables non cambia nada.
+
+**Estado:** probado de principio a fin cun provedor de proba (Keycloak, `zitadel/test-idp/run.sh`, máis abaixo), por SAML e por OIDC. A conexión real con Cl@ve e con Chave365 precisa antes un convenio co seu titular, e queda por comprobar contra os seus contornos de proba.
+
+### Que pedir e a quen
+
+| | Cl@ve | Chave365 |
+|---|---|---|
+| Titular | Secretaría General de Administración Digital (SGAD), Ministerio para la Transformación Digital y de la Función Pública | AMTEGA (Xunta de Galicia) |
+| Quen o solicita | O concello (ou a administración que presta o servizo), como provedor de servizo (SP) | O concello, a través do convenio coa AMTEGA |
+| Que lle dás | O enderezo dos metadatos de LibreQuenda (abaixo), co seu certificado de sinatura | O mesmo, se o ofrecen por SAML; por OIDC, o URI de redirección |
+| Que che dan | Os metadatos SAML do contorno de proba e do de produción, e os nomes dos atributos | Os metadatos SAML (ou o emisor, ID e segredo de cliente OIDC) e os nomes dos atributos |
+
+### Que vai onde
+
+1. Define en `.env` `SAML_IDP_NAME` (o texto do botón, p. ex. `Cl@ve`) e `SAML_IDP_METADATA_URL` (os metadatos do provedor, un enderezo https) e executa `docker compose up -d --wait`.
+2. `docker compose logs zitadel-setup` amosa o enderezo dos metadatos de LibreQuenda, `https://<ZITADEL_DOMAIN>/idps/<id>/saml/metadata`. Ese enderezo é tamén o identificador da entidade (entityID); o servizo de asertos (ACS) é `https://<ZITADEL_DOMAIN>/idps/<id>/saml/acs`. Envíallo ao provedor.
+3. Axusta, se o provedor o pide: `SAML_IDP_BINDING` (`post` ou `redirect`), `SAML_IDP_SIGNED_REQUEST` e `SAML_IDP_SIGNATURE` (`sha256` ou `sha512`), `SAML_IDP_NAMEID_FORMAT` e, cun NameID `transient`, `SAML_IDP_USER_ID_ATTRIBUTE` (o atributo que identifica a persoa entre inicios de sesión, p. ex. o do NIF).
+4. Os atributos: `SAML_IDP_ATTR_GIVEN_NAME`, `SAML_IDP_ATTR_FAMILY_NAME`, `SAML_IDP_ATTR_EMAIL` e `SAML_IDP_ATTR_NIF`. Cada un é unha lista de nomes separados por comas (vale o primeiro que traia un valor), e `a+b` xunta dous (p. ex. `FirstSurname+SecondSurname`). Baleiros, usan os de eIDAS que envía Cl@ve (`http://eidas.europa.eu/attributes/naturalperson/CurrentGivenName`, `…/CurrentFamilyName`, `…/PersonIdentifier`) e os habituais do correo (`urn:oid:0.9.2342.19200300.100.1.3`, `mail`).
+5. `SAML_IDP_EMAIL_VERIFIED=true` só se o provedor garante que o correo é da persoa: entón vincúlase á conta que xa teña ese correo. Con `false` (por defecto) o inicio de sesión envíalle un código para comprobalo, e queda como unha conta á parte.
+6. `ZITADEL_HTTPCLIENT_DENYLIST`: Zitadel non mapea por si mesmo ningún atributo SAML ao nome nin ao correo. Unha acción de Zitadel (Actions v2) sobre a resposta que le o inicio de sesión pídelle á API de LibreQuenda (`POST /zitadel/idp-intent`, asinada) que os complete. A API está na rede de Docker, que Zitadel non chama por defecto: con SAML, define a lista de `.env.example`, a de Zitadel sen as redes de Docker (o instalador xa o fai). O servizo `zitadel-setup-idp` crea a acción unha vez que a API está en marcha. Sen el, o inicio de sesión funciona igual pero pídelle á persoa o nome, os apelidos e o correo.
+
+Para OpenID Connect: `OIDC_IDP_NAME`, `OIDC_IDP_ISSUER`, `OIDC_IDP_CLIENT_ID`, `OIDC_IDP_CLIENT_SECRET` (e `OIDC_IDP_SCOPES`), co URI de redirección `https://<ZITADEL_DOMAIN>/idps/callback` no provedor. Zitadel le o nome e o correo das claims estándar.
+
+Para quitar o botón, baleira `SAML_IDP_NAME` (ou `OIDC_IDP_NAME`) e executa `docker compose up -d --wait`: o provedor queda en Zitadel cos vínculos de quen o usou, por se se volve activar. LibreQuenda xestiona un provedor SAML e un OIDC; cambiarlles o nome (de Cl@ve a Chave365) cambia o botón, non engade outro.
+
+**O que falta para a conexión real:** o convenio; probar contra o contorno de proba de cada provedor; e confirmar dous requisitos que Zitadel non cobre por si só. Cl@ve 2.0 segue o perfil eIDAS, que pode esixir extensións na petición SAML (`SPType`, atributos pedidos, nivel de seguridade) e un certificado de sinatura dunha autoridade recoñecida en vez do autoasinado dos metadatos de Zitadel. Se o esixen, cómpre unha pequena ponte SAML entre Cl@ve e Zitadel (p. ex. SimpleSAMLphp ou Keycloak como intermediario), que se conecta a LibreQuenda exactamente igual.
+
+**O NIF e a veciñanza:** cando o provedor envía o NIF (o `PersonIdentifier` de eIDAS, `ES/ES/12345678Z`, gárdase como `12345678Z`), queda nos metadatos da conta en Zitadel (`nif`), non na base de datos de LibreQuenda; `SAML_IDP_ATTR_NIF=none` non o garda. Hoxe a verificación da veciñanza segue igual (a persoa solicítaa co seu DNI e o concello compróbao no seu padrón). Máis adiante, a API podería ler ese NIF verificado coa súa conta de servizo (`GET /management/v1/users/<id>/metadata/nif`) e encher con el a solicitude, ou cotejalo co padrón que o concello comparta, para verificar sen que a persoa teclee o DNI.
+
+**Probalo en local:** `zitadel/test-idp/run.sh` constrúe a pila desde o repositorio, arrinca un Keycloak de proba (só para desenvolvemento, nunca no compose de produción) como provedor SAML e OIDC, inicia sesión por SAML nun navegador (Playwright) e comproba que a conta de LibreQuenda leva o nome, o correo e o NIF; despois inicia sesión por OIDC como a mesma persoa e comproba que entra na mesma conta. Usa o seu propio proxecto de compose sen portos publicados e bórrao ao rematar (`--keep` déixao en marcha).
 
 ## A túa propia app Android
 

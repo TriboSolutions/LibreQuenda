@@ -24,6 +24,7 @@ Estado: **feito** · **en curso** (traballo aberto) · **idea** (sen comezar).
 | Calendario (.ics) para subscribirse desde Google, Outlook ou Apple, con botóns dun só clic | feito |
 | Perfil: foto encadrada nun círculo (copiada á conta de acceso), data de nacemento, teléfono; preferencias á parte (idioma dos correos, recordatorios, «Para ti») | feito |
 | Conta en Zitadel: rexistro e acceso con contrasinal ou Google (chaves de acceso opcionais), cambio de nome, correo e contrasinal desde o perfil | feito |
+| Acceso cun provedor de identidade pública (Cl@ve, Chave365 ou calquera SAML 2.0 ou OpenID Connect), configurado en `.env` ou no instalador: crea a conta co nome, os apelidos e o correo do provedor (ou a vincula á que ten o mesmo correo verificado) e garda o NIF que certifica. Probado de principio a fin cun provedor de proba; a conexión real con Cl@ve e Chave365 agarda polos convenios coa SGAD e coa AMTEGA | en curso (o software, feito; agarda polos convenios) |
 | Correo verificado obrigatorio para reservar, unirse a unha quenda ou reservar na porta (impide que contas de bots collan quendas) | feito |
 | Os teus datos nun ficheiro (JSON e CSV) e borrado da conta (reservas anonimizadas, conta de acceso borrada) | feito |
 | Instalacións só para a veciñanza marcadas «Só para veciños» na súa páxina, nas súas tarxetas e nos seus eventos; quen non está verificado alí pode pedilo: chamar ao concello ou enviar unha solicitude (DNI ou NIE, nome, código postal, rúa), unha á semana como máximo, e retirala mentres está pendente; recibe aviso e correo cando o concello decide | feito |
@@ -118,4 +119,4 @@ Agrupadas segundo quen máis gaña; ningunha está comezada.
 
 **Plataforma**
 
-- Acceso con **Cl@ve / Chave365** para a veciñanza (por confirmar con AMTEGA/AGASOL).
+- **Verificar a veciñanza co NIF de Cl@ve / Chave365:** o NIF que certifica o provedor xa queda na conta; podería encher a solicitude ou cotejarse co padrón do concello.
