@@ -1,8 +1,10 @@
 """The voice line's settings, all from the environment (docs/voice.md lists them)."""
 
+import ipaddress
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
+from urllib.parse import urlparse
 
 STT_PROVIDERS = ("nos-whisper", "nos-wav2vec2", "whisper", "elevenlabs", "deepgram")
 TTS_PROVIDERS = ("nos", "piper", "elevenlabs")
@@ -13,7 +15,8 @@ DEFAULT_TTS_VOICE = {"nos": "brais", "piper": "es_ES-davefx-medium", "elevenlabs
 
 
 def _env(name: str, default: str = "") -> str:
-    return os.environ.get(name, default).strip()
+    """NAME, or the default when it is unset or empty (compose passes ${NAME:-} as "")."""
+    return os.environ.get(name, "").strip() or default
 
 
 def _secret(name: str) -> str:
@@ -98,3 +101,28 @@ def load() -> Config:
     if config.stt == "deepgram" and not config.deepgram_api_key:
         raise ValueError("VOICE_STT=deepgram needs DEEPGRAM_API_KEY")
     return config
+
+
+def _self_hosted(url: str) -> bool:
+    """A model server on this machine or its private network (Ollama, vLLM…), not a third party."""
+    host = urlparse(url).hostname or ""
+    if host == "localhost" or "." not in host:  # a compose service name
+        return True
+    try:
+        return ipaddress.ip_address(host).is_private
+    except ValueError:
+        return False
+
+
+def third_parties(config: Config) -> dict[str, list[str]]:
+    """Who else gets what during a call, for the call panel's privacy note (docs/voice.md)."""
+    names = {"elevenlabs": "ElevenLabs", "deepgram": "Deepgram", "anthropic": "Anthropic", "openai": "OpenAI"}
+    voice = [names[config.stt]] if config.stt in ("elevenlabs", "deepgram") else []
+    text = []
+    if config.llm in ("anthropic", "openai"):
+        text.append(names[config.llm])
+    elif not _self_hosted(config.llm_base_url):
+        text.append(urlparse(config.llm_base_url).hostname or config.llm_base_url)
+    if config.tts == "elevenlabs" and "ElevenLabs" not in text:
+        text.append("ElevenLabs")
+    return {"voice": voice, "text": text}

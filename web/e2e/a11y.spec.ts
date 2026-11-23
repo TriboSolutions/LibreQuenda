@@ -33,6 +33,14 @@ async function newerApi(page: Page) {
   await page.route('**/api/branding', (route) => route.fulfill({ json: defaultBranding, headers: { 'X-App-Version': 'newer' } }))
 }
 
+// The voice line on: its runtime config answers (it is a 404 where the installation runs none)
+async function voiceLine(page: Page, session: { status: number; json: object } = { status: 503, json: { error: 'busy' } }) {
+  await page.route('**/voice/config.json', (route) =>
+    route.fulfill({ json: { enabled: true, language: 'gl', maxCallSeconds: 600, thirdParties: { voice: [], text: ['Anthropic'] } } }),
+  )
+  await page.route('**/voice/session', (route) => route.fulfill(session))
+}
+
 async function open(page: Page, path: string, options?: MockOptions) {
   await mockApp(page, options)
   await page.goto(path)
@@ -90,6 +98,17 @@ for (const theme of ['light', 'dark'] as const) {
         await expectAccessible(page)
       })
     }
+
+    test('voice call panel', async ({ page }) => {
+      await open(page, '/lugo/padel-1', { theme })
+      // after the app's mocks: its **/config.json would answer this one too
+      await voiceLine(page)
+      await page.reload()
+      await page.getByRole('button', { name: 'Reserva falando' }).click()
+      await expect(page.getByRole('dialog', { name: 'Reserva falando' })).toBeVisible()
+      await page.waitForTimeout(300)
+      await expectAccessible(page, { overlay: true })
+    })
 
     test('booking dialog', async ({ page }) => {
       await open(page, '/lugo/padel-1', { theme })
@@ -478,6 +497,30 @@ test.describe('keyboard', () => {
       if (result && !result.ok) missing.push(result.name)
     }
     expect(missing).toEqual([])
+  })
+
+  test('the voice line: shown only where it runs, its panel says where the data goes, and a busy line says so', async ({ page }) => {
+    await open(page, '/lugo/padel-1')
+    await expect(page.getByRole('button', { name: 'Reserva falando' })).toHaveCount(0)
+    await voiceLine(page)
+    await page.reload()
+    await expect(page.locator('h1').first()).toBeVisible()
+    await page.getByRole('button', { name: 'Reserva falando' }).focus()
+    await page.keyboard.press('Enter')
+    const dialog = page.getByRole('dialog', { name: 'Reserva falando' })
+    await expect(dialog).toContainText('A túa voz transcríbese neste servidor. O texto da conversa envíase a Anthropic.')
+    const asked = page.waitForRequest((r) => r.method() === 'POST' && r.url().endsWith('/voice/session'))
+    await dialog.getByRole('button', { name: 'Chamar' }).click()
+    // signed in: the call books in the person's name, with their own token
+    expect((await asked).headers()['authorization']).toMatch(/^Bearer /)
+    await expect(dialog.getByRole('alert')).toContainText('A liña está ocupada')
+    await page.keyboard.press('Escape')
+    await expect(dialog).toHaveCount(0)
+    await expect(page.getByRole('button', { name: 'Reserva falando' })).toBeFocused()
+    // never in the administration
+    await page.goto('/lugo/admin')
+    await expect(page.locator('h1').first()).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Reserva falando' })).toHaveCount(0)
   })
 
   test('2.1.1 a turn can be booked with the keyboard alone, and focus comes back', async ({ page }) => {

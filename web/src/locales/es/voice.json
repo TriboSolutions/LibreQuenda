@@ -1,0 +1,36 @@
+{
+  "button": "Reserva hablando",
+  "title": "Reserva hablando",
+  "descriptionSignedIn": "Habla con el asistente de voz: busca instalaciones y turnos libres, y reserva a tu nombre.",
+  "descriptionSignedOut": "Habla con el asistente de voz para buscar instalaciones y turnos libres. Para reservar hablando, inicia sesión antes.",
+  "howItWorks": "Te pedirá permiso para usar el micrófono. El asistente habla en gallego y también te entiende en castellano. La llamada dura como máximo {{minutes}} minutos y todo lo que se dice aparece escrito aquí.",
+  "privacy": {
+    "voiceLocal": "Tu voz se transcribe en este servidor.",
+    "voice": "Tu voz se envía a {{names}} para transcribirla.",
+    "textLocal": "La conversación también se procesa aquí.",
+    "text": "El texto de la conversación se envía a {{names}}.",
+    "notKept": "No se guarda ni la grabación ni la transcripción."
+  },
+  "call": "Llamar",
+  "callAgain": "Llamar otra vez",
+  "hangUp": "Colgar",
+  "mute": "Silenciar el micrófono",
+  "muted": "micrófono silenciado",
+  "phase": {
+    "connecting": "Conectando…",
+    "live": "En llamada",
+    "ended": "Llamada terminada",
+    "error": "No se pudo llamar"
+  },
+  "problem": {
+    "mic": "No hay acceso al micrófono. Permítelo en el navegador y vuelve a intentarlo.",
+    "busy": "La línea está ocupada. Prueba de nuevo en un momento.",
+    "unavailable": "La línea de voz no está disponible ahora.",
+    "dropped": "Se cortó la llamada. Prueba de nuevo."
+  },
+  "captions": "Subtítulos",
+  "captionsEmpty": "Aquí aparecerá escrito lo que digáis tú y el asistente.",
+  "you": "Tú",
+  "agent": "Asistente",
+  "looking": "buscando…"
+}

@@ -1,0 +1,36 @@
+{
+  "button": "Book by voice",
+  "title": "Book by voice",
+  "descriptionSignedIn": "Talk to the voice assistant: find facilities and free turns, and book in your name.",
+  "descriptionSignedOut": "Talk to the voice assistant to find facilities and free turns. To book by voice, sign in first.",
+  "howItWorks": "It will ask for permission to use your microphone. The assistant speaks Galician. A call lasts at most {{minutes}} minutes, and everything said is written here.",
+  "privacy": {
+    "voiceLocal": "Your voice is transcribed on this server.",
+    "voice": "Your voice is sent to {{names}} to be transcribed.",
+    "textLocal": "The conversation is processed here too.",
+    "text": "The text of the conversation is sent to {{names}}.",
+    "notKept": "Neither the recording nor the transcript is kept."
+  },
+  "call": "Call",
+  "callAgain": "Call again",
+  "hangUp": "Hang up",
+  "mute": "Mute the microphone",
+  "muted": "microphone muted",
+  "phase": {
+    "connecting": "Connecting…",
+    "live": "In a call",
+    "ended": "Call ended",
+    "error": "The call could not start"
+  },
+  "problem": {
+    "mic": "There is no access to the microphone. Allow it in your browser and try again.",
+    "busy": "The line is busy. Try again in a moment.",
+    "unavailable": "The voice line is not available right now.",
+    "dropped": "The call dropped. Try again."
+  },
+  "captions": "Captions",
+  "captionsEmpty": "What you and the assistant say will be written here.",
+  "you": "You",
+  "agent": "Assistant",
+  "looking": "looking it up…"
+}

@@ -1,0 +1,41 @@
+# Build context: voice/
+# CPU by default; for an NVIDIA GPU: docker build --build-arg VARIANT=cuda -t …librequenda-voice:latest-cuda voice
+# The models are not in the image: they download into /models (the voice-models volume) on the first start.
+FROM python:3.12-slim
+
+ARG VARIANT=cpu
+
+# security fixes released after the base image was built; ffmpeg for torchcodec (Coqui TTS)
+RUN apt-get update \
+	&& apt-get upgrade -y \
+	&& apt-get install -y --no-install-recommends ffmpeg libgomp1 \
+	&& rm -rf /var/lib/apt/lists/*
+
+COPY --from=ghcr.io/astral-sh/uv:0.7.3 /uv /usr/local/bin/uv
+
+ENV UV_COMPILE_BYTECODE=1 \
+	UV_LINK_MODE=copy \
+	UV_PROJECT_ENVIRONMENT=/app/.venv \
+	PATH=/app/.venv/bin:$PATH \
+	PYTHONUNBUFFERED=1 \
+	VOICE_MODELS_DIR=/models \
+	HF_HOME=/models/hf
+
+WORKDIR /app
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen --no-dev --extra "$VARIANT" && rm -rf /root/.cache
+
+COPY lqvoice ./lqvoice
+
+RUN useradd --system --uid 10001 --home-dir /app librequenda && mkdir -p /models && chown librequenda /models
+USER librequenda
+# torch asks for the user's name, also with another uid (compose's user:) that has none;
+# librosa's numba caches its compiled functions, but the code is read-only
+ENV USER=librequenda NUMBA_CACHE_DIR=/tmp/numba
+
+EXPOSE 8000
+# the first start downloads the models (about 2 GB): healthy once they are loaded
+HEALTHCHECK --interval=10s --timeout=5s --start-period=15m --retries=3 \
+	CMD ["python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=4)"]
+
+CMD ["python", "-m", "lqvoice"]

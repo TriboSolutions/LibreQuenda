@@ -27,7 +27,8 @@ def warm_up(config: Config) -> None:
         models.whisper(config.whisper_model, dev)
     if config.tts == "nos":
         checkpoint, voice_config = models.nos_voice(config.models_dir, config.tts_voice)
-        models.vits(str(checkpoint), str(voice_config), dev)
+        # one sentence now: the first call does not wait for the compilers' first run (numba, CUDA)
+        models.vits(str(checkpoint), str(voice_config), dev).model.tts("Ola.")
 
 
 def make_stt(config: Config, http: aiohttp.ClientSession, hotwords: str | None = None):

@@ -45,7 +45,9 @@ def config(**overrides) -> Config:
 def test_health_config_and_session():
     with TestClient(create_app(config(), warm_up=False)) as client:
         assert client.get("/health").json()["status"] == "ok"
-        assert client.get("/config.json").json()["enabled"] is True
+        runtime = client.get("/config.json").json()
+        assert runtime["enabled"] is True
+        assert runtime["thirdParties"] == {"voice": [], "text": ["Anthropic"]}
         origin = {"Origin": "https://reservas.example.gal"}
         assert client.post("/session", headers={"Origin": "https://evil.example"}).status_code == 403
         assert client.post("/session", headers=origin).json()["ticket"]
@@ -112,4 +114,28 @@ def test_tool_output_for_voice():
     facility = json.loads(for_voice(output))["facilities"][0]
     assert "logo_url" not in facility
     assert facility["free_turns"] == [{"starts_at": "2026-11-24T16:30:00+01:00", "local_time": "16:30-18:00"}]
+    assert facility["free_times"] == "16:30-18:00"
     assert for_voice("not json") == "not json"
+
+
+def test_third_parties():
+    from lqvoice.config import third_parties
+
+    local = config(llm="openai-compatible", llm_base_url="http://ollama:11434/v1")
+    assert third_parties(local) == {"voice": [], "text": []}
+    assert third_parties(config(llm="openai-compatible", llm_base_url="http://192.168.1.5:8000/v1"))["text"] == []
+    remote = config(
+        llm="openai-compatible", llm_base_url="https://api.together.xyz/v1", stt="elevenlabs", tts="elevenlabs"
+    )
+    assert third_parties(remote) == {"voice": ["ElevenLabs"], "text": ["api.together.xyz", "ElevenLabs"]}
+
+
+def test_empty_settings_take_their_defaults(monkeypatch):
+    from lqvoice.config import load
+
+    monkeypatch.setenv("VOICE_LLM_API_KEY", "key")
+    monkeypatch.setenv("VOICE_LLM_MODEL", "")
+    monkeypatch.setenv("VOICE_TTS_VOICE", "")
+    monkeypatch.setenv("VOICE_STT", "")
+    loaded = load()
+    assert (loaded.llm_model, loaded.tts_voice, loaded.stt) == ("claude-haiku-5-5", "brais", "nos-whisper")

@@ -21,6 +21,7 @@ import { PlatformAdmin } from '@/pages/PlatformAdmin'
 import { SigningIn } from '@/pages/SigningIn'
 import { DataAssistantPage } from '@/pages/DataAssistantPage'
 import { DataBubble } from '@/components/DataBubble'
+import { VoiceCall } from '@/components/VoiceCall'
 
 function App() {
   return (
@@ -52,6 +53,7 @@ function App() {
         <Route path="/:slug/:facility/entrada" element={<EntrancePage />} />
       </Routes>
       <DataBubble />
+      <VoiceCall />
     </>
   )
 }

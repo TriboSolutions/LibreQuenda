@@ -72,7 +72,12 @@ def create_app(config: settings.Config | None = None, warm_up: bool = True) -> F
     async def runtime_config():
         # the web shows the call button only when this answers (the voice profile is on)
         return JSONResponse(
-            {"enabled": True, "language": "gl", "maxCallSeconds": config.max_call_seconds},
+            {
+                "enabled": True,
+                "language": "gl",
+                "maxCallSeconds": config.max_call_seconds,
+                "thirdParties": settings.third_parties(config),
+            },
             headers={"Cache-Control": "no-store"},
         )
 

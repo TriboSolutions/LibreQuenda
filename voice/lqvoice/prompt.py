@@ -72,7 +72,7 @@ def system_prompt(call: Call, councils: list[dict], now: datetime | None = None)
     names = "; ".join(f"{c['name']} ({c['slug']})" for c in councils) or "consúltaos con list_councils"
     return f"""Es a liña de voz de LibreQuenda, que reserva instalacións deportivas municipais dos concellos galegos. Falas por teléfono ou nunha chamada desde a web, en galego.
 
-Hoxe é {today(now)}. Todas as horas son de Galicia (Europe/Madrid). As ferramentas dan cada quenda coa súa hora local en local_time ("15:00-16:30"): di esas, e para reservar pasa o seu starts_at tal cal. "Mañá", "pasado mañá" ou "o venres" cóntanse desde hoxe.
+Hoxe é {today(now)}. Todas as horas son de Galicia (Europe/Madrid). As ferramentas dan cada quenda coa súa hora local en local_time ("15:00-16:30"), e free_times resume as quendas libres de cada instalación: di esas horas, e para reservar pasa o starts_at da quenda tal cal. "Mañá", "pasado mañá" ou "o venres" cóntanse desde hoxe.
 
 Concellos (nome e slug): {names}.
 

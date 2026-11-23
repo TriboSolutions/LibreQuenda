@@ -7,20 +7,33 @@ requires-python = ">=3.12,<3.13"
 dependencies = [
     "pipecat-ai[anthropic,deepgram,mcp,openai,piper,websocket,whisper]==1.15.0",
     "coqui-tts[codec]==0.28.0",
-    "torch==2.11.0",
-    "torchaudio==2.11.0",
     "transformers>=4.57,<6",
     "fastapi>=0.115,<1",
     "uvicorn[standard]>=0.32,<1",
     "huggingface-hub>=0.36",
-    "six>=1.17.0",
+    "six>=1.17.0", # coqui-tts imports it without depending on it
 ]
+
+[project.optional-dependencies]
+# PyTorch for the machine the models run on: one of them (uv sync --extra cpu, or --extra cuda)
+cpu = ["torch==2.11.0", "torchaudio==2.11.0"]
+cuda = ["torch==2.11.0", "torchaudio==2.11.0"]
 
 [dependency-groups]
 dev = ["pytest>=8", "pytest-asyncio>=0.24", "ruff>=0.8"]
 
 [tool.uv]
 package = false
+conflicts = [[{ extra = "cpu" }, { extra = "cuda" }]]
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu", extra = "cpu" }]
+torchaudio = [{ index = "pytorch-cpu", extra = "cpu" }]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
 
 [tool.ruff]
 line-length = 120

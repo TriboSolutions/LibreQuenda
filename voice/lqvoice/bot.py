@@ -63,6 +63,9 @@ def for_voice(output: str) -> str:
         if not isinstance(value, dict):
             return value
         out = {k: clean(v) for k, v in value.items() if not k.endswith("_url")}
+        if isinstance(out.get("free_turns"), list):
+            # the free turns at a glance: models mix up turns across facilities in nested lists
+            out["free_times"] = ", ".join(t.get("local_time", "") for t in out["free_turns"]) or "none"
         try:
             start = datetime.fromisoformat(out["starts_at"]).astimezone(prompt.TIMEZONE)
             end = datetime.fromisoformat(out.pop("ends_at")).astimezone(prompt.TIMEZONE)
