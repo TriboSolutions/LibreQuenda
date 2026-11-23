@@ -1,6 +1,7 @@
 """Pipecat services for Proxecto Nós' Galician models (Apache-2.0), running on this server."""
 
 import asyncio
+import re
 from collections.abc import AsyncGenerator
 
 import numpy as np
@@ -73,6 +74,20 @@ class NosWav2Vec2STTService(SegmentedSTTService):
             yield TranscriptionFrame(text, self._user_id, time_now_iso8601(), Language.GL)
 
 
+def clauses(text: str, longest: int = 90) -> list[str]:
+    """A long sentence in pieces at its commas, so the first one plays while the next is synthesised."""
+    if len(text) <= longest:
+        return [text]
+    pieces, current = [], ""
+    for part in re.split(r"(?<=[,;:])\s+", text):
+        if current and len(current) + len(part) > longest:
+            pieces.append(current)
+            current = part
+        else:
+            current = f"{current} {part}".strip()
+    return [*pieces, current] if current else pieces
+
+
 class NosTTSService(TTSService):
     """Nós' VITS voices (graphemes: no phonetic front end), sentence by sentence as the agent writes."""
 
@@ -80,6 +95,8 @@ class NosTTSService(TTSService):
         super().__init__(
             push_start_frame=True,
             push_stop_frames=True,
+            # a long sentence on a CPU takes seconds: not a silent TTS
+            stop_frame_timeout_s=10.0,
             settings=TTSSettings(model=None, voice=voice, language=Language.GL),
             **kwargs,
         )
@@ -99,10 +116,11 @@ class NosTTSService(TTSService):
             return
         try:
             await self.start_tts_usage_metrics(text)
-            audio = await asyncio.to_thread(self._synthesize, text)
-            await self.stop_ttfb_metrics()
-            audio = await self._resampler.resample(audio, NOS_SAMPLE_RATE, self.sample_rate)
-            yield TTSAudioRawFrame(audio=audio, sample_rate=self.sample_rate, num_channels=1, context_id=context_id)
+            for piece in clauses(text):
+                audio = await asyncio.to_thread(self._synthesize, piece)
+                await self.stop_ttfb_metrics()
+                audio = await self._resampler.resample(audio, NOS_SAMPLE_RATE, self.sample_rate)
+                yield TTSAudioRawFrame(audio=audio, sample_rate=self.sample_rate, num_channels=1, context_id=context_id)
         except Exception as e:
             logger.exception("Nós TTS failed")
             yield ErrorFrame(error=f"Nós TTS failed: {e}")

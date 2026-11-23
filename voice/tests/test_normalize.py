@@ -54,6 +54,7 @@ def test_time_of_day(hour, minute, said):
             "das 15:00 ás 16:30 e de 19:30 a 21:00",
             "das tres ás catro e media da tarde e de sete e media da tarde a nove da noite",
         ),
+        ("ás 15:00 (15:00-16:30)", "ás tres da tarde (tres a catro e media da tarde)"),
         ("O 24/11 ou o 2026-11-25", "O vinte e catro de novembro ou o vinte e cinco de novembro"),
         ("Chama ao 986 787 060.", "Chama ao nove oito seis, sete oito sete, cero seis cero."),
         ("Quedan 2 pistas e 3 prazas", "Quedan dúas pistas e tres prazas"),

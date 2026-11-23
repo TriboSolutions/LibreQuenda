@@ -203,6 +203,7 @@ TIME = re.compile(
 )
 
 
+TIME_RANGE = re.compile(r"\b(\d{1,2}[:.]\d{2})\s*[-–]\s*(\d{1,2}[:.]\d{2})\b")
 # "de tres da tarde a catro da tarde" -> "de tres a catro da tarde"
 SAME_PART = re.compile(
     r"(da madrugada|da mañá|do mediodía|da tarde|da noite) ((?:a|á|ás|ata|ata as|ata a) (?:[a-záéíóúñ]+ ){1,4}?)\1"
@@ -257,6 +258,7 @@ def normalize(text: str) -> str:
     for pattern, said in ABBREVIATIONS:
         text = re.sub(pattern, said, text)
     text = DATE.sub(_date, text)
+    text = TIME_RANGE.sub(r"\1 a \2", text)
     text = TIME.sub(_time, text)
     text = SAME_PART.sub(r"\2\1", text)
     text = PHONE.sub(_phone, text)
