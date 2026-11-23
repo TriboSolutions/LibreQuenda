@@ -27,8 +27,8 @@ func TestCouncilExportZip(t *testing.T) {
 		}},
 		hours: []model.OpeningHour{{ID: uuid.New(), FacilityID: facility, Weekday: 1, OpensAt: time.Date(0, 1, 1, 9, 30, 0, 0, time.UTC), ClosesAt: time.Date(0, 1, 1, 21, 0, 0, 0, time.UTC)}},
 		bookings: []model.ExportBookingsRow{
-			{ID: uuid.New(), FacilityID: facility, UserID: uuid.NullUUID{UUID: owner, Valid: true}, Status: model.BookingStatusConfirmed},
-			{ID: uuid.New(), FacilityID: facility, Status: model.BookingStatusCancelled, CancelledBy: model.NullBookingCanceller{BookingCanceller: model.BookingCancellerCouncil, Valid: true}},
+			{ID: uuid.New(), FacilityID: facility, UserID: uuid.NullUUID{UUID: owner, Valid: true}, Status: model.BookingStatusConfirmed, Channel: model.BookingChannelOnline},
+			{ID: uuid.New(), FacilityID: facility, Status: model.BookingStatusCancelled, Channel: model.BookingChannelPhone, CancelledBy: model.NullBookingCanceller{BookingCanceller: model.BookingCancellerCouncil, Valid: true}},
 		},
 		participants: []model.ExportBookingParticipantsRow{{ID: uuid.New(), IsGuest: true}},
 		issues:       []model.FacilityIssue{{ID: uuid.New(), Category: model.IssueCategoryLighting, Description: "No light", Status: model.IssueStatusNew}},
@@ -88,7 +88,7 @@ func TestCouncilExportZip(t *testing.T) {
 	}
 	r, _ = files["bookings.csv"].Open()
 	rows, _ = csv.NewReader(r).ReadAll()
-	if rows[1][2] != owner.String() || rows[2][2] != "" || rows[2][8] != "council" {
+	if rows[1][2] != owner.String() || rows[2][2] != "" || rows[2][9] != "council" || rows[1][6] != "online" || rows[2][6] != "phone" {
 		t.Errorf("bookings %v", rows[1:])
 	}
 }

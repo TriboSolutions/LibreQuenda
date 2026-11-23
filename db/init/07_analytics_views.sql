@@ -113,7 +113,7 @@ SELECT b.id, b.facility_id, b.user_id, b.starts_at, b.ends_at, b.status, b.kind,
        b.created_at, b.updated_at
 FROM public.booking b JOIN public.facility f ON f.id = b.facility_id
 WHERE analytics.sees(f.tenant_id);
-COMMENT ON VIEW analytics.booking IS 'Bookings. status: confirmed or cancelled; kind: private, public (others can join) or event (the council''s, no owner); channel: online or staff; cancelled_by: user or council; checked_in_method: reader, entry_code, printed_qr, nfc or staff. Times are UTC timestamps: convert with AT TIME ZONE ''Europe/Madrid''';
+COMMENT ON VIEW analytics.booking IS 'Bookings. status: confirmed or cancelled; kind: private, public (others can join) or event (the council''s, no owner); channel: online (web or app), staff or phone (the voice line); cancelled_by: user or council; checked_in_method: reader, entry_code, printed_qr, nfc or staff. Times are UTC timestamps: convert with AT TIME ZONE ''Europe/Madrid''';
 
 CREATE VIEW analytics.booking_participant WITH (security_barrier = TRUE) AS
 SELECT p.id, p.booking_id, p.user_id, (p.user_id IS NULL) AS is_guest, p.guest_age, p.joined_at

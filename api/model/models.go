@@ -61,6 +61,7 @@ type BookingChannel string
 const (
 	BookingChannelOnline BookingChannel = "online"
 	BookingChannelStaff  BookingChannel = "staff"
+	BookingChannelPhone  BookingChannel = "phone"
 )
 
 func (e *BookingChannel) Scan(src interface{}) error {

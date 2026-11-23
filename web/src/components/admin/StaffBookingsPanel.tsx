@@ -459,6 +459,7 @@ function DetailsDialog({ slug, token, booking, zone, facilityName, reader, onClo
               </span>
             )}
             {b.booked_by_staff && !b.is_event && <span className={`${pill} bg-pill-neutral-bg text-pill-neutral-ink`}>{t('staff.bookedByStaff')}</span>}
+            {b.channel === 'phone' && <span className={`${pill} bg-pill-neutral-bg text-pill-neutral-ink`}>{t('staff.bookedByPhone')}</span>}
             {b.checked_in_at && <span className={`${pill} num bg-pill-positive-bg text-pill-positive-ink`}>{t('staff.checkedIn', { time: formatTime(b.checked_in_at, zone) })}</span>}
             {b.participant_count > 0 && <span className={`${pill} num bg-pill-neutral-bg text-pill-neutral-ink`}>{t('staff.joined', { count: b.participant_count })}</span>}
           </p>

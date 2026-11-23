@@ -77,6 +77,8 @@ services:
       SMTP_FROM: ${SMTP_FROM:-}
       # Encrypts stored credentials (councils' SMTP passwords)
       SECRETS_KEY: ${SECRETS_KEY:?set SECRETS_KEY in .env}
+      # Shared secret of the voice line (voice/): empty = no phone line
+      VOICE_API_KEY: ${VOICE_API_KEY:-}
       PUBLIC_URL: ${PUBLIC_SCHEME}://${WEB_DOMAIN}
     volumes:
       - runtime-config:/runtime:ro

@@ -438,6 +438,7 @@ func (data *councilExport) tables(media map[string]string) []exportTable {
 			{"starts_at", "datetime", "Starts"},
 			{"ends_at", "datetime", "Ends"},
 			{"status", "string", "confirmed or cancelled"},
+			{"channel", "string", "How it was booked: online (web or app), staff (the council's staff) or phone (the voice line)"},
 			{"rules_accepted_at", "datetime", "When the person accepted the usage rules"},
 			{"cancelled_at", "datetime", "When it was cancelled"},
 			{"cancelled_by", "string", "user (the person) or council (a closure or the facility deactivated)"},
@@ -463,7 +464,7 @@ func (data *councilExport) tables(media map[string]string) []exportTable {
 		}
 		bookings.rows = append(bookings.rows, []string{
 			b.ID.String(), b.FacilityID.String(), exportNullUUID(b.UserID), exportTime(b.StartsAt), exportTime(b.EndsAt),
-			string(b.Status), exportNullTime(b.RulesAcceptedAt), exportNullTime(b.CancelledAt), cancelledBy,
+			string(b.Status), string(b.Channel), exportNullTime(b.RulesAcceptedAt), exportNullTime(b.CancelledAt), cancelledBy,
 			exportNullTime(b.CheckedInAt), exportNullUUID(b.CheckedInDeviceID), checkedInMethod, exportTime(b.CreatedAt), exportTime(b.UpdatedAt),
 		})
 	}

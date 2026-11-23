@@ -15,6 +15,7 @@ CREATE INDEX idx_closure_facility         ON closure (facility_id, starts_at);
 
 CREATE INDEX idx_booking_user             ON booking (user_id, starts_at DESC);
 CREATE INDEX idx_booking_facility_start   ON booking (facility_id, starts_at);
+CREATE INDEX idx_booking_holder_phone     ON booking (holder_phone, starts_at DESC) WHERE holder_phone IS NOT NULL;
 CREATE UNIQUE INDEX idx_booking_checkin_token ON booking (checkin_token);
 CREATE UNIQUE INDEX idx_booking_invite_token  ON booking (invite_token) WHERE invite_token IS NOT NULL;
 CREATE INDEX idx_booking_participant_booking  ON booking_participant (booking_id);

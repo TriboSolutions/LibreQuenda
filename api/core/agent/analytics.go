@@ -17,14 +17,18 @@ import (
 
 var errNotAdmin = errors.New("only council administrators look at the analytics, and only for the councils they run")
 
-// scope: what the signed-in person may analyse.
+// scope: what the signed-in person may analyse. Not on a sign-in by phone: an
+// emailed code is less than the administration's own sign-in (second factor).
 func (a *agent) scope(ctx context.Context, req *mcp.CallToolRequest) (analytics.Scope, error) {
-	var userId, err = a.user(ctx, req)
+	var p, err = a.signedIn(ctx, req)
 	if err != nil {
 		return analytics.Scope{}, err
 	}
+	if p.byPhone {
+		return analytics.Scope{}, errors.New("the analytics are not open to a sign-in by phone: use them from the web or with sign_in")
+	}
 	var queries = model.New(a.db)
-	var roles, rolesErr = queries.GetUserTenantRoles(ctx, userId)
+	var roles, rolesErr = queries.GetUserTenantRoles(ctx, p.id)
 	if rolesErr != nil {
 		return analytics.Scope{}, errors.New("your councils could not be read")
 	}

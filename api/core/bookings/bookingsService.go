@@ -94,9 +94,28 @@ func (s *bookingsService) GetMyBookings(ctx context.Context, userId uuid.UUID, p
 // CreateBooking accepts only a slot that the schedule reports as free right now,
 // so the rules shown on the day view and the rules enforced here are the same code.
 func (s *bookingsService) CreateBooking(ctx context.Context, userId uuid.UUID, body CreateBookingDto) (*BookingDto, *shared.ErrorResponse) {
+	return s.createBooking(ctx, Account(userId), model.BookingChannelOnline, body)
+}
+
+// PhoneBooking: a booking made on the voice line, for the caller's account once
+// they signed in, or else for their name and number with the same per-person
+// rules, counted by the number (see Booker).
+func (s *bookingsService) PhoneBooking(ctx context.Context, who Booker, body CreateBookingDto) (*BookingDto, *shared.ErrorResponse) {
+	if !who.account() {
+		if who.Phone == "" || who.Name == "" {
+			return nil, &shared.ErrorResponse{Code: http.StatusUnprocessableEntity, Message: "errors.phone_holder_required"}
+		}
+		body.Public = false // nobody to own the joins
+	}
+	return s.createBooking(ctx, who, model.BookingChannelPhone, body)
+}
+
+func (s *bookingsService) createBooking(ctx context.Context, who Booker, channel model.BookingChannel, body CreateBookingDto) (*BookingDto, *shared.ErrorResponse) {
 	var queries = model.New(s.db)
-	if notReady := ReadyToBook(ctx, queries, userId); notReady != nil {
-		return nil, notReady
+	if who.account() {
+		if notReady := ReadyToBook(ctx, queries, who.User); notReady != nil {
+			return nil, notReady
+		}
 	}
 	var facility, err = queries.GetFacilityForBooking(ctx, body.FacilityId)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -106,18 +125,18 @@ func (s *bookingsService) CreateBooking(ctx context.Context, userId uuid.UUID, b
 		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.booking_failed"}
 	}
 
-	var slot, slotErr = s.bookableSlot(ctx, queries, userId, facility, body.StartsAt)
+	var slot, slotErr = s.bookableSlot(ctx, queries, who, facility, body.StartsAt)
 	if slotErr != nil {
 		return nil, slotErr
 	}
-	var booking, bookErr = s.book(ctx, queries, userId, facility, slot)
+	var booking, bookErr = s.book(ctx, queries, who, channel, facility, slot)
 	if bookErr != nil || !body.Public {
 		return booking, bookErr
 	}
 	// public: only where others can join (room for more than the owner); the booking stands either way
 	if facility.Capacity.Valid && facility.Capacity.Int32 > 1 {
 		var id = uuid.MustParse(booking.Id)
-		if _, err := queries.SetBookingPublic(ctx, model.SetBookingPublicParams{ID: id, OwnerID: uuid.NullUUID{UUID: userId, Valid: true}, IsPublic: true, PublicDescription: sql.NullString{String: body.PublicDescription, Valid: true}}); err == nil {
+		if _, err := queries.SetBookingPublic(ctx, model.SetBookingPublicParams{ID: id, OwnerID: who.user(), IsPublic: true, PublicDescription: sql.NullString{String: body.PublicDescription, Valid: true}}); err == nil {
 			booking.IsPublic = true
 			booking.Kind = string(model.BookingKindPublic)
 			booking.PublicDescription = body.PublicDescription
@@ -127,11 +146,13 @@ func (s *bookingsService) CreateBooking(ctx context.Context, userId uuid.UUID, b
 }
 
 // book creates the booking of a turn already found free, within the person's
-// limit at the facility, and sends the confirmation.
-func (s *bookingsService) book(ctx context.Context, queries *model.Queries, userId uuid.UUID, facility model.GetFacilityForBookingRow, slot *schedule.Slot) (*BookingDto, *shared.ErrorResponse) {
+// limit at the facility, and sends the confirmation (to an account: a caller
+// without one hears it on the line).
+func (s *bookingsService) book(ctx context.Context, queries *model.Queries, who Booker, channel model.BookingChannel, facility model.GetFacilityForBookingRow, slot *schedule.Slot) (*BookingDto, *shared.ErrorResponse) {
 	var active, err = queries.CountActiveBookingsByUserFacility(ctx, model.CountActiveBookingsByUserFacilityParams{
-		UserID:     uuid.NullUUID{UUID: userId, Valid: true},
-		FacilityID: facility.ID,
+		UserID:      who.user(),
+		HolderPhone: who.phone(),
+		FacilityID:  facility.ID,
 	})
 	if err != nil {
 		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.booking_failed"}
@@ -139,13 +160,13 @@ func (s *bookingsService) book(ctx context.Context, queries *model.Queries, user
 	if active >= int64(facility.MaxActiveBookingsPerUser) {
 		return nil, &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.booking_limit_reached"}
 	}
-	if limitErr := s.personalLimits(ctx, queries, userId, facility, slot, uuid.NullUUID{}); limitErr != nil {
+	if limitErr := s.personalLimits(ctx, queries, who, facility, slot, uuid.NullUUID{}); limitErr != nil {
 		return nil, limitErr
 	}
 
 	var booking model.Booking
 	var overlapErr *shared.ErrorResponse
-	booking, overlapErr, err = s.insertBooking(ctx, userId, facility, slot)
+	booking, overlapErr, err = s.insertBooking(ctx, who, channel, facility, slot)
 	if overlapErr != nil {
 		return nil, overlapErr
 	}
@@ -157,7 +178,9 @@ func (s *bookingsService) book(ctx context.Context, queries *model.Queries, user
 		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.booking_failed"}
 	}
 
-	s.notify(ctx, queries, userId, booking.ID, model.NotificationTypeBookingConfirmed, facility.Name, booking.StartsAt, booking.EndsAt)
+	if who.account() {
+		s.notify(ctx, queries, who.User, booking.ID, model.NotificationTypeBookingConfirmed, facility.Name, booking.StartsAt, booking.EndsAt)
+	}
 
 	var cancelUntil = booking.StartsAt.Add(-time.Duration(facility.MinCancelHours) * time.Hour)
 	return &BookingDto{
@@ -177,8 +200,8 @@ func (s *bookingsService) book(ctx context.Context, queries *model.Queries, user
 
 // insertBooking creates the booking unless the person is already somewhere else
 // at that time, in any facility or council, as owner or invited (UserHasOverlappingBooking),
-// or it breaks the rules beyond the facility (CouncilLimits).
-func (s *bookingsService) insertBooking(ctx context.Context, userId uuid.UUID, facility model.GetFacilityForBookingRow, slot *schedule.Slot) (model.Booking, *shared.ErrorResponse, error) {
+// or it breaks the rules beyond the facility (councilLimits).
+func (s *bookingsService) insertBooking(ctx context.Context, who Booker, channel model.BookingChannel, facility model.GetFacilityForBookingRow, slot *schedule.Slot) (model.Booking, *shared.ErrorResponse, error) {
 	var facilityId = facility.ID
 	var tx, err = s.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -186,20 +209,24 @@ func (s *bookingsService) insertBooking(ctx context.Context, userId uuid.UUID, f
 	}
 	defer tx.Rollback()
 	var queries = model.New(tx)
-	var user = uuid.NullUUID{UUID: userId, Valid: true}
 
-	if err = queries.LockUserBookings(ctx, userId); err != nil {
+	if who.account() {
+		err = queries.LockUserBookings(ctx, who.User)
+	} else {
+		err = queries.LockPhoneBookings(ctx, who.Phone)
+	}
+	if err != nil {
 		return model.Booking{}, nil, err
 	}
 	var overlaps bool
-	overlaps, err = queries.UserHasOverlappingBooking(ctx, model.UserHasOverlappingBookingParams{UserID: user, StartsAt: slot.Start, EndsAt: slot.End})
+	overlaps, err = queries.UserHasOverlappingBooking(ctx, model.UserHasOverlappingBookingParams{UserID: who.user(), HolderPhone: who.phone(), StartsAt: slot.Start, EndsAt: slot.End})
 	if err != nil {
 		return model.Booking{}, nil, err
 	}
 	if overlaps {
 		return model.Booking{}, &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.booking_overlaps"}, nil
 	}
-	if limitErr := CouncilLimits(ctx, queries, userId, facility.TenantID, true); limitErr != nil {
+	if limitErr := councilLimits(ctx, queries, who, facility.TenantID, true); limitErr != nil {
 		return model.Booking{}, limitErr, nil
 	}
 
@@ -207,8 +234,13 @@ func (s *bookingsService) insertBooking(ctx context.Context, userId uuid.UUID, f
 	if err = queries.LockFacilityBookings(ctx, facilityId); err != nil {
 		return model.Booking{}, nil, err
 	}
+	var params = model.CreateBookingParams{FacilityID: facilityId, UserID: who.user(), StartsAt: slot.Start, EndsAt: slot.End, Channel: channel}
+	if !who.account() {
+		params.HolderName = sql.NullString{String: who.Name, Valid: true}
+		params.HolderPhone = who.phone()
+	}
 	var booking model.Booking
-	booking, err = queries.CreateBooking(ctx, model.CreateBookingParams{FacilityID: facilityId, UserID: user, StartsAt: slot.Start, EndsAt: slot.End})
+	booking, err = queries.CreateBooking(ctx, params)
 	if err != nil {
 		return model.Booking{}, nil, err
 	}
@@ -217,7 +249,7 @@ func (s *bookingsService) insertBooking(ctx context.Context, userId uuid.UUID, f
 
 // bookableSlot: the turn starting at startsAt, if it is free right now and the
 // person is old enough on that day (in the council's time zone).
-func (s *bookingsService) bookableSlot(ctx context.Context, queries *model.Queries, userId uuid.UUID, facility model.GetFacilityForBookingRow, startsAt time.Time) (*schedule.Slot, *shared.ErrorResponse) {
+func (s *bookingsService) bookableSlot(ctx context.Context, queries *model.Queries, who Booker, facility model.GetFacilityForBookingRow, startsAt time.Time) (*schedule.Slot, *shared.ErrorResponse) {
 	var loc, locErr = time.LoadLocation(facility.Timezone)
 	if locErr != nil {
 		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.booking_failed"}
@@ -225,7 +257,7 @@ func (s *bookingsService) bookableSlot(ctx context.Context, queries *model.Queri
 	var start = startsAt.In(loc)
 	var day = time.Date(start.Year(), start.Month(), start.Day(), 0, 0, 0, 0, loc)
 
-	if ageErr := checkEligible(ctx, queries, userId, facility, day); ageErr != nil {
+	if ageErr := checkEligible(ctx, queries, who, facility, day); ageErr != nil {
 		return nil, ageErr
 	}
 	return s.findSlot(ctx, queries, facility, loc, day, day.AddDate(0, 0, 1), start, true)
@@ -233,11 +265,21 @@ func (s *bookingsService) bookableSlot(ctx context.Context, queries *model.Queri
 
 // checkEligible: the person may book the facility on that day: a verified
 // resident where it asks for one (CheckResident), and old enough (checkAge).
-func checkEligible(ctx context.Context, queries *model.Queries, userId uuid.UUID, facility model.GetFacilityForBookingRow, day time.Time) *shared.ErrorResponse {
-	if residentErr := CheckResident(ctx, queries, userId, facility.TenantID, facility.ResidentsOnly); residentErr != nil {
+// A caller without an account can prove neither: those facilities ask them to sign in.
+func checkEligible(ctx context.Context, queries *model.Queries, who Booker, facility model.GetFacilityForBookingRow, day time.Time) *shared.ErrorResponse {
+	if !who.account() {
+		switch {
+		case facility.ResidentsOnly:
+			return &shared.ErrorResponse{Code: http.StatusForbidden, Message: "errors.phone_residents_only"}
+		case facility.MinAge.Valid:
+			return &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.phone_age_restricted", Args: []any{facility.MinAge.Int32}}
+		}
+		return nil
+	}
+	if residentErr := CheckResident(ctx, queries, who.User, facility.TenantID, facility.ResidentsOnly); residentErr != nil {
 		return residentErr
 	}
-	return checkAge(ctx, queries, userId, facility, day)
+	return checkAge(ctx, queries, who.User, facility, day)
 }
 
 // CheckResident: at a residents_only facility, the person is one of the
@@ -403,10 +445,10 @@ func (s *bookingsService) QuickBook(ctx context.Context, userId uuid.UUID, facil
 	if reason != "" {
 		return nil, &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors." + reason}
 	}
-	if ageErr := checkEligible(ctx, queries, userId, facility, startOfDay(slot.Start, loc)); ageErr != nil {
+	if ageErr := checkEligible(ctx, queries, Account(userId), facility, startOfDay(slot.Start, loc)); ageErr != nil {
 		return nil, ageErr
 	}
-	return s.book(ctx, queries, userId, facility, &slot)
+	return s.book(ctx, queries, Account(userId), model.BookingChannelOnline, facility, &slot)
 }
 
 // FlashTurn picks what a personal QR books at `now`, given the rest of the turn
@@ -484,11 +526,11 @@ func (s *bookingsService) ChangeBooking(ctx context.Context, userId uuid.UUID, b
 	if err != nil {
 		return nil, changeFailed
 	}
-	var slot, slotErr = s.bookableSlot(ctx, queries, userId, facility, body.StartsAt)
+	var slot, slotErr = s.bookableSlot(ctx, queries, Account(userId), facility, body.StartsAt)
 	if slotErr != nil {
 		return nil, slotErr
 	}
-	if limitErr := s.personalLimits(ctx, queries, userId, facility, slot, uuid.NullUUID{UUID: bookingId, Valid: true}); limitErr != nil {
+	if limitErr := s.personalLimits(ctx, queries, Account(userId), facility, slot, uuid.NullUUID{UUID: bookingId, Valid: true}); limitErr != nil {
 		return nil, limitErr
 	}
 
@@ -602,9 +644,21 @@ func (s *bookingsService) moveBooking(ctx context.Context, userId uuid.UUID, boo
 }
 
 func (s *bookingsService) CancelBooking(ctx context.Context, userId uuid.UUID, bookingId uuid.UUID) *shared.ErrorResponse {
+	return s.cancelBooking(ctx, Account(userId), bookingId)
+}
+
+// CancelPhoneBooking: a caller on the voice line without an account cancels one
+// of the bookings made for their number.
+func (s *bookingsService) CancelPhoneBooking(ctx context.Context, phone string, bookingId uuid.UUID) *shared.ErrorResponse {
+	if phone == "" {
+		return &shared.ErrorResponse{Code: http.StatusNotFound, Message: "errors.booking_not_found"}
+	}
+	return s.cancelBooking(ctx, Booker{Phone: phone}, bookingId)
+}
+
+func (s *bookingsService) cancelBooking(ctx context.Context, who Booker, bookingId uuid.UUID) *shared.ErrorResponse {
 	var queries = model.New(s.db)
-	var owner = uuid.NullUUID{UUID: userId, Valid: true}
-	var booking, err = queries.GetBookingForUser(ctx, model.GetBookingForUserParams{ID: bookingId, UserID: owner})
+	var booking, err = queries.GetBookingForUser(ctx, model.GetBookingForUserParams{ID: bookingId, UserID: who.user(), HolderPhone: who.phone()})
 	if errors.Is(err, sql.ErrNoRows) {
 		return &shared.ErrorResponse{Code: http.StatusNotFound, Message: "errors.booking_not_found"}
 	}
@@ -619,7 +673,7 @@ func (s *bookingsService) CancelBooking(ctx context.Context, userId uuid.UUID, b
 	}
 
 	var cancelled model.Booking
-	cancelled, err = queries.CancelBooking(ctx, model.CancelBookingParams{ID: bookingId, UserID: owner})
+	cancelled, err = queries.CancelBooking(ctx, model.CancelBookingParams{ID: bookingId, UserID: who.user(), HolderPhone: who.phone()})
 	if err != nil {
 		return &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.cancel_failed"}
 	}
@@ -629,10 +683,13 @@ func (s *bookingsService) CancelBooking(ctx context.Context, userId uuid.UUID, b
 	if facilityErr == nil {
 		facilityName = facility.Name
 	}
+	if !who.account() {
+		return nil // nobody joins a booking without an account, and the caller hears it on the line
+	}
 	// they have just done it: an email receipt (it closes the confirmation in their
 	// inbox, and they'd notice if it wasn't them), not a notice in the bell or a push
 	err = queries.CreateEmailReceipt(ctx, model.CreateEmailReceiptParams{
-		UserID:    userId,
+		UserID:    who.User,
 		BookingID: uuid.NullUUID{UUID: cancelled.ID, Valid: true},
 		Type:      model.NotificationTypeBookingCancelled,
 		Payload:   NotificationPayload(facilityName, cancelled.StartsAt, cancelled.EndsAt),
@@ -641,7 +698,7 @@ func (s *bookingsService) CancelBooking(ctx context.Context, userId uuid.UUID, b
 		shared.Logger.Error("failed to record the cancellation receipt for booking %s: %v", cancelled.ID, err)
 	}
 	// who joined loses the place too: they are told that its owner cancelled it, and who (first name)
-	var ownerName, _ = queries.GetUserFullName(ctx, userId)
+	var ownerName, _ = queries.GetUserFullName(ctx, who.User)
 	var payload = notice.Payload(
 		notice.Cancelled{FacilityID: cancelled.FacilityID, FacilityName: facilityName, StartsAt: cancelled.StartsAt, EndsAt: cancelled.EndsAt},
 		map[string]any{"cause": notice.CauseOwner, "name": notice.FirstName(ownerName)},
@@ -706,4 +763,30 @@ func readiness(hasBirthDate, emailVerified bool) *shared.ErrorResponse {
 		return &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.email_unverified"}
 	}
 	return nil
+}
+
+// PhoneBookings: the upcoming bookings made on the voice line for a caller
+// without an account, by their number, soonest first.
+func (s *bookingsService) PhoneBookings(ctx context.Context, phone string) ([]PhoneBookingDto, *shared.ErrorResponse) {
+	var rows, err = model.New(s.db).ListPhoneBookings(ctx, sql.NullString{String: phone, Valid: true})
+	if err != nil {
+		return nil, &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.bookings_load_failed"}
+	}
+	var now = time.Now()
+	var out = make([]PhoneBookingDto, 0, len(rows))
+	for _, row := range rows {
+		var cancelUntil = row.StartsAt.Add(-time.Duration(row.MinCancelHours) * time.Hour)
+		out = append(out, PhoneBookingDto{HolderName: row.HolderName, BookingDto: BookingDto{
+			Id: row.ID.String(), StartsAt: row.StartsAt, EndsAt: row.EndsAt, Status: string(model.BookingStatusConfirmed),
+			FacilityId: row.FacilityID.String(), FacilityName: row.FacilityName, TenantName: row.TenantName,
+			CanCancel: now.Before(cancelUntil), CancelUntil: cancelUntil, Kind: string(row.Kind), Role: RoleOwner,
+		}})
+	}
+	return out, nil
+}
+
+// PhoneBookingDto: a booking for a phone caller's name and number.
+type PhoneBookingDto struct {
+	BookingDto
+	HolderName string `json:"holder_name"`
 }

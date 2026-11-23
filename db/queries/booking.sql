@@ -1,22 +1,30 @@
 -- name: CreateBooking :one
+-- For an account (user_id), or on the voice line for a caller without one (holder_*).
 -- Overlaps are rejected by the exclusion constraint on booking.
 INSERT INTO booking (
     facility_id,
     user_id,
     starts_at,
     ends_at,
-    rules_accepted_at
+    rules_accepted_at,
+    channel,
+    holder_name,
+    holder_phone
 ) VALUES (
     sqlc.arg('facility_id'),
-    sqlc.arg('user_id'),
+    sqlc.narg('user_id'),
     sqlc.arg('starts_at'),
     sqlc.arg('ends_at'),
-    NOW()
+    NOW(),
+    sqlc.arg('channel'),
+    sqlc.narg('holder_name'),
+    sqlc.narg('holder_phone')
 )
 RETURNING
     *;
 
 -- name: CancelBooking :one
+-- The owner's: their account's, or on the voice line the caller's number's (holder_phone).
 UPDATE booking
 SET
     status       = 'cancelled',
@@ -24,7 +32,7 @@ SET
     cancelled_by = 'user'
 WHERE
     id = sqlc.arg('id')
-    AND user_id = sqlc.arg('user_id')
+    AND (user_id = sqlc.arg('user_id') OR holder_phone = sqlc.narg('holder_phone'))
     AND status = 'confirmed'
 RETURNING
     *;
@@ -150,7 +158,7 @@ SELECT
 FROM
     booking
 WHERE
-    user_id = sqlc.arg('user_id')
+    (user_id = sqlc.arg('user_id') OR holder_phone = sqlc.narg('holder_phone'))
     AND facility_id = sqlc.arg('facility_id')
     AND status = 'confirmed'
     AND ends_at > NOW();
@@ -168,12 +176,16 @@ FROM
     JOIN facility f ON f.id = b.facility_id
 WHERE
     b.id = sqlc.arg('id')
-    AND b.user_id = sqlc.arg('user_id');
+    AND (b.user_id = sqlc.arg('user_id') OR b.holder_phone = sqlc.narg('holder_phone'));
 
 -- name: LockUserBookings :exec
 -- Inside a transaction: one person's bookings and joins wait for each other,
 -- so two requests at once cannot both pass the overlap check.
 SELECT pg_advisory_xact_lock(hashtextextended(sqlc.arg('user_id')::UUID::TEXT, 0));
+
+-- name: LockPhoneBookings :exec
+-- The same for a caller on the voice line without an account, by their number.
+SELECT pg_advisory_xact_lock(hashtextextended('phone:' || sqlc.arg('holder_phone')::TEXT, 0));
 
 -- name: LockFacilityBookings :exec
 -- Inside a transaction, just before writing a booking's time: bookings of one
@@ -197,6 +209,7 @@ SELECT EXISTS (
         AND b.ends_at   > sqlc.arg('starts_at')
         AND (
             b.user_id = sqlc.arg('user_id')
+            OR b.holder_phone = sqlc.narg('holder_phone')
             OR EXISTS (
                 SELECT 1 FROM booking_participant p
                 WHERE p.booking_id = b.id AND p.user_id = sqlc.arg('user_id')
@@ -294,7 +307,7 @@ SELECT
 FROM
     booking
 WHERE
-    user_id = sqlc.arg('user_id')
+    (user_id = sqlc.arg('user_id') OR holder_phone = sqlc.narg('holder_phone'))
     AND facility_id = sqlc.arg('facility_id')
     AND status = 'confirmed'
     AND starts_at >= sqlc.arg('range_start')
@@ -310,7 +323,7 @@ SELECT
 FROM
     booking
 WHERE
-    user_id = sqlc.arg('user_id')
+    (user_id = sqlc.arg('user_id') OR holder_phone = sqlc.narg('holder_phone'))
     AND facility_id = sqlc.arg('facility_id')
     AND status = 'confirmed'
     AND ends_at >= sqlc.arg('range_start')
@@ -327,7 +340,7 @@ SELECT
 FROM
     booking
 WHERE
-    user_id = sqlc.arg('user_id')
+    (user_id = sqlc.arg('user_id') OR holder_phone = sqlc.narg('holder_phone'))
     AND facility_id = sqlc.arg('facility_id')
     AND status = 'confirmed'
     AND checked_in_at IS NULL
@@ -358,7 +371,7 @@ WHERE
     b.status = 'confirmed'
     AND b.ends_at > NOW()
     AND f.tenant_id <> sqlc.arg('tenant_id')
-    AND b.user_id = sqlc.arg('user_id')
+    AND (b.user_id = sqlc.arg('user_id') OR b.holder_phone = sqlc.narg('holder_phone'))
 ORDER BY
     b.starts_at
 LIMIT 1;
@@ -371,7 +384,31 @@ FROM
     booking b
     JOIN facility f ON f.id = b.facility_id
 WHERE
-    b.user_id = sqlc.arg('user_id')
+    (b.user_id = sqlc.arg('user_id') OR b.holder_phone = sqlc.narg('holder_phone'))
     AND b.status = 'confirmed'
     AND b.ends_at > NOW()
     AND f.tenant_id = sqlc.arg('tenant_id');
+
+-- name: ListPhoneBookings :many
+-- A caller's upcoming bookings on the voice line without an account, by their number.
+SELECT
+    b.id,
+    b.starts_at,
+    b.ends_at,
+    b.kind,
+    COALESCE(b.holder_name, '')::TEXT AS holder_name,
+    f.id   AS facility_id,
+    f.name AS facility_name,
+    f.min_cancel_hours,
+    t.name AS tenant_name
+FROM
+    booking b
+    JOIN facility f ON f.id = b.facility_id
+    JOIN tenant   t ON t.id = f.tenant_id
+WHERE
+    b.holder_phone = sqlc.arg('holder_phone')
+    AND b.user_id IS NULL
+    AND b.status = 'confirmed'
+    AND b.ends_at > NOW()
+ORDER BY
+    b.starts_at ASC;
