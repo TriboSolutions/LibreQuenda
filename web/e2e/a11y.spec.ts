@@ -514,6 +514,12 @@ test.describe('keyboard', () => {
     // signed in: the call books in the person's name, with their own token
     expect((await asked).headers()['authorization']).toMatch(/^Bearer /)
     await expect(dialog.getByRole('alert')).toContainText('A liña está ocupada')
+    // the conversation in writing stays folded until opened
+    const captions = dialog.getByRole('button', { name: 'Subtítulos' })
+    await expect(captions).toHaveAttribute('aria-expanded', 'false')
+    await expect(dialog.getByRole('log')).toBeHidden()
+    await captions.click()
+    await expect(dialog.getByRole('log')).toBeVisible()
     await page.keyboard.press('Escape')
     await expect(dialog).toHaveCount(0)
     await expect(page.getByRole('button', { name: 'Reserva falando' })).toBeFocused()

@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useRef, useState, type ReactNode 
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import { matchPath, useLocation } from 'react-router'
-import { Loader2, Mic, MicOff, Phone, PhoneOff } from 'lucide-react'
+import { ChevronDown, Loader2, Mic, MicOff, Phone, PhoneOff } from 'lucide-react'
 import type { PipecatClient } from '@pipecat-ai/client-js'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -22,7 +22,7 @@ const VoiceContext = createContext<VoiceLine>({ available: false, open: () => {}
 
 /**
  * «Reserva falando»: a call with the voice line, in a panel with live captions of both
- * sides (the WCAG captions of the call), mute and hang up. Available only when the
+ * sides (the WCAG captions of the call, folded until opened), mute and hang up. Available only when the
  * installation runs the voice line, on the public pages; signed in, the call can book
  * for the person. Opened from the top bar (VoiceButton) or a facility's turns (VoiceLink).
  */
@@ -87,6 +87,8 @@ function CallPanel({ config, onClose }: { config: VoiceConfig; onClose: () => vo
   const [lines, setLines] = useState<Line[]>([])
   const [muted, setMuted] = useState(false)
   const [activity, setActivity] = useState('')
+  // the conversation in writing, folded until the person opens it
+  const [showCaptions, setShowCaptions] = useState(false)
   const client = useRef<PipecatClient | null>(null)
   const log = useRef<HTMLOListElement>(null)
   const signedIn = !!auth.user?.access_token
@@ -216,9 +218,20 @@ function CallPanel({ config, onClose }: { config: VoiceConfig; onClose: () => vo
             )}
             <section aria-labelledby="voice-captions" className="grid gap-1">
               <h3 id="voice-captions" className="text-sm font-medium">
-                {t('captions')}
+                <button
+                  type="button"
+                  onClick={() => setShowCaptions((shown) => !shown)}
+                  aria-expanded={showCaptions}
+                  aria-controls="voice-captions-log"
+                  className="inline-flex items-center gap-1 rounded-sm text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                >
+                  <ChevronDown className={`size-4 transition-transform ${showCaptions ? 'rotate-180' : ''}`} aria-hidden />
+                  {t('captions')}
+                </button>
               </h3>
               <ol
+                id="voice-captions-log"
+                hidden={!showCaptions}
                 ref={log}
                 role="log"
                 aria-live="polite"
