@@ -305,6 +305,10 @@ SELECT
     COUNT(b.id) FILTER (WHERE b.status = 'confirmed') AS confirmed,
     COUNT(b.id) FILTER (WHERE b.cancelled_by = 'user') AS cancelled_by_user,
     COUNT(b.id) FILTER (WHERE b.cancelled_by = 'council') AS cancelled_by_council,
+    -- how people booked (events are the council's own): the app or web, staff, the voice line
+    COUNT(b.id) FILTER (WHERE b.status = 'confirmed' AND b.kind <> 'event' AND b.channel = 'online') AS by_online,
+    COUNT(b.id) FILTER (WHERE b.status = 'confirmed' AND b.kind <> 'event' AND b.channel = 'staff') AS by_staff,
+    COUNT(b.id) FILTER (WHERE b.status = 'confirmed' AND b.kind <> 'event' AND b.channel = 'phone') AS by_phone,
     COALESCE(SUM(EXTRACT(EPOCH FROM b.ends_at - b.starts_at) / 60) FILTER (WHERE b.status = 'confirmed'), 0)::BIGINT AS booked_minutes,
     -- attendance: events are left out, nobody checks in to them
     COUNT(b.id) FILTER (WHERE b.status = 'confirmed' AND b.kind <> 'event' AND b.ends_at <= NOW() AND facility_took_checkin(f.id, b.starts_at)) AS finished,
@@ -361,6 +365,9 @@ type IndicatorsByFacilityRow struct {
 	Confirmed          int64     `json:"confirmed"`
 	CancelledByUser    int64     `json:"cancelled_by_user"`
 	CancelledByCouncil int64     `json:"cancelled_by_council"`
+	ByOnline           int64     `json:"by_online"`
+	ByStaff            int64     `json:"by_staff"`
+	ByPhone            int64     `json:"by_phone"`
 	BookedMinutes      int64     `json:"booked_minutes"`
 	Finished           int64     `json:"finished"`
 	Attended           int64     `json:"attended"`
@@ -408,6 +415,9 @@ func (q *Queries) IndicatorsByFacility(ctx context.Context, arg IndicatorsByFaci
 			&i.Confirmed,
 			&i.CancelledByUser,
 			&i.CancelledByCouncil,
+			&i.ByOnline,
+			&i.ByStaff,
+			&i.ByPhone,
 			&i.BookedMinutes,
 			&i.Finished,
 			&i.Attended,

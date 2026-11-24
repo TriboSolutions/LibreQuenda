@@ -82,6 +82,7 @@ type StaffBookingDto struct {
 	StartsAt         time.Time  `json:"starts_at"`
 	EndsAt           time.Time  `json:"ends_at"`
 	BookedByStaff    bool       `json:"booked_by_staff"`
+	Channel          string     `json:"channel"`  // online (web or app), staff or phone (the voice line)
 	IsEvent          bool       `json:"is_event"` // the council's event: Name is its title, nobody checks in
 	HasAccount       bool       `json:"has_account"`
 	Name             string     `json:"name"` // "" once a deleted account or a forgotten name
@@ -94,7 +95,7 @@ type StaffBookingDto struct {
 	UndoUntil        *time.Time `json:"undo_until"`        // staff entry: until when it can be taken back
 	ParticipantCount int64      `json:"participant_count"`
 	CanCancel        bool       `json:"can_cancel"`   // until it starts
-	CheckinCode      string     `json:"checkin_code"` // booked by staff only: to print the entry QR for the person
+	CheckinCode      string     `json:"checkin_code"` // booked by staff or on the voice line: to print the entry QR for the person
 }
 
 // Staff entry: when staff can mark that the person came in (StaffBookingDto.CheckinState).
@@ -122,6 +123,7 @@ func mapStaffBooking(row model.ListFacilityBookingsForStaffRow, now time.Time, s
 		StartsAt:         row.StartsAt,
 		EndsAt:           row.EndsAt,
 		BookedByStaff:    row.Channel == model.BookingChannelStaff,
+		Channel:          string(row.Channel),
 		HasAccount:       row.UserID.Valid,
 		Name:             row.FullName.String,
 		Email:            row.Email.String,
@@ -153,7 +155,7 @@ func mapStaffBooking(row model.ListFacilityBookingsForStaffRow, now time.Time, s
 	case staffCheckin:
 		dto.CheckinState = staffCheckinState(row.StartsAt, row.EndsAt, now)
 	}
-	if dto.BookedByStaff && row.EndsAt.After(now) {
+	if row.Channel != model.BookingChannelOnline && row.EndsAt.After(now) {
 		dto.CheckinCode = checkin.Payload(row.CheckinToken)
 	}
 	return dto

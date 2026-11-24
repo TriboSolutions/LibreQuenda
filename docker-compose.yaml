@@ -6,6 +6,26 @@
 # ============================================================
 name: librequenda
 
+# Sign-in with a public identity provider (Cl@ve, Chave365): zitadel-setup and zitadel-setup-idp
+x-public-idp: &public-idp
+  SAML_IDP_NAME: ${SAML_IDP_NAME:-}
+  SAML_IDP_METADATA_URL: ${SAML_IDP_METADATA_URL:-}
+  SAML_IDP_BINDING: ${SAML_IDP_BINDING:-}
+  SAML_IDP_SIGNED_REQUEST: ${SAML_IDP_SIGNED_REQUEST:-}
+  SAML_IDP_SIGNATURE: ${SAML_IDP_SIGNATURE:-}
+  SAML_IDP_NAMEID_FORMAT: ${SAML_IDP_NAMEID_FORMAT:-}
+  SAML_IDP_USER_ID_ATTRIBUTE: ${SAML_IDP_USER_ID_ATTRIBUTE:-}
+  SAML_IDP_ATTR_GIVEN_NAME: ${SAML_IDP_ATTR_GIVEN_NAME:-}
+  SAML_IDP_ATTR_FAMILY_NAME: ${SAML_IDP_ATTR_FAMILY_NAME:-}
+  SAML_IDP_ATTR_EMAIL: ${SAML_IDP_ATTR_EMAIL:-}
+  SAML_IDP_ATTR_NIF: ${SAML_IDP_ATTR_NIF:-}
+  SAML_IDP_EMAIL_VERIFIED: ${SAML_IDP_EMAIL_VERIFIED:-false}
+  OIDC_IDP_NAME: ${OIDC_IDP_NAME:-}
+  OIDC_IDP_ISSUER: ${OIDC_IDP_ISSUER:-}
+  OIDC_IDP_CLIENT_ID: ${OIDC_IDP_CLIENT_ID:-}
+  OIDC_IDP_CLIENT_SECRET: ${OIDC_IDP_CLIENT_SECRET:-}
+  OIDC_IDP_SCOPES: ${OIDC_IDP_SCOPES:-}
+
 services:
   db:
     image: ghcr.io/tribosolutions/librequenda-db:${LIBREQUENDA_VERSION:-latest}
@@ -77,6 +97,8 @@ services:
       SMTP_FROM: ${SMTP_FROM:-}
       # Encrypts stored credentials (councils' SMTP passwords)
       SECRETS_KEY: ${SECRETS_KEY:?set SECRETS_KEY in .env}
+      # Shared secret of the voice line (voice/): empty = no phone line
+      VOICE_API_KEY: ${VOICE_API_KEY:-}
       PUBLIC_URL: ${PUBLIC_SCHEME}://${WEB_DOMAIN}
     volumes:
       - runtime-config:/runtime:ro
@@ -114,6 +136,8 @@ services:
       # per-IP limits on the sign-in pages' form posts (no captcha in Zitadel's login)
       SIGNUP_LIMIT_PER_HOUR: ${SIGNUP_LIMIT_PER_HOUR:-5}
       SIGNIN_LIMIT_PER_10_MIN: ${SIGNIN_LIMIT_PER_10_MIN:-30}
+      COMPOSE_PROFILES: ${COMPOSE_PROFILES:-} # voice or voice-gpu: /voice/* goes to the voice line
+      VOICE_URL: ${VOICE_URL:-} # or to one on another machine (https://voice.example.org)
     volumes:
       - caddy_data:/data
       - caddy_config:/config
@@ -127,6 +151,8 @@ services:
         condition: service_healthy
       zitadel-login:
         condition: service_healthy
+      zitadel-setup-idp:
+        condition: service_completed_successfully
     restart: unless-stopped
 
   # ============================================================
@@ -176,6 +202,9 @@ services:
       ZITADEL_OIDC_DEFAULTLOGINURLV2: ${PUBLIC_SCHEME}://${ZITADEL_DOMAIN}:${PUBLIC_PORT}/ui/v2/login/login?authRequest=
       ZITADEL_OIDC_DEFAULTLOGOUTURLV2: ${PUBLIC_SCHEME}://${ZITADEL_DOMAIN}:${PUBLIC_PORT}/ui/v2/login/logout?post_logout_redirect=
       ZITADEL_SAML_DEFAULTLOGINURLV2: ${PUBLIC_SCHEME}://${ZITADEL_DOMAIN}:${PUBLIC_PORT}/ui/v2/login/login?samlRequest=
+      # Addresses Zitadel never calls (actions, identity providers, SMTP): its own default list.
+      # With a SAML identity provider, the API's (zitadel-setup-idp) must not be in it: see .env.example
+      ZITADEL_HTTPCLIENT_DENYLIST: ${ZITADEL_HTTPCLIENT_DENYLIST:-localhost,0.0.0.0/8,10.0.0.0/8,100.64.0.0/10,127.0.0.0/8,169.254.0.0/16,172.16.0.0/12,192.168.0.0/16,198.18.0.0/15,::/128,::1/128,fc00::/7,fe80::/10}
 
       # Its own emails (verification codes, password reset) through the same SMTP relay.
       # Only applied when the instance is first created; change it later in Zitadel's settings.
@@ -234,6 +263,7 @@ services:
   zitadel-setup:
     image: ghcr.io/tribosolutions/librequenda-zitadel-setup:${LIBREQUENDA_VERSION:-latest}
     environment:
+      <<: *public-idp
       PUBLIC_SCHEME: ${PUBLIC_SCHEME}
       WEB_DOMAIN: ${WEB_DOMAIN}
       ZITADEL_DOMAIN: ${ZITADEL_DOMAIN}
@@ -254,6 +284,27 @@ services:
       - api-secrets:/api-secrets
     depends_on:
       zitadel-api:
+        condition: service_healthy
+    restart: "no"
+
+  # One-off, once the API is up: with a SAML identity provider (Cl@ve, Chave365),
+  # Zitadel asks the API for the person's name, email and NIF from its attributes
+  zitadel-setup-idp:
+    image: ghcr.io/tribosolutions/librequenda-zitadel-setup:${LIBREQUENDA_VERSION:-latest}
+    # a failure here never keeps the site down: the login then asks for the name and email
+    command: ["/bin/sh", "-c", "/setup.sh idp-mapping || echo '[zitadel-setup] the SAML attribute mapping failed: see above'"]
+    environment:
+      <<: *public-idp
+      PUBLIC_SCHEME: ${PUBLIC_SCHEME}
+      WEB_DOMAIN: ${WEB_DOMAIN}
+      ZITADEL_DOMAIN: ${ZITADEL_DOMAIN}
+      ZITADEL_SETUP_REVOKE_TOKEN: ${ZITADEL_SETUP_REVOKE_TOKEN:-false}
+    volumes:
+      - zitadel-admin:/zitadel/bootstrap:ro
+      - runtime-config:/runtime:ro
+      - api-secrets:/api-secrets
+    depends_on:
+      api:
         condition: service_healthy
     restart: "no"
 
@@ -313,6 +364,68 @@ services:
       start_period: 10s
     restart: unless-stopped
 
+  # ============================================================
+  #  VOICE LINE (optional): book by talking, in Galician (docs/voice.md).
+  #  On with COMPOSE_PROFILES=voice in .env (CPU), or voice-gpu (an NVIDIA GPU with
+  #  the NVIDIA Container Toolkit). The proxy serves it at /voice/*; the models
+  #  download into voice-models on the first start.
+  # ============================================================
+  voice:
+    profiles: [voice]
+    image: ghcr.io/tribosolutions/librequenda-voice:${LIBREQUENDA_VERSION:-latest}
+    environment: &voice-env
+      TZ: Europe/Madrid
+      PUBLIC_URL: ${PUBLIC_SCHEME}://${WEB_DOMAIN}
+      VOICE_MCP_URL: http://api:8000/mcp
+      VOICE_STT: ${VOICE_STT:-nos-wav2vec2}
+      VOICE_STT_LANGUAGE: ${VOICE_STT_LANGUAGE:-gl}
+      VOICE_TTS: ${VOICE_TTS:-nos}
+      VOICE_TTS_VOICE: ${VOICE_TTS_VOICE:-}
+      VOICE_LLM: ${VOICE_LLM:-anthropic}
+      VOICE_LLM_MODEL: ${VOICE_LLM_MODEL:-}
+      VOICE_LLM_BASE_URL: ${VOICE_LLM_BASE_URL:-}
+      VOICE_LLM_API_KEY: ${VOICE_LLM_API_KEY:-}
+      ELEVENLABS_API_KEY: ${ELEVENLABS_API_KEY:-}
+      DEEPGRAM_API_KEY: ${DEEPGRAM_API_KEY:-}
+      HF_TOKEN: ${HF_TOKEN:-} # only for the Celtia voice, gated on Hugging Face
+      VOICE_MAX_CALL_SECONDS: ${VOICE_MAX_CALL_SECONDS:-600}
+      VOICE_MAX_CALLS: ${VOICE_MAX_CALLS:-4}
+      VOICE_TURN_SILENCE: ${VOICE_TURN_SILENCE:-0.6}
+      VOICE_LOG_LEVEL: ${VOICE_LOG_LEVEL:-INFO}
+      # phone calls (Twilio): the same key as the API's, sent as X-Voice-Key
+      VOICE_API_KEY: ${VOICE_API_KEY:-}
+      VOICE_TWILIO_ACCOUNT_SID: ${VOICE_TWILIO_ACCOUNT_SID:-}
+      VOICE_TWILIO_AUTH_TOKEN: ${VOICE_TWILIO_AUTH_TOKEN:-}
+    volumes:
+      - voice-models:/models
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+  voice-gpu:
+    profiles: [voice-gpu]
+    image: ghcr.io/tribosolutions/librequenda-voice:${LIBREQUENDA_VERSION:-latest}-cuda
+    environment:
+      <<: *voice-env
+      VOICE_STT: ${VOICE_STT:-nos-whisper}
+    volumes:
+      - voice-models:/models
+    networks:
+      default:
+        aliases: [voice] # the proxy reaches either as voice:8000
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
 volumes:
   postgres_data:
   zitadel-admin: # the setup's admin token: Zitadel writes it, only zitadel-setup reads it
@@ -322,5 +435,6 @@ volumes:
   runtime-config:
   api-secrets: # tokens for the API only: never mounted by the proxy
   api-logs: # the API's log files
+  voice-models: # the voice line's models (voice/), downloaded on its first start
   garage_meta:
   garage_data:

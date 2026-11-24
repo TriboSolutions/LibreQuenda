@@ -1,0 +1,38 @@
+{
+  "button": "Reserva parlant",
+  "linkLead": "Prefereixes parlar?",
+  "link": "Reserva per veu",
+  "title": "Reserva parlant",
+  "descriptionSignedIn": "Parla amb l’assistent de veu: cerca instal·lacions i torns lliures, i reserva al teu nom.",
+  "descriptionSignedOut": "Parla amb l’assistent de veu per cercar instal·lacions i torns lliures. Per reservar parlant, inicia la sessió abans.",
+  "howItWorks": "Et demanarà permís per fer servir el micròfon. L’assistent parla en gallec. La trucada dura com a màxim {{minutes}} minuts i tot el que es diu apareix escrit aquí.",
+  "privacy": {
+    "voiceLocal": "La teva veu es transcriu en aquest servidor.",
+    "voice": "La teva veu s’envia a {{names}} per transcriure-la.",
+    "textLocal": "La conversa també es processa aquí.",
+    "text": "El text de la conversa s’envia a {{names}}.",
+    "notKept": "No es desa ni l’enregistrament ni la transcripció."
+  },
+  "call": "Trucar",
+  "callAgain": "Tornar a trucar",
+  "hangUp": "Penjar",
+  "mute": "Silenciar el micròfon",
+  "muted": "micròfon silenciat",
+  "phase": {
+    "connecting": "Connectant…",
+    "live": "En trucada",
+    "ended": "Trucada acabada",
+    "error": "No s’ha pogut trucar"
+  },
+  "problem": {
+    "mic": "No hi ha accés al micròfon. Permet-lo al navegador i torna-ho a provar.",
+    "busy": "La línia està ocupada. Torna-ho a provar d’aquí a un moment.",
+    "unavailable": "La línia de veu no està disponible ara.",
+    "dropped": "S’ha tallat la trucada. Torna-ho a provar."
+  },
+  "captions": "Subtítols",
+  "captionsEmpty": "Aquí apareixerà escrit el que digueu tu i l’assistent.",
+  "you": "Tu",
+  "agent": "Assistent",
+  "looking": "cercant…"
+}

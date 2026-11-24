@@ -26,6 +26,12 @@ export default defineConfig(({ mode }) => {
           target: env.VITE_API_PROXY_TARGET || 'http://localhost',
           changeOrigin: true,
         },
+        // the voice line (voice/): its config, its session and the call's WebSocket
+        '/voice': {
+          target: env.VITE_VOICE_PROXY_TARGET || env.VITE_API_PROXY_TARGET || 'http://localhost',
+          changeOrigin: true,
+          ws: true,
+        },
         // OIDC runtime config written by zitadel-setup
         '/config.json': {
           target: env.VITE_API_PROXY_TARGET || 'http://localhost',

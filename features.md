@@ -22,8 +22,10 @@ Estado: **feito** · **en curso** (traballo aberto) · **idea** (sen comezar).
 | Avisos na app (campá, actualizada cada 30 s) e correos: confirmación, recordatorio 15 minutos antes, cambio, cancelación por ti ou polo concello (co motivo e as datas do peche) | feito |
 | Os correos explican como rexistrar a entrada nesa instalación (só as súas formas), con indicacións para chegar e os contactos da instalación e do concello | feito |
 | Calendario (.ics) para subscribirse desde Google, Outlook ou Apple, con botóns dun só clic | feito |
+| Liña de teléfono cun asistente de voz (sobre o servidor MCP): consultar, reservar e cancelar falando, coa conta (un código ao correo da conta que ten o número no perfil) ou só co nome e o número, coas mesmas normas contadas por número; desde a web, coa sesión xa iniciada | en curso |
 | Perfil: foto encadrada nun círculo (copiada á conta de acceso), data de nacemento, teléfono; preferencias á parte (idioma dos correos, recordatorios, «Para ti») | feito |
 | Conta en Zitadel: rexistro e acceso con contrasinal ou Google (chaves de acceso opcionais), cambio de nome, correo e contrasinal desde o perfil | feito |
+| Acceso cun provedor de identidade pública (Cl@ve, Chave365 ou calquera SAML 2.0 ou OpenID Connect), configurado en `.env` ou no instalador: crea a conta co nome, os apelidos e o correo do provedor (ou a vincula á que ten o mesmo correo verificado) e garda o NIF que certifica. Probado de principio a fin cun provedor de proba; a conexión real con Cl@ve e Chave365 agarda polos convenios coa SGAD e coa AMTEGA | en curso (o software, feito; agarda polos convenios) |
 | Correo verificado obrigatorio para reservar, unirse a unha quenda ou reservar na porta (impide que contas de bots collan quendas) | feito |
 | Os teus datos nun ficheiro (JSON e CSV) e borrado da conta (reservas anonimizadas, conta de acceso borrada) | feito |
 | Instalacións só para a veciñanza marcadas «Só para veciños» na súa páxina, nas súas tarxetas e nos seus eventos; quen non está verificado alí pode pedilo: chamar ao concello ou enviar unha solicitude (DNI ou NIE, nome, código postal, rúa), unha á semana como máximo, e retirala mentres está pendente; recibe aviso e correo cando o concello decide | feito |
@@ -33,6 +35,8 @@ Estado: **feito** · **en curso** (traballo aberto) · **idea** (sen comezar).
 | Enquisas do concello: chegan como aviso (campá, notificación e correo) a quen forma parte del, un voto por conta cun correo verificado que se pode cambiar mentres está aberta, só para a veciñanza verificada se o concello quere, e outro aviso cos resultados cando pecha; todas, abertas e pechadas, na páxina Enquisas (menú da conta e perfil) | feito |
 | Páxinas de condicións de uso e de política de privacidade; contacto de soporte no pé de páxina | feito |
 | Catro idiomas (galego, castelán, inglés, catalán), tema claro e escuro | feito |
+| Reservar falando: o icono do teléfono na barra superior, ou «Reserva por voz» baixo as quendas, abre unha chamada co asistente de voz en galego, con subtítulos en directo das dúas partes, silenciar e colgar; busca quendas libres e, coa sesión iniciada, reserva despois de confirmar a quenda e aceptar as normas (liña de voz opcional, [docs/voice.md](docs/voice.md)) | feito |
+| Reservar por teléfono co mesmo asistente (Twilio): coa conta, cun código ao correo, ou co nome e o número de quen chama | en curso |
 
 ## App Android
 
@@ -46,6 +50,7 @@ Estado: **feito** · **en curso** (traballo aberto) · **idea** (sen comezar).
 | Perfil, preferencias, idioma, soporte e textos legais; textos xerados a partir das traducións da web | feito |
 | Comunicados e estado da instalación na súa páxina; enquisas desde o aviso ou o menú (votar, cambiar o voto, ver os resultados) | feito |
 | Instalacións só para a veciñanza marcadas «Só para veciños» (páxina da instalación, tarxetas, eventos e partidas públicas), e petición de verificación desde unha folla inferior: chamar ao concello ou enviar a solicitude, vela pendente e retirala (a xestión segue na web) | feito |
+| Reservar falando tamén desde a app (o cliente de Pipecat para Android) | idea |
 
 ## Rexistro de entrada na porta
 
@@ -73,7 +78,7 @@ Estado: **feito** · **en curso** (traballo aberto) · **idea** (sen comezar).
 | Un límite para todo o concello das reservas próximas de cada persoa en todas as súas instalacións; un só concello á vez por conta (axuste da plataforma, activado por defecto); ninguén pode ter dúas reservas á mesma hora | feito |
 | Eventos (lapela Eventos, cos próximos e o historial dos rematados e cancelados): un tipo de reserva que só crean as persoas administradoras, cun título, aforo opcional, calquera inicio e fin e sen límites por persoa; amosa as reservas ou peches que coinciden, que o persoal cancela antes; movelo ou cancelalo avisa a quen se apuntou | feito |
 | Reserva do persoal por teléfono ou no mostrador, para unha conta ou só cun nome e un teléfono; cancelar calquera reserva; imprimir o QR de entrada | feito |
-| Indicadores: reservas, ocupación, cancelacións, non presentacións (contando todas as formas de rexistrar a entrada), días e horas con máis reservas, valoracións (media, reparto de 1 a 5, evolución), comparación con outro período, por instalación; exportación a CSV e Excel | feito |
+| Indicadores: reservas (e como se fixeron: web ou app, persoal, liña de teléfono), ocupación, cancelacións, non presentacións (contando todas as formas de rexistrar a entrada), días e horas con máis reservas, valoracións (media, reparto de 1 a 5, evolución), comparación con outro período, por instalación; exportación a CSV e Excel | feito |
 | As non presentacións lembran cando estaba desactivado o rexistro de entrada (historial das formas de rexistrar a entrada da instalación) | feito |
 | Widget de quendas libres para incrustar na propia web do concello (`/<council>/widget`, todas as instalacións ou unha, claro ou escuro, en calquera dos catro idiomas), co código para pegar e unha vista previa nos axustes do concello | feito |
 | Lista de mantemento (lapela Incidencias): avisos da veciñanza cun distintivo para os novos, filtros por instalación e estado, estado e nota para quen avisou, o correo de quen avisou só se o compartiu | feito |
@@ -93,6 +98,7 @@ Estado: **feito** · **en curso** (traballo aberto) · **idea** (sen comezar).
 | CI: comprobacións de Go, web e Android (filtradas por rutas nos pull requests), análise de vulnerabilidades e de imaxes (govulncheck, pnpm audit, Trivy), imaxes publicadas en ghcr.io, APK de versión asinado nas etiquetas de versión | feito |
 | Tokens de acceso de curta duración (10 min, renovados en segundo plano), segundo factor obrigatorio para as persoas administradoras, arranque de Zitadel co mínimo privilexio | feito |
 | Límite de peticións no rexistro e no acceso, no proxy (sen captcha: o login de Zitadel non ten) | feito |
+| Liña de voz autoaloxable: voz a texto e texto a voz cos modelos abertos do Proxecto Nós no propio servidor (CPU ou GPU), o modelo de linguaxe escollido na configuración (Claude ou un de pesos abertos con Ollama ou vLLM) e as ferramentas MCP da API; nada se grava | feito |
 | Rexistro de actividade de todos os cambios administrativos, para a superadministración (todos) e para as persoas administradoras de cada concello (os seus), só de engadir e cun período de conservación, descargable en CSV | feito |
 | API: ordenación, filtrado e paxinación no backend, con parámetros de consulta validados; as listas e historiais da administración (eventos, comunicados, enquisas, incidencias, veciñanza) e as enquisas da veciñanza, unha páxina de cada vez, con scroll infinito na app | feito |
 | Despregamento de demostración, kit de produción (`deploy/`), especificación OpenAPI | idea (ver todo.md) |
@@ -118,4 +124,4 @@ Agrupadas segundo quen máis gaña; ningunha está comezada.
 
 **Plataforma**
 
-- Acceso con **Cl@ve / Chave365** para a veciñanza (por confirmar con AMTEGA/AGASOL).
+- **Verificar a veciñanza co NIF de Cl@ve / Chave365:** o NIF que certifica o provedor xa queda na conta; podería encher a solicitude ou cotejarse co padrón do concello.

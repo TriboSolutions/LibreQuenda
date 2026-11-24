@@ -124,21 +124,28 @@ func periodStart(day time.Time, bucket string) time.Time {
 
 // The figures shared by a facility and the whole council.
 type IndicatorCountsDto struct {
-	Bookings           int64    `json:"bookings"` // confirmed + cancelled
-	Confirmed          int64    `json:"confirmed"`
-	CancelledByUser    int64    `json:"cancelled_by_user"`
-	CancelledByCouncil int64    `json:"cancelled_by_council"`
-	CancellationRate   *float64 `json:"cancellation_rate"` // 0-1; null without bookings
-	BookedHours        float64  `json:"booked_hours"`
-	OpenHours          float64  `json:"open_hours"` // bookable time, closures taken out
-	Occupancy          *float64 `json:"occupancy"`  // booked ÷ open, 0-1; null when never open
-	Finished           int64    `json:"finished"`   // past confirmed bookings, at facilities with a QR reader
-	Attended           int64    `json:"attended"`   // of those, checked in at the door
-	NoShowRate         *float64 `json:"no_show_rate"`
+	Bookings           int64            `json:"bookings"` // confirmed + cancelled
+	Confirmed          int64            `json:"confirmed"`
+	CancelledByUser    int64            `json:"cancelled_by_user"`
+	CancelledByCouncil int64            `json:"cancelled_by_council"`
+	ByChannel          ChannelCountsDto `json:"by_channel"`        // confirmed bookings (not events) by how they were made
+	CancellationRate   *float64         `json:"cancellation_rate"` // 0-1; null without bookings
+	BookedHours        float64          `json:"booked_hours"`
+	OpenHours          float64          `json:"open_hours"` // bookable time, closures taken out
+	Occupancy          *float64         `json:"occupancy"`  // booked ÷ open, 0-1; null when never open
+	Finished           int64            `json:"finished"`   // past confirmed bookings, at facilities with a QR reader
+	Attended           int64            `json:"attended"`   // of those, checked in at the door
+	NoShowRate         *float64         `json:"no_show_rate"`
 	// the residents' stars for the facility after the period's bookings
 	Ratings       int64    `json:"ratings"`
 	RatingAverage *float64 `json:"rating_average"` // 1-5; null without ratings
 	RatingStars   [5]int64 `json:"rating_stars"`   // how many gave 1, 2, 3, 4 and 5 stars
+}
+
+type ChannelCountsDto struct {
+	Online int64 `json:"online"` // the person, on the web or the app
+	Staff  int64 `json:"staff"`  // council staff, at the desk or on the phone
+	Phone  int64 `json:"phone"`  // the voice line
 }
 
 type FacilityIndicatorsDto struct {
@@ -204,6 +211,9 @@ func (c *IndicatorCountsDto) add(o IndicatorCountsDto) {
 	c.Confirmed += o.Confirmed
 	c.CancelledByUser += o.CancelledByUser
 	c.CancelledByCouncil += o.CancelledByCouncil
+	c.ByChannel.Online += o.ByChannel.Online
+	c.ByChannel.Staff += o.ByChannel.Staff
+	c.ByChannel.Phone += o.ByChannel.Phone
 	c.BookedHours += o.BookedHours
 	c.OpenHours += o.OpenHours
 	c.Finished += o.Finished

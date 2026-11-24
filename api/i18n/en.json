@@ -251,7 +251,10 @@
     "poll_closed": "This poll is already closed.",
     "poll_residents_only": "Only people verified as the council's residents vote in this poll.",
     "poll_option_not_found": "That answer is not one of this poll’s.",
-    "poll_closed_keep": "A closed poll cannot be deleted: its results stay in the history."
+    "poll_closed_keep": "A closed poll cannot be deleted: its results stay in the history.",
+    "phone_residents_only": "This facility is only for residents verified by the council: to book it by phone, sign in with your account.",
+    "phone_age_restricted": "This facility has a minimum age of {{0}}, which cannot be checked by phone: to book it, sign in with your account.",
+    "phone_holder_required": "Booking without an account needs the name of who books and their phone number."
   },
   "email": {
     "greeting": "Hello {{0}},",
@@ -383,6 +386,12 @@
       "intro": "The poll from {{0}} has closed:",
       "body": "Thanks to everyone who voted. You can see the results now.",
       "manage": "See the results"
+    },
+    "phone_code": {
+      "subject": "Your code for {{0}}: {{1}}",
+      "intro": "You are talking to the {{0}} phone line. To sign in with your account, tell the assistant this code. It expires in {{1}} minutes.",
+      "manage": "Open {{0}}",
+      "footer": "You get this email because someone called from the phone number in your profile and asked to sign in with your account. If it wasn't you, don't tell anyone the code and ignore this email."
     }
   }
 }

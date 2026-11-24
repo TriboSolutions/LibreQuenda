@@ -315,6 +315,7 @@
       "bookings": "Reservas",
       "bookingsHint_one": "{{count}} confirmada",
       "bookingsHint_other": "{{count}} confirmadas",
+      "channelsHint": "{{online}} en la web o la app, {{staff}} por el personal, {{phone}} por la línea de teléfono",
       "occupancy": "Ocupación",
       "occupancyHint": "{{booked}} h reservadas de {{open}} h disponibles",
       "cancellations": "Cancelaciones",
@@ -508,6 +509,7 @@
     "withAccount": "Con cuenta",
     "withoutAccount": "Sin cuenta",
     "bookedByStaff": "Reservado por el personal",
+    "bookedByPhone": "Reservado por la línea de teléfono",
     "checkedIn": "Entró a las {{time}}",
     "joined_one": "+{{count}} apuntado",
     "joined_other": "+{{count}} apuntados",
@@ -1230,7 +1232,8 @@
       "resident": "Vecindario verificado",
       "notice": "Comunicado",
       "poll": "Encuesta",
-      "smtp_test": "Prueba del SMTP"
+      "smtp_test": "Prueba del SMTP",
+      "phone_code": "Código de la línea de teléfono"
     }
   },
   "apiLog": {

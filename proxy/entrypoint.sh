@@ -19,8 +19,16 @@ case "${CADDY_AUTO_HTTPS:-false}" in
 		;;
 esac
 
+# the voice line runs on another machine (VOICE_URL) or here, when its compose profile
+# is on (COMPOSE_PROFILES=voice or voice-gpu in .env)
+export VOICE_UPSTREAM="${VOICE_URL:-voice:8000}"
+case ",${COMPOSE_PROFILES:-}," in
+	*,voice,* | *,voice-gpu,*) export VOICE_ENABLED=true ;;
+	*) if [ -n "${VOICE_URL:-}" ]; then export VOICE_ENABLED=true; else export VOICE_ENABLED=false; fi ;;
+esac
+
 export WEB_ADDRESS="${SITE_SCHEME}://${WEB_DOMAIN}"
 export ZITADEL_ADDRESS="${SITE_SCHEME}://${ZITADEL_DOMAIN}"
-echo "[proxy] automatic HTTPS: ${CADDY_AUTO_HTTPS:-false} -> ${WEB_ADDRESS}, ${ZITADEL_ADDRESS}"
+echo "[proxy] automatic HTTPS: ${CADDY_AUTO_HTTPS:-false} -> ${WEB_ADDRESS}, ${ZITADEL_ADDRESS}; voice line: ${VOICE_ENABLED} (${VOICE_UPSTREAM})"
 
 exec caddy run --config /etc/caddy/Caddyfile --adapter caddyfile

@@ -21,10 +21,11 @@ import { PlatformAdmin } from '@/pages/PlatformAdmin'
 import { SigningIn } from '@/pages/SigningIn'
 import { DataAssistantPage } from '@/pages/DataAssistantPage'
 import { DataBubble } from '@/components/DataBubble'
+import { VoiceProvider } from '@/components/VoiceCall'
 
 function App() {
   return (
-    <>
+    <VoiceProvider>
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/callback" element={<SigningIn />} />
@@ -52,7 +53,7 @@ function App() {
         <Route path="/:slug/:facility/entrada" element={<EntrancePage />} />
       </Routes>
       <DataBubble />
-    </>
+    </VoiceProvider>
   )
 }
 

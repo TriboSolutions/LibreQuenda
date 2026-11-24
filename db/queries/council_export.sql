@@ -88,6 +88,7 @@ SELECT
     b.starts_at,
     b.ends_at,
     b.status,
+    b.channel,
     b.rules_accepted_at,
     b.cancelled_at,
     b.cancelled_by,

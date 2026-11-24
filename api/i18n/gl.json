@@ -251,7 +251,10 @@
     "poll_closed": "Esta enquisa xa está pechada.",
     "poll_residents_only": "Nesta enquisa só votan as persoas verificadas como veciñas do concello.",
     "poll_option_not_found": "Esa resposta non é desta enquisa.",
-    "poll_closed_keep": "Unha enquisa pechada non se pode borrar: os seus resultados quedan no historial."
+    "poll_closed_keep": "Unha enquisa pechada non se pode borrar: os seus resultados quedan no historial.",
+    "phone_residents_only": "Esta instalación é só para veciños verificados polo concello: para reservala por teléfono hai que entrar coa conta.",
+    "phone_age_restricted": "Esta instalación ten unha idade mínima de {{0}} anos, que por teléfono non se pode comprobar: para reservala hai que entrar coa conta.",
+    "phone_holder_required": "Para reservar sen conta fai falla o nome de quen reserva e o seu número de teléfono."
   },
   "email": {
     "greeting": "Ola {{0}},",
@@ -383,6 +386,12 @@
       "intro": "Pechou a enquisa de {{0}}:",
       "body": "Grazas a todas as persoas que votastes. Xa podes ver os resultados.",
       "manage": "Ver os resultados"
+    },
+    "phone_code": {
+      "subject": "O teu código para {{0}}: {{1}}",
+      "intro": "Estás a falar coa liña de teléfono de {{0}}. Para entrar coa túa conta, dille este código ao asistente. Caduca en {{1}} minutos.",
+      "manage": "Abrir {{0}}",
+      "footer": "Recibes este correo porque alguén chamou desde o número de teléfono do teu perfil e pediu entrar coa túa conta. Se non fuches ti, non digas o código a ninguén e ignora este correo."
     }
   }
 }
