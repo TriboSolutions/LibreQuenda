@@ -40,6 +40,7 @@ const (
 
 var (
 	errNotPhone         = errors.New("this tool is only for the phone line, in a call through the voice service")
+	errWebGuest         = errors.New("not signed in, on a web call: book_turn with holder_name and holder_phone (the number the person gives) books for them; their bookings cannot be listed or cancelled here, only from an account or by the council")
 	errPhoneNotSignedIn = errors.New("not signed in: on the phone, call phone_send_code to email a code to the caller's account and phone_verify_code with it; without an account, book_turn with holder_name books for the caller's number")
 )
 
@@ -63,6 +64,18 @@ func (a *agent) callerPhone(req *mcp.CallToolRequest) string {
 		return ""
 	}
 	return phone
+}
+
+// webGuest: a web call to the voice line made without signing in, which the voice
+// service marks (X-Web-Guest) when the installation lets those book with a name and
+// the number the person gives (VOICE_WEB_GUEST_BOOKING). That number is only their
+// word: it books, as staff book for someone at the desk, but never lists or cancels
+// the bookings of whoever has it.
+func (a *agent) webGuest(req *mcp.CallToolRequest) bool {
+	if a.voiceKey == "" || header(req, "X-Web-Guest") != "1" || header(req, "X-Caller-Phone") != "" {
+		return false
+	}
+	return subtle.ConstantTimeCompare([]byte(header(req, "X-Voice-Key")), []byte(a.voiceKey)) == 1
 }
 
 // caller: the account a phone caller proved with a code.

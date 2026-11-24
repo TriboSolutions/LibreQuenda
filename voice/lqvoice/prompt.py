@@ -35,12 +35,15 @@ PHONE_TOOLS = SIGNED_IN_TOOLS + ["phone_send_code", "phone_verify_code"]
 class Call:
     kind: str  # "web" or "phone"
     signed_in: bool = False
+    guest_booking: bool = False  # signed out on the web, it books with a name and a phone number
 
 
 def tools_for(call: Call) -> list[str]:
     if call.kind == "phone":
         return PHONE_TOOLS
-    return SIGNED_IN_TOOLS if call.signed_in else READ_ONLY_TOOLS
+    if call.signed_in:
+        return SIGNED_IN_TOOLS
+    return READ_ONLY_TOOLS + ["book_turn"] if call.guest_booking else READ_ONLY_TOOLS
 
 
 def _day(day: datetime) -> str:
@@ -66,6 +69,14 @@ def _account(call: Call) -> str:
         )
     if call.signed_in:
         return "A persoa iniciou sesión na web, así que xa podes reservar, cancelar e ver as súas reservas no seu nome."
+    if call.guest_booking:
+        return (
+            "A persoa non iniciou sesión, pero pode reservar co seu nome e un teléfono, coma no mostrador. Cando "
+            "escolla quenda, pídelle o nome e o teléfono; non lle pidas máis nin a fagas iniciar sesión. Repite o "
+            "teléfono cifra a cifra para confirmalo e pásaos en holder_name e holder_phone a book_turn. Tras "
+            "reservar, le en voz alta a instalación, o día e a hora, porque non lle chega ningún correo. Por aquí "
+            "non pode ver nin cancelar reservas: para iso, que inicie sesión na web ou chame ao concello."
+        )
     return (
         "A persoa non iniciou sesión: podes buscar instalacións, quendas e eventos, pero non reservar nin cancelar, e "
         "non tes ningunha ferramenta para reservar co nome ou o teléfono. En canto diga que quere reservar, antes de "

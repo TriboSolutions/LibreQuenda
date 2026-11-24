@@ -5,6 +5,7 @@
   "title": "Reserva hablando",
   "descriptionSignedIn": "Habla con el asistente de voz: busca instalaciones y turnos libres, y reserva a tu nombre.",
   "descriptionSignedOut": "Habla con el asistente de voz para buscar instalaciones y turnos libres. Para reservar hablando, inicia sesión antes.",
+  "descriptionGuest": "Habla con el asistente de voz para buscar instalaciones y turnos libres, y reservar con tu nombre y teléfono.",
   "howItWorks": "Te pedirá permiso para usar el micrófono. El asistente habla en gallego y también te entiende en castellano. La llamada dura como máximo {{minutes}} minutos y en Subtítulos puedes leer todo lo que se dice.",
   "privacy": {
     "voiceLocal": "Tu voz se transcribe en este servidor.",
