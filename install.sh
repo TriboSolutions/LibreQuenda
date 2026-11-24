@@ -302,6 +302,38 @@ messages() {
 	m q_bg "Cor de fondo da icona" "Color de fondo del icono" "Icon background colour" "Color de fons de la icona" "Cor de fundo do ícone"
 	m app_confirm "Compilar %s (%s) para %s?" "¿Compilar %s (%s) para %s?" "Build %s (%s) for %s?" "Vols compilar %s (%s) per a %s?" "Compilar %s (%s) para %s?"
 
+	# public identity
+	m sec_idp "Inicio de sesión con identidade pública (Cl@ve / Chave365)" "Inicio de sesión con identidad pública (Cl@ve / Chave365)" \
+		"Sign-in with a public identity (Cl@ve / Chave365)" "Inici de sessió amb identitat pública (Cl@ve / Chave365)" "Início de sessão com identidade pública (Cl@ve / Chave365)"
+	m idp_note "Opcional. Un botón no inicio de sesión que crea a conta da persoa, ou a vincula á que ten o mesmo correo. Cada provedor precisa un convenio co seu titular: Cl@ve coa Secretaría General de Administración Digital, Chave365 coa AMTEGA (docs/self-hosting.md)." \
+		"Opcional. Un botón en el inicio de sesión que crea la cuenta de la persona, o la vincula a la que tiene el mismo correo. Cada proveedor necesita un convenio con su titular: Cl@ve con la Secretaría General de Administración Digital, Chave365 con la AMTEGA (docs/self-hosting.md)." \
+		"Optional. A button on the sign-in page that creates the person's account, or links it to the one with the same email. Each provider needs an agreement with its operator: Cl@ve with the Secretaría General de Administración Digital, Chave365 with AMTEGA (docs/self-hosting.md)." \
+		"Opcional. Un botó a l'inici de sessió que crea el compte de la persona, o el vincula al que té el mateix correu. Cada proveïdor necessita un conveni amb el seu titular: Cl@ve amb la Secretaría General de Administración Digital, Chave365 amb l'AMTEGA (docs/self-hosting.md)." \
+		"Opcional. Um botão no início de sessão que cria a conta da pessoa, ou a associa à que tem o mesmo email. Cada fornecedor precisa de um acordo com o seu titular: a Cl@ve com a Secretaría General de Administración Digital, a Chave365 com a AMTEGA (docs/self-hosting.md)."
+	m idp_q "Que provedor de identidade?" "¿Qué proveedor de identidad?" "Which identity provider?" "Quin proveïdor d'identitat?" "Que fornecedor de identidade?"
+	m idp_off "Ningún" "Ninguno" "None" "Cap" "Nenhum"
+	m idp_saml "SAML 2.0 (Cl@ve, Chave365)" "SAML 2.0 (Cl@ve, Chave365)" "SAML 2.0 (Cl@ve, Chave365)" "SAML 2.0 (Cl@ve, Chave365)" "SAML 2.0 (Cl@ve, Chave365)"
+	m idp_oidc "OpenID Connect" "OpenID Connect" "OpenID Connect" "OpenID Connect" "OpenID Connect"
+	m q_idp_name "Texto do botón (p. ex. Cl@ve, Chave365)" "Texto del botón (p. ej. Cl@ve, Chave365)" "Button text (e.g. Cl@ve, Chave365)" "Text del botó (p. ex. Cl@ve, Chave365)" "Texto do botão (p. ex. Cl@ve, Chave365)"
+	m q_saml_meta "Enderezo dos metadatos SAML do provedor (https://…). Os nomes dos atributos (nome, apelidos, correo, NIF) axústanse en .env, SAML_IDP_ATTR_*; por defecto, os de eIDAS que envía Cl@ve." \
+		"Dirección de los metadatos SAML del proveedor (https://…). Los nombres de los atributos (nombre, apellidos, correo, NIF) se ajustan en .env, SAML_IDP_ATTR_*; por defecto, los de eIDAS que envía Cl@ve." \
+		"The provider's SAML metadata address (https://…). The attribute names (name, surname, email, NIF) are set in .env, SAML_IDP_ATTR_*; by default, the eIDAS ones Cl@ve sends." \
+		"Adreça de les metadades SAML del proveïdor (https://…). Els noms dels atributs (nom, cognoms, correu, NIF) s'ajusten a .env, SAML_IDP_ATTR_*; per defecte, els d'eIDAS que envia Cl@ve." \
+		"Endereço dos metadados SAML do fornecedor (https://…). Os nomes dos atributos (nome, apelidos, email, NIF) ajustam-se em .env, SAML_IDP_ATTR_*; por omissão, os do eIDAS que a Cl@ve envia."
+	m q_saml_verified "O provedor garante que o correo é da persoa? Si: vincúlase á conta que xa teña ese correo. Non: o inicio de sesión envíalle un código para comprobalo." \
+		"¿El proveedor garantiza que el correo es de la persona? Sí: se vincula a la cuenta que ya tenga ese correo. No: el inicio de sesión le envía un código para comprobarlo." \
+		"Does the provider vouch that the email is the person's? Yes: it is linked to the account that already has that email. No: the sign-in sends them a code to check it." \
+		"El proveïdor garanteix que el correu és de la persona? Sí: es vincula al compte que ja tingui aquest correu. No: l'inici de sessió li envia un codi per comprovar-ho." \
+		"O fornecedor garante que o email é da pessoa? Sim: é associado à conta que já tenha esse email. Não: o início de sessão envia-lhe um código para o confirmar."
+	m q_oidc_issuer "Emisor OpenID Connect (issuer, https://…)" "Emisor OpenID Connect (issuer, https://…)" "OpenID Connect issuer (https://…)" "Emissor OpenID Connect (issuer, https://…)" "Emissor OpenID Connect (issuer, https://…)"
+	m q_oidc_id "ID de cliente" "ID de cliente" "Client ID" "ID de client" "ID de cliente"
+	m q_oidc_secret "Segredo do cliente" "Secreto del cliente" "Client secret" "Secret del client" "Segredo do cliente"
+	m v_https "Ten que ser un enderezo https://…" "Tiene que ser una dirección https://…" "It must be an https://… address" "Ha de ser una adreça https://…" "Tem de ser um endereço https://…"
+	m f_saml "Envía ao provedor de identidade os metadatos de LibreQuenda:" "Envía al proveedor de identidad los metadatos de LibreQuenda:" \
+		"Send LibreQuenda's metadata to the identity provider:" "Envia al proveïdor d'identitat les metadades de LibreQuenda:" "Envie ao fornecedor de identidade os metadados do LibreQuenda:"
+	m f_oidc "URI de redirección para o provedor de identidade:" "URI de redirección para el proveedor de identidad:" "Redirect URI for the identity provider:" \
+		"URI de redirecció per al proveïdor d'identitat:" "URI de redirecionamento para o fornecedor de identidade:"
+
 	# review
 	m review_title "Revisión" "Revisión" "Review" "Revisió" "Revisão"
 	m review_q "Escolle unha sección para cambiala, ou instala." "Elige una sección para cambiarla, o instala." \
@@ -649,6 +681,7 @@ bad() { ERR=$(t "$1"); return 1; }
 v_domain() { [[ $1 =~ ^([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$ ]] || bad v_domain; }
 v_email() { [[ $1 =~ ^[^@[:space:]]+@[^@[:space:]]+\.[^@[:space:]]+$ ]] || bad v_email; }
 v_email_opt() { [ -z "$1" ] || v_email "$1"; }
+v_https() { [[ $1 =~ ^https://[^[:space:]]+$ ]] || bad v_https; }
 v_nonempty() { [ -n "$1" ] || bad v_nonempty; }
 v_port() { { [[ $1 =~ ^[0-9]+$ ]] && [ "$1" -ge 1 ] && [ "$1" -le 65535 ]; } || bad v_port; }
 v_free_port() {
@@ -920,13 +953,54 @@ section_support() {
 	ask SUPPORT_PHONE "$(t q_sup_phone)"
 }
 
+# Zitadel's default deny list without the Docker networks (172.16.0.0/12, 192.168.0.0/16):
+# it calls the API there for the SAML attributes (zitadel/setup.sh idp-mapping)
+IDP_DENYLIST=localhost,0.0.0.0/8,10.0.0.0/8,100.64.0.0/10,127.0.0.0/8,169.254.0.0/16,198.18.0.0/15,::/128,::1/128,fc00::/7,fe80::/10
+
+section_identity() {
+	TITLE=$(t sec_idp)
+	local sel=off
+	if [ -n "${ENV[SAML_IDP_NAME]:-}" ]; then sel=saml; elif [ -n "${ENV[OIDC_IDP_NAME]:-}" ]; then sel=oidc; fi
+	ui_menu "$(t idp_note)"$'\n\n'"$(t idp_q)" "$sel" off "$(t idp_off)" saml "$(t idp_saml)" oidc "$(t idp_oidc)"
+	ENV[SAML_IDP_NAME]="" ENV[OIDC_IDP_NAME]=""
+	[ "${ENV[ZITADEL_HTTPCLIENT_DENYLIST]:-}" != "$IDP_DENYLIST" ] || ENV[ZITADEL_HTTPCLIENT_DENYLIST]=""
+	case $REPLY in
+		saml)
+			ask SAML_IDP_NAME "$(t q_idp_name)" "Cl@ve" v_nonempty
+			ask SAML_IDP_METADATA_URL "$(t q_saml_meta)" "" v_https
+			if ui_yesno "$(t q_saml_verified)" "$([ "${ENV[SAML_IDP_EMAIL_VERIFIED]:-false}" = true ] && echo y || echo n)"; then
+				ENV[SAML_IDP_EMAIL_VERIFIED]=true
+			else
+				ENV[SAML_IDP_EMAIL_VERIFIED]=false
+			fi
+			[ -n "${ENV[ZITADEL_HTTPCLIENT_DENYLIST]:-}" ] || ENV[ZITADEL_HTTPCLIENT_DENYLIST]=$IDP_DENYLIST
+			;;
+		oidc)
+			ask OIDC_IDP_NAME "$(t q_idp_name)" "" v_nonempty
+			ask OIDC_IDP_ISSUER "$(t q_oidc_issuer)" "" v_https
+			ask OIDC_IDP_CLIENT_ID "$(t q_oidc_id)" "" v_nonempty
+			ask_secret OIDC_IDP_CLIENT_SECRET "$(t q_oidc_secret)" true
+			;;
+	esac
+}
+
+idp_help() { # what the identity provider needs from this installation
+	local url
+	if [ -n "${ENV[SAML_IDP_NAME]:-}" ]; then
+		url=$(cd "$DIR" && docker compose logs zitadel-setup 2>/dev/null | grep -o 'https\?://[^ ]*/saml/metadata' | tail -n1)
+		say ""; say "$(t f_saml)  ${url:-https://${ENV[ZITADEL_DOMAIN]}/idps/<id>/saml/metadata}"
+	elif [ -n "${ENV[OIDC_IDP_NAME]:-}" ]; then
+		say ""; say "$(t f_oidc)  https://${ENV[ZITADEL_DOMAIN]}/idps/callback"
+	fi
+}
+
 section_app() {
 	TITLE=$(t sec_app)
 	if ui_yesno "$(t app_note)"$'\n\n'"$(t q_app_now)" "$WANT_APP"; then WANT_APP=y; app_questions; else WANT_APP=n; fi
 }
 
 review_server() {
-	local net app smtp
+	local net app smtp idp
 	while true; do
 		TITLE=$(t review_title)
 		if [ "${ENV[CADDY_AUTO_HTTPS]}" = true ]; then net=$(t sum_direct)
@@ -934,12 +1008,16 @@ review_server() {
 		else net=$(t sum_proxy "${ENV[PROXY_HTTP_PORT]}"); fi
 		if [ "$WANT_APP" = y ]; then app="${APP[APP_NAME]} · ${APP[APP_ID]}"; else app=$(t no); fi
 		smtp="${ENV[SMTP_HOST]}:${ENV[SMTP_PORT]}${ENV[SMTP_USERNAME]:+ · ${ENV[SMTP_USERNAME]}}"
+		if [ -n "${ENV[SAML_IDP_NAME]:-}" ]; then idp="${ENV[SAML_IDP_NAME]} · SAML"
+		elif [ -n "${ENV[OIDC_IDP_NAME]:-}" ]; then idp="${ENV[OIDC_IDP_NAME]} · OpenID Connect"
+		else idp=$(t idp_off); fi
 		ui_menu "$(t review_q)" go \
 			addr "$(t sec_addr): ${ENV[WEB_DOMAIN]} · ${ENV[ZITADEL_DOMAIN]}" \
 			net "$(t sec_net): $net" \
 			admin "$(t sec_admin): ${ENV[ZITADEL_ADMIN_EMAIL]}" \
 			smtp "$(t sec_smtp): $smtp" \
 			support "$(t sec_support): ${ENV[SUPPORT_EMAIL]:-—}${ENV[SUPPORT_PHONE]:+ · ${ENV[SUPPORT_PHONE]}}" \
+			idp "$(t sec_idp): $idp" \
 			app "$(t sec_app): $app" \
 			go "$(t review_go)"
 		case $REPLY in
@@ -948,6 +1026,7 @@ review_server() {
 			admin) section_admin ;;
 			smtp) section_smtp ;;
 			support) section_support ;;
+			idp) section_identity ;;
 			app) section_app ;;
 			go) return ;;
 		esac
@@ -1203,6 +1282,7 @@ install_server() {
 	section_admin
 	section_smtp
 	section_support
+	section_identity
 	section_app
 	review_server
 
@@ -1231,6 +1311,7 @@ install_server() {
 		say ""; say "${bold}$(t f_pw "${ENV[ZITADEL_ADMIN_PASSWORD]}")${off}"
 	fi
 	if [ "${ENV[CADDY_AUTO_HTTPS]}" = false ]; then proxy_help; else say ""; ok "$(t f_direct)"; fi
+	idp_help
 	say ""
 	warn "$(t f_keep "$DIR/.env")"
 	note "$(t f_update "cd $DIR && bash install.sh update")"

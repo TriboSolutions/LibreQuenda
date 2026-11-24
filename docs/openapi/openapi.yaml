@@ -59,6 +59,8 @@ tags:
   description: A superadministración da instalación de LibreQuenda. Cada cambio queda anotado no rexistro de auditoría.
 - name: Health
   description: Comprobacións de funcionamento.
+- name: Identity
+  description: 'Chamadas de Zitadel, non da web: o inicio de sesión cun provedor de identidade pública (Cl@ve, Chave365).'
 paths:
   /health/api:
     get:
@@ -97,6 +99,48 @@ paths:
               schema:
                 type: string
                 const: '{"status":"db down"}'
+  /zitadel/idp-intent:
+    post:
+      operationId: mapIdentityProviderIntent
+      tags:
+      - Identity
+      summary: Nome, correo e NIF a partir dos atributos dun provedor SAML
+      description: 'Destino dunha acción de Zitadel (Actions v2, tipo «call») sobre a resposta de RetrieveIdentityProviderIntent, que rexistra zitadel/setup.sh cando hai un provedor SAML configurado (SAML_IDP_*). Asinada coa cabeceira ZITADEL-Signature (HMAC-SHA256 coa clave do destino). Completa a conta que vai crear o inicio de sesión cos atributos que indica a configuración e garda o NIF nos metadatos da persoa usuaria (`nif`). Un corpo baleiro deixa a resposta como está (outro provedor, ou atributos que faltan).'
+      security: []
+      parameters:
+      - name: ZITADEL-Signature
+        in: header
+        required: true
+        schema:
+          type: string
+          example: t=1767225600,v1=5f2b…
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: 'A chamada de Zitadel: fullMethod, instanceID, request e response (RetrieveIdentityProviderIntentResponse en protojson).'
+              properties:
+                fullMethod:
+                  type: string
+                response:
+                  type: object
+                  additionalProperties: true
+      responses:
+        '200':
+          description: A resposta de RetrieveIdentityProviderIntent cos datos engadidos, ou un corpo baleiro para deixala como está.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '401':
+          description: Sen sinatura válida.
+        '404':
+          description: Non hai ningún provedor SAML configurado.
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
   /tenants:
     get:
       operationId: listTenants

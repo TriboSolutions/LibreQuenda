@@ -5,6 +5,10 @@
 #    and the "android" one for the app and councils' own builds (ANDROID_APP_IDS)
 #  - keeps the app's redirect URIs in sync with the environment
 #  - enables "Sign in with Google" when GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET are set
+#  - a public identity provider: SAML 2.0 (Cl@ve, Chave365: SAML_IDP_*) and/or
+#    OpenID Connect (OIDC_IDP_*), a button on the login that creates or links the account;
+#    `setup.sh idp-mapping` runs again once the API is up and has Zitadel ask it for
+#    the SAML attributes (name, surname, email, NIF): api/zitadel/idpintent.go
 #  - signs up and in with a password (passkeys only with ZITADEL_PASSKEYS=true)
 #  - short access tokens (ZITADEL_ACCESS_TOKEN_MINUTES, 10 by default), renewed by the web
 #  - brands the login and console as LibreQuenda (logo, colours, no Zitadel links)
@@ -71,6 +75,107 @@ if ! call GET /auth/v1/users/me >/dev/null 2>&1; then
 	fi
 	log "the admin token does not work, and nothing is set up yet"
 	exit 1
+fi
+
+# shows or hides an identity provider's button on the login page
+login_button() {
+	if [ "$2" = on ]; then
+		call POST /admin/v1/policies/login/idps/_search '{}' | jq -e --arg id "$1" '.result[]? | select(.idpId == $id)' >/dev/null ||
+			call POST /admin/v1/policies/login/idps "{\"idpId\":\"$1\"}" >/dev/null
+	else
+		call DELETE "/admin/v1/policies/login/idps/$1" >/dev/null 2>&1 || true
+	fi
+}
+
+# The identity provider of a type: this setup manages one of each, found by its
+# type so a new name (Cl@ve -> Chave365) renames it rather than adding a second.
+idp_of_type() {
+	call POST /admin/v1/idps/templates/_search '{}' | jq -r --arg type "$1" '[.result[]? | select(.type == $type)][0].id // empty'
+}
+
+# creates or updates an identity provider (kind: google, generic_oidc, saml) and prints its id
+save_idp() {
+	kind=$1 idp_id=$2 config=$3
+	if [ -z "$idp_id" ]; then
+		idp_id=$(call POST "/admin/v1/idps/$kind" "$config" | jq -r '.id')
+		log "created identity provider $(echo "$config" | jq -r .name) ($idp_id)" >&2
+	else
+		call PUT "/admin/v1/idps/$kind/$idp_id" "$config" >/dev/null 2>&1 ||
+			true # "no changes" is reported as an error
+		log "identity provider $(echo "$config" | jq -r .name) exists ($idp_id), config synced" >&2
+	fi
+	echo "$idp_id"
+}
+
+# Everything is set up, so the instance-owner token can go: later starts keep
+# this configuration (a new token is needed to change it again).
+revoke_token() {
+	SETUP_USER_ID=$(call GET /auth/v1/users/me | jq -r '.user.id')
+	for token in $(call POST "/management/v1/users/$SETUP_USER_ID/pats/_search" '{}' | jq -r '.result[]?.id'); do
+		call DELETE "/management/v1/users/$SETUP_USER_ID/pats/$token" >/dev/null
+	done
+	log "revoked the admin token (ZITADEL_SETUP_REVOKE_TOKEN)"
+}
+
+SAML_ENABLED=$([ -n "${SAML_IDP_NAME:-}" ] && [ -n "${SAML_IDP_METADATA_URL:-}" ] && echo true || echo false)
+
+# --- `setup.sh idp-mapping`: once the API is up ---
+# Zitadel maps no SAML attribute to a person's name or email, so the login would
+# ask for them. An Actions v2 target on the response the login reads the sign-in
+# from has the API fill them in (and keep the NIF), with the attribute names
+# below. Its address must resolve when it is saved, hence after the API starts,
+# and be outside the deny list of Zitadel's HTTP client (ZITADEL_HTTPCLIENT_DENYLIST).
+if [ "${1:-}" = idp-mapping ]; then
+	TARGET_NAME="LibreQuenda identity attributes"
+	INTENT_METHOD=/zitadel.user.v2.UserService/RetrieveIdentityProviderIntent
+	MAPPING_FILE=/api-secrets/zitadel-idp-mapping.json
+	TARGET_ID=$(call POST /v2/actions/targets/search \
+		"$(jq -n --arg name "$TARGET_NAME" '{filters: [{targetNameFilter: {targetName: $name}}]}')" | jq -r '.targets[0].id // empty')
+	SAML_IDP_ID=$(idp_of_type PROVIDER_TYPE_SAML)
+
+	if [ "$SAML_ENABLED" = true ] && [ -n "$SAML_IDP_ID" ]; then
+		SIGNING_KEY=$(jq -r '.signingKey // empty' "$MAPPING_FILE" 2>/dev/null || true)
+		if [ -z "$TARGET_ID" ]; then
+			if ! TARGET=$(call POST /v2/actions/targets "$(jq -n --arg name "$TARGET_NAME" \
+				'{name: $name, endpoint: "http://api:8000/zitadel/idp-intent", timeout: "5s", restCall: {interruptOnError: false}}')"); then
+				log "Zitadel refused the API's address as an action target: allow the Docker network in ZITADEL_HTTPCLIENT_DENYLIST (docs/self-hosting.md). Until then the login asks people for their name and email."
+				exit 0
+			fi
+			TARGET_ID=$(echo "$TARGET" | jq -r '.id')
+			SIGNING_KEY=$(echo "$TARGET" | jq -r '.signingKey')
+			log "created action target $TARGET_NAME ($TARGET_ID)"
+		elif [ -z "$SIGNING_KEY" ]; then
+			# the key is only shown once: a new one when the file is gone
+			SIGNING_KEY=$(call POST "/v2/actions/targets/$TARGET_ID" '{"expirationSigningKey":"0s"}' | jq -r '.signingKey')
+			log "new signing key for action target $TARGET_NAME"
+		fi
+		# comma-separated alternatives, the first with a value; "a+b" joins a and b
+		attrs() { printf '%s' "$1" | jq -R -c 'split(",") | map(gsub("^\\s+|\\s+$"; "")) | map(select(. != "" and . != "none"))'; }
+		jq -n \
+			--arg key "$SIGNING_KEY" \
+			--arg idp "$SAML_IDP_ID" \
+			--argjson given "$(attrs "${SAML_IDP_ATTR_GIVEN_NAME:-http://eidas.europa.eu/attributes/naturalperson/CurrentGivenName,urn:oid:2.5.4.42,givenName}")" \
+			--argjson family "$(attrs "${SAML_IDP_ATTR_FAMILY_NAME:-http://eidas.europa.eu/attributes/naturalperson/CurrentFamilyName,urn:oid:2.5.4.4,sn}")" \
+			--argjson email "$(attrs "${SAML_IDP_ATTR_EMAIL:-urn:oid:0.9.2342.19200300.100.1.3,mail,email}")" \
+			--argjson nif "$(attrs "${SAML_IDP_ATTR_NIF:-http://eidas.europa.eu/attributes/naturalperson/PersonIdentifier}")" \
+			--argjson verified "$([ "${SAML_IDP_EMAIL_VERIFIED:-false}" = true ] && echo true || echo false)" \
+			'{signingKey: $key, idpId: $idp, givenName: $given, familyName: $family, email: $email, nif: $nif, emailVerified: $verified}' \
+			> "$MAPPING_FILE.tmp"
+		mv "$MAPPING_FILE.tmp" "$MAPPING_FILE"
+		call PUT /v2/actions/executions "$(jq -n --arg m "$INTENT_METHOD" --arg t "$TARGET_ID" \
+			'{condition: {response: {method: $m}}, targets: [$t]}')" >/dev/null
+		log "SAML attributes mapped by the API"
+	else
+		if [ -n "$TARGET_ID" ]; then
+			call PUT /v2/actions/executions "$(jq -n --arg m "$INTENT_METHOD" '{condition: {response: {method: $m}}, targets: []}')" >/dev/null
+			log "no SAML identity provider: attribute mapping off"
+		fi
+		rm -f "$MAPPING_FILE"
+	fi
+	if [ "${ZITADEL_SETUP_REVOKE_TOKEN:-false}" = "true" ] && [ "$SAML_ENABLED" = true ]; then
+		revoke_token
+	fi
+	exit 0
 fi
 
 # --- project ---
@@ -199,7 +304,7 @@ GOOGLE_IDP_ID=$(call POST /admin/v1/idps/templates/_search \
 	| jq -r '.result[0].id // empty')
 
 if [ -n "${GOOGLE_CLIENT_ID:-}" ] && [ -n "${GOOGLE_CLIENT_SECRET:-}" ]; then
-	GOOGLE_CONFIG=$(jq -n \
+	GOOGLE_IDP_ID=$(save_idp google "$GOOGLE_IDP_ID" "$(jq -n \
 		--arg name "$GOOGLE_IDP_NAME" \
 		--arg clientId "$GOOGLE_CLIENT_ID" \
 		--arg clientSecret "$GOOGLE_CLIENT_SECRET" \
@@ -214,24 +319,81 @@ if [ -n "${GOOGLE_CLIENT_ID:-}" ] && [ -n "${GOOGLE_CLIENT_SECRET:-}" ]; then
 				isAutoUpdate: true,
 				isLinkingAllowed: true
 			}
-		}')
-
-	if [ -z "$GOOGLE_IDP_ID" ]; then
-		GOOGLE_IDP_ID=$(call POST /admin/v1/idps/google "$GOOGLE_CONFIG" | jq -r '.id')
-		log "created Google identity provider ($GOOGLE_IDP_ID)"
-	else
-		call PUT "/admin/v1/idps/google/$GOOGLE_IDP_ID" "$GOOGLE_CONFIG" >/dev/null 2>&1 \
-			|| true # "no changes" is reported as an error
-		log "Google identity provider exists ($GOOGLE_IDP_ID), config synced"
-	fi
-
-	if ! call POST /admin/v1/policies/login/idps/_search '{}' | jq -e --arg id "$GOOGLE_IDP_ID" '.result[]? | select(.idpId == $id)' >/dev/null; then
-		call POST /admin/v1/policies/login/idps "{\"idpId\":\"$GOOGLE_IDP_ID\"}" >/dev/null
-		log "Google login enabled"
-	fi
+		}')")
+	login_button "$GOOGLE_IDP_ID" on
 elif [ -n "$GOOGLE_IDP_ID" ]; then
-	call DELETE "/admin/v1/policies/login/idps/$GOOGLE_IDP_ID" >/dev/null 2>&1 || true
+	login_button "$GOOGLE_IDP_ID" off
 	log "GOOGLE_CLIENT_ID not set: Google login disabled"
+fi
+
+# --- public identity: SAML 2.0 (Cl@ve, Chave365) and OpenID Connect (optional) ---
+# A button on the login that creates the account on the first sign-in, or links
+# it to one with the same verified email. Without their variables the button goes;
+# the provider stays, with the links of the people who used it.
+PUBLIC_IDP_OPTIONS='{"isCreationAllowed":true,"isAutoCreation":true,"isAutoUpdate":true,"isLinkingAllowed":true,"autoLinking":"AUTO_LINKING_OPTION_EMAIL"}'
+
+SAML_IDP_ID=$(idp_of_type PROVIDER_TYPE_SAML)
+if [ "$SAML_ENABLED" = true ]; then
+	# read here rather than by Zitadel, whose HTTP client refuses private addresses
+	if SAML_METADATA=$(curl -fsSL --max-time 30 "$SAML_IDP_METADATA_URL" | base64 | tr -d '\n') && [ -n "$SAML_METADATA" ]; then
+		case "$(echo "${SAML_IDP_NAMEID_FORMAT:-persistent}" | tr '[:upper:]' '[:lower:]')" in
+			transient) NAMEID=SAML_NAME_ID_FORMAT_TRANSIENT ;;
+			email) NAMEID=SAML_NAME_ID_FORMAT_EMAIL_ADDRESS ;;
+			unspecified) NAMEID=SAML_NAME_ID_FORMAT_UNSPECIFIED ;;
+			*) NAMEID=SAML_NAME_ID_FORMAT_PERSISTENT ;;
+		esac
+		SAML_IDP_ID=$(save_idp saml "$SAML_IDP_ID" "$(jq -n \
+			--arg name "$SAML_IDP_NAME" \
+			--arg metadata "$SAML_METADATA" \
+			--arg binding "SAML_BINDING_$(echo "${SAML_IDP_BINDING:-post}" | tr '[:lower:]' '[:upper:]')" \
+			--argjson signed "$([ "${SAML_IDP_SIGNED_REQUEST:-true}" = false ] && echo false || echo true)" \
+			--arg signature "SAML_SIGNATURE_RSA_$(echo "${SAML_IDP_SIGNATURE:-sha256}" | tr '[:lower:]' '[:upper:]')" \
+			--arg nameId "$NAMEID" \
+			--arg userIdAttribute "${SAML_IDP_USER_ID_ATTRIBUTE:-}" \
+			--argjson options "$PUBLIC_IDP_OPTIONS" \
+			'{
+				name: $name,
+				metadataXml: $metadata,
+				binding: $binding,
+				withSignedRequest: $signed,
+				signatureAlgorithm: $signature,
+				nameIdFormat: $nameId,
+				transientMappingAttributeName: $userIdAttribute,
+				providerOptions: $options
+			}')")
+		login_button "$SAML_IDP_ID" on
+		log "SAML: the identity provider needs this service provider's metadata: $ZITADEL_URL/idps/$SAML_IDP_ID/saml/metadata"
+	else
+		log "SAML_IDP_METADATA_URL could not be read: the SAML identity provider is left as it was"
+	fi
+elif [ -n "$SAML_IDP_ID" ]; then
+	login_button "$SAML_IDP_ID" off
+	log "SAML_IDP_NAME not set: SAML login disabled"
+fi
+
+OIDC_IDP_ID=$(idp_of_type PROVIDER_TYPE_OIDC)
+if [ -n "${OIDC_IDP_NAME:-}" ] && [ -n "${OIDC_IDP_ISSUER:-}" ] && [ -n "${OIDC_IDP_CLIENT_ID:-}" ]; then
+	OIDC_IDP_ID=$(save_idp generic_oidc "$OIDC_IDP_ID" "$(jq -n \
+		--arg name "$OIDC_IDP_NAME" \
+		--arg issuer "$OIDC_IDP_ISSUER" \
+		--arg clientId "$OIDC_IDP_CLIENT_ID" \
+		--arg clientSecret "${OIDC_IDP_CLIENT_SECRET:-}" \
+		--arg scopes "${OIDC_IDP_SCOPES:-openid profile email}" \
+		--argjson options "$PUBLIC_IDP_OPTIONS" \
+		'{
+			name: $name,
+			issuer: $issuer,
+			clientId: $clientId,
+			clientSecret: $clientSecret,
+			scopes: ($scopes | split(" ") | map(select(. != ""))),
+			usePkce: true,
+			providerOptions: $options
+		}')")
+	login_button "$OIDC_IDP_ID" on
+	log "OIDC: the identity provider's redirect URI is $ZITADEL_URL/idps/callback"
+elif [ -n "$OIDC_IDP_ID" ]; then
+	login_button "$OIDC_IDP_ID" off
+	log "OIDC_IDP_NAME not set: OIDC login disabled"
 fi
 
 # --- sign-up and sign-in with a password ---
@@ -369,12 +531,7 @@ mv /runtime/config.json.tmp /runtime/config.json
 log "wrote /runtime/config.json"
 
 # --- optionally, no admin token left behind ---
-# Everything above is in place, so the instance-owner token can go: later
-# starts keep this configuration (a new token is needed to change it again).
-if [ "${ZITADEL_SETUP_REVOKE_TOKEN:-false}" = "true" ]; then
-	SETUP_USER_ID=$(call GET /auth/v1/users/me | jq -r '.user.id')
-	for token in $(call POST "/management/v1/users/$SETUP_USER_ID/pats/_search" '{}' | jq -r '.result[]?.id'); do
-		call DELETE "/management/v1/users/$SETUP_USER_ID/pats/$token" >/dev/null
-	done
-	log "revoked the admin token (ZITADEL_SETUP_REVOKE_TOKEN)"
+# With a SAML identity provider `setup.sh idp-mapping` still needs it, and revokes it.
+if [ "${ZITADEL_SETUP_REVOKE_TOKEN:-false}" = "true" ] && [ "$SAML_ENABLED" != true ]; then
+	revoke_token
 fi

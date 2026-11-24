@@ -1,0 +1,27 @@
+{
+  "realm": "clave-test",
+  "enabled": true,
+  "sslRequired": "none",
+  "users": [
+    {
+      "username": "12345678z",
+      "enabled": true,
+      "firstName": "Uxía",
+      "lastName": "Castro Pazos",
+      "email": "uxia.castro@example.gal",
+      "emailVerified": true,
+      "credentials": [{ "type": "password", "value": "proba-clave", "temporary": false }]
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "librequenda-oidc",
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "test-oidc-secret",
+      "standardFlowEnabled": true,
+      "redirectUris": ["http://auth.localhost/idps/callback"],
+      "webOrigins": ["+"]
+    }
+  ]
+}
