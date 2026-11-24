@@ -136,6 +136,7 @@ services:
       # per-IP limits on the sign-in pages' form posts (no captcha in Zitadel's login)
       SIGNUP_LIMIT_PER_HOUR: ${SIGNUP_LIMIT_PER_HOUR:-5}
       SIGNIN_LIMIT_PER_10_MIN: ${SIGNIN_LIMIT_PER_10_MIN:-30}
+      COMPOSE_PROFILES: ${COMPOSE_PROFILES:-} # voice or voice-gpu: /voice/* goes to the voice line
     volumes:
       - caddy_data:/data
       - caddy_config:/config
@@ -362,6 +363,68 @@ services:
       start_period: 10s
     restart: unless-stopped
 
+  # ============================================================
+  #  VOICE LINE (optional): book by talking, in Galician (docs/voice.md).
+  #  On with COMPOSE_PROFILES=voice in .env (CPU), or voice-gpu (an NVIDIA GPU with
+  #  the NVIDIA Container Toolkit). The proxy serves it at /voice/*; the models
+  #  download into voice-models on the first start.
+  # ============================================================
+  voice:
+    profiles: [voice]
+    image: ghcr.io/tribosolutions/librequenda-voice:${LIBREQUENDA_VERSION:-latest}
+    environment: &voice-env
+      TZ: Europe/Madrid
+      PUBLIC_URL: ${PUBLIC_SCHEME}://${WEB_DOMAIN}
+      VOICE_MCP_URL: http://api:8000/mcp
+      VOICE_STT: ${VOICE_STT:-nos-wav2vec2}
+      VOICE_STT_LANGUAGE: ${VOICE_STT_LANGUAGE:-gl}
+      VOICE_TTS: ${VOICE_TTS:-nos}
+      VOICE_TTS_VOICE: ${VOICE_TTS_VOICE:-}
+      VOICE_LLM: ${VOICE_LLM:-anthropic}
+      VOICE_LLM_MODEL: ${VOICE_LLM_MODEL:-}
+      VOICE_LLM_BASE_URL: ${VOICE_LLM_BASE_URL:-}
+      VOICE_LLM_API_KEY: ${VOICE_LLM_API_KEY:-}
+      ELEVENLABS_API_KEY: ${ELEVENLABS_API_KEY:-}
+      DEEPGRAM_API_KEY: ${DEEPGRAM_API_KEY:-}
+      HF_TOKEN: ${HF_TOKEN:-} # only for the Celtia voice, gated on Hugging Face
+      VOICE_MAX_CALL_SECONDS: ${VOICE_MAX_CALL_SECONDS:-600}
+      VOICE_MAX_CALLS: ${VOICE_MAX_CALLS:-4}
+      VOICE_TURN_SILENCE: ${VOICE_TURN_SILENCE:-0.6}
+      VOICE_LOG_LEVEL: ${VOICE_LOG_LEVEL:-INFO}
+      # phone calls (Twilio): the same key as the API's, sent as X-Voice-Key
+      VOICE_API_KEY: ${VOICE_API_KEY:-}
+      VOICE_TWILIO_ACCOUNT_SID: ${VOICE_TWILIO_ACCOUNT_SID:-}
+      VOICE_TWILIO_AUTH_TOKEN: ${VOICE_TWILIO_AUTH_TOKEN:-}
+    volumes:
+      - voice-models:/models
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+  voice-gpu:
+    profiles: [voice-gpu]
+    image: ghcr.io/tribosolutions/librequenda-voice:${LIBREQUENDA_VERSION:-latest}-cuda
+    environment:
+      <<: *voice-env
+      VOICE_STT: ${VOICE_STT:-nos-whisper}
+    volumes:
+      - voice-models:/models
+    networks:
+      default:
+        aliases: [voice] # the proxy reaches either as voice:8000
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
 volumes:
   postgres_data:
   zitadel-admin: # the setup's admin token: Zitadel writes it, only zitadel-setup reads it
@@ -371,5 +434,6 @@ volumes:
   runtime-config:
   api-secrets: # tokens for the API only: never mounted by the proxy
   api-logs: # the API's log files
+  voice-models: # the voice line's models (voice/), downloaded on its first start
   garage_meta:
   garage_data:

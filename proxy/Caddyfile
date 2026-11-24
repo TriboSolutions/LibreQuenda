@@ -23,6 +23,17 @@
 		reverse_proxy api:8000
 	}
 
+	# The voice line (voice/, the compose profile "voice"): its config, sessions and the
+	# calls' WebSockets, same origin so no TURN or UDP is needed. Off, /voice/config.json
+	# is a 404 and the web shows no call button.
+	handle_path /voice/* {
+		route {
+			@voice_off expression `"{$VOICE_ENABLED:false}" != "true"`
+			respond @voice_off 404
+			reverse_proxy voice:8000
+		}
+	}
+
 	# Uploaded images: private buckets in Garage (one per council). Only the
 	# links the API presigns get through (they expire); nothing can be listed or
 	# written from here. Garage checks the signature against this same Host.

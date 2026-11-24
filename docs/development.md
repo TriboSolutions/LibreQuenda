@@ -10,6 +10,7 @@
 | Mapas | [Leaflet](https://leafletjs.com) + [OpenStreetMap](https://www.openstreetmap.org) |
 | Identidade | [Zitadel](https://zitadel.com) (OIDC) |
 | Web | React, Vite, pnpm |
+| Liña de voz | Python, [Pipecat](https://github.com/pipecat-ai/pipecat), modelos do [Proxecto Nós](https://nos.gal/gl/proxecto-nos), uv |
 | Proxy | [Caddy](https://caddyserver.com) (punto de entrada único, HTTPS automático) |
 | Despregamento | Docker Compose |
 
@@ -29,6 +30,7 @@ docs/      Architecture specs, brand assets, generated OpenAPI spec
 api/       Go core API
 db/        PostgreSQL image: init schema, seed, sqlc queries
 web/       React web app
+voice/     Voice line: Pipecat, Galician speech models, the MCP tools
 ```
 
 
@@ -39,4 +41,4 @@ web/       React web app
 
 - [Bases do certame (v3, en galego)](https://www.agasol.gal/wp-content/uploads/2026/10/Bases_I_Certame_GOBTEC_2026_GL_v3.pdf), publicadas por AGASOL
 - [Inicio de sesión con Cl@ve ou Chave365](self-hosting.md#inicio-de-sesión-con-clve-ou-chave365): `zitadel/test-idp/run.sh` próbao de principio a fin cun Keycloak de proba
-- Especificación da API: [`docs/openapi/openapi.yaml`](openapi/openapi.yaml) (OpenAPI 3.1); axentes: [servidor MCP](mcp.md); [preguntarlles aos datos](analytics.md)
+- Especificación da API: [`docs/openapi/openapi.yaml`](openapi/openapi.yaml) (OpenAPI 3.1); axentes: [servidor MCP](mcp.md), [liña de voz](voice.md); [preguntarlles aos datos](analytics.md)
