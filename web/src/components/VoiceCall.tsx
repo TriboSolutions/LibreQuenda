@@ -92,7 +92,12 @@ function CallPanel({ config, onClose }: { config: VoiceConfig; onClose: () => vo
     setMuted(false)
     setPhase('connecting')
     try {
-      const ticket = await startVoiceSession(auth.user?.access_token)
+      // the agent books with this token until the call ends: a fresh one, if it would expire before
+      let token = auth.user?.access_token
+      if (token && (auth.user?.expires_in ?? 0) < config.maxCallSeconds) {
+        token = (await auth.signinSilent().catch(() => null))?.access_token ?? token
+      }
+      const ticket = await startVoiceSession(token)
       // loaded on the first call only: the audio client is large and most visits never call
       const [{ PipecatClient }, { WebSocketTransport, ProtobufFrameSerializer }] = await Promise.all([
         import('@pipecat-ai/client-js'),

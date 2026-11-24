@@ -33,6 +33,8 @@ Estado: **feito** · **en curso** (traballo aberto) · **idea** (sen comezar).
 | Enquisas do concello: chegan como aviso (campá, notificación e correo) a quen forma parte del, un voto por conta cun correo verificado que se pode cambiar mentres está aberta, só para a veciñanza verificada se o concello quere, e outro aviso cos resultados cando pecha; todas, abertas e pechadas, na páxina Enquisas (menú da conta e perfil) | feito |
 | Páxinas de condicións de uso e de política de privacidade; contacto de soporte no pé de páxina | feito |
 | Catro idiomas (galego, castelán, inglés, catalán), tema claro e escuro | feito |
+| Reservar falando: un botón «Reserva falando» abre unha chamada co asistente de voz en galego, con subtítulos en directo das dúas partes, silenciar e colgar; busca quendas libres e, coa sesión iniciada, reserva despois de confirmar a quenda e aceptar as normas (liña de voz opcional, [docs/voice.md](docs/voice.md)) | feito |
+| Reservar por teléfono co mesmo asistente (Twilio): coa conta, cun código ao correo, ou co nome e o número de quen chama | en curso |
 
 ## App Android
 
@@ -46,6 +48,7 @@ Estado: **feito** · **en curso** (traballo aberto) · **idea** (sen comezar).
 | Perfil, preferencias, idioma, soporte e textos legais; textos xerados a partir das traducións da web | feito |
 | Comunicados e estado da instalación na súa páxina; enquisas desde o aviso ou o menú (votar, cambiar o voto, ver os resultados) | feito |
 | Instalacións só para a veciñanza marcadas «Só para veciños» (páxina da instalación, tarxetas, eventos e partidas públicas), e petición de verificación desde unha folla inferior: chamar ao concello ou enviar a solicitude, vela pendente e retirala (a xestión segue na web) | feito |
+| Reservar falando tamén desde a app (o cliente de Pipecat para Android) | idea |
 
 ## Rexistro de entrada na porta
 
@@ -93,6 +96,7 @@ Estado: **feito** · **en curso** (traballo aberto) · **idea** (sen comezar).
 | CI: comprobacións de Go, web e Android (filtradas por rutas nos pull requests), análise de vulnerabilidades e de imaxes (govulncheck, pnpm audit, Trivy), imaxes publicadas en ghcr.io, APK de versión asinado nas etiquetas de versión | feito |
 | Tokens de acceso de curta duración (10 min, renovados en segundo plano), segundo factor obrigatorio para as persoas administradoras, arranque de Zitadel co mínimo privilexio | feito |
 | Límite de peticións no rexistro e no acceso, no proxy (sen captcha: o login de Zitadel non ten) | feito |
+| Liña de voz autoaloxable: voz a texto e texto a voz cos modelos abertos do Proxecto Nós no propio servidor (CPU ou GPU), o modelo de linguaxe escollido na configuración (Claude ou un de pesos abertos con Ollama ou vLLM) e as ferramentas MCP da API; nada se grava | feito |
 | Rexistro de actividade de todos os cambios administrativos, para a superadministración (todos) e para as persoas administradoras de cada concello (os seus), só de engadir e cun período de conservación, descargable en CSV | feito |
 | API: ordenación, filtrado e paxinación no backend, con parámetros de consulta validados; as listas e historiais da administración (eventos, comunicados, enquisas, incidencias, veciñanza) e as enquisas da veciñanza, unha páxina de cada vez, con scroll infinito na app | feito |
 | Despregamento de demostración, kit de produción (`deploy/`), especificación OpenAPI | idea (ver todo.md) |

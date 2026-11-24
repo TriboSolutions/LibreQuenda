@@ -42,6 +42,7 @@ jobs:
       api: ${{ steps.filter.outputs.api == 'true' || github.event_name != 'pull_request' }}
       web: ${{ steps.filter.outputs.web == 'true' || github.event_name != 'pull_request' }}
       android: ${{ steps.filter.outputs.android == 'true' || github.event_name != 'pull_request' }}
+      voice: ${{ steps.filter.outputs.voice == 'true' || github.event_name != 'pull_request' }}
       images: ${{ steps.filter.outputs.images == 'true' || github.event_name != 'pull_request' }}
     steps:
       - uses: dorny/paths-filter@v3
@@ -63,6 +64,9 @@ jobs:
               - "app/**"
               - "web/src/locales/**" # the app's texts are generated from them
               - ".github/workflows/**"
+            voice:
+              - "voice/**"
+              - ".github/workflows/**"
             images:
               - "**/dockerfile"
               - "**/.dockerignore"
@@ -73,6 +77,9 @@ jobs:
               - "web/pnpm-lock.yaml"
               - "proxy/**"
               - "storage/**"
+              - "voice/pyproject.toml"
+              - "voice/uv.lock"
+              - "voice/lqvoice/**"
               - "db/*.sh"
               - "zitadel/*.sh"
               - "backup/**"
@@ -254,14 +261,34 @@ jobs:
           gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 || gh release create "$GITHUB_REF_NAME" --verify-tag --generate-notes
           gh release upload "$GITHUB_REF_NAME" "$RUNNER_TEMP/librequenda-${GITHUB_REF_NAME}.apk" --clobber
 
+  voice:
+    name: Voice line (Python)
+    needs: changes
+    if: needs.changes.outputs.voice == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: voice
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
+        with:
+          version: "0.7.3" # as in voice/dockerfile
+      - name: Install (CPU PyTorch)
+        run: uv sync --frozen --extra cpu
+      - name: Lint
+        run: uv run ruff check . && uv run ruff format --check .
+      - name: Test
+        run: uv run pytest
+
   images:
     name: Image ${{ matrix.image }}
     # after the API and the web pass (or were not needed); on a pull request, only
     # when what the images are built from changed
-    needs: [changes, api, web]
+    needs: [changes, api, web, voice]
     if: >-
       !cancelled() && needs.changes.outputs.images == 'true'
-      && needs.api.result != 'failure' && needs.web.result != 'failure'
+      && needs.api.result != 'failure' && needs.web.result != 'failure' && needs.voice.result != 'failure'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -288,6 +315,9 @@ jobs:
           - image: backup
             context: backup
             dockerfile: backup/dockerfile
+          - image: voice # the voice line, CPU; the CUDA variant is built with VARIANT=cuda (docs/voice.md)
+            context: voice
+            dockerfile: voice/dockerfile
           - image: landing # the project's static landing page
             context: .
             dockerfile: landing/dockerfile

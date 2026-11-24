@@ -63,9 +63,13 @@ def for_voice(output: str) -> str:
         if not isinstance(value, dict):
             return value
         out = {k: clean(v) for k, v in value.items() if not k.endswith("_url")}
-        if isinstance(out.get("free_turns"), list):
-            # the free turns at a glance: models mix up turns across facilities in nested lists
-            out["free_times"] = ", ".join(t.get("local_time", "") for t in out["free_turns"]) or "none"
+        if isinstance(out.get("free_turns"), list) and "name" in out:
+            # each facility at a glance, first: models mix up turns across facilities in nested lists
+            free = ", ".join(t.get("local_time", "") for t in out["free_turns"]) or "none"
+            games = "; ".join(
+                f"{g.get('local_time', '')} ({g.get('spots_left')} spots)" for g in out.get("public_games") or []
+            )
+            out = {"summary": f"{out['name']}: free {free}" + (f"; public games {games}" if games else ""), **out}
         try:
             start = datetime.fromisoformat(out["starts_at"]).astimezone(prompt.TIMEZONE)
             end = datetime.fromisoformat(out.pop("ends_at")).astimezone(prompt.TIMEZONE)

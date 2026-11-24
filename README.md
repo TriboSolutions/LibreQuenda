@@ -57,6 +57,10 @@ Cada instalación serve tamén un servidor [MCP](https://modelcontextprotocol.io
 
 As persoas administradoras dos concellos tamén poden facerlles preguntas aos seus datos coas súas propias palabras (que instalación tivo máis cancelacións, que horas se enchen antes), que responde o modelo de linguaxe que elixas sobre vistas de só lectura sen datos persoais: consulta [docs/analytics.md](docs/analytics.md).
 
+## Reservar falando
+
+Cada instalación pode acender unha liña de voz: un botón «Reserva falando» na web abre unha chamada co asistente, en galego, con subtítulos en directo; busca quendas libres e reserva coa conta de quen chama, e tamén pode atender o teléfono. A voz procésase no propio servidor cos modelos abertos do [Proxecto Nós](https://nos.gal/gl/proxecto-nos); o modelo de linguaxe (Claude ou un de pesos abertos no teu servidor) escóllese na configuración, e nada se grava. Consulta [docs/voice.md](docs/voice.md).
+
 Todo o demais (opcións de configuración, copias de seguridade e como restauralas, axustes do inicio de sesión, instalación manual) está en [docs/self-hosting.md](docs/self-hosting.md). Para o desenvolvemento, consulta [docs/development.md](docs/development.md).
 
 ## Licenza

@@ -277,6 +277,31 @@ messages() {
 	m q_sup_email "Correo de asistencia" "Correo de asistencia" "Support email" "Correu d'assistència" "Email de apoio"
 	m q_sup_phone "Teléfono de asistencia" "Teléfono de asistencia" "Support phone" "Telèfon d'assistència" "Telefone de apoio"
 
+	# voice line
+	m sec_voice "Liña de voz (opcional)" "Línea de voz (opcional)" "Voice line (optional)" "Línia de veu (opcional)" "Linha de voz (opcional)"
+	m voice_note "A veciñanza pode buscar e reservar falando, en galego, desde un botón da web. A voz procésase neste servidor con modelos abertos do Proxecto Nós (uns 4 GB de RAM e 2 GB de disco máis); o modelo de linguaxe pode ser Claude ou un teu. Consulta docs/voice.md." \
+		"Los vecinos pueden buscar y reservar hablando, en gallego, desde un botón de la web. La voz se procesa en este servidor con modelos abiertos del Proxecto Nós (unos 4 GB de RAM y 2 GB de disco más); el modelo de lenguaje puede ser Claude o uno tuyo. Consulta docs/voice.md." \
+		"Residents can search and book by talking, in Galician, from a button on the web. Speech is processed on this server with open models from Proxecto Nós (about 4 GB of RAM and 2 GB of disk more); the language model can be Claude or your own. See docs/voice.md." \
+		"Els veïns poden cercar i reservar parlant, en gallec, des d'un botó del web. La veu es processa en aquest servidor amb models oberts del Proxecto Nós (uns 4 GB de RAM i 2 GB de disc més); el model de llenguatge pot ser Claude o un de teu. Consulta docs/voice.md." \
+		"Os moradores podem pesquisar e reservar a falar, em galego, a partir de um botão da web. A voz é processada neste servidor com modelos abertos do Proxecto Nós (cerca de 4 GB de RAM e 2 GB de disco a mais); o modelo de linguagem pode ser o Claude ou um seu. Consulte docs/voice.md."
+	m q_voice "Activar a liña de voz?" "¿Activar la línea de voz?" "Turn the voice line on?" "Vols activar la línia de veu?" "Ativar a linha de voz?"
+	m q_voice_hw "Onde funcionan os modelos de voz?" "¿Dónde funcionan los modelos de voz?" "Where do the speech models run?" "On funcionen els models de veu?" "Onde funcionam os modelos de voz?"
+	m voice_cpu "Na CPU" "En la CPU" "On the CPU" "A la CPU" "No CPU"
+	m voice_gpu "Nunha GPU NVIDIA (co NVIDIA Container Toolkit)" "En una GPU NVIDIA (con el NVIDIA Container Toolkit)" "On an NVIDIA GPU (with the NVIDIA Container Toolkit)" \
+		"En una GPU NVIDIA (amb el NVIDIA Container Toolkit)" "Numa GPU NVIDIA (com o NVIDIA Container Toolkit)"
+	m q_voice_llm "Que modelo de linguaxe usa?" "¿Qué modelo de lenguaje usa?" "Which language model does it use?" "Quin model de llenguatge fa servir?" "Que modelo de linguagem usa?"
+	m llm_anthropic "Claude, de Anthropic (precisa unha clave da API)" "Claude, de Anthropic (necesita una clave de la API)" "Claude, by Anthropic (needs an API key)" \
+		"Claude, d'Anthropic (necessita una clau de l'API)" "Claude, da Anthropic (precisa de uma chave da API)"
+	m llm_own "Un modelo propio compatible coa API de OpenAI (Ollama, vLLM…)" "Un modelo propio compatible con la API de OpenAI (Ollama, vLLM…)" \
+		"Your own model, compatible with OpenAI's API (Ollama, vLLM…)" "Un model propi compatible amb l'API d'OpenAI (Ollama, vLLM…)" "Um modelo próprio compatível com a API da OpenAI (Ollama, vLLM…)"
+	m llm_openai "OpenAI (precisa unha clave da API)" "OpenAI (necesita una clave de la API)" "OpenAI (needs an API key)" "OpenAI (necessita una clau de l'API)" "OpenAI (precisa de uma chave da API)"
+	m q_voice_key "Clave da API do modelo de linguaxe" "Clave de la API del modelo de lenguaje" "The language model's API key" "Clau de l'API del model de llenguatge" "Chave da API do modelo de linguagem"
+	m q_voice_url "Enderezo do servidor do modelo (p. ex. http://ollama:11434/v1)" "Dirección del servidor del modelo (p. ej. http://ollama:11434/v1)" \
+		"The model server's address (e.g. http://ollama:11434/v1)" "Adreça del servidor del model (p. ex. http://ollama:11434/v1)" "Endereço do servidor do modelo (p. ex. http://ollama:11434/v1)"
+	m q_voice_model "Modelo (baleiro: o predeterminado)" "Modelo (vacío: el predeterminado)" "Model (empty: the default)" "Model (buit: el predeterminat)" "Modelo (vazio: o predefinido)"
+	m v_url "Escribe un enderezo que empece por http:// ou https://." "Escribe una dirección que empiece por http:// o https://." "Type an address that starts with http:// or https://." \
+		"Escriu una adreça que comenci per http:// o https://." "Escreva um endereço que comece por http:// ou https://."
+
 	# android app
 	m sec_app "A túa propia app Android" "Tu propia app Android" "Your own Android app" "La teva pròpia app Android" "A sua própria app Android"
 	m app_note "A app de LibreQuenda pódese compilar co teu nome, logotipo e paquete, xa apuntando a este servidor: un APK para instalar directamente e un AAB para Google Play. A compilación precisa uns 4 GB de RAM." \
@@ -650,6 +675,7 @@ v_domain() { [[ $1 =~ ^([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$ ]] || bad v_
 v_email() { [[ $1 =~ ^[^@[:space:]]+@[^@[:space:]]+\.[^@[:space:]]+$ ]] || bad v_email; }
 v_email_opt() { [ -z "$1" ] || v_email "$1"; }
 v_nonempty() { [ -n "$1" ] || bad v_nonempty; }
+v_url() { [[ $1 =~ ^https?://[^[:space:]]+$ ]] || bad v_url; }
 v_port() { { [[ $1 =~ ^[0-9]+$ ]] && [ "$1" -ge 1 ] && [ "$1" -le 65535 ]; } || bad v_port; }
 v_free_port() {
 	v_port "$1" || return 1
@@ -920,19 +946,49 @@ section_support() {
 	ask SUPPORT_PHONE "$(t q_sup_phone)"
 }
 
+voice_on() { [[ ",${ENV[COMPOSE_PROFILES]:-}," == *,voice,* || ",${ENV[COMPOSE_PROFILES]:-}," == *,voice-gpu,* ]]; }
+
+section_voice() {
+	TITLE=$(t sec_voice)
+	local others want=n
+	# the other profiles in COMPOSE_PROFILES stay as they are
+	others=$(printf '%s' "${ENV[COMPOSE_PROFILES]:-}" | tr ',' '\n' | { grep -vxE 'voice|voice-gpu' || true; } | paste -sd, -)
+	voice_on && want=y
+	if ! ui_yesno "$(t voice_note)"$'\n\n'"$(t q_voice)" "$want"; then
+		ENV[COMPOSE_PROFILES]=$others
+		return
+	fi
+	local hw=voice
+	[[ ",${ENV[COMPOSE_PROFILES]:-}," == *,voice-gpu,* ]] && hw=voice-gpu
+	ui_menu "$(t q_voice_hw)" "$hw" voice "$(t voice_cpu)" voice-gpu "$(t voice_gpu)"
+	ENV[COMPOSE_PROFILES]=${others:+$others,}$REPLY
+	ui_menu "$(t q_voice_llm)" "${ENV[VOICE_LLM]:-anthropic}" \
+		anthropic "$(t llm_anthropic)" openai-compatible "$(t llm_own)" openai "$(t llm_openai)"
+	ENV[VOICE_LLM]=$REPLY
+	if [ "$REPLY" = openai-compatible ]; then
+		ask VOICE_LLM_BASE_URL "$(t q_voice_url)" "" v_url
+		ask VOICE_LLM_MODEL "$(t q_voice_model)" "" v_nonempty
+	else
+		ENV[VOICE_LLM_BASE_URL]=""
+		ask_secret VOICE_LLM_API_KEY "$(t q_voice_key)" true v_nonempty
+		ask VOICE_LLM_MODEL "$(t q_voice_model)"
+	fi
+}
+
 section_app() {
 	TITLE=$(t sec_app)
 	if ui_yesno "$(t app_note)"$'\n\n'"$(t q_app_now)" "$WANT_APP"; then WANT_APP=y; app_questions; else WANT_APP=n; fi
 }
 
 review_server() {
-	local net app smtp
+	local net app smtp voice
 	while true; do
 		TITLE=$(t review_title)
 		if [ "${ENV[CADDY_AUTO_HTTPS]}" = true ]; then net=$(t sum_direct)
 		elif [ -n "$PROXY_NETWORK" ]; then net=$(t sum_npm_net "$PROXY_NETWORK")
 		else net=$(t sum_proxy "${ENV[PROXY_HTTP_PORT]}"); fi
 		if [ "$WANT_APP" = y ]; then app="${APP[APP_NAME]} · ${APP[APP_ID]}"; else app=$(t no); fi
+		if voice_on; then voice="${ENV[COMPOSE_PROFILES]##*,} · ${ENV[VOICE_LLM]}"; else voice=$(t no); fi
 		smtp="${ENV[SMTP_HOST]}:${ENV[SMTP_PORT]}${ENV[SMTP_USERNAME]:+ · ${ENV[SMTP_USERNAME]}}"
 		ui_menu "$(t review_q)" go \
 			addr "$(t sec_addr): ${ENV[WEB_DOMAIN]} · ${ENV[ZITADEL_DOMAIN]}" \
@@ -940,6 +996,7 @@ review_server() {
 			admin "$(t sec_admin): ${ENV[ZITADEL_ADMIN_EMAIL]}" \
 			smtp "$(t sec_smtp): $smtp" \
 			support "$(t sec_support): ${ENV[SUPPORT_EMAIL]:-—}${ENV[SUPPORT_PHONE]:+ · ${ENV[SUPPORT_PHONE]}}" \
+			voice "$(t sec_voice): $voice" \
 			app "$(t sec_app): $app" \
 			go "$(t review_go)"
 		case $REPLY in
@@ -948,6 +1005,7 @@ review_server() {
 			admin) section_admin ;;
 			smtp) section_smtp ;;
 			support) section_support ;;
+			voice) section_voice ;;
 			app) section_app ;;
 			go) return ;;
 		esac
@@ -978,6 +1036,11 @@ nginx_conf() { # an nginx site for LibreQuenda behind it, next to the .env
 #   sudo ln -s /etc/nginx/sites-available/librequenda /etc/nginx/sites-enabled/
 #   sudo nginx -t && sudo systemctl reload nginx
 #   sudo certbot --nginx -d ${ENV[WEB_DOMAIN]} -d ${ENV[ZITADEL_DOMAIN]}
+map \$http_upgrade \$librequenda_connection {
+	default upgrade;
+	'' close;
+}
+
 server {
 	listen 80;
 	listen [::]:80;
@@ -991,6 +1054,9 @@ server {
 		proxy_set_header Host \$host;
 		proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
 		proxy_set_header X-Forwarded-Proto https;
+		# WebSockets: the voice line's calls (/voice/ws)
+		proxy_set_header Upgrade \$http_upgrade;
+		proxy_set_header Connection \$librequenda_connection;
 		proxy_buffering off;
 		proxy_read_timeout 300s;
 	}
@@ -1202,6 +1268,7 @@ install_server() {
 	section_admin
 	section_smtp
 	section_support
+	section_voice
 	section_app
 	review_server
 
@@ -1250,6 +1317,7 @@ proxy_help() { # the configuration the reverse proxy in front needs
 			say "    Forward Hostname / IP   ${bold}$host${off}"
 			say "    Forward Port            ${bold}$port${off}"
 			say "    Block Common Exploits   $(t on)"
+			if voice_on; then say "    Websockets Support      $(t on)"; fi
 			say "  ${bold}$(t tab_ssl)${off}"
 			say "    $(t npm_ssl)"
 			;;

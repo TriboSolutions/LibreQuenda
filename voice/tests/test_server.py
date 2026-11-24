@@ -114,7 +114,7 @@ def test_tool_output_for_voice():
     facility = json.loads(for_voice(output))["facilities"][0]
     assert "logo_url" not in facility
     assert facility["free_turns"] == [{"starts_at": "2026-11-24T16:30:00+01:00", "local_time": "16:30-18:00"}]
-    assert facility["free_times"] == "16:30-18:00"
+    assert facility["summary"] == "Pista 1: free 16:30-18:00"
     assert for_voice("not json") == "not json"
 
 

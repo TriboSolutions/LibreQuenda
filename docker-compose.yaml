@@ -78,8 +78,6 @@ services:
       # Encrypts stored credentials (councils' SMTP passwords)
       SECRETS_KEY: ${SECRETS_KEY:?set SECRETS_KEY in .env}
       PUBLIC_URL: ${PUBLIC_SCHEME}://${WEB_DOMAIN}
-      # the voice line's phone calls: with this key, the API takes X-Caller-Phone as the caller's number
-      VOICE_API_KEY: ${VOICE_API_KEY:-}
     volumes:
       - runtime-config:/runtime:ro
       - api-secrets:/secrets:ro
@@ -342,7 +340,9 @@ services:
       HF_TOKEN: ${HF_TOKEN:-} # only for the Celtia voice, gated on Hugging Face
       VOICE_MAX_CALL_SECONDS: ${VOICE_MAX_CALL_SECONDS:-600}
       VOICE_MAX_CALLS: ${VOICE_MAX_CALLS:-4}
-      # phone calls (Twilio): the API trusts the caller's number only with this key
+      VOICE_TURN_SILENCE: ${VOICE_TURN_SILENCE:-0.6}
+      VOICE_LOG_LEVEL: ${VOICE_LOG_LEVEL:-INFO}
+      # phone calls (Twilio): the same key as the API's, sent as X-Voice-Key
       VOICE_API_KEY: ${VOICE_API_KEY:-}
       VOICE_TWILIO_ACCOUNT_SID: ${VOICE_TWILIO_ACCOUNT_SID:-}
       VOICE_TWILIO_AUTH_TOKEN: ${VOICE_TWILIO_AUTH_TOKEN:-}

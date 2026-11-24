@@ -12,6 +12,7 @@ Prints one JSON line with the measurements; exits 1 when a check fails.
 import argparse
 import asyncio
 import json
+import re
 import sys
 import time
 import uuid
@@ -119,6 +120,8 @@ async def main() -> int:
 
     question = await asyncio.to_thread(say, config, args.question)
     async with aiohttp.ClientSession(headers={"Origin": args.origin}) as http:
+        async with http.get(f"{args.url}/health") as response:
+            server = await response.json()
         async with http.post(f"{args.url}/session") as response:
             response.raise_for_status()
             ticket = (await response.json())["ticket"]
@@ -155,9 +158,9 @@ async def main() -> int:
     segments = {d.get("segment_id"): d.get("text", "") for d in call.after(asked, "bot-output")}
     said = [text for text in segments.values() if text]
     result = {
-        "stt": config.stt,
-        "tts": config.tts,
-        "llm": config.llm_model,
+        "stt": server.get("stt"),
+        "tts": server.get("tts"),
+        "llm": server.get("llm"),
         "greeting_seconds": round(greeting_seconds, 2),
         "tools": tools,
         "first_audio_after_speech_s": round(answered - end_of_speech, 3) if answered else None,
@@ -169,6 +172,7 @@ async def main() -> int:
         "called search_facilities": "search_facilities" in tools,
         "answered with audio": len(answer_audio) > RATE,
         "names a facility": any(w in heard.lower() for w in args.expect.split(",")),
+        "offers a free turn": bool(re.search(r"\b\d{1,2}:\d{2}\b", " ".join(said))),
     }
     result["checks"] = checks
     print(json.dumps(result, ensure_ascii=False))
