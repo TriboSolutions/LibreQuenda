@@ -28,6 +28,7 @@ import { directionsUrl } from '@/lib/maps'
 import { addDays, formatBookingDay, formatTime, localDate } from '@/lib/time'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { SiteFooter } from '@/components/SiteFooter'
+import { VoiceLink } from '@/components/VoiceCall'
 
 const WEEK = [1, 2, 3, 4, 5, 6, 7] // ISO weekdays, Monday first
 const DATE = /^\d{4}-\d{2}-\d{2}$/
@@ -270,6 +271,7 @@ export function FacilityPage() {
                     <li className="flex items-center gap-2"><span aria-hidden className="size-3 rounded-sm border border-pill-accent-ink bg-pill-accent-bg" />{t('facility:publicSlot.ongoingLegend')}</li>
                   </ul>
                 )}
+                <VoiceLink />
                 {free.length === 0 && <p className="text-muted-foreground">{t('facility:noFree')}</p>}
                 {!auth.isAuthenticated && free.length > 0 && <p className="text-muted-foreground">{t('facility:signInToBook')}</p>}
               </>

@@ -1,5 +1,7 @@
 {
   "button": "Book by voice",
+  "linkLead": "Rather talk?",
+  "link": "Book by voice",
   "title": "Book by voice",
   "descriptionSignedIn": "Talk to the voice assistant: find facilities and free turns, and book in your name.",
   "descriptionSignedOut": "Talk to the voice assistant to find facilities and free turns. To book by voice, sign in first.",

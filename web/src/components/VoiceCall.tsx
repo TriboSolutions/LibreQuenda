@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import { matchPath, useLocation } from 'react-router'
@@ -17,13 +17,16 @@ type Phase = 'idle' | 'connecting' | 'live' | 'ended' | 'error'
 type Problem = 'mic' | 'busy' | 'unavailable' | 'dropped'
 type Line = { id: string; who: 'you' | 'agent'; text: string }
 
+type VoiceLine = { available: boolean; open: () => void }
+const VoiceContext = createContext<VoiceLine>({ available: false, open: () => {} })
+
 /**
  * «Reserva falando»: a call with the voice line, in a panel with live captions of both
- * sides (the WCAG captions of the call), mute and hang up. Shown only when the
- * installation runs the voice line; signed in, the call can book for the person.
+ * sides (the WCAG captions of the call), mute and hang up. Available only when the
+ * installation runs the voice line, on the public pages; signed in, the call can book
+ * for the person. Opened from the top bar (VoiceButton) or a facility's turns (VoiceLink).
  */
-export function VoiceCall() {
-  const { t } = useTranslation('voice')
+export function VoiceProvider({ children }: { children: ReactNode }) {
   const { pathname } = useLocation()
   const [config, setConfig] = useState<VoiceConfig | null>(null)
   const [open, setOpen] = useState(false)
@@ -34,20 +37,45 @@ export function VoiceCall() {
 
   const onPublicPage =
     PUBLIC_PAGES.some((p) => matchPath(p, pathname)) && !pathname.split('/').some((s) => STAFF_SEGMENTS.has(s))
-  if (!config || (!onPublicPage && !open)) return null
 
   return (
-    <>
-      <Button
-        onClick={() => setOpen(true)}
-        className="fixed right-4 bottom-4 z-40 h-auto rounded-full p-3.5 shadow-lg hover:shadow-xl sm:right-6 sm:bottom-6 sm:px-5"
+    <VoiceContext.Provider value={{ available: !!config && onPublicPage, open: () => setOpen(true) }}>
+      {children}
+      {config && open && <CallPanel config={config} onClose={() => setOpen(false)} />}
+    </VoiceContext.Provider>
+  )
+}
+
+/** The top bar's phone icon. */
+export function VoiceButton() {
+  const { t } = useTranslation('voice')
+  const { available, open } = useContext(VoiceContext)
+  if (!available) return null
+  return (
+    <Button variant="ghost" size="icon" onClick={open} aria-haspopup="dialog" aria-label={t('button')} title={t('button')}>
+      <Phone />
+    </Button>
+  )
+}
+
+/** A quiet line under a facility's turns: «Prefires falar? Reserva por voz». */
+export function VoiceLink() {
+  const { t } = useTranslation('voice')
+  const { available, open } = useContext(VoiceContext)
+  if (!available) return null
+  return (
+    <p className="text-sm text-muted-foreground">
+      {t('linkLead')}{' '}
+      <button
+        type="button"
+        onClick={open}
         aria-haspopup="dialog"
+        className="inline-flex items-center gap-1 rounded-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
       >
-        <Phone className="size-5" aria-hidden />
-        <span className="sr-only sm:not-sr-only">{t('button')}</span>
-      </Button>
-      {open && <CallPanel config={config} onClose={() => setOpen(false)} />}
-    </>
+        <Phone className="size-3.5" aria-hidden />
+        {t('link')}
+      </button>
+    </p>
   )
 }
 

@@ -517,6 +517,11 @@ test.describe('keyboard', () => {
     await page.keyboard.press('Escape')
     await expect(dialog).toHaveCount(0)
     await expect(page.getByRole('button', { name: 'Reserva falando' })).toBeFocused()
+    // and from the facility's turns, a quiet link
+    await page.getByRole('button', { name: 'Reserva por voz' }).click()
+    await expect(dialog).toBeVisible()
+    await page.keyboard.press('Escape')
+    await expect(page.getByRole('button', { name: 'Reserva por voz' })).toBeFocused()
     // never in the administration
     await page.goto('/lugo/admin')
     await expect(page.locator('h1').first()).toBeVisible()

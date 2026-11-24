@@ -1,5 +1,7 @@
 {
   "button": "Reserva hablando",
+  "linkLead": "¿Prefieres hablar?",
+  "link": "Reserva por voz",
   "title": "Reserva hablando",
   "descriptionSignedIn": "Habla con el asistente de voz: busca instalaciones y turnos libres, y reserva a tu nombre.",
   "descriptionSignedOut": "Habla con el asistente de voz para buscar instalaciones y turnos libres. Para reservar hablando, inicia sesión antes.",
