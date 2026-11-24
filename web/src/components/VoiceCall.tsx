@@ -180,8 +180,6 @@ function CallPanel({ config, onClose }: { config: VoiceConfig; onClose: () => vo
     setMuted(!muted)
   }
 
-  const { voice, text } = config.thirdParties
-  const minutes = Math.round(config.maxCallSeconds / 60)
 
   return (
     <Dialog open onOpenChange={(next) => !next && onClose()}>
@@ -190,17 +188,6 @@ function CallPanel({ config, onClose }: { config: VoiceConfig; onClose: () => vo
           <DialogTitle>{t('title')}</DialogTitle>
           <DialogDescription>{t(signedIn ? 'descriptionSignedIn' : config.guestBooking ? 'descriptionGuest' : 'descriptionSignedOut')}</DialogDescription>
         </DialogHeader>
-
-        {phase === 'idle' && (
-          <div className="grid gap-2 text-sm text-muted-foreground">
-            <p>{t('howItWorks', { minutes })}</p>
-            <p>
-              {voice.length > 0 ? t('privacy.voice', { names: voice.join(', ') }) : t('privacy.voiceLocal')}{' '}
-              {text.length > 0 ? t('privacy.text', { names: text.join(', ') }) : t('privacy.textLocal')}{' '}
-              {t('privacy.notKept')}
-            </p>
-          </div>
-        )}
 
         {phase !== 'idle' && (
           <div className="grid gap-3">
