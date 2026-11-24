@@ -21,7 +21,7 @@ MONTHS = [
     "decembro",
 ]
 
-GREETING = "Ola, es na liña de reservas das instalacións deportivas municipais. En que che podo axudar?"
+GREETING = "Ola, esta é a liña de reservas das instalacións deportivas municipais. En que podo axudar?"
 TIME_UP = "Chegamos ao tempo máximo desta chamada. Grazas por chamar, ata logo!"
 
 READ_ONLY_TOOLS = ["list_councils", "search_facilities", "facility_details", "list_events"]

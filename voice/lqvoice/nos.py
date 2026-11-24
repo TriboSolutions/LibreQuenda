@@ -17,6 +17,9 @@ from pipecat.utils.time import time_now_iso8601
 
 from lqvoice import models
 
+# punctuation Whisper sometimes puts before the first word
+LEADING_MARKS = re.compile(r"^[\s,.;:…-]+")
+
 # Nós' voices are trained at 16 kHz
 NOS_SAMPLE_RATE = 16000
 
@@ -30,6 +33,15 @@ class SharedWhisperSTTService(WhisperSTTService):
 
     def _load(self):
         self._model = models.whisper(self._model_path, self._device).model
+
+    async def run_stt(self, audio: bytes) -> AsyncGenerator[Frame, None]:
+        async for frame in super().run_stt(audio):
+            # Whisper sometimes opens with a stray mark (", Ola…"): the captions show it
+            if isinstance(frame, TranscriptionFrame):
+                frame.text = LEADING_MARKS.sub("", frame.text)
+                if not frame.text:
+                    continue
+            yield frame
 
 
 class NosWav2Vec2STTService(SegmentedSTTService):

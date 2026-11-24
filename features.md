@@ -35,7 +35,7 @@ Estado: **feito** · **en curso** (traballo aberto) · **idea** (sen comezar).
 | Enquisas do concello: chegan como aviso (campá, notificación e correo) a quen forma parte del, un voto por conta cun correo verificado que se pode cambiar mentres está aberta, só para a veciñanza verificada se o concello quere, e outro aviso cos resultados cando pecha; todas, abertas e pechadas, na páxina Enquisas (menú da conta e perfil) | feito |
 | Páxinas de condicións de uso e de política de privacidade; contacto de soporte no pé de páxina | feito |
 | Catro idiomas (galego, castelán, inglés, catalán), tema claro e escuro | feito |
-| Reservar falando: un botón «Reserva falando» abre unha chamada co asistente de voz en galego, con subtítulos en directo das dúas partes, silenciar e colgar; busca quendas libres e, coa sesión iniciada, reserva despois de confirmar a quenda e aceptar as normas (liña de voz opcional, [docs/voice.md](docs/voice.md)) | feito |
+| Reservar falando: o icono do teléfono na barra superior, ou «Reserva por voz» baixo as quendas, abre unha chamada co asistente de voz en galego, con subtítulos en directo das dúas partes, silenciar e colgar; busca quendas libres e, coa sesión iniciada, reserva despois de confirmar a quenda e aceptar as normas (liña de voz opcional, [docs/voice.md](docs/voice.md)) | feito |
 | Reservar por teléfono co mesmo asistente (Twilio): coa conta, cun código ao correo, ou co nome e o número de quen chama | en curso |
 
 ## App Android

@@ -7,6 +7,7 @@ import { BrandLockup } from '@/components/Brand'
 import { InvitationReminder } from '@/components/InvitationReminder'
 import { LanguageMenu } from '@/components/LanguageMenu'
 import { NotificationBell } from '@/components/NotificationBell'
+import { VoiceButton } from '@/components/VoiceCall'
 import { FlashBookingDialog } from '@/components/PersonalQr'
 import { MfaRequiredNotice } from '@/components/MfaRequiredNotice'
 import { NewVersionNotice } from '@/components/NewVersionNotice'
@@ -63,6 +64,7 @@ export function TopBar() {
         </Link>
 
         <div className="ml-auto flex shrink-0 items-center gap-1">
+          <VoiceButton />
           <LanguageMenu />
           <ThemeMenu />
           {auth.isAuthenticated && <NotificationBell />}

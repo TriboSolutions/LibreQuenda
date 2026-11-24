@@ -1,5 +1,7 @@
 {
   "button": "Reserva parlant",
+  "linkLead": "Prefereixes parlar?",
+  "link": "Reserva per veu",
   "title": "Reserva parlant",
   "descriptionSignedIn": "Parla amb l’assistent de veu: cerca instal·lacions i torns lliures, i reserva al teu nom.",
   "descriptionSignedOut": "Parla amb l’assistent de veu per cercar instal·lacions i torns lliures. Per reservar parlant, inicia la sessió abans.",
