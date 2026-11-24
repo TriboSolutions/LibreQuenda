@@ -146,7 +146,7 @@ func TestSummaryCSV(t *testing.T) {
 	var occupancy, rating = 0.125, 4.25
 	var data = &IndicatorsDto{From: "2026-10-01", To: "2026-10-28", Facilities: []FacilityIndicatorsDto{{
 		Name:               "Pista de pádel 1",
-		IndicatorCountsDto: IndicatorCountsDto{Bookings: 3, Confirmed: 3, BookedHours: 4.5, OpenHours: 36, Occupancy: &occupancy, Ratings: 4, RatingAverage: &rating},
+		IndicatorCountsDto: IndicatorCountsDto{Bookings: 3, Confirmed: 3, ByChannel: ChannelCountsDto{Online: 3}, BookedHours: 4.5, OpenHours: 36, Occupancy: &occupancy, Ratings: 4, RatingAverage: &rating},
 	}}}
 	var out bytes.Buffer
 	if err := writeSummaryCSV(&out, csvFormat{}, data); err != nil {
@@ -156,13 +156,13 @@ func TestSummaryCSV(t *testing.T) {
 	if !strings.HasPrefix(text, "\xef\xbb\xbf") {
 		t.Error("missing the UTF-8 byte order mark")
 	}
-	if !strings.Contains(text, "Pista de pádel 1,2026-10-01,2026-10-28,3,3,0,0,,4.50,36.00,0.1250,0,0,,4,4.25\n") {
+	if !strings.Contains(text, "Pista de pádel 1,2026-10-01,2026-10-28,3,3,3,0,0,0,0,,4.50,36.00,0.1250,0,0,,4,4.25\n") {
 		t.Errorf("unexpected row:\n%s", text)
 	}
 
 	out.Reset()
 	writeSummaryCSV(&out, csvFormat{excel: true}, data)
-	if !strings.Contains(out.String(), "Pista de pádel 1;2026-10-01;2026-10-28;3;3;0;0;;4,50;36,00;0,1250;0;0;;4;4,25\n") {
+	if !strings.Contains(out.String(), "Pista de pádel 1;2026-10-01;2026-10-28;3;3;3;0;0;0;0;;4,50;36,00;0,1250;0;0;;4;4,25\n") {
 		t.Errorf("Excel format must use ';' and a decimal comma:\n%s", out.String())
 	}
 }
@@ -172,14 +172,14 @@ func TestSummaryCSVHidesSmallCounts(t *testing.T) {
 	var data = &IndicatorsDto{From: "2026-10-01", To: "2026-10-28", Facilities: []FacilityIndicatorsDto{{
 		Name: "Pista de tenis",
 		IndicatorCountsDto: IndicatorCountsDto{
-			Bookings: 32, Confirmed: 30, CancelledByUser: 2, BookedHours: 30, OpenHours: 600, Occupancy: &occupancy, CancellationRate: &cancellation,
+			Bookings: 32, Confirmed: 30, ByChannel: ChannelCountsDto{Online: 28, Phone: 2}, CancelledByUser: 2, BookedHours: 30, OpenHours: 600, Occupancy: &occupancy, CancellationRate: &cancellation,
 			Finished: 2, Attended: 2, Ratings: 2, RatingAverage: &rating,
 		},
 	}}}
 	var out bytes.Buffer
 	writeSummaryCSV(&out, csvFormat{}, data)
-	// 2 cancellations: "<3", and the rate that would give them away stays empty; the same with 2 ratings
-	var want = "Pista de tenis,2026-10-01,2026-10-28,32,30,<3,0,,30.00,600.00,0.0500,<3,<3,,<3,\n"
+	// 2 cancellations or 2 by phone: "<3", and the rate that would give them away stays empty; the same with 2 ratings
+	var want = "Pista de tenis,2026-10-01,2026-10-28,32,30,28,0,<3,<3,0,,30.00,600.00,0.0500,<3,<3,,<3,\n"
 	if !strings.HasSuffix(out.String(), want) {
 		t.Errorf("got:\n%s\nwant the row:\n%s", out.String(), want)
 	}

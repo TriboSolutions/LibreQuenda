@@ -23,19 +23,21 @@ SET
     cancelled_by = 'user'
 WHERE
     id = $1
-    AND user_id = $2
+    AND (user_id = $2 OR holder_phone = $3)
     AND status = 'confirmed'
 RETURNING
     id, facility_id, user_id, starts_at, ends_at, status, rules_accepted_at, channel, booked_by, holder_name, holder_phone, cancelled_at, cancelled_by, created_at, updated_at, checkin_token, checked_in_at, checked_in_device_id, checked_in_method, checked_in_by, invite_token, kind, public_description, title, event_capacity
 `
 
 type CancelBookingParams struct {
-	ID     uuid.UUID     `json:"id"`
-	UserID uuid.NullUUID `json:"user_id"`
+	ID          uuid.UUID      `json:"id"`
+	UserID      uuid.NullUUID  `json:"user_id"`
+	HolderPhone sql.NullString `json:"holder_phone"`
 }
 
+// The owner's: their account's, or on the voice line the caller's number's (holder_phone).
 func (q *Queries) CancelBooking(ctx context.Context, arg CancelBookingParams) (Booking, error) {
-	row := q.db.QueryRowContext(ctx, cancelBooking, arg.ID, arg.UserID)
+	row := q.db.QueryRowContext(ctx, cancelBooking, arg.ID, arg.UserID, arg.HolderPhone)
 	var i Booking
 	err := row.Scan(
 		&i.ID,
@@ -134,19 +136,20 @@ SELECT
 FROM
     booking
 WHERE
-    user_id = $1
-    AND facility_id = $2
+    (user_id = $1 OR holder_phone = $2)
+    AND facility_id = $3
     AND status = 'confirmed'
     AND ends_at > NOW()
 `
 
 type CountActiveBookingsByUserFacilityParams struct {
-	UserID     uuid.NullUUID `json:"user_id"`
-	FacilityID uuid.UUID     `json:"facility_id"`
+	UserID      uuid.NullUUID  `json:"user_id"`
+	HolderPhone sql.NullString `json:"holder_phone"`
+	FacilityID  uuid.UUID      `json:"facility_id"`
 }
 
 func (q *Queries) CountActiveBookingsByUserFacility(ctx context.Context, arg CountActiveBookingsByUserFacilityParams) (int64, error) {
-	row := q.db.QueryRowContext(ctx, countActiveBookingsByUserFacility, arg.UserID, arg.FacilityID)
+	row := q.db.QueryRowContext(ctx, countActiveBookingsByUserFacility, arg.UserID, arg.HolderPhone, arg.FacilityID)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -158,20 +161,21 @@ SELECT
 FROM
     booking
 WHERE
-    user_id = $1
-    AND facility_id = $2
+    (user_id = $1 OR holder_phone = $2)
+    AND facility_id = $3
     AND status = 'confirmed'
-    AND starts_at >= $3
-    AND starts_at < $4
-    AND ($5::UUID IS NULL OR id <> $5)
+    AND starts_at >= $4
+    AND starts_at < $5
+    AND ($6::UUID IS NULL OR id <> $6)
 `
 
 type CountUserBookingsInRangeParams struct {
-	UserID     uuid.NullUUID `json:"user_id"`
-	FacilityID uuid.UUID     `json:"facility_id"`
-	RangeStart time.Time     `json:"range_start"`
-	RangeEnd   time.Time     `json:"range_end"`
-	Exclude    uuid.NullUUID `json:"exclude"`
+	UserID      uuid.NullUUID  `json:"user_id"`
+	HolderPhone sql.NullString `json:"holder_phone"`
+	FacilityID  uuid.UUID      `json:"facility_id"`
+	RangeStart  time.Time      `json:"range_start"`
+	RangeEnd    time.Time      `json:"range_end"`
+	Exclude     uuid.NullUUID  `json:"exclude"`
 }
 
 // The person's confirmed bookings here starting in [range_start, range_end), but
@@ -179,6 +183,7 @@ type CountUserBookingsInRangeParams struct {
 func (q *Queries) CountUserBookingsInRange(ctx context.Context, arg CountUserBookingsInRangeParams) (int64, error) {
 	row := q.db.QueryRowContext(ctx, countUserBookingsInRange,
 		arg.UserID,
+		arg.HolderPhone,
 		arg.FacilityID,
 		arg.RangeStart,
 		arg.RangeEnd,
@@ -196,20 +201,21 @@ FROM
     booking b
     JOIN facility f ON f.id = b.facility_id
 WHERE
-    b.user_id = $1
+    (b.user_id = $1 OR b.holder_phone = $2)
     AND b.status = 'confirmed'
     AND b.ends_at > NOW()
-    AND f.tenant_id = $2
+    AND f.tenant_id = $3
 `
 
 type CountUserUpcomingInCouncilParams struct {
-	UserID   uuid.NullUUID `json:"user_id"`
-	TenantID uuid.UUID     `json:"tenant_id"`
+	UserID      uuid.NullUUID  `json:"user_id"`
+	HolderPhone sql.NullString `json:"holder_phone"`
+	TenantID    uuid.UUID      `json:"tenant_id"`
 }
 
 // The person's own upcoming confirmed bookings across the council's facilities.
 func (q *Queries) CountUserUpcomingInCouncil(ctx context.Context, arg CountUserUpcomingInCouncilParams) (int64, error) {
-	row := q.db.QueryRowContext(ctx, countUserUpcomingInCouncil, arg.UserID, arg.TenantID)
+	row := q.db.QueryRowContext(ctx, countUserUpcomingInCouncil, arg.UserID, arg.HolderPhone, arg.TenantID)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -221,25 +227,35 @@ INSERT INTO booking (
     user_id,
     starts_at,
     ends_at,
-    rules_accepted_at
+    rules_accepted_at,
+    channel,
+    holder_name,
+    holder_phone
 ) VALUES (
     $1,
     $2,
     $3,
     $4,
-    NOW()
+    NOW(),
+    $5,
+    $6,
+    $7
 )
 RETURNING
     id, facility_id, user_id, starts_at, ends_at, status, rules_accepted_at, channel, booked_by, holder_name, holder_phone, cancelled_at, cancelled_by, created_at, updated_at, checkin_token, checked_in_at, checked_in_device_id, checked_in_method, checked_in_by, invite_token, kind, public_description, title, event_capacity
 `
 
 type CreateBookingParams struct {
-	FacilityID uuid.UUID     `json:"facility_id"`
-	UserID     uuid.NullUUID `json:"user_id"`
-	StartsAt   time.Time     `json:"starts_at"`
-	EndsAt     time.Time     `json:"ends_at"`
+	FacilityID  uuid.UUID      `json:"facility_id"`
+	UserID      uuid.NullUUID  `json:"user_id"`
+	StartsAt    time.Time      `json:"starts_at"`
+	EndsAt      time.Time      `json:"ends_at"`
+	Channel     BookingChannel `json:"channel"`
+	HolderName  sql.NullString `json:"holder_name"`
+	HolderPhone sql.NullString `json:"holder_phone"`
 }
 
+// For an account (user_id), or on the voice line for a caller without one (holder_*).
 // Overlaps are rejected by the exclusion constraint on booking.
 func (q *Queries) CreateBooking(ctx context.Context, arg CreateBookingParams) (Booking, error) {
 	row := q.db.QueryRowContext(ctx, createBooking,
@@ -247,6 +263,9 @@ func (q *Queries) CreateBooking(ctx context.Context, arg CreateBookingParams) (B
 		arg.UserID,
 		arg.StartsAt,
 		arg.EndsAt,
+		arg.Channel,
+		arg.HolderName,
+		arg.HolderPhone,
 	)
 	var i Booking
 	err := row.Scan(
@@ -292,12 +311,13 @@ FROM
     JOIN facility f ON f.id = b.facility_id
 WHERE
     b.id = $1
-    AND b.user_id = $2
+    AND (b.user_id = $2 OR b.holder_phone = $3)
 `
 
 type GetBookingForUserParams struct {
-	ID     uuid.UUID     `json:"id"`
-	UserID uuid.NullUUID `json:"user_id"`
+	ID          uuid.UUID      `json:"id"`
+	UserID      uuid.NullUUID  `json:"user_id"`
+	HolderPhone sql.NullString `json:"holder_phone"`
 }
 
 type GetBookingForUserRow struct {
@@ -310,7 +330,7 @@ type GetBookingForUserRow struct {
 }
 
 func (q *Queries) GetBookingForUser(ctx context.Context, arg GetBookingForUserParams) (GetBookingForUserRow, error) {
-	row := q.db.QueryRowContext(ctx, getBookingForUser, arg.ID, arg.UserID)
+	row := q.db.QueryRowContext(ctx, getBookingForUser, arg.ID, arg.UserID, arg.HolderPhone)
 	var i GetBookingForUserRow
 	err := row.Scan(
 		&i.ID,
@@ -355,21 +375,22 @@ WHERE
     b.status = 'confirmed'
     AND b.ends_at > NOW()
     AND f.tenant_id <> $1
-    AND b.user_id = $2
+    AND (b.user_id = $2 OR b.holder_phone = $3)
 ORDER BY
     b.starts_at
 LIMIT 1
 `
 
 type GetUserBookingInOtherCouncilParams struct {
-	TenantID uuid.UUID     `json:"tenant_id"`
-	UserID   uuid.NullUUID `json:"user_id"`
+	TenantID    uuid.UUID      `json:"tenant_id"`
+	UserID      uuid.NullUUID  `json:"user_id"`
+	HolderPhone sql.NullString `json:"holder_phone"`
 }
 
 // The council of the person's next upcoming booking of their own outside
 // `tenant_id`, if any. Games they joined are someone else's booking: they do not count.
 func (q *Queries) GetUserBookingInOtherCouncil(ctx context.Context, arg GetUserBookingInOtherCouncilParams) (string, error) {
-	row := q.db.QueryRowContext(ctx, getUserBookingInOtherCouncil, arg.TenantID, arg.UserID)
+	row := q.db.QueryRowContext(ctx, getUserBookingInOtherCouncil, arg.TenantID, arg.UserID, arg.HolderPhone)
 	var name string
 	err := row.Scan(&name)
 	return name, err
@@ -726,6 +747,76 @@ func (q *Queries) ListHistoryPageByUser(ctx context.Context, arg ListHistoryPage
 	return items, nil
 }
 
+const listPhoneBookings = `-- name: ListPhoneBookings :many
+SELECT
+    b.id,
+    b.starts_at,
+    b.ends_at,
+    b.kind,
+    COALESCE(b.holder_name, '')::TEXT AS holder_name,
+    f.id   AS facility_id,
+    f.name AS facility_name,
+    f.min_cancel_hours,
+    t.name AS tenant_name
+FROM
+    booking b
+    JOIN facility f ON f.id = b.facility_id
+    JOIN tenant   t ON t.id = f.tenant_id
+WHERE
+    b.holder_phone = $1
+    AND b.user_id IS NULL
+    AND b.status = 'confirmed'
+    AND b.ends_at > NOW()
+ORDER BY
+    b.starts_at ASC
+`
+
+type ListPhoneBookingsRow struct {
+	ID             uuid.UUID   `json:"id"`
+	StartsAt       time.Time   `json:"starts_at"`
+	EndsAt         time.Time   `json:"ends_at"`
+	Kind           BookingKind `json:"kind"`
+	HolderName     string      `json:"holder_name"`
+	FacilityID     uuid.UUID   `json:"facility_id"`
+	FacilityName   string      `json:"facility_name"`
+	MinCancelHours int32       `json:"min_cancel_hours"`
+	TenantName     string      `json:"tenant_name"`
+}
+
+// A caller's upcoming bookings on the voice line without an account, by their number.
+func (q *Queries) ListPhoneBookings(ctx context.Context, holderPhone sql.NullString) ([]ListPhoneBookingsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listPhoneBookings, holderPhone)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListPhoneBookingsRow
+	for rows.Next() {
+		var i ListPhoneBookingsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.StartsAt,
+			&i.EndsAt,
+			&i.Kind,
+			&i.HolderName,
+			&i.FacilityID,
+			&i.FacilityName,
+			&i.MinCancelHours,
+			&i.TenantName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listUserBookingPatterns = `-- name: ListUserBookingPatterns :many
 SELECT
     b.facility_id,
@@ -796,22 +887,23 @@ SELECT
 FROM
     booking
 WHERE
-    user_id = $1
-    AND facility_id = $2
+    (user_id = $1 OR holder_phone = $2)
+    AND facility_id = $3
     AND status = 'confirmed'
-    AND ends_at >= $3
-    AND starts_at <= $4
-    AND ($5::UUID IS NULL OR id <> $5)
+    AND ends_at >= $4
+    AND starts_at <= $5
+    AND ($6::UUID IS NULL OR id <> $6)
 ORDER BY
     starts_at
 `
 
 type ListUserBookingsNearParams struct {
-	UserID     uuid.NullUUID `json:"user_id"`
-	FacilityID uuid.UUID     `json:"facility_id"`
-	RangeStart time.Time     `json:"range_start"`
-	RangeEnd   time.Time     `json:"range_end"`
-	Exclude    uuid.NullUUID `json:"exclude"`
+	UserID      uuid.NullUUID  `json:"user_id"`
+	HolderPhone sql.NullString `json:"holder_phone"`
+	FacilityID  uuid.UUID      `json:"facility_id"`
+	RangeStart  time.Time      `json:"range_start"`
+	RangeEnd    time.Time      `json:"range_end"`
+	Exclude     uuid.NullUUID  `json:"exclude"`
 }
 
 type ListUserBookingsNearRow struct {
@@ -824,6 +916,7 @@ type ListUserBookingsNearRow struct {
 func (q *Queries) ListUserBookingsNear(ctx context.Context, arg ListUserBookingsNearParams) ([]ListUserBookingsNearRow, error) {
 	rows, err := q.db.QueryContext(ctx, listUserBookingsNear,
 		arg.UserID,
+		arg.HolderPhone,
 		arg.FacilityID,
 		arg.RangeStart,
 		arg.RangeEnd,
@@ -856,27 +949,33 @@ SELECT
 FROM
     booking
 WHERE
-    user_id = $1
-    AND facility_id = $2
+    (user_id = $1 OR holder_phone = $2)
+    AND facility_id = $3
     AND status = 'confirmed'
     AND checked_in_at IS NULL
     AND ends_at <= NOW()
-    AND ends_at >= $3
+    AND ends_at >= $4
     AND facility_took_checkin(facility_id, starts_at)
 ORDER BY
     ends_at DESC
 `
 
 type ListUserNoShowsParams struct {
-	UserID     uuid.NullUUID `json:"user_id"`
-	FacilityID uuid.UUID     `json:"facility_id"`
-	Since      time.Time     `json:"since"`
+	UserID      uuid.NullUUID  `json:"user_id"`
+	HolderPhone sql.NullString `json:"holder_phone"`
+	FacilityID  uuid.UUID      `json:"facility_id"`
+	Since       time.Time      `json:"since"`
 }
 
 // The person's no-shows here since `since`, latest first: confirmed bookings
 // over without a check-in, while the facility took check-ins.
 func (q *Queries) ListUserNoShows(ctx context.Context, arg ListUserNoShowsParams) ([]time.Time, error) {
-	rows, err := q.db.QueryContext(ctx, listUserNoShows, arg.UserID, arg.FacilityID, arg.Since)
+	rows, err := q.db.QueryContext(ctx, listUserNoShows,
+		arg.UserID,
+		arg.HolderPhone,
+		arg.FacilityID,
+		arg.Since,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -970,6 +1069,16 @@ func (q *Queries) LockParticipantBookings(ctx context.Context, bookingID uuid.UU
 	return err
 }
 
+const lockPhoneBookings = `-- name: LockPhoneBookings :exec
+SELECT pg_advisory_xact_lock(hashtextextended('phone:' || $1::TEXT, 0))
+`
+
+// The same for a caller on the voice line without an account, by their number.
+func (q *Queries) LockPhoneBookings(ctx context.Context, holderPhone string) error {
+	_, err := q.db.ExecContext(ctx, lockPhoneBookings, holderPhone)
+	return err
+}
+
 const lockUserBookings = `-- name: LockUserBookings :exec
 SELECT pg_advisory_xact_lock(hashtextextended($1::UUID::TEXT, 0))
 `
@@ -1028,6 +1137,7 @@ SELECT EXISTS (
         AND b.ends_at   > $3
         AND (
             b.user_id = $4
+            OR b.holder_phone = $5
             OR EXISTS (
                 SELECT 1 FROM booking_participant p
                 WHERE p.booking_id = b.id AND p.user_id = $4
@@ -1037,10 +1147,11 @@ SELECT EXISTS (
 `
 
 type UserHasOverlappingBookingParams struct {
-	ExceptBookingID uuid.NullUUID `json:"except_booking_id"`
-	EndsAt          time.Time     `json:"ends_at"`
-	StartsAt        time.Time     `json:"starts_at"`
-	UserID          uuid.NullUUID `json:"user_id"`
+	ExceptBookingID uuid.NullUUID  `json:"except_booking_id"`
+	EndsAt          time.Time      `json:"ends_at"`
+	StartsAt        time.Time      `json:"starts_at"`
+	UserID          uuid.NullUUID  `json:"user_id"`
+	HolderPhone     sql.NullString `json:"holder_phone"`
 }
 
 // A person is in one place at a time: their own confirmed bookings and the
@@ -1052,6 +1163,7 @@ func (q *Queries) UserHasOverlappingBooking(ctx context.Context, arg UserHasOver
 		arg.EndsAt,
 		arg.StartsAt,
 		arg.UserID,
+		arg.HolderPhone,
 	)
 	var exists bool
 	err := row.Scan(&exists)

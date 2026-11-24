@@ -1237,7 +1237,7 @@ test.describe('keyboard', () => {
 
   test('staff sign someone up for an event, and cancel the event by its name', async ({ page }) => {
     const later = (hours: number) => new Date(Date.now() + hours * 3_600_000).toISOString()
-    const event = { ...staffBooking, id: 'ev1', is_event: true, booked_by_staff: true, name: 'Torneo de pádel', starts_at: later(5), ends_at: later(7), participant_count: 3 }
+    const event = { ...staffBooking, id: 'ev1', is_event: true, booked_by_staff: true, channel: 'staff', name: 'Torneo de pádel', starts_at: later(5), ends_at: later(7), participant_count: 3 }
     await open(page, '/lugo/admin?vista=reservas')
     await page.route(/\/api\/tenants\/lugo\/admin\/facilities\/[^/]+\/bookings/, (route) => route.fulfill({ json: { ...staffDay, bookings: [event] } }))
     let sent: unknown = null

@@ -83,5 +83,9 @@ var SMTP_FROM = os.Getenv("SMTP_FROM") // e.g. LibreQuenda <noreply@concello.gal
 // hex (openssl rand -hex 32). Losing it means typing those passwords again.
 var SECRETS_KEY = os.Getenv("SECRETS_KEY")
 
+// Shared secret of the voice line (the voice service): MCP requests carrying it in
+// X-Voice-Key act for the caller in X-Caller-Phone. Empty = no voice line.
+var VOICE_API_KEY = strings.TrimSpace(os.Getenv("VOICE_API_KEY"))
+
 // Address of the web app, for links in emails, e.g. https://reservas.concello.gal
 var PUBLIC_URL = strings.TrimRight(os.Getenv("PUBLIC_URL"), "/")

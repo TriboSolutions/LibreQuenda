@@ -251,7 +251,10 @@
     "poll_closed": "Aquesta enquesta ja està tancada.",
     "poll_residents_only": "En aquesta enquesta només voten les persones verificades com a veïnes de l’ajuntament.",
     "poll_option_not_found": "Aquesta resposta no és d’aquesta enquesta.",
-    "poll_closed_keep": "Una enquesta tancada no es pot esborrar: els seus resultats queden a l’historial."
+    "poll_closed_keep": "Una enquesta tancada no es pot esborrar: els seus resultats queden a l’historial.",
+    "phone_residents_only": "Aquesta instal·lació és només per a veïns verificats per l’ajuntament: per reservar-la per telèfon cal entrar amb el compte.",
+    "phone_age_restricted": "Aquesta instal·lació té una edat mínima de {{0}} anys, que per telèfon no es pot comprovar: per reservar-la cal entrar amb el compte.",
+    "phone_holder_required": "Per reservar sense compte calen el nom de qui reserva i el seu número de telèfon."
   },
   "email": {
     "greeting": "Hola {{0}},",
@@ -383,6 +386,12 @@
       "intro": "S’ha tancat l’enquesta de {{0}}:",
       "body": "Gràcies a totes les persones que heu votat. Ja pots veure els resultats.",
       "manage": "Veure els resultats"
+    },
+    "phone_code": {
+      "subject": "El teu codi per a {{0}}: {{1}}",
+      "intro": "Estàs parlant amb la línia de telèfon de {{0}}. Per entrar amb el teu compte, digues aquest codi a l’assistent. Caduca d’aquí a {{1}} minuts.",
+      "manage": "Obrir {{0}}",
+      "footer": "Reps aquest correu perquè algú ha trucat des del número de telèfon del teu perfil i ha demanat entrar amb el teu compte. Si no has estat tu, no diguis el codi a ningú i ignora aquest correu."
     }
   }
 }

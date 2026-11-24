@@ -4,7 +4,7 @@
 --   more demand in the evening and at weekends, and growing over the period;
 --   ~7 % cancelled by the resident; a closure cancels what it catches (council);
 --   ~88 % checked in where there is a QR reader; some bookings take invited people;
---   a few booked by staff for someone without an account.
+--   a few booked for someone without an account, by staff or on the voice line.
 -- Owners and invited people live in the facility's council (the local tester too).
 SELECT setseed(0.42);
 
@@ -74,8 +74,8 @@ SELECT
     h.booking_id,
     h.facility_id,
     CASE WHEN h.staff_roll >= 0.05 THEN h.people[1 + h.owner_index] END,
-    CASE WHEN h.staff_roll >= 0.05 THEN 'online' ELSE 'staff' END::booking_channel,
-    -- staff bookings for someone without an account: the name is forgotten 30 days after
+    CASE WHEN h.staff_roll >= 0.05 THEN 'online' WHEN h.staff_roll < 0.02 THEN 'phone' ELSE 'staff' END::booking_channel,
+    -- bookings for someone without an account: the name is forgotten 30 days after
     CASE WHEN h.staff_roll < 0.05 AND h.ends_at > NOW() - INTERVAL '30 days' THEN 'Reserva por teléfono' END,
     h.starts_at,
     h.ends_at,

@@ -14,10 +14,13 @@ import (
 	"librequenda/core/invites"
 	"librequenda/core/me"
 	"librequenda/core/tenants"
+	"librequenda/mailer"
+	"librequenda/model"
 	"librequenda/schedule"
 	"librequenda/shared"
 
 	"github.com/angelbarreiros/Penguin/router/helpers"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
@@ -25,8 +28,12 @@ import (
 // agent: the MCP server's tools, on the same services the web and the app use, so
 // they keep every rule (booking window, limits, residents only, age, overlaps…).
 type agent struct {
-	db     *sql.DB
-	grants *grants
+	db       *sql.DB
+	grants   *grants
+	codes    *phoneCodes
+	voiceKey string                                      // VOICE_API_KEY: "" without a voice line
+	verify   func(string) (*jwt.RegisteredClaims, error) // an access token's claims (auth.VerifyAccessToken)
+	send     func(context.Context, mailer.Message) error // the phone sign-in code (sendCodeEmail)
 }
 
 // failure: a refusal from a service, in English (the agent says it in the person's language).
@@ -239,9 +246,27 @@ func sessionId(req *mcp.CallToolRequest) string {
 }
 
 func (a *agent) signIn(ctx context.Context, req *mcp.CallToolRequest, _ struct{}) (*mcp.CallToolResult, SignInOut, error) {
+	if bearer(req) != "" {
+		var p, err = a.person(ctx, req, false)
+		if err != nil {
+			return nil, SignInOut{}, err
+		}
+		var profile, profileErr = model.New(a.db).GetUserProfile(ctx, p.id)
+		if profileErr != nil {
+			return nil, SignInOut{}, errors.New("your account could not be read; try again in a moment")
+		}
+		return nil, SignInOut{Status: "signed_in", Name: profile.FullName.String, Email: profile.Email}, nil
+	}
 	var session = sessionId(req)
 	if session == "" {
 		return nil, SignInOut{}, errors.New("this MCP client keeps no session (Mcp-Session-Id): signing in needs one")
+	}
+	if phone := a.callerPhone(req); phone != "" {
+		var signedIn = a.grants.caller(session, phone)
+		if signedIn == nil {
+			return nil, SignInOut{}, errPhoneNotSignedIn
+		}
+		return nil, SignInOut{Status: "signed_in", Name: signedIn.name, Email: signedIn.email}, nil
 	}
 	var g = a.grants.of(session)
 	g.mu.Lock()
@@ -274,7 +299,7 @@ func (a *agent) signOut(ctx context.Context, req *mcp.CallToolRequest, _ struct{
 
 // account: who the token belongs to, synced into the API as when they open the web.
 func (a *agent) account(ctx context.Context, token string) (*me.MeResponse, error) {
-	var claims, err = auth.VerifyAccessToken(token)
+	var claims, err = a.verify(token)
 	if err != nil {
 		return nil, errNotSignedIn
 	}
@@ -285,50 +310,100 @@ func (a *agent) account(ctx context.Context, token string) (*me.MeResponse, erro
 	return account, nil
 }
 
-// user: the signed-in person's id, or errNotSignedIn.
-func (a *agent) user(ctx context.Context, req *mcp.CallToolRequest) (uuid.UUID, error) {
-	var session = sessionId(req)
-	if session == "" {
-		return uuid.Nil, errNotSignedIn
+// header: one of the HTTP request's headers, "" without (or without HTTP, as in the tests).
+func header(req *mcp.CallToolRequest, name string) string {
+	if req == nil || req.Extra == nil || req.Extra.Header == nil {
+		return ""
 	}
-	var g = a.grants.of(session)
-	g.mu.Lock()
-	var token, err = g.token(ctx)
-	g.mu.Unlock()
-	if err != nil {
-		return uuid.Nil, err
-	}
-	var claims, claimsErr = auth.VerifyAccessToken(token)
-	if claimsErr != nil {
-		return uuid.Nil, errNotSignedIn
-	}
-	var id, idErr = me.CurrentUserId(ctx, a.db, auth.Session{Subject: claims.Subject, AccessToken: token})
-	if idErr != nil {
-		return uuid.Nil, failure(idErr)
-	}
-	return id, nil
+	return strings.TrimSpace(req.Extra.Header.Get(name))
 }
 
-// subject: Zitadel's id of whoever is signed in on this session, "" when nobody (never asks to sign in).
-func (a *agent) subject(ctx context.Context, req *mcp.CallToolRequest) string {
+// bearer: the person's own access token sent with the request (Authorization: Bearer).
+func bearer(req *mcp.CallToolRequest) string {
+	var token, _ = strings.CutPrefix(header(req, "Authorization"), "Bearer ")
+	return strings.TrimSpace(token)
+}
+
+var errBadToken = errors.New("the access token sent with this request (Authorization: Bearer) is not valid or has expired: send a fresh one, or none to sign in with sign_in")
+
+// person: who a request acts for.
+type person struct {
+	id      uuid.UUID // uuid.Nil: nobody
+	subject string    // Zitadel's id
+	byPhone bool      // a phone caller who signed in with an emailed code
+}
+
+// person: whoever this request acts for: the access token sent with it, else the
+// phone caller's account they proved with a code (phone_verify_code), else this
+// MCP session's sign-in (sign_in). poll: a sign-in under way may be asked whether
+// it was approved. Nobody is no error; an access token that does not hold is.
+func (a *agent) person(ctx context.Context, req *mcp.CallToolRequest, poll bool) (person, error) {
+	if token := bearer(req); token != "" {
+		var claims, err = a.verify(token)
+		if err != nil {
+			return person{}, errBadToken
+		}
+		return a.personOf(ctx, claims.Subject, token)
+	}
 	var session = sessionId(req)
 	if session == "" {
-		return ""
+		return person{}, nil
+	}
+	if phone := a.callerPhone(req); phone != "" {
+		if signedIn := a.grants.caller(session, phone); signedIn != nil {
+			return person{id: signedIn.id, subject: signedIn.subject, byPhone: true}, nil
+		}
 	}
 	var g = a.grants.of(session)
 	g.mu.Lock()
 	defer g.mu.Unlock()
-	if g.access == "" && g.refresh == "" {
-		return ""
+	if !poll && g.access == "" && g.refresh == "" {
+		return person{}, nil
 	}
 	var token, err = g.token(ctx)
 	if err != nil {
-		return ""
+		return person{}, nil
 	}
-	if claims, claimsErr := auth.VerifyAccessToken(token); claimsErr == nil {
-		return claims.Subject
+	var claims, claimsErr = a.verify(token)
+	if claimsErr != nil {
+		return person{}, nil
 	}
-	return ""
+	return a.personOf(ctx, claims.Subject, token)
+}
+
+// personOf: the account of a Zitadel user, synced into the API as when they open the web.
+func (a *agent) personOf(ctx context.Context, subject string, token string) (person, error) {
+	var id, err = me.CurrentUserId(ctx, a.db, auth.Session{Subject: subject, AccessToken: token})
+	if err != nil {
+		return person{}, failure(err)
+	}
+	return person{id: id, subject: subject}, nil
+}
+
+// signedIn: whoever this request acts for, or why there is nobody.
+func (a *agent) signedIn(ctx context.Context, req *mcp.CallToolRequest) (person, error) {
+	var p, err = a.person(ctx, req, true)
+	switch {
+	case err != nil:
+		return person{}, err
+	case p.id != uuid.Nil:
+		return p, nil
+	case a.callerPhone(req) != "":
+		return person{}, errPhoneNotSignedIn
+	}
+	return person{}, errNotSignedIn
+}
+
+// user: the signed-in person's id, or why there is nobody.
+func (a *agent) user(ctx context.Context, req *mcp.CallToolRequest) (uuid.UUID, error) {
+	var p, err = a.signedIn(ctx, req)
+	return p.id, err
+}
+
+// subject: Zitadel's id of whoever is signed in, "" when nobody (never asks to sign in).
+func (a *agent) subject(ctx context.Context, req *mcp.CallToolRequest) string {
+	var p, _ = a.person(ctx, req, false)
+	return p.subject
 }
 
 // --- the person's bookings -----------------------------------------------------------
@@ -345,6 +420,9 @@ type Booking struct {
 	CanCancel   bool      `json:"can_cancel"`
 	CancelUntil time.Time `json:"cancel_until"`
 	People      int       `json:"people" jsonschema:"everyone in it"`
+	HolderName  string    `json:"holder_name,omitempty" jsonschema:"booked on the phone without an account: whose name it is under"`
+	// book_turn only
+	Confirmation string `json:"confirmation,omitempty" jsonschema:"email: the person gets it by email; read_out: nobody to email (a phone caller without an account), read its details out to them; sms: texted to the caller"`
 }
 
 func booking(b bookings.BookingDto) Booking {
@@ -363,9 +441,22 @@ type MyBookingsOut struct {
 }
 
 func (a *agent) myBookings(ctx context.Context, req *mcp.CallToolRequest, _ struct{}) (*mcp.CallToolResult, MyBookingsOut, error) {
-	var userId, err = a.user(ctx, req)
+	var userId, phone, err = a.booker(ctx, req)
 	if err != nil {
 		return nil, MyBookingsOut{}, err
+	}
+	if userId == uuid.Nil {
+		var theirs, listErr = bookings.GetBookingsService(a.db).PhoneBookings(ctx, phone)
+		if listErr != nil {
+			return nil, MyBookingsOut{}, failure(listErr)
+		}
+		var out = MyBookingsOut{Upcoming: []Booking{}}
+		for _, b := range theirs {
+			var item = booking(b.BookingDto)
+			item.HolderName = b.HolderName
+			out.Upcoming = append(out.Upcoming, item)
+		}
+		return nil, out, nil
 	}
 	var list, listErr = bookings.GetBookingsService(a.db).GetMyBookings(ctx, userId, helpers.PaginationParams{Page: 1, PageSize: 1})
 	if listErr != nil {
@@ -384,6 +475,7 @@ type BookIn struct {
 	AcceptRules bool   `json:"accept_rules" jsonschema:"true only after showing the person the facility's usage_rules and them accepting"`
 	Public      bool   `json:"public,omitempty" jsonschema:"open it to others, who can join until it is full"`
 	Description string `json:"description,omitempty" jsonschema:"for a public booking: what they will do, for those who join (up to 1000 characters)"`
+	HolderName  string `json:"holder_name,omitempty" jsonschema:"on the phone line without signing in: the caller's name, to book for them and their number (up to 80 characters)"`
 }
 
 func (a *agent) book(ctx context.Context, req *mcp.CallToolRequest, in BookIn) (*mcp.CallToolResult, Booking, error) {
@@ -395,28 +487,60 @@ func (a *agent) book(ctx context.Context, req *mcp.CallToolRequest, in BookIn) (
 	if facilityErr != nil || startErr != nil {
 		return nil, Booking{}, errors.New("facility_id must be the facility's id and starts_at the turn's start as listed (RFC 3339)")
 	}
-	var userId, err = a.user(ctx, req)
-	if err != nil {
-		return nil, Booking{}, err
-	}
 	var body = bookings.CreateBookingDto{FacilityId: facility, StartsAt: start, AcceptRules: true, Public: in.Public, PublicDescription: in.Description}
 	if problems := body.Validate(); len(problems) > 0 {
 		return nil, Booking{}, errors.New(strings.Join(problems, "; "))
 	}
-	var made, bookErr = bookings.GetBookingsService(a.db).CreateBooking(ctx, userId, body)
+	var p, err = a.person(ctx, req, true)
+	if err != nil {
+		return nil, Booking{}, err
+	}
+	var phone = a.callerPhone(req)
+	if p.id == uuid.Nil && phone != "" {
+		return a.bookByPhone(ctx, phone, in.HolderName, body)
+	}
+	if p.id == uuid.Nil {
+		return nil, Booking{}, errNotSignedIn
+	}
+	var service = bookings.GetBookingsService(a.db)
+	var made *bookings.BookingDto
+	var bookErr *shared.ErrorResponse
+	if phone != "" {
+		made, bookErr = service.PhoneBooking(ctx, bookings.Account(p.id), body)
+	} else {
+		made, bookErr = service.CreateBooking(ctx, p.id, body)
+	}
 	if bookErr != nil {
 		return nil, Booking{}, failure(bookErr)
 	}
+	var out = booking(*made)
 	// as the web shows it: with its council and how many are in it
-	var list, _ = bookings.GetBookingsService(a.db).GetMyBookings(ctx, userId, helpers.PaginationParams{Page: 1, PageSize: 1})
+	var list, _ = service.GetMyBookings(ctx, p.id, helpers.PaginationParams{Page: 1, PageSize: 1})
 	if list != nil {
 		for _, b := range list.Upcoming {
 			if b.Id == made.Id {
-				return nil, booking(b), nil
+				out = booking(b)
 			}
 		}
 	}
-	return nil, booking(*made), nil
+	out.Confirmation = "email"
+	return nil, out, nil
+}
+
+// booker: whose bookings a request works on: the signed-in person's (userId), or on
+// the phone line without signing in, the caller's number's (phone).
+func (a *agent) booker(ctx context.Context, req *mcp.CallToolRequest) (uuid.UUID, string, error) {
+	var p, err = a.person(ctx, req, true)
+	if err != nil {
+		return uuid.Nil, "", err
+	}
+	if p.id != uuid.Nil {
+		return p.id, "", nil
+	}
+	if phone := a.callerPhone(req); phone != "" {
+		return uuid.Nil, phone, nil
+	}
+	return uuid.Nil, "", errNotSignedIn
 }
 
 type BookingIn struct {
@@ -432,11 +556,17 @@ func (a *agent) cancel(ctx context.Context, req *mcp.CallToolRequest, in Booking
 	if parseErr != nil {
 		return nil, Done{}, errors.New("booking_id is not a booking's id")
 	}
-	var userId, err = a.user(ctx, req)
+	var userId, phone, err = a.booker(ctx, req)
 	if err != nil {
 		return nil, Done{}, err
 	}
-	if cancelErr := bookings.GetBookingsService(a.db).CancelBooking(ctx, userId, id); cancelErr != nil {
+	var cancelErr *shared.ErrorResponse
+	if userId == uuid.Nil {
+		cancelErr = bookings.GetBookingsService(a.db).CancelPhoneBooking(ctx, phone, id)
+	} else {
+		cancelErr = bookings.GetBookingsService(a.db).CancelBooking(ctx, userId, id)
+	}
+	if cancelErr != nil {
 		return nil, Done{}, failure(cancelErr)
 	}
 	return nil, Done{Done: true}, nil

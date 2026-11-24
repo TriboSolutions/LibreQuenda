@@ -1026,6 +1026,7 @@ gen_secrets() { # everything else: generated once and never changed (the masterk
 	secret GARAGE_RPC_SECRET gen_hex32
 	secret GARAGE_ADMIN_TOKEN rand_b64
 	secret SECRETS_KEY gen_hex32
+	secret VOICE_API_KEY gen_hex32
 }
 
 self_update() { # the installer next to the installation, the latest one

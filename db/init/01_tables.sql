@@ -18,7 +18,8 @@ CREATE TYPE booking_canceller AS ENUM (
 
 CREATE TYPE booking_channel AS ENUM (
     'online',   -- the resident, in the app (or at a reader with the personal QR)
-    'staff'     -- council staff, for someone who phoned or came to the desk
+    'staff',    -- council staff, for someone who phoned or came to the desk
+    'phone'     -- the voice line: for the caller's account, or for their name and number (holder_*)
 );
 
 -- who can find and join a booking
@@ -449,8 +450,9 @@ CREATE TABLE booking (
     ends_at      TIMESTAMPTZ    NOT NULL,
     status       booking_status NOT NULL DEFAULT 'confirmed',
     rules_accepted_at TIMESTAMPTZ NULL,                 -- when the resident ticked "I have read the rules" (or staff, that they told them)
-    -- booked by council staff: for an account (user_id), or for someone without one
-    -- (holder_*, forgotten 30 days after the booking ends)
+    -- booked by council staff or on the voice line: for an account (user_id), or for
+    -- someone without one (holder_*, forgotten 30 days after the booking ends; on the
+    -- voice line holder_phone is the caller's number in E.164, their limits count by it)
     channel      booking_channel NOT NULL DEFAULT 'online',
     booked_by    UUID           NULL REFERENCES app_user(id) ON DELETE SET NULL,
     holder_name  VARCHAR(80)    NULL,
@@ -476,7 +478,7 @@ CREATE TABLE booking (
     event_capacity       INT         NULL CHECK (event_capacity > 0),
     CHECK (ends_at > starts_at),
     CHECK ((status = 'cancelled') = (cancelled_by IS NOT NULL)),
-    CHECK (holder_name IS NULL OR (user_id IS NULL AND channel = 'staff')),
+    CHECK (holder_name IS NULL OR (user_id IS NULL AND channel IN ('staff', 'phone'))),
     CHECK (holder_phone IS NULL OR holder_name IS NOT NULL),
     CHECK ((checked_in_at IS NULL) = (checked_in_method IS NULL)),
     CHECK (checked_in_by IS NULL OR checked_in_method = 'staff'),

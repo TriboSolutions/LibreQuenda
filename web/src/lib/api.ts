@@ -363,6 +363,7 @@ export type StaffBooking = {
   starts_at: string
   ends_at: string
   booked_by_staff: boolean
+  channel: BookingChannel
   is_event: boolean // the council's event: name is its title, nobody checks in
   has_account: boolean
   name: string // "" once a deleted account or a forgotten name
@@ -375,8 +376,11 @@ export type StaffBooking = {
   undo_until: string | null // staff entry: until when it can be taken back
   participant_count: number
   can_cancel: boolean // until it starts
-  checkin_code: string // booked by staff only: the entry QR to print for the person
+  checkin_code: string // booked by staff or on the phone line: the entry QR to print for the person
 }
+
+/** How a booking was made: on the web or the app, by council staff, or on the phone line (the voice assistant). */
+export type BookingChannel = 'online' | 'staff' | 'phone'
 
 /** How the person got in. */
 export type CheckinMethod = 'reader' | 'printed_qr' | 'nfc' | 'entry_code' | 'staff'
@@ -883,6 +887,7 @@ export type IndicatorCounts = {
   confirmed: number
   cancelled_by_user: number
   cancelled_by_council: number
+  by_channel: Record<BookingChannel, number> // confirmed bookings (not events) by how they were made
   cancellation_rate: number | null // 0-1; null without bookings
   booked_hours: number
   open_hours: number // bookable time, closures taken out

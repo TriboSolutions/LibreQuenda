@@ -178,6 +178,7 @@ func mapFacilityIndicators(f model.IndicatorsByFacilityRow, openMinutes int) Fac
 			Confirmed:          f.Confirmed,
 			CancelledByUser:    f.CancelledByUser,
 			CancelledByCouncil: f.CancelledByCouncil,
+			ByChannel:          ChannelCountsDto{Online: f.ByOnline, Staff: f.ByStaff, Phone: f.ByPhone},
 			BookedHours:        float64(f.BookedMinutes) / 60,
 			OpenHours:          float64(openMinutes) / 60,
 			Ratings:            f.Ratings,
@@ -318,7 +319,7 @@ func unless(hide bool, value string) string {
 func writeSummaryCSV(w io.Writer, format csvFormat, data *IndicatorsDto) error {
 	var out = format.writer(w)
 	out.Write([]string{
-		"facility", "from", "to", "bookings", "confirmed", "cancelled_by_user", "cancelled_by_council", "cancellation_rate",
+		"facility", "from", "to", "bookings", "confirmed", "booked_online", "booked_by_staff", "booked_by_phone", "cancelled_by_user", "cancelled_by_council", "cancellation_rate",
 		"booked_hours", "open_hours", "occupancy", "finished_with_reader", "attended", "no_show_rate",
 		"ratings", "rating_average",
 	})
@@ -328,6 +329,9 @@ func writeSummaryCSV(w io.Writer, format csvFormat, data *IndicatorsDto) error {
 			f.Name, data.From, data.To,
 			format.count(f.Bookings),
 			format.count(f.Confirmed),
+			format.count(f.ByChannel.Online),
+			format.count(f.ByChannel.Staff),
+			format.count(f.ByChannel.Phone),
 			format.count(f.CancelledByUser),
 			format.count(f.CancelledByCouncil),
 			unless(few(f.Bookings) || few(cancelled), format.rate(f.CancellationRate)),

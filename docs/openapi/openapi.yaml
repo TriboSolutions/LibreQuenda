@@ -10010,6 +10010,13 @@ components:
           format: date-time
         booked_by_staff:
           type: boolean
+        channel:
+          type: string
+          enum:
+          - online
+          - staff
+          - phone
+          description: 'Como se reservou: na web ou na app, polo persoal ou pola liña de teléfono (o asistente de voz).'
         is_event:
           type: boolean
           description: 'O evento do concello: name é o seu título, ninguén rexistra a entrada.'
@@ -10062,12 +10069,13 @@ components:
           description: Ata que comeza.
         checkin_code:
           type: string
-          description: 'Só reservada polo persoal: para imprimirlle o QR de entrada á persoa.'
+          description: 'Só reservada polo persoal ou pola liña de teléfono: para imprimirlle o QR de entrada á persoa.'
       required:
       - id
       - starts_at
       - ends_at
       - booked_by_staff
+      - channel
       - is_event
       - has_account
       - name
@@ -10345,6 +10353,26 @@ components:
         cancelled_by_council:
           type: integer
           format: int64
+        by_channel:
+          type: object
+          description: 'As reservas confirmadas (non os eventos) segundo como se fixeron.'
+          properties:
+            online:
+              type: integer
+              format: int64
+              description: Na web ou na app.
+            staff:
+              type: integer
+              format: int64
+              description: Polo persoal do concello.
+            phone:
+              type: integer
+              format: int64
+              description: Pola liña de teléfono.
+          required:
+          - online
+          - staff
+          - phone
         cancellation_rate:
           type:
           - number
@@ -10407,6 +10435,7 @@ components:
       - confirmed
       - cancelled_by_user
       - cancelled_by_council
+      - by_channel
       - cancellation_rate
       - booked_hours
       - open_hours
