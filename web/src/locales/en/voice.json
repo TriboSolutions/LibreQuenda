@@ -5,7 +5,7 @@
   "title": "Book by voice",
   "descriptionSignedIn": "Talk to the voice assistant: find facilities and free turns, and book in your name.",
   "descriptionSignedOut": "Talk to the voice assistant to find facilities and free turns. To book by voice, sign in first.",
-  "howItWorks": "It will ask for permission to use your microphone. The assistant speaks Galician. A call lasts at most {{minutes}} minutes, and everything said is written here.",
+  "howItWorks": "It will ask for permission to use your microphone. The assistant speaks Galician. A call lasts at most {{minutes}} minutes, and Captions show everything said.",
   "privacy": {
     "voiceLocal": "Your voice is transcribed on this server.",
     "voice": "Your voice is sent to {{names}} to be transcribed.",

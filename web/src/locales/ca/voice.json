@@ -5,7 +5,7 @@
   "title": "Reserva parlant",
   "descriptionSignedIn": "Parla amb l’assistent de veu: cerca instal·lacions i torns lliures, i reserva al teu nom.",
   "descriptionSignedOut": "Parla amb l’assistent de veu per cercar instal·lacions i torns lliures. Per reservar parlant, inicia la sessió abans.",
-  "howItWorks": "Et demanarà permís per fer servir el micròfon. L’assistent parla en gallec. La trucada dura com a màxim {{minutes}} minuts i tot el que es diu apareix escrit aquí.",
+  "howItWorks": "Et demanarà permís per fer servir el micròfon. L’assistent parla en gallec. La trucada dura com a màxim {{minutes}} minuts i a Subtítols pots llegir tot el que es diu.",
   "privacy": {
     "voiceLocal": "La teva veu es transcriu en aquest servidor.",
     "voice": "La teva veu s’envia a {{names}} per transcriure-la.",
