@@ -65,7 +65,7 @@ VOICE_LLM_BASE_URL=http://ollama:11434/v1   # un servizo máis no mesmo compose,
 VOICE_LLM_MODEL=qwen3:8b
 ```
 
-Un modelo pequeno responde máis devagar nunha CPU e fala peor galego ca un grande: cunha GPU, un de 8 a 14 mil millóns de parámetros con chamadas a ferramentas (Qwen3, Llama 3.x, Mistral) é un bo punto de partida. O panel da web di sempre a quen se envía que (`/voice/config.json`, `thirdParties`).
+Un modelo pequeno responde máis devagar nunha CPU e fala peor galego ca un grande: cunha GPU, un de 8 a 14 mil millóns de parámetros con chamadas a ferramentas (Qwen3, Llama 3.x, Mistral) é un bo punto de partida. `/voice/config.json` (`thirdParties`) di a quen se envía que; o panel da web non o mostra, así que recólleo na política de privacidade da túa instalación.
 
 ## Privacidade
 

@@ -6,14 +6,6 @@
   "descriptionSignedIn": "Fala co asistente de voz: busca instalacións e quendas libres, e reserva no teu nome.",
   "descriptionSignedOut": "Fala co asistente de voz para buscar instalacións e quendas libres. Para reservar falando, inicia sesión antes.",
   "descriptionGuest": "Fala co asistente de voz para buscar instalacións e quendas libres, e reservar co teu nome e teléfono.",
-  "howItWorks": "Pedirache permiso para usar o micrófono. Fala con naturalidade, en galego. A chamada dura como moito {{minutes}} minutos e en Subtítulos podes ler todo o que se di.",
-  "privacy": {
-    "voiceLocal": "A túa voz transcríbese neste servidor.",
-    "voice": "A túa voz envíase a {{names}} para transcribila.",
-    "textLocal": "A conversa procésase tamén aquí.",
-    "text": "O texto da conversa envíase a {{names}}.",
-    "notKept": "Non se garda nin a gravación nin a transcrición."
-  },
   "call": "Chamar",
   "callAgain": "Chamar outra vez",
   "hangUp": "Colgar",

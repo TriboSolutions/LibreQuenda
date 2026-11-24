@@ -499,7 +499,7 @@ test.describe('keyboard', () => {
     expect(missing).toEqual([])
   })
 
-  test('the voice line: shown only where it runs, its panel says where the data goes, and a busy line says so', async ({ page }) => {
+  test('the voice line: shown only where it runs, and a busy line says so', async ({ page }) => {
     await open(page, '/lugo/padel-1')
     await expect(page.getByRole('button', { name: 'Reserva falando' })).toHaveCount(0)
     await voiceLine(page)
@@ -508,7 +508,6 @@ test.describe('keyboard', () => {
     await page.getByRole('button', { name: 'Reserva falando' }).focus()
     await page.keyboard.press('Enter')
     const dialog = page.getByRole('dialog', { name: 'Reserva falando' })
-    await expect(dialog).toContainText('A túa voz transcríbese neste servidor. O texto da conversa envíase a Anthropic.')
     const asked = page.waitForRequest((r) => r.method() === 'POST' && r.url().endsWith('/voice/session'))
     await dialog.getByRole('button', { name: 'Chamar' }).click()
     // signed in: the call books in the person's name, with their own token
