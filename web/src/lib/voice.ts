@@ -5,6 +5,8 @@ export type VoiceConfig = {
   maxCallSeconds: number
   // who else gets what during a call: the panel says it before the call starts
   thirdParties: { voice: string[]; text: string[] }
+  // signed out, a call can still book with a name and a phone number
+  guestBooking?: boolean
 }
 
 let loaded: Promise<VoiceConfig | null> | null = null

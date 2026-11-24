@@ -34,6 +34,7 @@ def config(**overrides) -> Config:
         public_url="https://reservas.example.gal",
         max_call_seconds=600,
         max_calls=2,
+        web_guest_booking=False,
         turn_silence=0.6,
         twilio_account_sid="",
         twilio_auth_token="",
@@ -61,6 +62,19 @@ def test_twilio_routes_only_when_configured():
         assert client.post("/twilio").status_code in (404, 405)
     with TestClient(create_app(config(twilio_account_sid="AC1", twilio_auth_token="tok"), warm_up=False)) as client:
         assert client.post("/twilio", data={"From": "+34600000000"}).status_code == 403
+
+
+def test_web_guests_book_with_a_name_and_number():
+    with TestClient(create_app(config(), warm_up=False)) as client:
+        assert client.get("/config.json").json()["guestBooking"] is False
+    with TestClient(create_app(config(web_guest_booking=True), warm_up=False)) as client:
+        assert client.get("/config.json").json()["guestBooking"] is True
+    guest = prompt.Call(kind="web", guest_booking=True)
+    # it books, but a number said aloud never lists or cancels anyone's bookings
+    assert "book_turn" in prompt.tools_for(guest)
+    assert not {"my_bookings", "cancel_booking"} & set(prompt.tools_for(guest))
+    assert "book_turn" not in prompt.tools_for(prompt.Call(kind="web"))
+    assert "holder_phone" in prompt.system_prompt(guest, [])
 
 
 def test_tickets_are_single_use():

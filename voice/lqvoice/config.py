@@ -54,6 +54,7 @@ class Config:
     public_url: str
     max_call_seconds: int
     max_calls: int
+    web_guest_booking: bool  # web calls without signing in book with a name and the number they give
     turn_silence: float
     twilio_account_sid: str
     twilio_auth_token: str = field(repr=False)
@@ -86,11 +87,14 @@ def load() -> Config:
         public_url=_env("PUBLIC_URL", "http://localhost").rstrip("/"),
         max_call_seconds=int(_env("VOICE_MAX_CALL_SECONDS", "600")),
         max_calls=int(_env("VOICE_MAX_CALLS", "4")),
+        web_guest_booking=_env("VOICE_WEB_GUEST_BOOKING", "false").lower() == "true",
         turn_silence=float(_env("VOICE_TURN_SILENCE", "0.6")),
         twilio_account_sid=_env("VOICE_TWILIO_ACCOUNT_SID"),
         twilio_auth_token=_secret("VOICE_TWILIO_AUTH_TOKEN"),
         log_level=_env("VOICE_LOG_LEVEL", "INFO").upper(),
     )
+    if config.web_guest_booking and not config.voice_api_key:
+        raise ValueError("VOICE_WEB_GUEST_BOOKING needs VOICE_API_KEY, the key the API trusts the voice line with")
     if config.llm == "openai-compatible" and not config.llm_base_url:
         raise ValueError("VOICE_LLM=openai-compatible needs VOICE_LLM_BASE_URL (e.g. http://ollama:11434/v1)")
     if config.llm != "openai-compatible" and not config.llm_api_key:

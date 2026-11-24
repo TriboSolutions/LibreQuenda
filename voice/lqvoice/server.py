@@ -77,6 +77,8 @@ def create_app(config: settings.Config | None = None, warm_up: bool = True) -> F
                 "language": "gl",
                 "maxCallSeconds": config.max_call_seconds,
                 "thirdParties": settings.third_parties(config),
+                # signed out, a web call can still book with a name and a phone number
+                "guestBooking": config.web_guest_booking,
             },
             headers={"Cache-Control": "no-store"},
         )
@@ -94,7 +96,12 @@ def create_app(config: settings.Config | None = None, warm_up: bool = True) -> F
             return JSONResponse({"error": "busy"}, status_code=503)
         authorization = request.headers.get("authorization", "")
         signed_in = authorization.lower().startswith("bearer ") and len(authorization) > len("bearer ")
-        headers = {"Authorization": authorization} if signed_in else {}
+        if signed_in:
+            headers = {"Authorization": authorization}
+        elif config.web_guest_booking:
+            headers = {"X-Voice-Key": config.voice_api_key, "X-Web-Guest": "1"}
+        else:
+            headers = {}
         ticket = state.tickets.issue(Ticket(kind="web", headers=headers, signed_in=signed_in))
         return JSONResponse({"ticket": ticket}, headers={"Cache-Control": "no-store"})
 
@@ -115,7 +122,13 @@ def create_app(config: settings.Config | None = None, warm_up: bool = True) -> F
                 allowed_origins=[],
             ),
         )
-        await _run(state, transport, prompt.Call(kind="web", signed_in=ticket.signed_in), ticket.headers, True)
+        await _run(
+            state,
+            transport,
+            prompt.Call(kind="web", signed_in=ticket.signed_in, guest_booking=config.web_guest_booking),
+            ticket.headers,
+            True,
+        )
 
     if config.twilio_enabled:
 

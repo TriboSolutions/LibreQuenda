@@ -165,6 +165,21 @@ func TestHeaders(t *testing.T) {
 		{phone, "book_turn", map[string]any{"facility_id": "0192f5a0-1c2d-7e3f-8a9b-0c1d2e3f4a5b", "starts_at": "2026-11-07T09:00:00+01:00", "accept_rules": true}, "holder_name"},
 		{phone, "book_turn", map[string]any{"facility_id": "0192f5a0-1c2d-7e3f-8a9b-0c1d2e3f4a5b", "starts_at": "2026-11-07T09:00:00+01:00", "accept_rules": true, "holder_name": "Ana", "public": true}, "public booking needs an account"},
 	}
+	// a web call without signing in, when the installation lets it book with a name and a number
+	var guest = map[string]string{"X-Voice-Key": "voice-secret", "X-Web-Guest": "1"}
+	var turn = map[string]any{"facility_id": "0192f5a0-1c2d-7e3f-8a9b-0c1d2e3f4a5b", "starts_at": "2026-11-07T09:00:00+01:00", "accept_rules": true, "holder_name": "Ana"}
+	cases = append(cases, []struct {
+		headers map[string]string
+		tool    string
+		args    map[string]any
+		want    string
+	}{
+		{guest, "book_turn", turn, "ask the person for a phone number"},
+		{guest, "my_bookings", nil, "cannot be listed or cancelled"},
+		{guest, "cancel_booking", map[string]any{"booking_id": "0192f5a0-1c2d-7e3f-8a9b-0c1d2e3f4a5b"}, "cannot be listed or cancelled"},
+		{map[string]string{"X-Voice-Key": "wrong", "X-Web-Guest": "1"}, "book_turn", turn, "call sign_in"},
+		{map[string]string{"X-Web-Guest": "1"}, "book_turn", turn, "call sign_in"},
+	}...)
 	for _, c := range cases {
 		refused(t, overHTTP(t, a, c.headers), c.tool, c.args, c.want)
 	}

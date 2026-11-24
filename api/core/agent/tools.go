@@ -18,6 +18,7 @@ import (
 	"librequenda/model"
 	"librequenda/schedule"
 	"librequenda/shared"
+	"librequenda/validate"
 
 	"github.com/angelbarreiros/Penguin/router/helpers"
 	"github.com/golang-jwt/jwt/v5"
@@ -390,6 +391,8 @@ func (a *agent) signedIn(ctx context.Context, req *mcp.CallToolRequest) (person,
 		return p, nil
 	case a.callerPhone(req) != "":
 		return person{}, errPhoneNotSignedIn
+	case a.webGuest(req):
+		return person{}, errWebGuest
 	}
 	return person{}, errNotSignedIn
 }
@@ -476,6 +479,7 @@ type BookIn struct {
 	Public      bool   `json:"public,omitempty" jsonschema:"open it to others, who can join until it is full"`
 	Description string `json:"description,omitempty" jsonschema:"for a public booking: what they will do, for those who join (up to 1000 characters)"`
 	HolderName  string `json:"holder_name,omitempty" jsonschema:"on the phone line without signing in: the caller's name, to book for them and their number (up to 80 characters)"`
+	HolderPhone string `json:"holder_phone,omitempty" jsonschema:"on a web call without signing in: the phone number the person gives (9 digits in Spain, or with its country code)"`
 }
 
 func (a *agent) book(ctx context.Context, req *mcp.CallToolRequest, in BookIn) (*mcp.CallToolResult, Booking, error) {
@@ -498,6 +502,13 @@ func (a *agent) book(ctx context.Context, req *mcp.CallToolRequest, in BookIn) (
 	var phone = a.callerPhone(req)
 	if p.id == uuid.Nil && phone != "" {
 		return a.bookByPhone(ctx, phone, in.HolderName, body)
+	}
+	if p.id == uuid.Nil && a.webGuest(req) {
+		var given, ok = validate.E164(in.HolderPhone)
+		if !ok {
+			return nil, Booking{}, errors.New("not signed in, on a web call: ask the person for a phone number (9 digits in Spain, or with its country code) and book with holder_phone and holder_name")
+		}
+		return a.bookByPhone(ctx, given, in.HolderName, body)
 	}
 	if p.id == uuid.Nil {
 		return nil, Booking{}, errNotSignedIn
@@ -539,6 +550,9 @@ func (a *agent) booker(ctx context.Context, req *mcp.CallToolRequest) (uuid.UUID
 	}
 	if phone := a.callerPhone(req); phone != "" {
 		return uuid.Nil, phone, nil
+	}
+	if a.webGuest(req) {
+		return uuid.Nil, "", errWebGuest
 	}
 	return uuid.Nil, "", errNotSignedIn
 }
