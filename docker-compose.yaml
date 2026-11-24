@@ -137,6 +137,7 @@ services:
       SIGNUP_LIMIT_PER_HOUR: ${SIGNUP_LIMIT_PER_HOUR:-5}
       SIGNIN_LIMIT_PER_10_MIN: ${SIGNIN_LIMIT_PER_10_MIN:-30}
       COMPOSE_PROFILES: ${COMPOSE_PROFILES:-} # voice or voice-gpu: /voice/* goes to the voice line
+      VOICE_URL: ${VOICE_URL:-} # or to one on another machine (https://voice.example.org)
     volumes:
       - caddy_data:/data
       - caddy_config:/config
