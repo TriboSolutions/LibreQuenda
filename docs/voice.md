@@ -38,6 +38,8 @@ e `docker compose up -d --wait`. O primeiro arranque descarga os modelos (uns 2 
 
 Detrás doutro proxy, este ten que deixar pasar WebSockets en `/voice/ws` (en Nginx Proxy Manager, «Websockets Support»; o `nginx-librequenda.conf` do instalador xa o fai).
 
+**Noutra máquina** (por exemplo, unha con GPU e o servidor principal sen ela): alí, `voice/` co seu `.env` (`VOICE_MCP_URL=https://<WEB_DOMAIN>/api/mcp`, `PUBLIC_URL=https://<WEB_DOMAIN>` e a mesma `VOICE_API_KEY`), publicado en HTTPS; no servidor principal, `VOICE_URL=https://<enderezo-da-voz>` en vez dun perfil. O proxy segue servindo `/voice/*` desde o mesmo dominio.
+
 Para desenvolver: `cd voice && uv sync --extra cuda` (ou `--extra cpu`), `uv run python -m lqvoice` con `VOICE_MCP_URL` apuntando á API, e `pnpm dev` na web reenvía `/voice` a `VITE_VOICE_PROXY_TARGET`. Probas: `uv run pytest` e `uv run ruff check`; a proba de extremo a extremo (`uv run python e2e/smoke.py --url http://localhost:8000`) di unha pregunta cunha voz de Nós, envíaa en tempo real polo WebSocket e comproba que o axente chamou a `search_facilities` e respondeu con audio que, transcrito, nomea unha instalación.
 
 ## Provedores
