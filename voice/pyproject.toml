@@ -17,7 +17,8 @@ dependencies = [
 [project.optional-dependencies]
 # PyTorch for the machine the models run on: one of them (uv sync --extra cpu, or --extra cuda)
 cpu = ["torch==2.11.0", "torchaudio==2.11.0"]
-cuda = ["torch==2.11.0", "torchaudio==2.11.0"]
+# faster-whisper's CTranslate2 is built for CUDA 12 and torch brings CUDA 13: its cuBLAS too
+cuda = ["torch==2.11.0", "torchaudio==2.11.0", "nvidia-cublas-cu12>=12.4,<13"]
 
 [dependency-groups]
 dev = ["pytest>=8", "pytest-asyncio>=0.24", "ruff>=0.8"]

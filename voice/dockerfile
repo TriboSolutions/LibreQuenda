@@ -13,13 +13,15 @@ RUN apt-get update \
 
 COPY --from=ghcr.io/astral-sh/uv:0.7.3 /uv /usr/local/bin/uv
 
+# LD_LIBRARY_PATH: only the cuda variant has them; faster-whisper loads cuBLAS 12 and cuDNN 9 by name
 ENV UV_COMPILE_BYTECODE=1 \
 	UV_LINK_MODE=copy \
 	UV_PROJECT_ENVIRONMENT=/app/.venv \
 	PATH=/app/.venv/bin:$PATH \
 	PYTHONUNBUFFERED=1 \
 	VOICE_MODELS_DIR=/models \
-	HF_HOME=/models/hf
+	HF_HOME=/models/hf \
+	LD_LIBRARY_PATH=/app/.venv/lib/python3.12/site-packages/nvidia/cublas/lib:/app/.venv/lib/python3.12/site-packages/nvidia/cudnn/lib
 
 WORKDIR /app
 COPY pyproject.toml uv.lock ./
