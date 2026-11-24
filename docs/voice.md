@@ -10,13 +10,14 @@ Por defecto todo o que escoita e di funciona no propio servidor, con modelos abe
 navegador (micrófono e altofalante)        teléfono
         │ WebSocket, mesmo dominio               │ Twilio Media Streams
         ▼                                        ▼
-  Caddy /voice/* ──────────────► voice (FastAPI + Pipecat)
+  Caddy /voice/* ──────────────► voice (FastAPI + Pipecat), aquí ou noutra máquina (VOICE_URL)
                                   │
                                   ├─ Silero VAD: cando fala a persoa e cando cala
-                                  ├─ STT: voz a texto (Nós Whisper ou wav2vec2, no servidor)
+                                  ├─ STT: voz a texto (Nós Whisper ou wav2vec2 no servidor; ElevenLabs ou Deepgram)
                                   ├─ LLM: que dicir, con ferramentas ──► API de LibreQuenda, /api/mcp
+                                  │     coa conta da persoa, co número que chama, ou como invitado web
                                   ├─ normalización: "ás 18:30" -> "ás seis e media da tarde"
-                                  └─ TTS: texto a voz (Nós, frase a frase)
+                                  └─ TTS: texto a voz (Nós, frase a frase; Piper ou ElevenLabs)
 ```
 
 - **Web:** o icono do teléfono na barra superior e a ligazón «Reserva por voz» baixo as quendas aparecen só cando a instalación ten a liña de voz acesa (`/voice/config.json` responde, como `/config.json` para o inicio de sesión), nas páxinas de busca e reserva. O panel pide o micrófono, mostra o estado da chamada, os **subtítulos en directo** das dúas partes (WCAG 1.2.4), pregados ata que a persoa os abre, silenciar e colgar; funciona co teclado e cun lector de pantalla. Coa sesión iniciada, a web envía o token de acceso da persoa nunha petición `POST /voice/session` e recibe un tícket dun só uso para abrir o WebSocket: o token nunca vai nun URL. O audio viaxa polo mesmo WebSocket do dominio (protobuf de Pipecat), sen TURN nin UDP.
@@ -65,7 +66,7 @@ VOICE_LLM_BASE_URL=http://ollama:11434/v1   # un servizo máis no mesmo compose,
 VOICE_LLM_MODEL=qwen3:8b
 ```
 
-Un modelo pequeno responde máis devagar nunha CPU e fala peor galego ca un grande: cunha GPU, un de 8 a 14 mil millóns de parámetros con chamadas a ferramentas (Qwen3, Llama 3.x, Mistral) é un bo punto de partida. O panel da web di sempre a quen se envía que (`/voice/config.json`, `thirdParties`).
+Un modelo pequeno responde máis devagar nunha CPU e fala peor galego ca un grande: cunha GPU, un de 8 a 14 mil millóns de parámetros con chamadas a ferramentas (Qwen3, Llama 3.x, Mistral) é un bo punto de partida. `/voice/config.json` (`thirdParties`) di a quen se envía que; o panel da web non o mostra, así que recólleo na política de privacidade da túa instalación.
 
 ## Privacidade
 
