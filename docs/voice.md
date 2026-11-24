@@ -81,6 +81,7 @@ Un modelo pequeno responde máis devagar nunha CPU e fala peor galego ca un gran
 
 - **Base legal:** cun provedor externo, este trata datos persoais por conta do concello: fai falta un contrato de encargado do tratamento (art. 28 RGPD) e, fóra do Espazo Económico Europeo, unha garantía para a transferencia internacional (cláusulas contractuais tipo ou o Marco de Privacidade de Datos UE-EUA). Anthropic, OpenAI, ElevenLabs e Deepgram ofrecen o seu acordo de tratamento de datos (DPA). Sen ese contrato, usa a configuración totalmente autoaloxada. A política de privacidade da instalación debe nomear os provedores que uses.
 - **Contas:** a liña de voz nunca ve contrasinais. Na web usa o token da persoa só durante a chamada; por teléfono, a API acepta o número que chama só coa clave `VOICE_API_KEY`, e para usar unha conta pide o código enviado ao seu correo.
+- **Sen conta, desde a web:** con `VOICE_WEB_GUEST_BOOKING=true`, quen chama sen iniciar sesión reserva co seu nome e o teléfono que dá, coma no mostrador (canle «teléfono», os límites contan por ese número). O número non se comproba, así que por voz esas reservas non se poden ver nin cancelar: iso faino o concello, ou a persoa coa súa conta. Desactivado por defecto.
 
 ## Teléfono
 

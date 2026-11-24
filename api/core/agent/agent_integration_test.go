@@ -136,6 +136,21 @@ func TestVoiceLine(t *testing.T) {
 			t.Errorf("after cancelling: %v, %+v", done.Done, theirs)
 		}
 	})
+
+	t.Run("web guest", func(t *testing.T) {
+		var guest = overHTTP(t, a, map[string]string{"X-Voice-Key": "voice-secret", "X-Web-Guest": "1"})
+		var given = number()
+		var made Booking
+		call(t, guest, "book_turn", map[string]any{"facility_id": pista.String(), "starts_at": at(2, 12), "accept_rules": true, "holder_name": "Uxía", "holder_phone": given[:3] + " " + given[3:]}, &made)
+		var channel, holderPhone string
+		if err := conn.QueryRowContext(ctx, `SELECT channel, holder_phone FROM booking WHERE id = $1`, made.BookingId).Scan(&channel, &holderPhone); err != nil ||
+			channel != "phone" || holderPhone != "+34"+given || made.Confirmation != "read_out" || made.HolderName != "Uxía" {
+			t.Errorf("booked for a name and the number given: %s %s %+v (%v)", channel, holderPhone, made, err)
+		}
+		// the number is only their word: nobody lists or cancels by it
+		refused(t, guest, "my_bookings", nil, "cannot be listed or cancelled")
+		refused(t, guest, "cancel_booking", map[string]any{"booking_id": made.BookingId}, "cannot be listed or cancelled")
+	})
 }
 
 // call: the tool's structured answer into out, failing on an error.

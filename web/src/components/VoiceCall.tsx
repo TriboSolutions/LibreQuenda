@@ -188,7 +188,7 @@ function CallPanel({ config, onClose }: { config: VoiceConfig; onClose: () => vo
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{t('title')}</DialogTitle>
-          <DialogDescription>{t(signedIn ? 'descriptionSignedIn' : 'descriptionSignedOut')}</DialogDescription>
+          <DialogDescription>{t(signedIn ? 'descriptionSignedIn' : config.guestBooking ? 'descriptionGuest' : 'descriptionSignedOut')}</DialogDescription>
         </DialogHeader>
 
         {phase === 'idle' && (

@@ -390,6 +390,7 @@ services:
       HF_TOKEN: ${HF_TOKEN:-} # only for the Celtia voice, gated on Hugging Face
       VOICE_MAX_CALL_SECONDS: ${VOICE_MAX_CALL_SECONDS:-600}
       VOICE_MAX_CALLS: ${VOICE_MAX_CALLS:-4}
+      VOICE_WEB_GUEST_BOOKING: ${VOICE_WEB_GUEST_BOOKING:-false}
       VOICE_TURN_SILENCE: ${VOICE_TURN_SILENCE:-0.6}
       VOICE_LOG_LEVEL: ${VOICE_LOG_LEVEL:-INFO}
       # phone calls (Twilio): the same key as the API's, sent as X-Voice-Key
