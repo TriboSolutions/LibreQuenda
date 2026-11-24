@@ -173,8 +173,8 @@ importers:
         specifier: 1.16.0
         version: 1.16.0
       '@pipecat-ai/websocket-transport':
-        specifier: 1.8.2
-        version: 1.8.2(@pipecat-ai/client-js@1.16.0)
+        specifier: 1.8.3
+        version: 1.8.3(@pipecat-ai/client-js@1.16.0)
       '@tailwindcss/vite':
         specifier: ^4.3.3
         version: 4.3.3(vite@8.3.5(@types/node@24.19.2)(jiti@2.7.0))
@@ -553,10 +553,10 @@ packages:
   '@pipecat-ai/client-js@1.16.0':
     resolution: {integrity: sha512-rQyct+EghojirF/FSmXMMVkw2vdyO27AmZuNcpurDmbO88NBDtLgjr3X1WdpTYwBcyZMcoks4Cf8uIiUir2b8g==}
 
-  '@pipecat-ai/websocket-transport@1.8.2':
-    resolution: {integrity: sha512-nXebMgBplicgAFopmwZWHL/Rf1Yxj2rtelJc1+vhSnGnvj/lBDJq7Fyx/j4hyeV6q1x/uIJCMmRH2gS+Qk0v6Q==}
+  '@pipecat-ai/websocket-transport@1.8.3':
+    resolution: {integrity: sha512-tmvZYEj6LYl9+Z/UOBB5ZqSZo6CLBT7cVaHY0hOVW06Tsy2/ABipBF4S1x6fC0H7OM3ViejmsnJkmLyAVjIEnQ==}
     peerDependencies:
-      '@pipecat-ai/client-js': ~1.16.0
+      '@pipecat-ai/client-js': ~1.17.0
 
   '@playwright/test@1.64.1':
     resolution: {integrity: sha512-IaYGml/nSOiZWROfPtuIL7neuu9qDOZ3TNvNljUIrhDMxiGTgPjzj/g9p9RxpS2tSepPDRY+UwAaEeiKtUvIAg==}
@@ -2980,7 +2980,7 @@ snapshots:
       typed-emitter: 2.1.0
       uuid: 11.1.1
 
-  '@pipecat-ai/websocket-transport@1.8.2(@pipecat-ai/client-js@1.16.0)':
+  '@pipecat-ai/websocket-transport@1.8.3(@pipecat-ai/client-js@1.16.0)':
     dependencies:
       '@daily-co/daily-js': 0.94.0
       '@pipecat-ai/client-js': 1.16.0

@@ -1,0 +1,2 @@
+minimumReleaseAgeExclude:
+  - '@pipecat-ai/websocket-transport@1.8.3'
