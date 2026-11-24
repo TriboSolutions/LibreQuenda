@@ -26,6 +26,34 @@ horas sen actividade, con `sign_out` ou cando se reinicia a API.
 É o fluxo de dispositivo de OAuth ([RFC 8628](https://www.rfc-editor.org/rfc/rfc8628)) contra o
 Zitadel da instalación, coa aplicación «LibreQuenda MCP» que crea `zitadel-setup`.
 
+Un cliente que xa ten o token de acceso da persoa (o asistente de voz da web, que fala con quen ten a
+sesión iniciada) pode envialo en cada petición, `Authorization: Bearer <token>`, como a web cando chama á
+API: se é válido, esa petición actúa como esa persoa e `sign_in` responde `signed_in`. Sen a cabeceira
+todo segue igual; cun token caducado ou falso, as ferramentas que precisan conta din que non vale.
+
+## Liña de teléfono
+
+O servizo de voz atende chamadas de teléfono e usa este mesmo servidor. A API confía nel só cando envía
+`X-Voice-Key: <VOICE_API_KEY>` (consulta [self-hosting.md](self-hosting.md)) e o número de quen chama,
+`X-Caller-Phone` (E.164, p. ex. `+34600123456`; sen prefixo, España). Esa sesión MCP é entón a de quen chama:
+
+- **Con conta:** `phone_send_code` busca a conta que ten ese número no perfil (se hai unha soa, co correo
+  verificado) e envíalle por correo, no seu idioma, un código de 6 cifras que dura 10 minutos; responde se
+  a atopou e unha pista do enderezo (`m***@gmail.com`). Quen chama dille o código ao asistente e
+  `phone_verify_code` inicia a sesión desa conta ata que remata a chamada, en memoria como `sign_in`. Como
+  moito un código por minuto e cinco por hora a cada número, e cinco intentos por código. A analítica non se
+  abre a unha sesión por teléfono.
+- **Sen conta:** `book_turn` con `holder_name` reserva ao nome de quen chama e ao seu número, coas mesmas
+  normas ca unha conta (ventá de reserva, límites por día, semana, reservas próximas e do concello, un
+  concello á vez, reservas que se solapan), contadas por número. As instalacións só para veciños ou con
+  idade mínima piden entrar coa conta, porque por teléfono non se pode comprobar. `my_bookings` e
+  `cancel_booking` traballan sobre as reservas dese número. Non hai correo ao que mandar a confirmación: o
+  asistente le os datos (`confirmation: read_out`).
+
+Estas reservas levan a canle `phone`, que o persoal ve no calendario do concello e que contan os
+indicadores, as exportacións e as vistas de analítica. O nome e o número esquécense 30 días despois da
+reserva, como os das reservas do persoal.
+
 ## Ferramentas
 
 | Ferramenta | Conta | Que fai |
@@ -35,10 +63,12 @@ Zitadel da instalación, coa aplicación «LibreQuenda MCP» que crea `zitadel-s
 | `facility_details` | | Unha instalación nun día: quendas, normas de uso, prazo de cancelación, aforo, idade, só para veciños |
 | `list_events` | | Os próximos eventos dos concellos |
 | `sign_in` / `sign_out` | | Inicia ou pecha a sesión da persoa nesta sesión do axente |
-| `my_bookings` | si | As súas próximas reservas |
-| `book_turn` | si | Reserva unha quenda libre, unha vez que a persoa aceptou as normas de uso da instalación |
+| `my_bookings` | si | As súas próximas reservas (por teléfono sen conta, as do número de quen chama) |
+| `book_turn` | si | Reserva unha quenda libre, unha vez que a persoa aceptou as normas de uso da instalación (por teléfono sen conta, co seu nome) |
 | `cancel_booking` | si | Cancela unha das súas reservas, antes do seu prazo |
 | `join_public_booking` | si | Únese a unha reserva pública ou a un evento con prazas libres |
+| `phone_send_code` | | Só na liña de teléfono: envía por correo un código á conta que ten o número de quen chama |
+| `phone_verify_code` | | Só na liña de teléfono: inicia a sesión desa conta co código |
 | `analytics_views` | admin | As vistas de analítica de só lectura e as súas columnas |
 | `analytics_query` | admin | Un único `SELECT` de só lectura sobre elas, para os concellos que xestiona a persoa (consulta [analytics.md](analytics.md)) |
 

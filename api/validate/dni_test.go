@@ -40,3 +40,19 @@ func TestPhone(t *testing.T) {
 		}
 	}
 }
+
+func TestE164(t *testing.T) {
+	for in, want := range map[string]string{
+		"986000000": "+34986000000", "600 12 34 56": "+34600123456", "+34 986-000-000": "+34986000000",
+		"0034986000000": "+34986000000", "+351 912 345 678": "+351912345678", "986.00.00.00": "+34986000000",
+	} {
+		if got, ok := E164(in); !ok || got != want {
+			t.Errorf("E164(%q) = %q %v, want %q", in, got, ok, want)
+		}
+	}
+	for _, bad := range []string{"", "12345", "+0123456789", "986 000 000 ext. 2", "+1234567890123456"} {
+		if got, ok := E164(bad); ok {
+			t.Errorf("E164(%q) = %q, want none", bad, got)
+		}
+	}
+}

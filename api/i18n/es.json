@@ -251,7 +251,10 @@
     "poll_closed": "Esta encuesta ya está cerrada.",
     "poll_residents_only": "En esta encuesta solo votan las personas verificadas como vecinas del ayuntamiento.",
     "poll_option_not_found": "Esa respuesta no es de esta encuesta.",
-    "poll_closed_keep": "Una encuesta cerrada no se puede borrar: sus resultados quedan en el historial."
+    "poll_closed_keep": "Una encuesta cerrada no se puede borrar: sus resultados quedan en el historial.",
+    "phone_residents_only": "Esta instalación es solo para vecinos verificados por el ayuntamiento: para reservarla por teléfono hay que entrar con la cuenta.",
+    "phone_age_restricted": "Esta instalación tiene una edad mínima de {{0}} años, que por teléfono no se puede comprobar: para reservarla hay que entrar con la cuenta.",
+    "phone_holder_required": "Para reservar sin cuenta hacen falta el nombre de quien reserva y su número de teléfono."
   },
   "email": {
     "greeting": "Hola {{0}}:",
@@ -383,6 +386,12 @@
       "intro": "Se ha cerrado la encuesta de {{0}}:",
       "body": "Gracias a todas las personas que habéis votado. Ya puedes ver los resultados.",
       "manage": "Ver los resultados"
+    },
+    "phone_code": {
+      "subject": "Tu código para {{0}}: {{1}}",
+      "intro": "Estás hablando con la línea de teléfono de {{0}}. Para entrar con tu cuenta, dile este código al asistente. Caduca en {{1}} minutos.",
+      "manage": "Abrir {{0}}",
+      "footer": "Recibes este correo porque alguien llamó desde el número de teléfono de tu perfil y pidió entrar con tu cuenta. Si no fuiste tú, no digas el código a nadie e ignora este correo."
     }
   }
 }

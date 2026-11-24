@@ -279,6 +279,65 @@ func (q *Queries) HasTenantRole(ctx context.Context, arg HasTenantRoleParams) (b
 	return exists, err
 }
 
+const listUsersByPhoneEnd = `-- name: ListUsersByPhoneEnd :many
+SELECT
+    id,
+    idp_subject,
+    email,
+    email_verified,
+    COALESCE(full_name, '')::TEXT AS full_name,
+    COALESCE(phone, '')::TEXT AS phone,
+    COALESCE(preferred_language, '')::TEXT AS preferred_language
+FROM
+    app_user
+WHERE
+    phone IS NOT NULL
+    AND right(regexp_replace(phone, '[^0-9]', '', 'g'), length($1::TEXT)) = $1::TEXT
+`
+
+type ListUsersByPhoneEndRow struct {
+	ID                uuid.UUID `json:"id"`
+	IdpSubject        string    `json:"idp_subject"`
+	Email             string    `json:"email"`
+	EmailVerified     bool      `json:"email_verified"`
+	FullName          string    `json:"full_name"`
+	Phone             string    `json:"phone"`
+	PreferredLanguage string    `json:"preferred_language"`
+}
+
+// The voice line: accounts whose profile phone ends with these digits (the last
+// nine or fewer of the caller's number), however it was typed; the caller compares the whole number.
+func (q *Queries) ListUsersByPhoneEnd(ctx context.Context, digits string) ([]ListUsersByPhoneEndRow, error) {
+	rows, err := q.db.QueryContext(ctx, listUsersByPhoneEnd, digits)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListUsersByPhoneEndRow
+	for rows.Next() {
+		var i ListUsersByPhoneEndRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.IdpSubject,
+			&i.Email,
+			&i.EmailVerified,
+			&i.FullName,
+			&i.Phone,
+			&i.PreferredLanguage,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const resetCalendarToken = `-- name: ResetCalendarToken :one
 UPDATE app_user
 SET

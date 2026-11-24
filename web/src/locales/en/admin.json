@@ -315,6 +315,7 @@
       "bookings": "Bookings",
       "bookingsHint_one": "{{count}} confirmed",
       "bookingsHint_other": "{{count}} confirmed",
+      "channelsHint": "{{online}} on the web or the app, {{staff}} by staff, {{phone}} on the phone line",
       "occupancy": "Occupancy",
       "occupancyHint": "{{booked}} h booked of {{open}} h available",
       "cancellations": "Cancellations",
@@ -508,6 +509,7 @@
     "withAccount": "Account",
     "withoutAccount": "No account",
     "bookedByStaff": "Booked by staff",
+    "bookedByPhone": "Booked on the phone line",
     "checkedIn": "Checked in at {{time}}",
     "joined_one": "+{{count}} joined",
     "joined_other": "+{{count}} joined",
@@ -1230,7 +1232,8 @@
       "resident": "Verified resident",
       "notice": "Announcement",
       "poll": "Poll",
-      "smtp_test": "SMTP test"
+      "smtp_test": "SMTP test",
+      "phone_code": "Phone line code"
     }
   },
   "apiLog": {

@@ -13,15 +13,36 @@ import (
 	"github.com/google/uuid"
 )
 
-// The booking window's limits per person, for a resident booking from the app
-// or at the door: bookings per day and per week, turns in a row and the no-show block. Staff
-// booking for someone skip them. The cap on upcoming bookings is checked in book.
+// The booking window's limits per person, for a resident booking from the app,
+// at the door or on the voice line: bookings per day and per week, turns in a row
+// and the no-show block. Staff booking for someone skip them. The cap on upcoming
+// bookings is checked in book.
+
+// Booker: whom a booking is for and counts against: an account, or on the voice
+// line a caller without one, by their name and number (E.164). The rules of an
+// account apply to the number: its bookings are the ones with that holder_phone.
+type Booker struct {
+	User  uuid.UUID // uuid.Nil: a caller without an account
+	Name  string
+	Phone string
+}
+
+func Account(userId uuid.UUID) Booker { return Booker{User: userId} }
+
+func (b Booker) account() bool { return b.User != uuid.Nil }
+
+func (b Booker) user() uuid.NullUUID { return uuid.NullUUID{UUID: b.User, Valid: b.account()} }
+
+// phone: what the queries match holder_phone with, only without an account.
+func (b Booker) phone() sql.NullString {
+	return sql.NullString{String: b.Phone, Valid: !b.account() && b.Phone != ""}
+}
 
 // personalLimits refuses the turn when it would break one of them; exclude is
 // the booking being changed, which does not count against its own new time.
-func (s *bookingsService) personalLimits(ctx context.Context, queries *model.Queries, userId uuid.UUID, facility model.GetFacilityForBookingRow, slot *schedule.Slot, exclude uuid.NullUUID) *shared.ErrorResponse {
+func (s *bookingsService) personalLimits(ctx context.Context, queries *model.Queries, who Booker, facility model.GetFacilityForBookingRow, slot *schedule.Slot, exclude uuid.NullUUID) *shared.ErrorResponse {
 	var failed = &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.booking_failed"}
-	var user = uuid.NullUUID{UUID: userId, Valid: true}
+	var user, phone = who.user(), who.phone()
 	var loc, err = time.LoadLocation(facility.Timezone)
 	if err != nil {
 		return failed
@@ -29,7 +50,7 @@ func (s *bookingsService) personalLimits(ctx context.Context, queries *model.Que
 
 	if facility.NoShowPenalty {
 		var since = time.Now().AddDate(0, 0, -int(facility.NoShowWindowDays))
-		var noShows, listErr = queries.ListUserNoShows(ctx, model.ListUserNoShowsParams{UserID: user, FacilityID: facility.ID, Since: since})
+		var noShows, listErr = queries.ListUserNoShows(ctx, model.ListUserNoShowsParams{UserID: user, HolderPhone: phone, FacilityID: facility.ID, Since: since})
 		if listErr != nil {
 			return failed
 		}
@@ -41,7 +62,7 @@ func (s *bookingsService) personalLimits(ctx context.Context, queries *model.Que
 	if facility.MaxBookingsPerDay > 0 {
 		var day = startOfDay(slot.Start, loc)
 		var count, countErr = queries.CountUserBookingsInRange(ctx, model.CountUserBookingsInRangeParams{
-			UserID: user, FacilityID: facility.ID, RangeStart: day, RangeEnd: day.AddDate(0, 0, 1), Exclude: exclude,
+			UserID: user, HolderPhone: phone, FacilityID: facility.ID, RangeStart: day, RangeEnd: day.AddDate(0, 0, 1), Exclude: exclude,
 		})
 		if countErr != nil {
 			return failed
@@ -55,7 +76,7 @@ func (s *bookingsService) personalLimits(ctx context.Context, queries *model.Que
 		var day = startOfDay(slot.Start, loc)
 		var monday = day.AddDate(0, 0, 1-int(schedule.ISOWeekday(day))) // the ISO week, in the council's zone
 		var count, countErr = queries.CountUserBookingsInRange(ctx, model.CountUserBookingsInRangeParams{
-			UserID: user, FacilityID: facility.ID, RangeStart: monday, RangeEnd: monday.AddDate(0, 0, 7), Exclude: exclude,
+			UserID: user, HolderPhone: phone, FacilityID: facility.ID, RangeStart: monday, RangeEnd: monday.AddDate(0, 0, 7), Exclude: exclude,
 		})
 		if countErr != nil {
 			return failed
@@ -68,7 +89,7 @@ func (s *bookingsService) personalLimits(ctx context.Context, queries *model.Que
 	if facility.MaxTurnsInARow > 0 {
 		var reach = time.Duration(facility.MaxTurnsInARow) * slot.End.Sub(slot.Start)
 		var near, nearErr = queries.ListUserBookingsNear(ctx, model.ListUserBookingsNearParams{
-			UserID: user, FacilityID: facility.ID, RangeStart: slot.Start.Add(-reach), RangeEnd: slot.End.Add(reach), Exclude: exclude,
+			UserID: user, HolderPhone: phone, FacilityID: facility.ID, RangeStart: slot.Start.Add(-reach), RangeEnd: slot.End.Add(reach), Exclude: exclude,
 		})
 		if nearErr != nil {
 			return failed
@@ -139,14 +160,18 @@ type councilQueries interface {
 //
 // Staff booking for someone skip both, like the other per-person limits.
 func CouncilLimits(ctx context.Context, queries councilQueries, userId, tenantId uuid.UUID, own bool) *shared.ErrorResponse {
+	return councilLimits(ctx, queries, Account(userId), tenantId, own)
+}
+
+func councilLimits(ctx context.Context, queries councilQueries, who Booker, tenantId uuid.UUID, own bool) *shared.ErrorResponse {
 	var failed = &shared.ErrorResponse{Code: http.StatusInternalServerError, Message: "errors.booking_failed"}
-	var user = uuid.NullUUID{UUID: userId, Valid: true}
+	var user, phone = who.user(), who.phone()
 	var policy, err = queries.GetCouncilBookingPolicy(ctx, tenantId)
 	if err != nil {
 		return failed
 	}
 	if own && policy.OneCouncilPerAccount {
-		var other, otherErr = queries.GetUserBookingInOtherCouncil(ctx, model.GetUserBookingInOtherCouncilParams{TenantID: tenantId, UserID: user})
+		var other, otherErr = queries.GetUserBookingInOtherCouncil(ctx, model.GetUserBookingInOtherCouncilParams{TenantID: tenantId, UserID: user, HolderPhone: phone})
 		switch {
 		case otherErr == nil:
 			return &shared.ErrorResponse{Code: http.StatusConflict, Message: "errors.other_council_booking", Args: []any{other}}
@@ -155,7 +180,7 @@ func CouncilLimits(ctx context.Context, queries councilQueries, userId, tenantId
 		}
 	}
 	if own && policy.CouncilMaxActive > 0 {
-		var count, countErr = queries.CountUserUpcomingInCouncil(ctx, model.CountUserUpcomingInCouncilParams{UserID: user, TenantID: tenantId})
+		var count, countErr = queries.CountUserUpcomingInCouncil(ctx, model.CountUserUpcomingInCouncilParams{UserID: user, HolderPhone: phone, TenantID: tenantId})
 		if countErr != nil {
 			return failed
 		}

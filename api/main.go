@@ -14,6 +14,7 @@ import (
 	"librequenda/core/counciladmin"
 	"librequenda/core/entrance"
 	"librequenda/core/health"
+	"librequenda/core/identity"
 	"librequenda/core/invites"
 	"librequenda/core/issues"
 	"librequenda/core/me"
@@ -72,5 +73,6 @@ func main() {
 	issues.IssuesRoutes(dbConexion, router).RegisterRoutes()
 	ratings.RatingsRoutes(dbConexion, router).RegisterRoutes()
 	polls.PollsRoutes(dbConexion, router).RegisterRoutes()
+	identity.RegisterRoutes(router) // Zitadel asks it for the attributes of Cl@ve or Chave365
 	router.StartServer(":8000")
 }

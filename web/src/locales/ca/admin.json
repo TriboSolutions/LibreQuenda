@@ -315,6 +315,7 @@
       "bookings": "Reserves",
       "bookingsHint_one": "{{count}} confirmada",
       "bookingsHint_other": "{{count}} confirmades",
+      "channelsHint": "{{online}} al web o a l’app, {{staff}} pel personal, {{phone}} per la línia de telèfon",
       "occupancy": "Ocupació",
       "occupancyHint": "{{booked}} h reservades de {{open}} h disponibles",
       "cancellations": "Cancel·lacions",
@@ -508,6 +509,7 @@
     "withAccount": "Amb compte",
     "withoutAccount": "Sense compte",
     "bookedByStaff": "Reservat pel personal",
+    "bookedByPhone": "Reservat per la línia de telèfon",
     "checkedIn": "Ha entrat a les {{time}}",
     "joined_one": "+{{count}} apuntat",
     "joined_other": "+{{count}} apuntats",
@@ -1230,7 +1232,8 @@
       "resident": "Veïnat verificat",
       "notice": "Comunicat",
       "poll": "Enquesta",
-      "smtp_test": "Prova de l'SMTP"
+      "smtp_test": "Prova de l'SMTP",
+      "phone_code": "Codi de la línia de telèfon"
     }
   },
   "apiLog": {

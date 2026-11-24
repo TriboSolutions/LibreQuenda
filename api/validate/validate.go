@@ -4,6 +4,7 @@ package validate
 import (
 	"net/mail"
 	"regexp"
+	"strings"
 )
 
 var slugPattern = regexp.MustCompile(`^[a-z0-9]+(-[a-z0-9]+)*$`)
@@ -54,4 +55,31 @@ var phonePattern = regexp.MustCompile(`^\+?[0-9 ()-]+$`)
 // up to max (its column's size), so it always fits.
 func Phone(phone string, max int) bool {
 	return len(phone) >= 6 && len(phone) <= max && phonePattern.MatchString(phone) // ASCII only: bytes are characters
+}
+
+// E164: a phone number as people write it (Phone, dots too), in international
+// form: "+34986000000". 00 counts as +, and nine digits without a prefix are
+// Spanish. false when it cannot be one (fewer than 8 or more than 15 digits).
+func E164(phone string) (string, bool) {
+	phone = strings.TrimSpace(phone)
+	if phone == "" || !phonePattern.MatchString(strings.ReplaceAll(phone, ".", "")) {
+		return "", false
+	}
+	var digits = strings.Map(func(r rune) rune {
+		if r >= '0' && r <= '9' {
+			return r
+		}
+		return -1
+	}, phone)
+	switch {
+	case strings.HasPrefix(phone, "+"):
+	case strings.HasPrefix(digits, "00"):
+		digits = digits[2:]
+	case len(digits) == 9:
+		digits = "34" + digits
+	}
+	if len(digits) < 8 || len(digits) > 15 || digits[0] == '0' {
+		return "", false
+	}
+	return "+" + digits, true
 }

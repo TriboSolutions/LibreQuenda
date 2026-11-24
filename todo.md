@@ -57,7 +57,9 @@ Alcance: bases §1.1 (mínimo) + §1.2 (técnico).
 - [x] Un correo verificado antes de reservar, unirse a unha quenda ou reservar na porta (#40)
 - [x] Límite de peticións no proxy para o rexistro (5 por hora e IP) e para os envíos de acceso (30 cada 10 min) (#39)
 - [ ] Captcha no rexistro, se o límite de peticións non abonda (precisa un fork da app de login de Zitadel)
-- [ ] Cl@ve / Chave365: confirmar a vía de integración con AMTEGA / AGASOL
+- [x] Provedor de identidade pública: SAML 2.0 xenérico (Cl@ve, Chave365) e OpenID Connect desde `.env` e o instalador, cos atributos (nome, apelidos, correo, NIF) mapeados pola API mediante unha acción de Zitadel; probado de principio a fin con Keycloak (`zitadel/test-idp/run.sh`)
+- [ ] Cl@ve / Chave365 en produción: convenios coa SGAD e coa AMTEGA, probar nos seus contornos de proba e confirmar se Cl@ve esixe as extensións eIDAS na petición ou un certificado recoñecido (entón, unha ponte SAML diante de Zitadel)
+- [ ] Verificar a veciñanza co NIF que certifica o provedor de identidade (metadatos `nif` da conta en Zitadel)
 
 ## Rexistro de actividade
 

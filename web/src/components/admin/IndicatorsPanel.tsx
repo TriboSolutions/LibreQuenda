@@ -527,7 +527,11 @@ function Kpis({ data, caption }: { data: Indicators; caption: string }) {
     {
       label: t('indicators.kpi.bookings'),
       value: totals.bookings.toLocaleString(i18n.resolvedLanguage),
-      hint: t('indicators.kpi.bookingsHint', { count: totals.confirmed }),
+      // how they were booked, once staff or the phone line booked any
+      hint:
+        totals.by_channel.staff + totals.by_channel.phone > 0
+          ? `${t('indicators.kpi.bookingsHint', { count: totals.confirmed })} · ${t('indicators.kpi.channelsHint', totals.by_channel)}`
+          : t('indicators.kpi.bookingsHint', { count: totals.confirmed }),
       change: compared(() => growth(totals.bookings, before?.bookings)),
       good: 'up' as const,
     },

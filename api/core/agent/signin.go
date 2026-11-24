@@ -31,6 +31,9 @@ type grant struct {
 	access, refresh string
 	accessExpires   time.Time
 	lastUsed        time.Time
+	// on the phone line: the caller who proved their account with a code, for that number
+	phone  string
+	caller *caller
 }
 
 // grants: by MCP session id. Forgotten after a day without use.

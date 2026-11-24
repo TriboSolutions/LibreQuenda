@@ -153,3 +153,20 @@ SELECT id FROM app_user WHERE calendar_token = sqlc.arg('calendar_token');
 -- name: GetUserFullName :one
 -- Who joined a booking, for the owner's notice (their first name is shown).
 SELECT COALESCE(full_name, '')::TEXT AS full_name FROM app_user WHERE id = sqlc.arg('id');
+
+-- name: ListUsersByPhoneEnd :many
+-- The voice line: accounts whose profile phone ends with these digits (the last
+-- nine or fewer of the caller's number), however it was typed; the caller compares the whole number.
+SELECT
+    id,
+    idp_subject,
+    email,
+    email_verified,
+    COALESCE(full_name, '')::TEXT AS full_name,
+    COALESCE(phone, '')::TEXT AS phone,
+    COALESCE(preferred_language, '')::TEXT AS preferred_language
+FROM
+    app_user
+WHERE
+    phone IS NOT NULL
+    AND right(regexp_replace(phone, '[^0-9]', '', 'g'), length(sqlc.arg('digits')::TEXT)) = sqlc.arg('digits')::TEXT;

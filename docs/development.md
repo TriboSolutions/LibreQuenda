@@ -40,4 +40,5 @@ voice/     Voice line: Pipecat, Galician speech models, the MCP tools
 - [Manter un servidor](self-hosting.md), [rexistrar a entrada na instalación](check-in.md), [rexistro de actividade](audit-log.md), [proposta: un inicio persoal](specs/feed.md)
 
 - [Bases do certame (v3, en galego)](https://www.agasol.gal/wp-content/uploads/2026/10/Bases_I_Certame_GOBTEC_2026_GL_v3.pdf), publicadas por AGASOL
+- [Inicio de sesión con Cl@ve ou Chave365](self-hosting.md#inicio-de-sesión-con-clve-ou-chave365): `zitadel/test-idp/run.sh` próbao de principio a fin cun Keycloak de proba
 - Especificación da API: [`docs/openapi/openapi.yaml`](openapi/openapi.yaml) (OpenAPI 3.1); axentes: [servidor MCP](mcp.md), [liña de voz](voice.md); [preguntarlles aos datos](analytics.md)

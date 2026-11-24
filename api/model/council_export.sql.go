@@ -84,6 +84,7 @@ SELECT
     b.starts_at,
     b.ends_at,
     b.status,
+    b.channel,
     b.rules_accepted_at,
     b.cancelled_at,
     b.cancelled_by,
@@ -109,6 +110,7 @@ type ExportBookingsRow struct {
 	StartsAt          time.Time            `json:"starts_at"`
 	EndsAt            time.Time            `json:"ends_at"`
 	Status            BookingStatus        `json:"status"`
+	Channel           BookingChannel       `json:"channel"`
 	RulesAcceptedAt   sql.NullTime         `json:"rules_accepted_at"`
 	CancelledAt       sql.NullTime         `json:"cancelled_at"`
 	CancelledBy       NullBookingCanceller `json:"cancelled_by"`
@@ -136,6 +138,7 @@ func (q *Queries) ExportBookings(ctx context.Context, tenantID uuid.UUID) ([]Exp
 			&i.StartsAt,
 			&i.EndsAt,
 			&i.Status,
+			&i.Channel,
 			&i.RulesAcceptedAt,
 			&i.CancelledAt,
 			&i.CancelledBy,

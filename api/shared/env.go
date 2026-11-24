@@ -27,6 +27,9 @@ var ZITADEL_USERS_PAT_FILE = os.Getenv("ZITADEL_USERS_PAT_FILE") // token of the
 var REQUIRE_ADMIN_MFA = os.Getenv("REQUIRE_ADMIN_MFA") == "true"
 var ZITADEL_INTROSPECTION_FILE = envOr("ZITADEL_INTROSPECTION_FILE", "/secrets/zitadel-introspection.json")
 
+// A public identity provider's (Cl@ve, Chave365) attribute mapping, written by zitadel-setup (zitadel/idpintent.go)
+var ZITADEL_IDP_MAPPING_FILE = envOr("ZITADEL_IDP_MAPPING_FILE", "/secrets/zitadel-idp-mapping.json")
+
 // The first superadministrator: granted on this person's login with a verified email.
 var SUPERADMIN_EMAIL = strings.ToLower(strings.TrimSpace(os.Getenv("SUPERADMIN_EMAIL")))
 
@@ -82,6 +85,10 @@ var SMTP_FROM = os.Getenv("SMTP_FROM") // e.g. LibreQuenda <noreply@concello.gal
 // Key that encrypts stored credentials (a council's SMTP password): 32 bytes in
 // hex (openssl rand -hex 32). Losing it means typing those passwords again.
 var SECRETS_KEY = os.Getenv("SECRETS_KEY")
+
+// Shared secret of the voice line (the voice service): MCP requests carrying it in
+// X-Voice-Key act for the caller in X-Caller-Phone. Empty = no voice line.
+var VOICE_API_KEY = strings.TrimSpace(os.Getenv("VOICE_API_KEY"))
 
 // Address of the web app, for links in emails, e.g. https://reservas.concello.gal
 var PUBLIC_URL = strings.TrimRight(os.Getenv("PUBLIC_URL"), "/")
