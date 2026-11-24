@@ -14,7 +14,7 @@
   "dependencies": {
     "@fontsource-variable/dm-sans": "^5.3.0",
     "@pipecat-ai/client-js": "1.16.0",
-    "@pipecat-ai/websocket-transport": "1.8.3",
+    "@pipecat-ai/websocket-transport": "1.8.2",
     "@tailwindcss/vite": "^4.3.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

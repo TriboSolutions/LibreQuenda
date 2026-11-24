@@ -133,11 +133,13 @@ function CallPanel({ config, onClose }: { config: VoiceConfig; onClose: () => vo
       ])
       let turn = 0
       const pipecat = new PipecatClient({
-        transport: new WebSocketTransport({
-          serializer: new ProtobufFrameSerializer(),
-          recorderSampleRate: 16000,
-          playerSampleRate: 16000,
-        }),
+        transport: keepPlayingAfterInterruptions(
+          new WebSocketTransport({
+            serializer: new ProtobufFrameSerializer(),
+            recorderSampleRate: 16000,
+            playerSampleRate: 16000,
+          }),
+        ),
         enableMic: true,
         enableCam: false,
         callbacks: {
@@ -257,4 +259,25 @@ function CallPanel({ config, onClose }: { config: VoiceConfig; onClose: () => vo
       </DialogContent>
     </Dialog>
   )
+}
+
+type Player = { interrupt: () => Promise<unknown>; interruptedTrackIds: Record<string, boolean> }
+
+/**
+ * @pipecat-ai/websocket-transport 1.8.2 plays all of the assistant's audio on the track "default" and,
+ * on the first interruption, marks that track as interrupted for good: everything the assistant says
+ * afterwards is dropped (the captions keep coming). Clear the mark once the interruption has flushed.
+ * Fixed in 1.8.3, too new yet for pnpm's minimum release age: drop this when upgrading.
+ */
+function keepPlayingAfterInterruptions<T extends object>(transport: T): T {
+  const player = (transport as unknown as { _mediaManager?: { _wavStreamPlayer?: Player } })._mediaManager?._wavStreamPlayer
+  if (player) {
+    const interrupt = player.interrupt.bind(player)
+    player.interrupt = async () => {
+      const offset = await interrupt()
+      delete player.interruptedTrackIds.default
+      return offset
+    }
+  }
+  return transport
 }
