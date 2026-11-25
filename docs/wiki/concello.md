@@ -4,7 +4,7 @@ O que fan as persoas administradoras dun concello desde a web (`/<concello>/admi
 
 [← Volver á wiki](README.md) · [Veciñanza](vecinanza.md) · [Superadministración](superadmin.md)
 
-**Índice:** [Alta e mantemento de instalacións](#alta-e-mantemento-de-instalacións) · [Horarios e peches](#horarios-e-peches) · [Ventá de reserva](#ventá-de-reserva) · [Formas de entrada](#formas-de-entrada) · [Reserva manual](#reserva-manual) · [Veciñanza empadroada](#veciñanza-empadroada) · [Eventos do concello](#eventos-do-concello) · [Incidencias](#incidencias) · [Participación](#participación) · [Analítica de uso](#analítica-de-uso) · [Fala cos datos](#fala-cos-datos) · [Widget para a web do concello](#widget-para-a-web-do-concello) · [Administración do concello](#administración-do-concello)
+**Índice:** [Alta e mantemento de instalacións](#alta-e-mantemento-de-instalacións) · [Horarios e peches](#horarios-e-peches) · [Ventá de reserva](#ventá-de-reserva) · [Formas de entrada](#formas-de-entrada) · [Reserva manual](#reserva-manual) · [Veciñanza empadroada](#veciñanza-empadroada) · [Eventos do concello](#eventos-do-concello) · [Incidencias](#incidencias) · [Participación](#participación) · [Analítica de uso](#analítica-de-uso) · [Fala cos datos](#fala-cos-datos) · [Widget para a web do concello](#widget-para-a-web-do-concello) · [Datos abertos (datos.gob.es)](#datos-abertos-datosgobes) · [Administración do concello](#administración-do-concello)
 
 ---
 
@@ -173,6 +173,29 @@ As quendas libres do concello, para pegar na súa propia web: todas as instalaci
 | O código e a vista previa | O widget incrustado |
 |:-:|:-:|
 | ![Axustes do widget](../screenshots/web/concello/widget/01-widget-settings.webp) | ![Widget](../screenshots/web/concello/widget/02-widget-embedded.webp) |
+
+## Datos abertos (datos.gob.es)
+
+O concello pode publicar as súas instalacións e o seu uso como datos abertos, nun catálogo [DCAT-AP-ES](https://datosgobes.github.io/DCAT-AP-ES/) que [datos.gob.es](https://datos.gob.es) recolle só e que chega tamén a [data.europa.eu](https://data.europa.eu). Actívase nos axustes do concello (`/<concello>/admin/axustes`), co código DIR3 co que o concello figura no directorio común da Administración.
+
+![Datos abertos nos axustes do concello](../screenshots/web/concello/open-data/01-open-data-settings.webp)
+
+**Que se publica**, sen iniciar sesión e sen datos persoais, en CSV e JSON, con licenza CC BY 4.0:
+
+| Conxunto de datos | Contido | Actualización |
+|---|---|---|
+| Instalacións municipais | As instalacións activas: enderezo, coordenadas, aforo, accesibilidade, horario semanal, duración da quenda, normas de acceso (só empadroados, idade mínima), etiquetas e a ligazón á súa páxina | Cada vez que cambian |
+| Uso mensual | Por instalación e mes, nos últimos 24 meses pechados: reservas, eventos do concello, cancelacións e horas reservadas. Só recontos | Mensual |
+
+**Para que apareza en datos.gob.es:**
+
+1. O concello pide en datos.gob.es a alta como publicador, co seu código DIR3.
+2. Na área de xestión de datos.gob.es engade unha fonte de federación co enderezo do catálogo que amosan os axustes (`https://<instalación>/api/tenants/<concello>/open-data/catalog.rdf`) e unha frecuencia diaria ou semanal.
+3. Desde aí, datos.gob.es recolle o catálogo en cada pasada e actualiza os conxuntos de datos sen facer nada máis.
+
+O catálogo describe o concello como publicador polo seu DIR3, a súa provincia (do código INE do municipio, se o ten), os temas *deporte* e *sociedade e benestar*, os idiomas (galego, castelán, catalán e inglés) e un punto de contacto co correo e o teléfono do concello. Valida coas formas SHACL oficiais de DCAT-AP-ES 1.0.0. Tamén está en Turtle (`catalog.ttl`).
+
+Desactivalo retira o catálogo e os ficheiros ao momento. Os cambios (publicar, retirar, cambiar o DIR3) quedan no rexistro de actividade como «Cambiou os datos abertos».
 
 ## Administración do concello
 

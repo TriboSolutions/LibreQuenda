@@ -47,6 +47,7 @@ var actions = map[string]action{
 	"PUT /tenants/{slug}/admin/smtp":                                         {code: "smtp.changed"},
 	"DELETE /tenants/{slug}/admin/smtp":                                      {code: "smtp.removed"},
 	"POST /tenants/{slug}/admin/smtp/test":                                   {code: "smtp.tested"},
+	"PUT /tenants/{slug}/admin/open-data":                                    {code: "open_data.changed"},
 	"GET /tenants/{slug}/admin/export":                                       {code: "council.exported"},
 	"GET /tenants/{slug}/admin/indicators/export":                            {code: "indicators.exported"},
 	"GET /tenants/{slug}/admin/audit":                                        {code: ""},

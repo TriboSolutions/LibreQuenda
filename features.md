@@ -84,6 +84,7 @@ Estado: **feito** · **en curso** (traballo aberto) · **idea** (sen comezar).
 | Lista de mantemento (lapela Incidencias): avisos da veciñanza cun distintivo para os novos, filtros por instalación e estado, estado e nota para quen avisou, o correo de quen avisou só se o compartiu | feito |
 | Participación (lapela Participación, en dúas partes, cada unha co actual e o seu historial): publicar e retirar comunicados, con ou sen aviso a quen reserva; crear enquisas de 2 a 6 respostas, pechalas antes de tempo e borralas mentres están abertas (as pechadas quedan no historial cos seus resultados), cos votos de cada resposta en todo momento | feito |
 | Páxina de axustes do concello: datos, persoas administradoras (invitar, retirar), ventá de reserva, servidor de correo propio (SMTP) con correo de proba, descarga completa dos datos (CSV + datapackage de Frictionless + imaxes, opcionalmente cos datos persoais da veciñanza) | feito |
+| Datos abertos para datos.gob.es: o concello actívaos co seu código DIR3 e publica un catálogo DCAT-AP-ES (RDF/XML e Turtle, valida coas formas SHACL oficiais) coas súas instalacións e o seu uso mensual en CSV e JSON, sen datos persoais, e o enderezo para darlo de alta como fonte de federación | feito |
 
 ## Plataforma
 
@@ -120,7 +121,7 @@ Agrupadas segundo quen máis gaña; ningunha está comezada.
 - **Taxas e pagamento:** un prezo por quenda ou un bono, pagado a través da Pasarela de Pagamentos das administracións públicas, con exencións.
 - **Límites por deporte entre instalacións:** p. ex., como máximo dúas reservas próximas de pádel en todas as pistas do concello (hoxe o límite de todo o concello conta todas as instalacións).
 - **Pantalla quiosco na entrada:** as quendas de hoxe e quen está dentro, na tableta do lector.
-- **Datos abertos:** publicar a ocupación anonimizada como datos abertos (DCAT-AP, datos.gob.es / abertos.xunta.gal) de forma periódica.
+- **Datos abertos en abertos.xunta.gal:** o catálogo DCAT-AP-ES xa vai a datos.gob.es; falta darlo de alta tamén no portal da Xunta.
 
 **Plataforma**
 

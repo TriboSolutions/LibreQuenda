@@ -965,6 +965,15 @@ export type CouncilSmtp = {
 /** An empty password keeps the saved one. */
 export type CouncilSmtpInput = { host: string; port: number; username: string; password: string; from: string }
 
+/** The council's open data: a public DCAT-AP-ES catalog datos.gob.es harvests, published under its DIR3 code. */
+export type CouncilOpenData = {
+  enabled: boolean
+  dir3_code: string // "" until saved
+  issued_at: string | null // first published
+  updated_at: string | null // null: never saved
+}
+export type CouncilOpenDataInput = { enabled: boolean; dir3_code: string }
+
 export type Superadmin = { user_id: string; email: string; full_name: string; from_env: boolean; created_at: string }
 
 /** Fired when the administration refuses a sign-in without a second factor (REQUIRE_ADMIN_MFA). */
@@ -1517,6 +1526,9 @@ export const api = {
     // emails the administrator through the relay the council's emails use now
     testSmtp: (token: string, slug: string) =>
       request<{ to: string; via: 'council' | 'environment' }>(`/tenants/${encodeURIComponent(slug)}/admin/smtp/test`, { token, method: 'POST' }),
+    openData: (token: string, slug: string) => request<CouncilOpenData>(`/tenants/${encodeURIComponent(slug)}/admin/open-data`, { token }),
+    saveOpenData: (token: string, slug: string, input: CouncilOpenDataInput) =>
+      request<CouncilOpenData>(`/tenants/${encodeURIComponent(slug)}/admin/open-data`, { token, method: 'PUT', body: input }),
     geocode: (token: string, query: string) =>
       request<{ results: GeocodeResult[] }>(`/geocode?q=${encodeURIComponent(query)}`, { token }),
   },

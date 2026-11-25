@@ -20,6 +20,7 @@ import (
 	"librequenda/core/me"
 	"librequenda/core/media"
 	"librequenda/core/notifications"
+	"librequenda/core/opendata"
 	"librequenda/core/platform"
 	"librequenda/core/polls"
 	"librequenda/core/ratings"
@@ -61,6 +62,7 @@ func main() {
 	me.MeRoutes(dbConexion, router).RegisterRoutes()
 	agent.AgentRoutes(dbConexion, router).RegisterRoutes() // /api/mcp: agents look up, sign in and book
 	tenants.TenantsRoutes(dbConexion, router).RegisterRoutes()
+	opendata.OpenDataRoutes(dbConexion, router).RegisterRoutes() // a council's DCAT-AP-ES catalog, for datos.gob.es
 	bookings.BookingsRoutes(dbConexion, router).RegisterRoutes()
 	invites.InvitesRoutes(dbConexion, router).RegisterRoutes()
 	calendar.CalendarRoutes(dbConexion, router).RegisterRoutes()

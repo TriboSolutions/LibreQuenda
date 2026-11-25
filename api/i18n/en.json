@@ -254,7 +254,10 @@
     "poll_closed_keep": "A closed poll cannot be deleted: its results stay in the history.",
     "phone_residents_only": "This facility is only for residents verified by the council: to book it by phone, sign in with your account.",
     "phone_age_restricted": "This facility has a minimum age of {{0}}, which cannot be checked by phone: to book it, sign in with your account.",
-    "phone_holder_required": "Booking without an account needs the name of who books and their phone number."
+    "phone_holder_required": "Booking without an account needs the name of who books and their phone number.",
+    "invalid_dir3_code": "Write the council's DIR3 code: nine letters and digits, e.g. L01150301.",
+    "open_data_load_failed": "The council's open data could not be loaded.",
+    "open_data_save_failed": "The council's open data could not be saved."
   },
   "email": {
     "greeting": "Hello {{0}},",
@@ -393,5 +396,15 @@
       "manage": "Open {{0}}",
       "footer": "You get this email because someone called from the phone number in your profile and asked to sign in with your account. If it wasn't you, don't tell anyone the code and ignore this email."
     }
+  },
+  "open_data": {
+    "catalog_title": "{{0}} open data",
+    "catalog_description": "Open data catalogue of {{0}} about its municipal facilities and their use, published with {{1}}.",
+    "facilities_title": "{{0}} municipal facilities",
+    "facilities_description": "Bookable facilities of {{0}}: address, coordinates, capacity, accessibility, weekly opening hours (ISO weekday, 1 = Monday), access rules and tags.",
+    "use_title": "Monthly use of the {{0}} municipal facilities",
+    "use_description": "Bookings, council activities, cancellations and booked hours of each facility of {{0}} by month, for finished months. Counts only: no personal data.",
+    "facilities_keywords": "municipal facilities, sports facilities, sport",
+    "use_keywords": "bookings, facility use, municipal facilities, sport"
   }
 }

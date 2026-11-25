@@ -94,6 +94,9 @@ func (r *counciladminRoutes) RegisterRoutes() {
 		{Path: "/tenants/{slug}/admin/smtp", Method: http.MethodPut, Handler: h.SaveSmtp},
 		{Path: "/tenants/{slug}/admin/smtp", Method: http.MethodDelete, Handler: h.DeleteSmtp},
 		{Path: "/tenants/{slug}/admin/smtp/test", Method: http.MethodPost, Handler: middlewares.WithStrictRateLimit(h.TestSmtp)},
+		// open data: the public DCAT-AP-ES catalog datos.gob.es harvests
+		{Path: "/tenants/{slug}/admin/open-data", Method: http.MethodGet, Handler: h.GetOpenData},
+		{Path: "/tenants/{slug}/admin/open-data", Method: http.MethodPut, Handler: h.SaveOpenData},
 		{Path: "/geocode", Method: http.MethodGet, Handler: h.Geocode},
 	}
 	for _, route := range routes {

@@ -90,6 +90,12 @@ CREATE POLICY tenant_smtp_insert ON tenant_smtp FOR INSERT WITH CHECK (tenant_id
 CREATE POLICY tenant_smtp_update ON tenant_smtp FOR UPDATE USING (tenant_id = app_tenant_id()) WITH CHECK (tenant_id = app_tenant_id());
 CREATE POLICY tenant_smtp_delete ON tenant_smtp FOR DELETE USING (tenant_id = app_tenant_id());
 
+-- tenant_open_data: read on the public catalog, written by the council
+ALTER TABLE tenant_open_data ENABLE ROW LEVEL SECURITY;
+CREATE POLICY tenant_open_data_read   ON tenant_open_data FOR SELECT USING (TRUE);
+CREATE POLICY tenant_open_data_insert ON tenant_open_data FOR INSERT WITH CHECK (tenant_id = app_tenant_id());
+CREATE POLICY tenant_open_data_update ON tenant_open_data FOR UPDATE USING (tenant_id = app_tenant_id()) WITH CHECK (tenant_id = app_tenant_id());
+
 -- council_notice, poll, poll_option: the council's announcements and questions,
 -- read on its public pages, written by the council. Votes (poll_vote) are the
 -- residents' own, written after the API checked the person.
