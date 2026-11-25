@@ -4,7 +4,7 @@ import {
   ArrowRight, Star, Search, CalendarCheck, Users, DoorOpen, MessageSquareWarning,
   QrCode, Printer, Hash, Nfc, UserCheck, Building2, CalendarClock, PartyPopper, ChartColumn,
   Wrench, ScrollText, Sparkles, Bot, Smartphone, Code2, Languages, Accessibility, Server,
-  Scale, GitFork, BookOpen, Check, ShieldCheck, LockKeyhole, Database, HardDrive, Image as ImageIcon, CloudOff, ChevronDown,
+  Scale, GitFork, BookOpen, Check, ShieldCheck, LockKeyhole, Database, HardDrive, Image as ImageIcon, CloudOff, ChevronDown, PhoneCall, WifiOff,
 } from "@lucide/astro";
 import Base from "../layouts/Base.astro";
 import { DICT, href, type Lang } from "../i18n";
@@ -58,6 +58,11 @@ interface Props {
 }
 const { lang } = Astro.props;
 const t = DICT[lang];
+// a real call on the demo (Lalín), shortened
+const voiceLines = [
+  { you: true, text: "Hai algunha pista de pádel libre mañá pola tarde?" },
+  { you: false, text: "Si, mañá hai dúas no Lalín Arena: de 16:30 a 18:00 ou de 18:00 a 19:30. Que hora che vén ben?" },
+];
 
 const heroScreens = [
   { src: aHome, alt: t.hero.altScreens[0] },
@@ -320,6 +325,7 @@ const facts = [
             ))
           }
         </div>
+        <p data-reveal style="--d:500ms" class="mt-6 flex items-center gap-2 text-sm text-white/70"><WifiOff class="size-4 shrink-0 text-[#67bfe3]" /> {t.door.offline}</p>
       </div>
     </div>
   </section>
@@ -436,6 +442,37 @@ const facts = [
               ))}
             </div>
           </div>
+        </article>
+
+        <!-- booking by voice: lines from a real call on the demo, in Galician whatever the page's language -->
+        <article data-reveal class="relative overflow-hidden rounded-2xl border border-border bg-card p-6 md:col-span-4">
+          <div class="flex items-center gap-2 text-sm font-semibold text-brand-blue"><PhoneCall class="size-4" /> {t.council.voiceEyebrow}</div>
+          <h3 class="mt-2 text-2xl font-semibold tracking-tight">{t.council.voiceTitle}</h3>
+          <p class="mt-2 max-w-md text-sm text-muted-foreground">{t.council.voiceText}</p>
+          <ol class="mt-6 grid gap-2.5 text-sm" lang="gl">
+            {
+              voiceLines.map((l, i) => (
+                <li data-reveal style={`--d:${200 + i * 260}ms`} class:list={["flex", l.you && "justify-end"]}>
+                  <p class:list={["max-w-sm rounded-2xl px-4 py-2.5", l.you ? "rounded-br-sm bg-primary text-primary-foreground" : "rounded-bl-sm bg-muted"]}>
+                    <span class="font-semibold">{l.you ? t.council.voiceYou : t.council.voiceAgent}: </span>{l.text}
+                  </p>
+                </li>
+              ))
+            }
+          </ol>
+        </article>
+
+        <!-- open data -->
+        <article data-reveal style="--d:80ms" class="flex flex-col rounded-2xl border border-border bg-card p-6 md:col-span-2">
+          <div class="grid size-11 place-items-center rounded-xl bg-accent text-accent-foreground"><Database class="size-5" /></div>
+          <h3 class="mt-5 text-xl font-semibold tracking-tight">{t.council.openDataTitle}</h3>
+          <p class="mt-2 text-sm text-muted-foreground">{t.council.openDataText}</p>
+          <div class="mt-auto flex flex-wrap gap-1.5 pt-5">
+            {["DCAT-AP-ES", "CSV", "JSON", "CC BY 4.0"].map((c) => (
+              <span class="rounded-full border border-border px-2.5 py-0.5 text-xs font-medium text-muted-foreground">{c}</span>
+            ))}
+          </div>
+          <code class="mt-3 block truncate rounded-md bg-muted px-3 py-2 text-xs">datos.gob.es → data.europa.eu</code>
         </article>
       </div>
     </div>
