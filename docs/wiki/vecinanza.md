@@ -4,7 +4,7 @@ O que pode facer calquera persoa desde a app Android ou desde a web, unha interf
 
 [← Volver á wiki](README.md) · [Concello](concello.md) · [Superadministración](superadmin.md)
 
-**Índice:** [Primeiros pasos](#primeiros-pasos) · [Atopar onde xogar](#atopar-onde-xogar) · [Reserva en liña](#reserva-en-liña) · [Convidados sen conta](#convidados-sen-conta) · [As miñas reservas](#as-miñas-reservas) · [Entrada na instalación](#entrada-na-instalación) · [Reserva flash](#reserva-flash) · [Participación](#participación) · [O concello informa e pregunta](#o-concello-informa-e-pregunta) · [Predición meteorolóxica](#predición-meteorolóxica) · [Conta e privacidade](#conta-e-privacidade)
+**Índice:** [Primeiros pasos](#primeiros-pasos) · [Atopar onde xogar](#atopar-onde-xogar) · [Reserva en liña](#reserva-en-liña) · [Reserva falando](#reserva-falando) · [Convidados sen conta](#convidados-sen-conta) · [As miñas reservas](#as-miñas-reservas) · [Entrada na instalación](#entrada-na-instalación) · [Reserva flash](#reserva-flash) · [Participación](#participación) · [O concello informa e pregunta](#o-concello-informa-e-pregunta) · [Predición meteorolóxica](#predición-meteorolóxica) · [Conta e privacidade](#conta-e-privacidade)
 
 ---
 
@@ -75,6 +75,16 @@ Na web, os eventos aparecen na páxina da instalación, xunto aos seus turnos:
 | Instalación só para veciños | A solicitude | Enviada | Xa verificada: pode reservar |
 |:-:|:-:|:-:|:-:|
 | <img src="../screenshots/android/vecino/booking/10-residents-only.webp" width="200"> | <img src="../screenshots/android/vecino/booking/11-resident-request.webp" width="200"> | <img src="../screenshots/android/vecino/booking/13-resident-request-sent.webp" width="200"> | <img src="../screenshots/web/concello/residents/05-resident-app-can-book.webp" width="200"> |
+
+## Reserva falando
+
+Se a instalación ten acesa a liña de voz, tamén se pode buscar e reservar falando, en galego: o icono do teléfono na barra superior ou «Reserva por voz» baixo as quendas dunha instalación abren unha chamada co asistente. Busca instalacións e quendas libres, confirma a instalación, o día e a hora, le as normas e o prazo de cancelación antes de reservar e pide que se acepten. Coa sesión iniciada reserva coa conta da persoa; sen ela, só consulta, ou reserva co nome e o teléfono se a instalación o permite. A chamada leva **subtítulos en directo** das dúas partes, pregados ata que se abren, e pódese silenciar o micrófono ou colgar; funciona co teclado e cun lector de pantalla. Nada se grava: nin o audio nin o texto.
+
+O concello tamén pode conectala a un número de teléfono, para quen prefire chamar. Está só na web, non na app Android. Como se acende, que provedores usa e que datos saen do servidor: [liña de voz](../voice.md).
+
+| «Reserva por voz» baixo as quendas | Unha chamada, cos subtítulos |
+|:-:|:-:|
+| <img src="../screenshots/web/vecino/voice/01-facility-voice-link.webp" width="420"> | <img src="../screenshots/web/vecino/voice/02-call-captions.webp" width="420"> |
 
 ## Convidados sen conta
 

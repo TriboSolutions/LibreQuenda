@@ -74,7 +74,7 @@ Na lapela Entrada escóllense as formas de rexistrar a entrada de cada instalaci
 
 ## Reserva manual
 
-Para quen chama ou vén en persoa: o persoal reserva unha quenda libre para alguén con conta ou só cun nome e un teléfono (bórranse aos 30 días), imprime o QR de entrada, marca a entrada e cancela calquera reserva.
+Para quen chama ou vén en persoa: o persoal reserva unha quenda libre para alguén con conta ou só cun nome e un teléfono (bórranse aos 30 días), imprime o QR de entrada, marca a entrada e cancela calquera reserva. As reservas que fai a [liña de voz](vecinanza.md#reserva-falando) por quen chama sen conta aparecen aquí tamén, na canle «teléfono».
 
 ![Calendario da reserva manual](../screenshots/web/concello/staff-booking/01-calendar.webp)
 
