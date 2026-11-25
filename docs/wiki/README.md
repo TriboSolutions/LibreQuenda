@@ -22,3 +22,13 @@ Esta wiki ensina o que se pode facer, pantalla a pantalla, segundo quen usa a ap
 - A app Android é só para a veciñanza; o concello e a superadministración traballan na web. Cando unha acción do concello chega á veciñanza (un aviso, un correo), a captura da app vai xunto á do concello.
 - As capturas están en [`docs/screenshots`](../screenshots), en WebP, por rol e por función.
 - A lista completa de funcións e o seu estado está en [`features.md`](../../features.md).
+
+## Catálogos de software público
+
+O repositorio leva un [`publiccode.yml`](../../publiccode.yml), o ficheiro [estándar](https://yml.publiccode.tools) que len os catálogos de software para as administracións públicas (como o de Developers Italia). Describe LibreQuenda en galego, castelán e inglés: que fai, para quen é, as súas funcións e capturas, a licenza (AGPL-3.0), quen o mantén, os idiomas e as dependencias. Así un concello que busca software libre para reservar instalacións deportivas pode atopalo e compararlo sen ter que ler o código.
+
+Se cambian as funcións, as capturas, a licenza ou o contacto, hai que actualizalo tamén. Comprobar que segue sendo válido:
+
+```sh
+go run github.com/italia/publiccode-parser-go/v5/publiccode-parser@latest publiccode.yml
+```

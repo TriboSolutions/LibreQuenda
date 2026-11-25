@@ -117,6 +117,9 @@ private fun onAccent() = LocalAccent.current?.let { if (it.luminance() > 0.5f) C
 /** The ways, in the order the web shows them. */
 val WAY_ORDER = listOf("reader", "entry_code", "printed_qr", "nfc", "staff")
 
+/** The ways that need no coverage on the phone: the booking's QR shown to the reader, and the staff. */
+val OFFLINE_WAYS = setOf("reader", "staff")
+
 /** One chip per way, the chosen one filled in the app's blue. */
 @Composable
 fun WayChips(ways: List<String>, selected: String?, onSelect: (String) -> Unit) {

@@ -130,6 +130,7 @@
     <string name="bookings_signed_out">Inicia la sessió per veure les teves reserves.</string>
     <string name="bookings_book_now">Reserva ara</string>
     <string name="bookings_load_error">No s’han pogut carregar les teves reserves.</string>
+    <string name="bookings_offline">Sense connexió: les teves reserves desades el %1$s. El QR de la reserva serveix igual al lector.</string>
     <string name="cancel_title">Vols cancel·lar la reserva?</string>
     <string name="cancel_description">%1$s, %2$s a les %3$s. El torn quedarà lliure per a una altra persona.</string>
     <string name="cancel_keep">Mantén la reserva</string>

@@ -5214,6 +5214,138 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
         '500':
           $ref: '#/components/responses/InternalError'
+  /tenants/{slug}/open-data/{file}:
+    get:
+      operationId: getOpenData
+      tags:
+      - Public
+      summary: Os datos abertos do concello (DCAT-AP-ES)
+      description: |-
+        Só cando o concello os publica (PUT /tenants/{slug}/admin/open-data); se non, 404. Sen datos persoais. Cache-Control: public, max-age=3600.
+
+        - catalog: o catálogo DCAT-AP-ES, en RDF/XML (ou Turtle se Accept pide text/turtle). Esta é a URL que se dá de alta en datos.gob.es como fonte de federación.
+        - catalog.rdf, catalog.ttl: o catálogo nun formato concreto.
+        - facilities.csv, facilities.json: as instalacións activas (enderezo, coordenadas, aforo, accesibilidade, horario, normas de acceso, etiquetas).
+        - monthly-use.csv, monthly-use.json: o uso de cada instalación por mes nos últimos 24 meses pechados (reservas, eventos, cancelacións, horas reservadas).
+      security: []
+      parameters:
+      - $ref: '#/components/parameters/TenantSlug'
+      - name: file
+        in: path
+        required: true
+        schema:
+          type: string
+          enum:
+          - catalog
+          - catalog.rdf
+          - catalog.ttl
+          - facilities.csv
+          - facilities.json
+          - monthly-use.csv
+          - monthly-use.json
+      responses:
+        '200':
+          description: O ficheiro.
+          content:
+            application/rdf+xml:
+              schema:
+                type: string
+            text/turtle:
+              schema:
+                type: string
+            text/csv:
+              schema:
+                type: string
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /tenants/{slug}/admin/open-data:
+    get:
+      operationId: adminGetOpenData
+      tags:
+      - Council admin
+      summary: Os datos abertos do concello
+      description: |-
+        Se se publican e o código DIR3 co que o concello figura en datos.gob.es.
+
+        Administración do concello: a persoa usuaria con sesión iniciada ten que ser administradora deste concello ou superadministradora, coa sesión iniciada cun segundo factor (cando REQUIRE_ADMIN_MFA está activado).
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/TenantSlug'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenData'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    put:
+      operationId: adminSaveOpenData
+      tags:
+      - Council admin
+      summary: Publicar ou deixar de publicar os datos abertos do concello
+      description: |-
+        Auditado (open_data.changed).
+
+        Administración do concello: a persoa usuaria con sesión iniciada ten que ser administradora deste concello ou superadministradora, coa sesión iniciada cun segundo factor (cando REQUIRE_ADMIN_MFA está activado).
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/TenantSlug'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenDataInput'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenData'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
   /tenants/{slug}/admin/smtp:
     get:
       operationId: adminGetSmtp
@@ -10891,6 +11023,45 @@ components:
           format: int64
       required:
       - pending
+    OpenData:
+      type: object
+      description: Os datos abertos do concello.
+      required:
+      - enabled
+      - dir3_code
+      - issued_at
+      - updated_at
+      properties:
+        enabled:
+          type: boolean
+          description: Publica o catálogo en /tenants/{slug}/open-data/catalog.
+        dir3_code:
+          type: string
+          description: Baleiro mentres non se gardou.
+        issued_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: A primeira vez que se publicou.
+        updated_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: null mentres non se gardou.
+    OpenDataInput:
+      type: object
+      required:
+      - enabled
+      - dir3_code
+      properties:
+        enabled:
+          type: boolean
+        dir3_code:
+          type: string
+          description: O código DIR3 do concello, p. ex. L01150301. Pásase a maiúsculas.
+          pattern: ^[A-Za-z][A-Za-z0-9]{8}$
     Smtp:
       type: object
       properties:

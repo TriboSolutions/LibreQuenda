@@ -254,7 +254,10 @@
     "poll_closed_keep": "Unha enquisa pechada non se pode borrar: os seus resultados quedan no historial.",
     "phone_residents_only": "Esta instalación é só para veciños verificados polo concello: para reservala por teléfono hai que entrar coa conta.",
     "phone_age_restricted": "Esta instalación ten unha idade mínima de {{0}} anos, que por teléfono non se pode comprobar: para reservala hai que entrar coa conta.",
-    "phone_holder_required": "Para reservar sen conta fai falla o nome de quen reserva e o seu número de teléfono."
+    "phone_holder_required": "Para reservar sen conta fai falla o nome de quen reserva e o seu número de teléfono.",
+    "invalid_dir3_code": "Escribe o código DIR3 do concello: nove letras e números, p. ex. L01150301.",
+    "open_data_load_failed": "Non se puideron cargar os datos abertos do concello.",
+    "open_data_save_failed": "Non se puideron gardar os datos abertos do concello."
   },
   "email": {
     "greeting": "Ola {{0}},",
@@ -393,5 +396,15 @@
       "manage": "Abrir {{0}}",
       "footer": "Recibes este correo porque alguén chamou desde o número de teléfono do teu perfil e pediu entrar coa túa conta. Se non fuches ti, non digas o código a ninguén e ignora este correo."
     }
+  },
+  "open_data": {
+    "catalog_title": "Datos abertos de {{0}}",
+    "catalog_description": "Catálogo de datos abertos de {{0}} sobre as súas instalacións municipais e o seu uso, publicado con {{1}}.",
+    "facilities_title": "Instalacións municipais de {{0}}",
+    "facilities_description": "Instalacións de {{0}} que se poden reservar: enderezo, coordenadas, aforo, accesibilidade, horario semanal (día ISO, 1 = luns), normas de acceso e etiquetas.",
+    "use_title": "Uso mensual das instalacións municipais de {{0}}",
+    "use_description": "Reservas, actividades do concello, cancelacións e horas reservadas de cada instalación de {{0}} por mes, nos meses xa pechados. Só recontos: non contén datos persoais.",
+    "facilities_keywords": "instalacións municipais, instalacións deportivas, deporte",
+    "use_keywords": "reservas, uso de instalacións, instalacións municipais, deporte"
   }
 }

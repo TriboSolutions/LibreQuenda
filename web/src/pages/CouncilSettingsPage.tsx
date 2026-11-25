@@ -6,6 +6,7 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router'
 import { BookingRulesSettings } from '@/components/admin/BookingRulesSettings'
 import { CouncilDetailsSettings } from '@/components/admin/CouncilDetailsSettings'
 import { CouncilExport } from '@/components/admin/CouncilExport'
+import { OpenDataSettings } from '@/components/admin/OpenDataSettings'
 import { SmtpSettings } from '@/components/admin/SmtpSettings'
 import { WidgetSettings } from '@/components/admin/WidgetSettings'
 import { CouncilHeading } from '@/components/CouncilHeading'
@@ -26,7 +27,7 @@ import { api } from '@/lib/api'
 
 /**
  * /:slug/admin/axustes: everything about one council, laid out like the profile:
- * its details, administrators, booking window, email relay, widget, data export,
+ * its details, administrators, booking window, email relay, widget, open data, data export,
  * and (superadministrators) deleting it.
  */
 export function CouncilSettingsPage() {
@@ -190,6 +191,7 @@ export function CouncilSettingsPage() {
         <BookingRulesSettings slug={slug} token={token} />
         <SmtpSettings slug={slug} token={token} />
         <WidgetSettings slug={slug} token={token} />
+        <OpenDataSettings slug={slug} token={token} />
         <CouncilExport slug={slug} token={token} />
 
         {superadmin && (

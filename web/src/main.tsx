@@ -35,6 +35,13 @@ window.addEventListener('load', () => {
   }, 10_000)
 })
 
+// the app opens without coverage too: My bookings and the booking's QR at the door (sw.js)
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => undefined) // without it, the app only works online
+  })
+}
+
 loadConfig()
   .then((config) => {
     root.render(

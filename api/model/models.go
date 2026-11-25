@@ -791,6 +791,14 @@ type TenantMembership struct {
 	CreatedAt time.Time  `json:"created_at"`
 }
 
+type TenantOpenDatum struct {
+	TenantID  uuid.UUID    `json:"tenant_id"`
+	Enabled   bool         `json:"enabled"`
+	Dir3Code  string       `json:"dir3_code"`
+	IssuedAt  sql.NullTime `json:"issued_at"`
+	UpdatedAt time.Time    `json:"updated_at"`
+}
+
 type TenantResident struct {
 	TenantID   uuid.UUID     `json:"tenant_id"`
 	UserID     uuid.UUID     `json:"user_id"`

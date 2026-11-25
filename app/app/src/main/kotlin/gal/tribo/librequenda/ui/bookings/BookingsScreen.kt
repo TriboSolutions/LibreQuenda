@@ -112,7 +112,16 @@ class BookingsState internal constructor() {
     var attempt by mutableIntStateOf(0)
     var notice by mutableStateOf<String?>(null) // «Booking cancelled…», on the list
     var loadingMore by mutableStateOf(false)
+    var offlineSince by mutableStateOf<Instant?>(null) // the bookings kept on the phone, saved then: the API did not answer
     fun reload() { attempt++ }
+
+    /** The upcoming ones kept on the phone, when nothing fresher is shown. */
+    internal fun showSaved(context: android.content.Context, subject: String?) {
+        if (data != null && offlineSince == null) return
+        val saved = gal.tribo.librequenda.data.BookingsCache.load(context, subject) ?: return
+        data = MyBookings(saved.upcoming, emptyList())
+        offlineSince = saved.savedAt
+    }
 
     /** The history's next page, added to what is shown. */
     suspend fun loadMoreHistory(actions: ProfileActions) {
@@ -132,13 +141,25 @@ fun rememberBookingsState(session: SessionState, actions: ProfileActions): Booki
     val state = remember { BookingsState() }
     val context = androidx.compose.ui.platform.LocalContext.current
     LaunchedEffect(session.signedIn, session.me?.id, state.attempt) {
-        if (!session.signedIn || session.me == null) { state.data = null; return@LaunchedEffect } // GET /me first creates their row
+        if (!session.signedIn) { state.data = null; state.offlineSince = null; return@LaunchedEffect }
+        val me = session.me
+        if (me == null) {
+            // GET /me first creates their row; without coverage it never answers: what the phone kept
+            if (session.meFailed) state.showSaved(context, null) else if (state.offlineSince == null) state.data = null
+            return@LaunchedEffect
+        }
         state.loading = true; state.failed = false
         try {
-            state.data = actions.authed { fetchMyBookings(it) }
+            val fresh = actions.authed { fetchMyBookings(it) }
+            state.data = fresh
+            state.offlineSince = null
+            gal.tribo.librequenda.data.BookingsCache.save(context, me.id, fresh)
             // every upcoming booking gets its reminder alarm (and the gone ones lose it)
-            state.data?.let { gal.tribo.librequenda.notify.Reminders.schedule(context, it.upcoming) }
-        } catch (c: CancellationException) { throw c } catch (_: Exception) { state.failed = true }
+            gal.tribo.librequenda.notify.Reminders.schedule(context, fresh.upcoming)
+        } catch (c: CancellationException) { throw c } catch (_: Exception) {
+            state.failed = true
+            state.showSaved(context, me.id)
+        }
         state.loading = false
     }
     return state
@@ -161,7 +182,9 @@ fun BookingsScreen(
     onOpen: (Booking) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    PullToRefreshBox(isRefreshing = state.loading && state.data != null, onRefresh = state::reload, modifier = modifier.fillMaxSize()) {
+    // without /me (offline at start) the refresh asks for it again first; the bookings follow it
+    val refresh = { if (session.me == null) actions.reloadMe() else state.reload() }
+    PullToRefreshBox(isRefreshing = state.loading && state.data != null, onRefresh = refresh, modifier = modifier.fillMaxSize()) {
         LazyColumn(
             Modifier.fillMaxSize(),
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 24.dp, bottom = 40.dp),
@@ -196,6 +219,7 @@ fun BookingsScreen(
                 d == null -> item { LinearProgressIndicator(Modifier.fillMaxWidth()) }
                 else -> {
                     if (state.notice != null) item { Notice(state.notice, error = false); Spacer(Modifier.height(12.dp)) }
+                    state.offlineSince?.let { since -> item { OfflineNotice(since, refresh); Spacer(Modifier.height(12.dp)) } }
                     if (d.upcoming.isEmpty()) item {
                         Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                             Text(stringResource(R.string.bookings_empty_upcoming), color = Lq.colors.mutedForeground)
@@ -298,6 +322,7 @@ fun BookingPage(bookingId: String?, state: BookingsState, actions: ProfileAction
         CheckinPage(
             booking = if (checkingIn) booking else null,
             actions = actions,
+            offline = state.offlineSince != null,
             onBack = { checkingIn = false },
             // in: back to the booking, now green
             onCheckedIn = { state.reload(); checkingIn = false },
@@ -385,6 +410,19 @@ fun BookingHistory(state: BookingsState, actions: ProfileActions, onRate: (Booki
                 if (d.historyHasMore) item { LinearProgressIndicator(Modifier.fillMaxWidth().padding(vertical = 16.dp)) }
             }
         }
+    }
+}
+
+/** No coverage: these are the bookings kept on the phone, from when; their QR still works at the reader. */
+@Composable
+private fun OfflineNotice(since: Instant, retry: () -> Unit) {
+    val formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT).withLocale(Locale.getDefault())
+    Row(
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(6.dp)).background(Lq.colors.pillNeutralBg).padding(start = 16.dp, end = 4.dp, top = 6.dp, bottom = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(stringResource(R.string.bookings_offline, since.atZone(ZONE).format(formatter)), color = Lq.colors.pillNeutralInk, modifier = Modifier.weight(1f))
+        GhostButton(stringResource(R.string.retry), retry)
     }
 }
 

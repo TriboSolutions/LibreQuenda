@@ -1,5 +1,5 @@
 import { CalendarClock, CalendarPlus, ChevronDown, DoorOpen, ExternalLink, MapPin, Star, UserPlus, Users, Wrench } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import { Link, useSearchParams } from 'react-router'
@@ -30,6 +30,7 @@ import { useMe } from '@/hooks/useMe'
 import { useNow } from '@/hooks/useNow'
 import { api, type Booking } from '@/lib/api'
 import { directionsUrl } from '@/lib/maps'
+import { isNetworkError, loadSavedBookings, OFFLINE_WAYS, saveBookings } from '@/lib/offline'
 import { formatBookingDay, formatDateTime, formatDuration, formatTime, localDate } from '@/lib/time'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { SiteFooter } from '@/components/SiteFooter'
@@ -57,6 +58,15 @@ export function MyBookingsPage() {
   // the history a page at a time (the upcoming ones always come whole)
   const [historyPage, setHistoryPage] = useState(1)
   const bookings = useAsync(token && me.me ? () => api.myBookings(token, historyPage) : null, `bookings:${me.me?.id}:${historyPage}`, { debounceMs: FILTER_DEBOUNCE_MS })
+
+  // kept in the browser for the door without coverage, and shown when the API can't be reached
+  const subject = auth.user?.profile.sub
+  useEffect(() => {
+    if (subject && bookings.data) saveBookings(subject, bookings.data.upcoming)
+  }, [subject, bookings.data])
+  // offline with an expired session, the token can't be renewed: no request is even made
+  const unreachable = isNetworkError(me.error) || isNetworkError(bookings.error) || (!auth.isLoading && !auth.isAuthenticated && !navigator.onLine)
+  const saved = unreachable ? loadSavedBookings(subject) : null
 
   const [now] = useState(() => new Date().toISOString())
   const today = localDate(now, TIME_ZONE)
@@ -127,6 +137,36 @@ export function MyBookingsPage() {
         {Array.from({ length: 3 }, (_, i) => (
           <Skeleton key={i} className="h-20 w-full" />
         ))}
+      </div>
+    )
+  } else if (saved) {
+    body = (
+      <div className="mt-6 grid max-w-[760px] gap-4">
+        <div role="status" className="flex items-center justify-between gap-4 rounded-md bg-pill-neutral-bg px-4 py-3 text-pill-neutral-ink">
+          <p className="num">{t('invites:myBookings.offline', { when: formatDateTime(saved.saved_at, TIME_ZONE) })}</p>
+          <Button variant="ghost" size="sm" onClick={() => window.location.reload()}>
+            {t('common:retry')}
+          </Button>
+        </div>
+        <section aria-labelledby="upcoming-title">
+          <h2 id="upcoming-title" className="text-lg font-semibold">
+            {t('invites:myBookings.upcoming')} <span className="num font-normal text-muted-foreground">· {saved.upcoming.length}</span>
+          </h2>
+          {saved.upcoming.length === 0 ? (
+            <p className="mt-4 text-muted-foreground">{t('invites:myBookings.emptyUpcoming')}</p>
+          ) : (
+            <ul className="mt-4 grid gap-4">
+              {saved.upcoming.map((booking) => (
+                <BookingRow key={booking.id} booking={booking} today={today} now={ticking}>
+                  {/* only what needs no coverage: the QR for the reader, and the staff to ask */}
+                  {booking.role === 'owner' && booking.checkin_ways?.some((way) => OFFLINE_WAYS.includes(way)) ? (
+                    <CheckinButton booking={booking} now={ticking} onOpen={() => setToCheckIn(booking)} />
+                  ) : null}
+                </BookingRow>
+              ))}
+            </ul>
+          )}
+        </section>
       </div>
     )
   } else if (!auth.isAuthenticated) {
@@ -284,6 +324,7 @@ export function MyBookingsPage() {
         key={toCheckIn?.id ?? 'none'}
         booking={toCheckIn}
         token={token}
+        offline={!!saved}
         timeZone={TIME_ZONE}
         today={today}
         onClose={() => setToCheckIn(null)}

@@ -128,6 +128,17 @@ CREATE TABLE tenant_smtp (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- The council's open data (datos abiertos): a public DCAT-AP-ES catalog of its
+-- facilities and their monthly use, for datos.gob.es to harvest. Off until the
+-- council turns it on; the publisher is the council's DIR3 code.
+CREATE TABLE tenant_open_data (
+    tenant_id  UUID        PRIMARY KEY REFERENCES tenant(id) ON DELETE CASCADE,
+    enabled    BOOLEAN     NOT NULL DEFAULT FALSE,
+    dir3_code  VARCHAR(9)  NOT NULL CHECK (dir3_code ~ '^[A-Z][A-Z0-9]{8}$'), -- e.g. L01150301 (Concello da Coruña)
+    issued_at  TIMESTAMPTZ NULL,                    -- first turned on: the catalog's dct:issued
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 
 -- ============================================================
 --  USERS

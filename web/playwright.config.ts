@@ -15,6 +15,8 @@ export default defineConfig({
     locale: 'gl-ES',
     timezoneId: 'Europe/Madrid',
     trace: 'retain-on-failure',
+    // the mocked API (e2e/mocks.ts) must see every request, not the service worker's cached copies
+    serviceWorkers: 'block',
   },
   projects: [
     { name: 'desktop', use: { ...devices['Desktop Chrome'] }, grepInvert: /@reflow/ },

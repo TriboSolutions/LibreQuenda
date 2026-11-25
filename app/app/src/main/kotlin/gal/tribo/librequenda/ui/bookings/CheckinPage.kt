@@ -46,6 +46,7 @@ import gal.tribo.librequenda.ui.entrance.NfcWay
 import gal.tribo.librequenda.ui.entrance.QrImage
 import gal.tribo.librequenda.ui.entrance.StaffList
 import gal.tribo.librequenda.ui.entrance.WAY_ORDER
+import gal.tribo.librequenda.ui.entrance.OFFLINE_WAYS
 import gal.tribo.librequenda.ui.entrance.WayChips
 import gal.tribo.librequenda.ui.entrance.rememberDoorAttempt
 import gal.tribo.librequenda.ui.profile.ProfileActions
@@ -61,13 +62,14 @@ private val ZONE = ZoneId.of("Europe/Madrid")
  * what the entrance answered. Done, it goes back to the booking, now green.
  */
 @Composable
-fun CheckinPage(booking: Booking?, actions: ProfileActions, onBack: () -> Unit, onCheckedIn: () -> Unit) {
+fun CheckinPage(booking: Booking?, actions: ProfileActions, onBack: () -> Unit, onCheckedIn: () -> Unit, offline: Boolean = false) {
     var last by remember { mutableStateOf<Booking?>(null) }
     if (booking != null) last = booking
     BackHandler(enabled = booking != null, onBack = onBack)
     AnimatedVisibility(visible = booking != null, enter = slideInHorizontally(tween(260)) { it }, exit = slideOutHorizontally(tween(220)) { it }) {
         val b = last ?: return@AnimatedVisibility
-        val ways = WAY_ORDER.filter { it in b.checkinWays }
+        // without coverage only what needs none: the QR for the reader and the staff to ask
+        val ways = WAY_ORDER.filter { it in b.checkinWays && (!offline || it in OFFLINE_WAYS) }
         var way by androidx.compose.runtime.saveable.rememberSaveable(b.id) { mutableStateOf(ways.firstOrNull()) } // kept across the camera
         var success by remember(b.id) { mutableStateOf<String?>(null) } // in: the celebration, then back to the booking
         Column(

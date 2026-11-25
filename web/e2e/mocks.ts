@@ -7,6 +7,7 @@ import type {
   Booking,
   Branding,
   CouncilDetail,
+  CouncilOpenData,
   CouncilSmtp,
   CouncilSummary,
   Day,
@@ -528,6 +529,9 @@ const smtp: CouncilSmtp = {
   env_relay: true,
 }
 
+// published, so the settings show the catalogue's address, the steps and the files
+const openData: CouncilOpenData = { enabled: true, dir3_code: 'L01270287', issued_at: at(-40), updated_at: at(-40) }
+
 // the Reservas tab: a turn under way whose entry staff can mark, a free turn, one walk-in
 // booked by staff, and one online booking that came in with the reader
 export const staffBooking: StaffBooking = {
@@ -793,6 +797,7 @@ const routes: [RegExp, () => unknown][] = [
   [/^\/tenants\/[^/]+\/admin\/facilities\/[^/]+$/, () => adminFacility],
   [/^\/tenants\/[^/]+\/admin\/indicators/, indicators],
   [/^\/tenants\/[^/]+\/admin\/smtp$/, () => smtp],
+  [/^\/tenants\/[^/]+\/admin\/open-data$/, () => openData],
   [/^\/tenants\/[^/]+\/admin\/residents/, () => residents],
   [/^\/me$/, () => me],
   [/^\/me\/account$/, () => account],

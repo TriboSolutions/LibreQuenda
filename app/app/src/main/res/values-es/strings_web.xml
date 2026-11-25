@@ -130,6 +130,7 @@
     <string name="bookings_signed_out">Inicia sesión para ver tus reservas.</string>
     <string name="bookings_book_now">Reservar ahora</string>
     <string name="bookings_load_error">No se pudieron cargar tus reservas.</string>
+    <string name="bookings_offline">Sin conexión: tus reservas guardadas el %1$s. El QR de la reserva vale igual en el lector.</string>
     <string name="cancel_title">¿Cancelar la reserva?</string>
     <string name="cancel_description">%1$s, %2$s a las %3$s. El turno quedará libre para otra persona.</string>
     <string name="cancel_keep">Mantener la reserva</string>

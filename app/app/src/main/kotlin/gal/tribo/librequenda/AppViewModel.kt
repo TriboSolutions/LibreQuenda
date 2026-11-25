@@ -52,6 +52,7 @@ data class SessionState(
     val welcomeSeen: Boolean = false, // "Explore without an account" was chosen once
     val tourSeen: Boolean = false, // the first-launch tour was finished or skipped
     val accountDeleted: Boolean = false, // just now, from the profile
+    val meFailed: Boolean = false, // GET /me did not answer (offline): the bookings kept on the phone show instead
 )
 
 class AppViewModel(application: Application) : AndroidViewModel(application), ProfileActions {
@@ -229,13 +230,14 @@ class AppViewModel(application: Application) : AndroidViewModel(application), Pr
                     return@launch
                 }
                 val me = fetchMe(token)
-                sessionState.update { it.copy(me = me) }
+                sessionState.update { it.copy(me = me, meFailed = false) }
                 refreshNotifications()
                 refreshRecommendations()
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Exception) {
                 // offline: keep the session, the name shows up next time
+                sessionState.update { it.copy(meFailed = true) }
             }
         }
     }
@@ -284,8 +286,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application), Pr
         homeState.update { it.copy(recommendations = emptyList(), polls = emptyList()) }
     }
 
-    /** No reminders or notices of this account left on the phone. */
+    /** No reminders, notices or saved bookings of this account left on the phone. */
     private fun forgetNotifications() {
+        gal.tribo.librequenda.data.BookingsCache.clear(getApplication())
         Reminders.clear(getApplication())
         NoticesWorker.reset(getApplication())
     }

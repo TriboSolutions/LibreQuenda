@@ -130,6 +130,7 @@
     <string name="bookings_signed_out">Sign in to see your bookings.</string>
     <string name="bookings_book_now">Book now</string>
     <string name="bookings_load_error">Could not load your bookings.</string>
+    <string name="bookings_offline">Offline: your bookings as saved on %1$s. The booking\'s QR still works at the reader.</string>
     <string name="cancel_title">Cancel the booking?</string>
     <string name="cancel_description">%1$s, %2$s at %3$s. The slot will be free for someone else.</string>
     <string name="cancel_keep">Keep the booking</string>
