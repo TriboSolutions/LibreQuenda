@@ -1,0 +1,189 @@
+# publiccode.yml: metadata for public-sector software catalogues.
+# Standard: https://yml.publiccode.tools
+publiccodeYmlVersion: "0"
+
+name: LibreQuenda
+url: "https://github.com/TriboSolutions/LibreQuenda"
+landingURL: "https://librequenda.app"
+logo: docs/brand/svg/mark.svg
+
+platforms:
+  - web
+  - android
+  - linux
+
+categories:
+  - online-booking
+  - facility-management
+  - resource-management
+  - digital-citizenship
+
+developmentStatus: beta
+softwareType: standalone/web
+
+intendedAudience:
+  countries:
+    - ES
+  scope:
+    - sport
+    - local-authorities
+
+description:
+  gl:
+    localisedName: LibreQuenda
+    shortDescription: >-
+      Plataforma libre para xestionar e reservar instalacións deportivas
+      municipais, feita para os concellos galegos.
+    longDescription: >
+      LibreQuenda é unha plataforma de software libre para xestionar e reservar
+      instalacións deportivas municipais. A veciñanza consulta as
+      instalacións, reserva, cambia ou cancela as súas reservas, convida outras
+      persoas ou abre unha reserva a quen estea preto, rexistra a entrada na
+      porta (QR, QR impreso, código de entrada ou persoal), avisa de problemas
+      e recibe avisos e correos.
+
+
+      Os concellos xestionan as súas instalacións, os horarios, os peches, as
+      normas de uso e as imaxes, responden ás incidencias da veciñanza e seguen
+      indicadores en directo que poden exportar. A superadministración xestiona
+      os concellos e as súas persoas administradoras, e un rexistro de
+      actividade garda cada cambio administrativo.
+
+
+      Unha mesma instalación pode servir a un concello ou a moitos, na web e
+      nunha app Android que cada instalación pode compilar co seu propio nome e
+      logotipo. Instálase nun servidor Linux con Docker cun único script.
+    features:
+      - Reserva de quendas en instalacións deportivas municipais
+      - Convites e reservas abertas a outras persoas
+      - Rexistro da entrada na porta con QR ou código
+      - Xestión de instalacións, horarios, peches e normas por concello
+      - Incidencias da veciñanza e avisos
+      - Indicadores en directo exportables
+      - Multiconcello nunha mesma instalación
+      - App Android con marca propia de cada instalación
+      - Rexistro de actividade administrativa
+    screenshots:
+      - docs/screenshots/web-home.png
+      - docs/screenshots/web-facility.png
+      - docs/screenshots/web-bookings.png
+      - docs/screenshots/web-admin.png
+    documentation: "https://github.com/TriboSolutions/LibreQuenda/blob/main/docs/self-hosting.md"
+    apiDocumentation: "https://github.com/TriboSolutions/LibreQuenda/blob/main/docs/openapi/openapi.yaml"
+  es:
+    localisedName: LibreQuenda
+    shortDescription: >-
+      Plataforma libre para gestionar y reservar instalaciones deportivas
+      municipales, hecha para los ayuntamientos gallegos.
+    longDescription: >
+      LibreQuenda es una plataforma de software libre para gestionar y reservar
+      instalaciones deportivas municipales. La ciudadanía consulta las
+      instalaciones, reserva, cambia o cancela sus reservas, invita a otras
+      personas o abre una reserva a quien esté cerca, registra la entrada en la
+      puerta (QR, QR impreso, código de entrada o personal), avisa de problemas
+      y recibe avisos y correos.
+
+
+      Los ayuntamientos gestionan sus instalaciones, los horarios, los cierres,
+      las normas de uso y las imágenes, responden a las incidencias de la
+      ciudadanía y siguen indicadores en directo que pueden exportar. La
+      superadministración gestiona los ayuntamientos y sus personas
+      administradoras, y un registro de actividad guarda cada cambio
+      administrativo.
+
+
+      Una misma instalación puede servir a un ayuntamiento o a muchos, en la
+      web y en una app Android que cada instalación puede compilar con su
+      propio nombre y logotipo. Se instala en un servidor Linux con Docker con
+      un único script.
+    features:
+      - Reserva de turnos en instalaciones deportivas municipales
+      - Invitaciones y reservas abiertas a otras personas
+      - Registro de la entrada en la puerta con QR o código
+      - Gestión de instalaciones, horarios, cierres y normas por ayuntamiento
+      - Incidencias de la ciudadanía y avisos
+      - Indicadores en directo exportables
+      - Varios ayuntamientos en una misma instalación
+      - App Android con la marca propia de cada instalación
+      - Registro de actividad administrativa
+    screenshots:
+      - docs/screenshots/web-home.png
+      - docs/screenshots/web-facility.png
+      - docs/screenshots/web-bookings.png
+      - docs/screenshots/web-admin.png
+    documentation: "https://github.com/TriboSolutions/LibreQuenda/blob/main/docs/self-hosting.md"
+    apiDocumentation: "https://github.com/TriboSolutions/LibreQuenda/blob/main/docs/openapi/openapi.yaml"
+  en:
+    localisedName: LibreQuenda
+    shortDescription: >-
+      Free-software platform to manage and book municipal sports facilities,
+      built for Galician councils.
+    longDescription: >
+      LibreQuenda is a free-software platform to manage and book municipal
+      sports facilities. Residents browse facilities, book, change or cancel
+      their bookings, invite other people or open a booking to anyone nearby,
+      check in at the door (QR code, printed QR, entry code or staff), report
+      problems and receive notices and emails.
+
+
+      Councils manage their facilities, opening hours, closures, rules of use
+      and images, answer residents' reports and follow live indicators they can
+      export. Superadmins manage the councils and their administrators, and an
+      activity log records every administrative change.
+
+
+      A single LibreQuenda installation can serve one council or many, on the
+      web and in an Android app that each installation can build with its own
+      name and logo. It installs on a Linux server with Docker using a single
+      script.
+    features:
+      - Slot booking at municipal sports facilities
+      - Invitations and bookings open to other people
+      - Door check-in with QR code or entry code
+      - Per-council management of facilities, hours, closures and rules
+      - Resident reports and notices
+      - Exportable live indicators
+      - Many councils on one installation
+      - Android app branded per installation
+      - Administrative activity log
+    screenshots:
+      - docs/screenshots/web-home.png
+      - docs/screenshots/web-facility.png
+      - docs/screenshots/web-bookings.png
+      - docs/screenshots/web-admin.png
+    documentation: "https://github.com/TriboSolutions/LibreQuenda/blob/main/docs/self-hosting.md"
+    apiDocumentation: "https://github.com/TriboSolutions/LibreQuenda/blob/main/docs/openapi/openapi.yaml"
+
+organisation:
+  name: Tribo Solutions
+  uri: "https://tribosolutions.es"
+
+legal:
+  license: AGPL-3.0-or-later
+  mainCopyrightOwner: Tribo Solutions
+
+maintenance:
+  type: internal
+  contacts:
+    - name: Tribo Solutions
+      email: contact@tribosolutions.es
+
+localisation:
+  localisationReady: true
+  availableLanguages:
+    - gl
+    - ES
+    - en
+    - ca
+
+dependsOn:
+  open:
+    - name: Docker
+      optional: false
+    - name: PostgreSQL
+      versionMin: "18"
+      optional: false
+    - name: Zitadel
+      optional: false
+    - name: Garage
+      optional: false
