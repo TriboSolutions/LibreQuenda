@@ -10,7 +10,8 @@
     "emptyHistory": "Aínda non tes reservas pasadas.",
     "signIn": "Inicia sesión para ver as túas reservas.",
     "bookNow": "Reservar agora",
-    "historyPages": "Páxinas do historial"
+    "historyPages": "Páxinas do historial",
+    "offline": "Sen conexión: as túas reservas gardadas o {{when}}. O QR da reserva vale igual no lector."
   },
   "role": {
     "owner": "Túa",

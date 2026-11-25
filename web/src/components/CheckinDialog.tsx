@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { api, type Booking, type CheckinMethod, type EntranceResult } from '@/lib/api'
 import { GRANTED, locate } from '@/lib/entrance'
+import { OFFLINE_WAYS } from '@/lib/offline'
 import { formatBookingDay, formatTime } from '@/lib/time'
 
 type Props = {
@@ -22,19 +23,20 @@ type Props = {
   today: string
   onClose: () => void
   onCheckedIn: () => void
+  offline?: boolean // the bookings kept in the browser: only the ways that need no coverage
 }
 
 // the same order as the flash booking's tabs
 const ORDER: CheckinMethod[] = ['reader', 'entry_code', 'printed_qr', 'nfc', 'staff']
 
 /** Every way to check in the booking's facility takes, one tab each, like the flash booking. */
-export function CheckinDialog({ booking, token, timeZone, today, onClose, onCheckedIn }: Props) {
+export function CheckinDialog({ booking, token, timeZone, today, onClose, onCheckedIn, offline = false }: Props) {
   const { t } = useTranslation(['bookings', 'entrance', 'reader'])
   const [code, setCode] = useState('')
   const [busy, setBusy] = useState(false)
   const [result, setResult] = useState<EntranceResult | null>(null)
   const [problem, setProblem] = useState<string | null>(null)
-  const ways = ORDER.filter((way) => booking?.checkin_ways?.includes(way))
+  const ways = ORDER.filter((way) => booking?.checkin_ways?.includes(way) && (!offline || OFFLINE_WAYS.includes(way)))
   const [way, setWay] = useState<CheckinMethod | undefined>(ways[0])
 
   if (!booking) return <Dialog open={false} />

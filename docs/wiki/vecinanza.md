@@ -124,6 +124,8 @@ O **lector** é unha páxina web (`/lector`) que funciona en calquera móbil ou 
 
 <p align="center"><img src="../screenshots/android/vecino/entrance/10-reader-device.webp" width="230" alt="Lector QR nunha tableta"></p>
 
+**Sen cobertura na porta.** A app e a web gardan no móbil as próximas reservas e o seu QR cada vez que se abren As miñas reservas. Se na porta non hai conexión, a lista amósase igual, cun aviso da hora en que se gardou, e «Rexistrar a entrada» ofrece só o que non precisa rede: o QR da reserva para o lector e o persoal ao que avisar. O código, o QR impreso e a etiqueta NFC volven aparecer ao recuperar a conexión. Na web, un service worker garda a propia aplicación, así que a páxina abre aínda sen rede. Ao pechar a sesión ou borrar a conta, as reservas gardadas bórranse do móbil.
+
 **Na web.**
 
 | Rexistrar a entrada desde a reserva | Páxina da porta (QR impreso, código, NFC) |

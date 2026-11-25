@@ -1,3 +1,4 @@
+import { forgetSavedBookings } from '@/lib/offline'
 import { Download } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -115,6 +116,7 @@ function DeleteAccountDialog({ open, email, onClose }: { open: boolean; email: s
       return
     }
     // the identity no longer exists, so there is no session to end at the sign-in service
+    forgetSavedBookings()
     await auth.removeUser()
     navigate('/perfil', { replace: true, state: { accountDeleted: true } })
   }

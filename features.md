@@ -57,6 +57,7 @@ Estado: **feito** · **en curso** (traballo aberto) · **idea** (sen comezar).
 | Función | Estado |
 |---|---|
 | Lector QR na porta (`/lector`, calquera móbil ou tableta con cámara, emparellado cunha clave de dispositivo): le o QR da reserva ou o QR persoal de reserva flash | feito |
+| Entrada sen cobertura: As miñas reservas e o QR da reserva gardados no móbil (service worker na web e caché na app Android), cun aviso da hora en que se gardaron; esquécense ao pechar a sesión | feito |
 | Apagar os lectores dunha instalación sen retiralos (avariados, desconectados) | feito |
 | QR impreso na porta, lido coa cámara do móbil desde a app; a localización do móbil ten que estar dentro da distancia da instalación (compróbase antes de abrir a cámara e nunca se garda) | feito |
 | Código de entrada fixo por instalación, imprimible (tamén en braille, a escala para papel microcapsulado ou unha impresora braille), escrito na app comprobando a localización | feito |
@@ -113,7 +114,6 @@ Agrupadas segundo quen máis gaña; ningunha está comezada.
 - **Lista de espera:** poñerse na cola dunha quenda completa e recibir un aviso (e uns minutos para collela) cando alguén cancela.
 - **Atopar xogadores:** indicar que buscas xente para un deporte e un nivel, e ver quen máis busca, a partir das reservas públicas.
 - **Notificacións push** (web push, e push real na app Android en vez da comprobación en segundo plano) e **SMS** para quen non ten correo, a través do provedor do concello.
-- **Aplicación web instalable que funcione sen conexión:** o manifesto xa existe; un service worker deixaría dispoñibles As miñas reservas e o QR de entrada sen cobertura na porta.
 
 **Concellos**
 

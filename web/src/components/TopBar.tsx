@@ -1,3 +1,4 @@
+import { forgetSavedBookings } from '@/lib/offline'
 import { useState } from 'react'
 import { Building2, CalendarDays, LogOut, QrCode, ShieldCheck, UserRound, Vote } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -121,7 +122,7 @@ export function TopBar() {
                     {t('admin:menuLink')}
                   </DropdownMenuItem>
                 )}
-                <DropdownMenuItem onSelect={() => void auth.signoutRedirect()}>
+                <DropdownMenuItem onSelect={() => { forgetSavedBookings(); void auth.signoutRedirect() }}>
                   <LogOut />
                   {t('common:signOut')}
                 </DropdownMenuItem>

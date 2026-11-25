@@ -56,7 +56,7 @@ KEYS = {
  'bookings_title': (I,'myBookings.title'), 'bookings_subtitle': (I,'myBookings.subtitle'),
  'bookings_history': (I,'myBookings.history'), 'bookings_empty_upcoming': (I,'myBookings.emptyUpcoming'),
  'bookings_empty_history': (I,'myBookings.emptyHistory'), 'bookings_signed_out': (I,'myBookings.signIn'), 'bookings_book_now': (I,'myBookings.bookNow'),
- 'bookings_load_error': (B,'loadError'),
+ 'bookings_load_error': (B,'loadError'), 'bookings_offline': (I,'myBookings.offline'),
  'cancel_title': (B,'cancelDialog.title'), 'cancel_description': (B,'cancelDialog.description'), 'cancel_keep': (B,'cancelDialog.keep'),
  'cancel_confirm': (B,'cancelDialog.confirm'), 'cancel_confirming': (B,'cancelDialog.confirming'),
  'notice_cancelled': (B,'notice.cancelled'),

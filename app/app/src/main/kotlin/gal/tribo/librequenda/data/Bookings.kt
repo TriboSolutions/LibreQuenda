@@ -63,9 +63,15 @@ data class FacilityDetails(
     val usageRules: String = "",
 )
 
-data class MyBookings(val upcoming: List<Booking>, val history: List<Booking>, val historyPage: Int = 1, val historyHasMore: Boolean = false)
+data class MyBookings(
+    val upcoming: List<Booking>,
+    val history: List<Booking>,
+    val historyPage: Int = 1,
+    val historyHasMore: Boolean = false,
+    val upcomingJson: String? = null, // as the API sent it, for BookingsCache
+)
 
-private fun JSONObject.toBooking() = Booking(
+internal fun JSONObject.toBooking() = Booking(
     id = getString("id"),
     startsAt = Instant.parse(getString("starts_at")),
     endsAt = Instant.parse(getString("ends_at")),
@@ -118,7 +124,10 @@ suspend fun fetchMyBookings(token: String, historyPage: Int = 1): MyBookings {
     val json = Api.getJson(Api.baseUrl + "/me/bookings?page=$historyPage", token)
     fun list(name: String) = json.optJSONArray(name)?.let { a -> List(a.length()) { a.getJSONObject(it).toBooking() } }.orEmpty()
     val p = json.optJSONObject("history_pagination")
-    return MyBookings(list("upcoming"), list("history"), p?.optInt("page", historyPage) ?: historyPage, p?.optBoolean("has_more") ?: false)
+    return MyBookings(
+        list("upcoming"), list("history"), p?.optInt("page", historyPage) ?: historyPage, p?.optBoolean("has_more") ?: false,
+        upcomingJson = json.optJSONArray("upcoming")?.toString(),
+    )
 }
 
 /** DELETE /me/bookings/{id}: the turn is free again for someone else. */

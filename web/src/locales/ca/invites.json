@@ -10,7 +10,8 @@
     "emptyHistory": "Encara no tens reserves passades.",
     "signIn": "Inicia la sessió per veure les teves reserves.",
     "bookNow": "Reserva ara",
-    "historyPages": "Pàgines de l’historial"
+    "historyPages": "Pàgines de l’historial",
+    "offline": "Sense connexió: les teves reserves desades el {{when}}. El QR de la reserva serveix igual al lector."
   },
   "role": {
     "owner": "Teva",

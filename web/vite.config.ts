@@ -1,8 +1,33 @@
+import { createHash } from 'node:crypto'
+import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import babel from '@rolldown/plugin-babel'
 import tailwindcss from '@tailwindcss/vite'
 import react, { reactCompilerPreset } from '@vitejs/plugin-react'
-import { defineConfig, loadEnv } from 'vite'
+import { defineConfig, loadEnv, type Plugin } from 'vite'
+
+/**
+ * dist/sw.js from sw.js: the service worker that opens the app without coverage,
+ * with this build's files to keep and a version that changes with them.
+ */
+function serviceWorker(): Plugin {
+  return {
+    name: 'librequenda-service-worker',
+    apply: 'build',
+    generateBundle(_, bundle) {
+      const files = Object.keys(bundle)
+        .filter((file) => file.startsWith('assets/'))
+        .map((file) => `/${file}`)
+        .sort()
+      const precache = ['/', '/manifest.webmanifest', '/favicon.svg', '/icon-192.png', ...files]
+      const version = createHash('sha256').update(files.join('\n')).digest('hex').slice(0, 12)
+      const source = readFileSync(path.resolve(import.meta.dirname, 'sw.js'), 'utf8')
+        .replace('__VERSION__', version)
+        .replace('__PRECACHE__', JSON.stringify(precache))
+      this.emitFile({ type: 'asset', fileName: 'sw.js', source })
+    },
+  }
+}
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
@@ -13,6 +38,7 @@ export default defineConfig(({ mode }) => {
       react(),
       babel({ presets: [reactCompilerPreset()] }),
       tailwindcss(),
+      serviceWorker(),
     ],
     resolve: {
       alias: {

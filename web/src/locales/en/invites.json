@@ -10,7 +10,8 @@
     "emptyHistory": "No past bookings yet.",
     "signIn": "Sign in to see your bookings.",
     "bookNow": "Book now",
-    "historyPages": "History pages"
+    "historyPages": "History pages",
+    "offline": "Offline: your bookings as saved on {{when}}. The booking's QR still works at the reader."
   },
   "role": {
     "owner": "Yours",
